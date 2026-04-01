@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>René ルネ ｜ IRONWORKS ado</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0e0e0e;
+      --dark:    #1a1a1a;
+      --mid:     #2c2c2c;
+      --line:    #333333;
+      --muted:   #888888;
+      --light:   #cccccc;
+      --white:   #f5f5f5;
+      --accent:  #c8a96e;   /* ゴールドアクセント */
+      --font:    'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      background: rgba(14,14,14,0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+    }
+    .logo {
+      font-size: 11px; letter-spacing: 0.35em;
+      text-transform: uppercase; color: var(--white);
+      text-decoration: none;
+    }
+    .logo span { color: var(--accent); }
+    nav a {
+      color: var(--muted); text-decoration: none;
+      font-size: 11px; letter-spacing: 0.2em;
+      text-transform: uppercase; margin-left: 32px;
+      transition: color .2s;
+    }
+    nav a:hover { color: var(--white); }
+
+    /* ── BREADCRUMB ── */
+    .breadcrumb {
+      padding: 96px 40px 0;
+      font-size: 11px; color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+    .breadcrumb a { color: var(--muted); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--accent); }
+    .breadcrumb span { margin: 0 8px; }
+
+    /* ── PRODUCT LAYOUT ── */
+    .product {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0;
+      max-width: 1280px;
+      margin: 32px auto 0;
+      padding: 0 40px;
+    }
+
+    /* ── GALLERY ── */
+    .gallery { position: relative; }
+    .main-image {
+      width: 100%; aspect-ratio: 1/1;
+      background: var(--dark);
+      overflow: hidden;
+      position: relative;
+    }
+    .main-image img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform .6s ease;
+    }
+    .main-image:hover img { transform: scale(1.03); }
+    .badge {
+      position: absolute; top: 20px; left: 20px;
+      background: var(--accent); color: var(--black);
+      font-size: 10px; letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      font-weight: 600;
+    }
+    .thumbs {
+      display: flex; gap: 8px; margin-top: 8px;
+    }
+    .thumb {
+      width: 72px; height: 72px;
+      background: var(--dark);
+      border: 1px solid transparent;
+      cursor: pointer; overflow: hidden;
+      transition: border-color .2s;
+    }
+    .thumb.active { border-color: var(--accent); }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* ── PRODUCT INFO ── */
+    .info {
+      padding: 0 0 0 64px;
+      display: flex; flex-direction: column;
+    }
+
+    .product-label {
+      font-size: 10px; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 12px;
+    }
+    .product-name {
+      font-size: 28px; font-weight: 300;
+      letter-spacing: 0.05em;
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+    .product-name-ja {
+      font-size: 12px; color: var(--muted);
+      letter-spacing: 0.15em; margin-bottom: 24px;
+    }
+
+    .divider {
+      border: none; border-top: 1px solid var(--line);
+      margin: 20px 0;
+    }
+
+    /* ── SPEC TABLE ── */
+    .specs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px 24px;
+      margin-bottom: 0;
+    }
+    .spec-item {}
+    .spec-label {
+      font-size: 10px; letter-spacing: 0.15em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 2px;
+    }
+    .spec-value {
+      font-size: 13px; color: var(--light);
+    }
+
+    /* ── CALCULATOR ── */
+    .calc-section {
+      background: var(--dark);
+      border: 1px solid var(--line);
+      padding: 28px;
+      margin-top: 24px;
+    }
+    .calc-title {
+      font-size: 10px; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 20px;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+    .input-label {
+      display: flex; justify-content: space-between;
+      align-items: baseline;
+      font-size: 12px; color: var(--light);
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .input-hint {
+      font-size: 10px; color: var(--muted);
+    }
+
+    .length-input-wrap {
+      display: flex; align-items: stretch;
+      border: 1px solid var(--line);
+      background: var(--mid);
+      transition: border-color .2s;
+    }
+    .length-input-wrap:focus-within {
+      border-color: var(--accent);
+    }
+    .length-input-wrap input {
+      flex: 1;
+      background: transparent;
+      border: none; outline: none;
+      color: var(--white);
+      font-size: 20px; font-weight: 300;
+      padding: 12px 16px;
+      font-family: var(--font);
+      width: 0;
+    }
+    .length-unit {
+      display: flex; align-items: center;
+      padding: 0 16px;
+      font-size: 12px; color: var(--muted);
+      border-left: 1px solid var(--line);
+      letter-spacing: 0.1em;
+    }
+
+    /* スライダー */
+    .length-slider {
+      width: 100%; margin-top: 10px;
+      -webkit-appearance: none;
+      height: 2px;
+      background: linear-gradient(to right, var(--accent) 0%, var(--line) 0%);
+      border: none; outline: none; cursor: pointer;
+    }
+    .length-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px; height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+    }
+    .slider-labels {
+      display: flex; justify-content: space-between;
+      font-size: 10px; color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* 座金 */
+    .zakin-info {
+      background: rgba(200,169,110,0.06);
+      border: 1px solid rgba(200,169,110,0.2);
+      padding: 14px 16px;
+      font-size: 12px;
+    }
+    .zakin-row {
+      display: flex; justify-content: space-between;
+      align-items: center;
+    }
+    .zakin-label { color: var(--muted); }
+    .zakin-value { color: var(--accent); font-weight: 500; }
+    .zakin-diagram {
+      margin-top: 10px;
+      font-size: 10px; color: var(--muted);
+      font-family: monospace;
+      letter-spacing: 0.05em;
+    }
+
+    /* 価格内訳 */
+    .price-breakdown {
+      margin-top: 20px;
+    }
+    .breakdown-row {
+      display: flex; justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+    .breakdown-row:last-child { border-bottom: none; }
+    .breakdown-label { color: var(--muted); }
+    .breakdown-value { color: var(--light); }
+    .breakdown-row.subtotal {
+      font-size: 13px; font-weight: 500;
+      color: var(--white);
+    }
+    .breakdown-row.subtotal .breakdown-value { color: var(--white); }
+
+    .total-price {
+      margin-top: 16px;
+      padding: 20px;
+      background: var(--mid);
+      border: 1px solid var(--accent);
+      display: flex; align-items: baseline; justify-content: space-between;
+    }
+    .total-label {
+      font-size: 11px; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--accent);
+    }
+    .total-amount {
+      font-size: 32px; font-weight: 300;
+      letter-spacing: 0.03em;
+      color: var(--white);
+    }
+    .total-tax {
+      font-size: 11px; color: var(--muted);
+      margin-left: 8px;
+    }
+
+    /* 警告 */
+    .surcharge-notice {
+      display: none;
+      margin-top: 12px;
+      padding: 10px 14px;
+      background: rgba(200,80,80,0.1);
+      border: 1px solid rgba(200,80,80,0.3);
+      font-size: 11px; color: #e0a0a0;
+    }
+
+    /* ── CTA ── */
+    .cta-wrap { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
+
+    .btn-primary {
+      display: block; width: 100%;
+      padding: 18px;
+      background: var(--accent);
+      border: none; cursor: pointer;
+      color: var(--black);
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      font-family: var(--font);
+      transition: background .2s, transform .1s;
+    }
+    .btn-primary:hover { background: #d4b87a; }
+    .btn-primary:active { transform: scale(0.99); }
+
+    .btn-secondary {
+      display: block; width: 100%;
+      padding: 16px;
+      background: transparent;
+      border: 1px solid var(--line); cursor: pointer;
+      color: var(--muted);
+      font-size: 11px;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      font-family: var(--font);
+      transition: border-color .2s, color .2s;
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* 注意書き */
+    .notes {
+      margin-top: 24px;
+      font-size: 11px; color: var(--muted);
+      line-height: 2;
+    }
+    .notes li { list-style: none; padding-left: 12px; position: relative; }
+    .notes li::before { content: "—"; position: absolute; left: 0; }
+
+    /* ── DESCRIPTION ── */
+    .description-section {
+      max-width: 1280px;
+      margin: 80px auto;
+      padding: 0 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+    }
+    .desc-title {
+      font-size: 10px; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 20px;
+    }
+    .desc-text {
+      font-size: 14px; color: var(--light);
+      line-height: 2;
+    }
+    .feature-list { margin-top: 24px; }
+    .feature-item {
+      display: flex; gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .feature-icon {
+      width: 32px; height: 32px;
+      border: 1px solid var(--line);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      font-size: 14px; color: var(--accent);
+    }
+    .feature-content {}
+    .feature-title { font-size: 13px; color: var(--white); margin-bottom: 4px; }
+    .feature-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 40px;
+      text-align: center;
+      font-size: 11px; color: var(--muted);
+      letter-spacing: 0.15em;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      header { padding: 0 20px; }
+      nav { display: none; }
+      .breadcrumb { padding: 80px 20px 0; }
+      .product { grid-template-columns: 1fr; padding: 0 20px; }
+      .info { padding: 32px 0 0; }
+      .description-section { grid-template-columns: 1fr; padding: 0 20px; gap: 40px; }
+      .product-name { font-size: 22px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <a class="logo" href="#">IRONWORKS <span>ado</span></a>
+  <nav>
+    <a href="#">Item</a>
+    <a href="#">Category</a>
+    <a href="#">About</a>
+    <a href="#">Blog</a>
+    <a href="#">Contact</a>
+  </nav>
+</header>
+
+<!-- BREADCRUMB -->
+<div class="breadcrumb">
+  <a href="#">Home</a><span>/</span>
+  <a href="#">壁付け手すり・横型</a><span>/</span>
+  René ルネ
+</div>
+
+<!-- PRODUCT -->
+<div class="product">
+
+  <!-- GALLERY -->
+  <div class="gallery">
+    <div class="main-image">
+      <img id="mainImg"
+        src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80"
+        alt="René アイアン手すり">
+      <div class="badge">Handcrafted</div>
+    </div>
+    <div class="thumbs">
+      <div class="thumb active" onclick="switchImg(this,'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80')">
+        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&q=60" alt="">
+      </div>
+      <div class="thumb" onclick="switchImg(this,'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80')">
+        <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=200&q=60" alt="">
+      </div>
+      <div class="thumb" onclick="switchImg(this,'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&q=80')">
+        <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=200&q=60" alt="">
+      </div>
+    </div>
+  </div>
+
+  <!-- INFO -->
+  <div class="info">
+    <div class="product-label">壁付け手すり ・ 横型</div>
+    <div class="product-name">René　ルネ</div>
+    <div class="product-name-ja">鍛冶職人制作　アイアン手すり　横型 25φ　マットブラック</div>
+
+    <div class="specs">
+      <div class="spec-item">
+        <div class="spec-label">素材</div>
+        <div class="spec-value">SS400 STKM 25.4φ t2.3</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-label">仕上げ</div>
+        <div class="spec-value">2液型ウレタン塗装</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-label">カラー</div>
+        <div class="spec-value">マットブラック</div>
+      </div>
+      <div class="spec-item">
+        <div class="spec-label">標準長さ</div>
+        <div class="spec-value">〜150cm 一律料金</div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- 価格計算機 -->
+    <div class="calc-section">
+      <div class="calc-title">サイズ・価格シミュレーター</div>
+
+      <!-- 長さ入力 -->
+      <div class="input-group">
+        <div class="input-label">
+          <span>ご希望の長さ</span>
+          <span class="input-hint">50cm 〜 300cm</span>
+        </div>
+        <div class="length-input-wrap">
+          <input type="number" id="lengthInput"
+            value="150" min="50" max="300" step="1"
+            oninput="onLengthChange(this.value)">
+          <div class="length-unit">cm</div>
+        </div>
+        <input type="range" class="length-slider" id="lengthSlider"
+          min="50" max="300" step="1" value="150"
+          oninput="onSliderChange(this.value)">
+        <div class="slider-labels">
+          <span>50cm</span>
+          <span>150cm（標準）</span>
+          <span>200cm（長尺）</span>
+          <span>300cm</span>
+        </div>
+      </div>
+
+      <!-- 座金情報 -->
+      <div class="zakin-info">
+        <div class="zakin-row">
+          <span class="zakin-label">推奨座金数（自動計算）</span>
+          <span class="zakin-value" id="zakinCount">3 個</span>
+        </div>
+        <div class="zakin-diagram" id="zakinDiagram"></div>
+      </div>
+
+      <!-- 長尺警告 -->
+      <div class="surcharge-notice" id="surchargeNotice">
+        ⚠ 200cmを超えると長尺割増が加算されます。取り回しや施工の難易度が上がるため、
+        事前に設置場所のご確認をお勧めします。
+      </div>
+
+      <!-- 価格内訳 -->
+      <div class="price-breakdown">
+        <div class="breakdown-row">
+          <span class="breakdown-label">基本料金（〜150cm）</span>
+          <span class="breakdown-value">¥36,500</span>
+        </div>
+        <div class="breakdown-row" id="rowAddon" style="display:none">
+          <span class="breakdown-label">長さ追加料金</span>
+          <span class="breakdown-value" id="addonVal">—</span>
+        </div>
+        <div class="breakdown-row" id="rowZakin" style="display:none">
+          <span class="breakdown-label">追加座金料金</span>
+          <span class="breakdown-value" id="zakinVal">—</span>
+        </div>
+        <div class="breakdown-row" id="rowSurcharge" style="display:none">
+          <span class="breakdown-label">長尺割増</span>
+          <span class="breakdown-value" id="surchargeVal">—</span>
+        </div>
+        <div class="breakdown-row subtotal">
+          <span class="breakdown-label">小計（税抜）</span>
+          <span class="breakdown-value" id="subtotalVal">¥36,500</span>
+        </div>
+        <div class="breakdown-row">
+          <span class="breakdown-label">消費税（10%）</span>
+          <span class="breakdown-value" id="taxVal">¥3,650</span>
+        </div>
+      </div>
+
+      <div class="total-price">
+        <span class="total-label">合計（税込）</span>
+        <div>
+          <span class="total-amount" id="totalVal">¥40,150</span>
+          <span class="total-tax">税込</span>
+        </div>
+      </div>
+
+      <!-- CTA -->
+      <div class="cta-wrap">
+        <button class="btn-primary" onclick="addToCart()">
+          カートに追加 — 購入手続きへ
+        </button>
+        <button class="btn-secondary">
+          お問い合わせ・カスタム相談
+        </button>
+      </div>
+
+      <!-- 注意書き -->
+      <ul class="notes">
+        <li>受注生産のため、お届けまで約3〜4週間かかります</li>
+        <li>施工・取り付けは含まれません（別途ご相談可）</li>
+        <li>サイズは指定寸法±5mm以内の精度でお届けします</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- DESCRIPTION -->
+<div class="description-section">
+  <div>
+    <div class="desc-title">Product Details</div>
+    <div class="desc-text">
+      世界でも第一線の技術力を持つ工房で修行し、鍛冶職人として独立。
+      価格以上の確かな品質で、これから毎日お使いいただく方の
+      心豊かな暮らしを思い、一本一本丁寧に制作しています。
+      <br><br>
+      René（ルネ）は、シンプルで普遍的なフォルムの横型手すりです。
+      2液型ウレタン塗装を採用することで、長期間にわたり
+      美しいマットブラックの質感を保ちます。
+    </div>
+  </div>
+  <div>
+    <div class="desc-title">Features</div>
+    <div class="feature-list">
+      <div class="feature-item">
+        <div class="feature-icon">⟳</div>
+        <div class="feature-content">
+          <div class="feature-title">セミオーダー対応</div>
+          <div class="feature-desc">50〜300cmの範囲でご希望のサイズに制作します。座金位置も構造計算に基づき最適配置。</div>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">◈</div>
+        <div class="feature-content">
+          <div class="feature-title">2液型ウレタン塗装</div>
+          <div class="feature-desc">工業用の高耐久塗装を採用。剥がれにくく、傷にも強い仕上がりです。</div>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">✦</div>
+        <div class="feature-content">
+          <div class="feature-title">職人による手仕上げ</div>
+          <div class="feature-desc">素地調整から下塗り・仕上げまで、全工程を職人が丁寧に手がけます。</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  © IRONWORKS ado ｜ All rights reserved
+</footer>
+
+<script>
+  // ── 価格設定 ──────────────────────────────
+  const BASE_PRICE    = 36500;  // 150cmまで一律
+  const STD_LENGTH    = 150;    // cm
+  const PRICE_PER_CM  = 250;    // 超過1cmあたり
+  const ZAKIN_PRICE   = 3500;   // 座金1個
+  const INCLUDED_ZAKIN= 2;      // 基本料金に含まれる数
+  const MIN_ZAKIN     = 4;      // 最小座金数
+  const END_DIST_MM   = 100;    // 端からの距離(mm)
+  const MAX_SPAN_MM   = 800;    // 最大スパン(mm)
+  const SURGE_START   = 200;    // 長尺割増開始(cm)
+  const SURGE_BASE    = 1.2;    // 指数の底
+  const SURGE_INTERVAL= 50;     // 計算間隔(cm)
+  const TAX_RATE      = 0.10;
+
+  // ── 計算関数 ──────────────────────────────
+  function calcZakin(lengthCm) {
+    const L_mm = lengthCm * 10;
+    const span = L_mm - 2 * END_DIST_MM;
+    const spans = Math.ceil(span / MAX_SPAN_MM);
+    return Math.max(MIN_ZAKIN, 1 + spans);
+  }
+
+  function calcPrice(lengthCm) {
+    const addon    = Math.max(0, lengthCm - STD_LENGTH) * PRICE_PER_CM;
+    const longM    = lengthCm > SURGE_START
+                   ? Math.pow(SURGE_BASE, (lengthCm - SURGE_START) / SURGE_INTERVAL)
+                   : 1;
+    const surcharge= lengthCm > SURGE_START ? addon * (longM - 1) : 0;
+    const zakin    = calcZakin(lengthCm);
+    const addZakin = Math.max(0, zakin - INCLUDED_ZAKIN) * ZAKIN_PRICE;
+    const subtotal = BASE_PRICE + addon + addZakin + surcharge;
+    const tax      = subtotal * TAX_RATE;
+    return { addon, surcharge, addZakin, zakin, subtotal, tax,
+             total: subtotal + tax };
+  }
+
+  // ── 座金図 ──────────────────────────────
+  function buildDiagram(lengthCm, zakinCount) {
+    const L_mm = lengthCm * 10;
+    const positions = [];
+    positions.push(100); // 左端
+    if (zakinCount > 2) {
+      const inner = L_mm - 200;
+      const n = zakinCount - 2;
+      for (let i = 1; i <= n; i++) {
+        positions.push(Math.round(100 + inner * i / (n + 1)));
+      }
+    }
+    positions.push(L_mm - 100); // 右端
+
+    const total = L_mm;
+    const barLen = 40;
+    let bar = '|';
+    let last = 0;
+    positions.forEach(p => {
+      const seg = Math.round((p - last) / total * barLen);
+      bar += '─'.repeat(Math.max(0,seg-1)) + '●';
+      last = p;
+    });
+    const remain = barLen - Math.round((positions[positions.length-1]) / total * barLen);
+    bar += '─'.repeat(Math.max(0,remain)) + '|';
+    return `配置図: ${bar}  （計 ${zakinCount}点）`;
+  }
+
+  // ── UI更新 ──────────────────────────────
+  function fmt(n) { return '¥' + Math.round(n).toLocaleString('ja-JP'); }
+
+  function update(lengthCm) {
+    const L = Math.max(50, Math.min(300, Number(lengthCm)));
+    const p = calcPrice(L);
+
+    // スライダー同期
+    document.getElementById('lengthInput').value  = L;
+    document.getElementById('lengthSlider').value = L;
+
+    // スライダーグラデーション
+    const pct = (L - 50) / 250 * 100;
+    document.getElementById('lengthSlider').style.background =
+      `linear-gradient(to right, var(--accent) ${pct}%, var(--line) ${pct}%)`;
+
+    // 座金
+    document.getElementById('zakinCount').textContent = `${p.zakin} 個`;
+    document.getElementById('zakinDiagram').textContent = buildDiagram(L, p.zakin);
+
+    // 長さ追加
+    const rowAddon = document.getElementById('rowAddon');
+    if (p.addon > 0) {
+      rowAddon.style.display = 'flex';
+      document.getElementById('addonVal').textContent = fmt(p.addon);
+    } else {
+      rowAddon.style.display = 'none';
+    }
+
+    // 追加座金
+    const rowZakin = document.getElementById('rowZakin');
+    if (p.addZakin > 0) {
+      rowZakin.style.display = 'flex';
+      document.getElementById('zakinVal').textContent = fmt(p.addZakin);
+    } else {
+      rowZakin.style.display = 'none';
+    }
+
+    // 長尺割増
+    const rowSurcharge = document.getElementById('rowSurcharge');
+    const notice = document.getElementById('surchargeNotice');
+    if (p.surcharge > 0) {
+      rowSurcharge.style.display = 'flex';
+      document.getElementById('surchargeVal').textContent = fmt(p.surcharge);
+      notice.style.display = 'block';
+    } else {
+      rowSurcharge.style.display = 'none';
+      notice.style.display = 'none';
+    }
+
+    // 合計
+    document.getElementById('subtotalVal').textContent = fmt(p.subtotal);
+    document.getElementById('taxVal').textContent      = fmt(p.tax);
+    document.getElementById('totalVal').textContent    = fmt(p.total);
+  }
+
+  function onLengthChange(v) { update(v); }
+  function onSliderChange(v) { update(v); }
+
+  function switchImg(el, src) {
+    document.getElementById('mainImg').src = src;
+    document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function addToCart() {
+    const L = document.getElementById('lengthInput').value;
+    const p = calcPrice(Number(L));
+    alert(`【René ルネ ${L}cm】\n合計（税込）: ${fmt(p.total)}\n\nStripe決済に接続します。\n（現在はプロトタイプのため実際の決済は行われません）`);
+  }
+
+  // 初期描画
+  update(150);
+</script>
+</body>
+</html>
