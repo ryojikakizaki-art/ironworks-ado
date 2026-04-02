@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ご注文ありがとうございます ｜ IRONWORKS ado</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black:  #0e0e0e;
+      --dark:   #1a1a1a;
+      --line:   #333333;
+      --muted:  #888888;
+      --light:  #cccccc;
+      --white:  #f5f5f5;
+      --accent: #c8a96e;
+      --font:   'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+    }
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 64px;
+      background: rgba(14,14,14,0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+    }
+    .logo {
+      font-size: 11px; letter-spacing: 0.35em;
+      text-transform: uppercase; color: var(--white);
+      text-decoration: none;
+    }
+    .logo span { color: var(--accent); }
+
+    main {
+      flex: 1;
+      display: flex; align-items: center; justify-content: center;
+      padding: 100px 40px 60px;
+    }
+    .card {
+      max-width: 560px; width: 100%;
+      border: 1px solid var(--line);
+      padding: 60px 48px;
+      text-align: center;
+    }
+    .check-icon {
+      width: 64px; height: 64px;
+      border: 1px solid var(--accent);
+      border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      color: var(--accent);
+      margin-bottom: 32px;
+    }
+    .heading {
+      font-size: 11px; letter-spacing: 0.35em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 16px;
+    }
+    .title {
+      font-size: 24px; font-weight: 300;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      font-size: 12px; color: var(--muted);
+      margin-bottom: 40px;
+    }
+    .divider {
+      border: none; border-top: 1px solid var(--line);
+      margin: 0 0 32px;
+    }
+    .order-detail {
+      background: var(--dark);
+      padding: 24px;
+      margin-bottom: 32px;
+      text-align: left;
+    }
+    .order-row {
+      display: flex; justify-content: space-between;
+      padding: 8px 0;
+      font-size: 13px;
+      border-bottom: 1px solid var(--line);
+    }
+    .order-row:last-child { border-bottom: none; }
+    .order-label { color: var(--muted); }
+    .order-value { color: var(--light); }
+    .steps {
+      text-align: left;
+      margin-bottom: 40px;
+    }
+    .step {
+      display: flex; gap: 16px;
+      padding: 16px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      width: 24px; height: 24px;
+      border: 1px solid var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 11px; color: var(--accent);
+      flex-shrink: 0;
+    }
+    .step-text { color: var(--light); line-height: 1.6; }
+    .step-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .btn-back {
+      display: inline-block;
+      padding: 16px 48px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 11px; letter-spacing: 0.2em;
+      text-transform: uppercase;
+      transition: border-color .2s, color .2s;
+    }
+    .btn-back:hover { border-color: var(--accent); color: var(--accent); }
+
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 32px 40px;
+      text-align: center;
+      font-size: 11px; color: var(--muted);
+      letter-spacing: 0.15em;
+    }
+
+    @media (max-width: 600px) {
+      header { padding: 0 20px; }
+      main { padding: 100px 20px 40px; }
+      .card { padding: 40px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">IRONWORKS <span>ado</span></a>
+</header>
+
+<main>
+  <div class="card">
+    <div class="check-icon">✓</div>
+    <div class="heading">Order Confirmed</div>
+    <div class="title">ご注文ありがとうございます</div>
+    <div class="subtitle" id="orderSubtitle">ご注文を受け付けました</div>
+
+    <hr class="divider">
+
+    <div class="order-detail" id="orderDetail">
+      <div class="order-row">
+        <span class="order-label">商品</span>
+        <span class="order-value" id="productName">René ルネ</span>
+      </div>
+      <div class="order-row">
+        <span class="order-label">納期目安</span>
+        <span class="order-value">受注後 約3〜4週間</span>
+      </div>
+      <div class="order-row">
+        <span class="order-label">お問い合わせ</span>
+        <span class="order-value">ご注文確認メールをご確認ください</span>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          ご注文確認メールが届きます
+          <div class="step-sub">決済完了後、Stripeよりメールが送信されます</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          制作開始のご連絡
+          <div class="step-sub">職人よりメールまたは電話にてご連絡いたします</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          お届け
+          <div class="step-sub">ヤマト運輸にて発送。追跡番号をお知らせします</div>
+        </div>
+      </div>
+    </div>
+
+    <a class="btn-back" href="/">トップページに戻る</a>
+  </div>
+</main>
+
+<footer>
+  © IRONWORKS ado ｜ All rights reserved
+</footer>
+
+<script>
+  // URLパラメータから注文情報を取得して表示
+  const params = new URLSearchParams(window.location.search);
+  const length = params.get('length');
+  if (length) {
+    document.getElementById('productName').textContent = `René ルネ ${length}cm`;
+    document.getElementById('orderSubtitle').textContent =
+      `René ルネ ${length}cm のご注文を受け付けました`;
+  }
+</script>
+</body>
+</html>
