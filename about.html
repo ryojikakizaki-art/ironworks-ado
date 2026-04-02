@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ABOUT ｜ IRONWORKS ado</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0e0e0e;
+      --dark:    #1a1a1a;
+      --mid:     #2c2c2c;
+      --line:    #333333;
+      --muted:   #888888;
+      --light:   #cccccc;
+      --white:   #f5f5f5;
+      --accent:  #c8a96e;
+      --font:    'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      background: rgba(14,14,14,0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+    }
+    .logo {
+      font-size: 11px; letter-spacing: 0.35em;
+      text-transform: uppercase; color: var(--white);
+      text-decoration: none;
+    }
+    .logo span { color: var(--accent); }
+    nav a {
+      color: var(--muted); text-decoration: none;
+      font-size: 11px; letter-spacing: 0.2em;
+      text-transform: uppercase; margin-left: 32px;
+      transition: color .2s;
+    }
+    nav a:hover, nav a.active { color: var(--white); }
+
+    /* ── HERO ── */
+    .hero {
+      height: 100vh;
+      min-height: 600px;
+      position: relative;
+      display: flex; align-items: flex-end;
+      padding: 80px 40px;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: url('https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=1600&q=80') center/cover no-repeat;
+      filter: brightness(0.35);
+    }
+    .hero-content {
+      position: relative;
+      max-width: 640px;
+    }
+    .hero-label {
+      font-size: 10px; letter-spacing: 0.5em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 20px;
+    }
+    .hero-title {
+      font-size: clamp(36px, 6vw, 72px);
+      font-weight: 200;
+      letter-spacing: 0.04em;
+      line-height: 1.1;
+      margin-bottom: 24px;
+    }
+    .hero-text {
+      font-size: 14px; color: var(--light);
+      line-height: 2;
+      max-width: 480px;
+    }
+
+    /* ── SECTION COMMON ── */
+    .section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 80px 40px;
+    }
+    .section-border {
+      border-top: 1px solid var(--line);
+    }
+    .section-label {
+      font-size: 10px; letter-spacing: 0.4em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-size: clamp(22px, 3.5vw, 36px);
+      font-weight: 300;
+      letter-spacing: 0.04em;
+      line-height: 1.3;
+      margin-bottom: 32px;
+      color: var(--white);
+    }
+    .body-text {
+      font-size: 14px;
+      color: var(--light);
+      line-height: 2.1;
+    }
+    .body-text + .body-text {
+      margin-top: 20px;
+    }
+
+    /* ── STORY GRID ── */
+    .story-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 64px;
+      align-items: center;
+    }
+    .story-image {
+      aspect-ratio: 4/5;
+      overflow: hidden;
+      background: var(--dark);
+    }
+    .story-image img {
+      width: 100%; height: 100%; object-fit: cover;
+      filter: grayscale(20%);
+      transition: transform .8s ease, filter .4s;
+    }
+    .story-image:hover img {
+      transform: scale(1.04);
+      filter: grayscale(0%);
+    }
+    .story-text {}
+
+    /* ── NUMBERS ── */
+    .numbers {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--line);
+      border: 1px solid var(--line);
+      margin: 48px 0;
+    }
+    .number-item {
+      background: var(--black);
+      padding: 32px 24px;
+      text-align: center;
+    }
+    .number-value {
+      font-size: 48px; font-weight: 200;
+      letter-spacing: -0.02em;
+      color: var(--white);
+      line-height: 1;
+    }
+    .number-unit {
+      font-size: 16px;
+      color: var(--accent);
+      margin-left: 2px;
+    }
+    .number-label {
+      font-size: 11px; letter-spacing: 0.15em;
+      color: var(--muted);
+      margin-top: 10px;
+      text-transform: uppercase;
+    }
+
+    /* ── PROCESS ── */
+    .process-list {
+      display: grid;
+      gap: 0;
+      margin-top: 40px;
+    }
+    .process-item {
+      display: grid;
+      grid-template-columns: 64px 1fr;
+      gap: 24px;
+      padding: 32px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .process-item:last-child { border-bottom: none; }
+    .process-num {
+      font-size: 11px; letter-spacing: 0.2em;
+      color: var(--accent);
+      padding-top: 4px;
+    }
+    .process-content {}
+    .process-title {
+      font-size: 15px; font-weight: 400;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+    .process-desc {
+      font-size: 13px; color: var(--muted);
+      line-height: 1.9;
+    }
+
+    /* ── MATERIAL ── */
+    .material-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 40px;
+    }
+    .material-card {
+      background: var(--dark);
+      border: 1px solid var(--line);
+      padding: 24px;
+    }
+    .material-card-label {
+      font-size: 10px; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 10px;
+    }
+    .material-card-title {
+      font-size: 14px; color: var(--white);
+      margin-bottom: 8px; font-weight: 400;
+    }
+    .material-card-desc {
+      font-size: 12px; color: var(--muted);
+      line-height: 1.8;
+    }
+
+    /* ── QUOTE ── */
+    .quote-block {
+      border-left: 2px solid var(--accent);
+      padding: 24px 32px;
+      margin: 48px 0;
+      background: var(--dark);
+    }
+    .quote-text {
+      font-size: 18px; font-weight: 300;
+      color: var(--white);
+      line-height: 1.8;
+      letter-spacing: 0.02em;
+    }
+    .quote-source {
+      margin-top: 16px;
+      font-size: 11px; letter-spacing: 0.2em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+
+    /* ── CTA ── */
+    .cta-block {
+      background: var(--dark);
+      border: 1px solid var(--line);
+      padding: 48px;
+      text-align: center;
+      margin-top: 0;
+    }
+    .cta-title {
+      font-size: 22px; font-weight: 300;
+      letter-spacing: 0.04em;
+      margin-bottom: 16px;
+    }
+    .cta-desc {
+      font-size: 13px; color: var(--muted);
+      line-height: 1.9;
+      margin-bottom: 32px;
+    }
+    .cta-buttons {
+      display: flex; gap: 16px; justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-primary {
+      display: inline-block;
+      padding: 16px 40px;
+      background: var(--accent);
+      color: var(--black);
+      text-decoration: none;
+      font-size: 11px; letter-spacing: 0.3em;
+      text-transform: uppercase;
+      font-weight: 600;
+      transition: background .2s;
+    }
+    .btn-primary:hover { background: #d4b87a; }
+    .btn-outline {
+      display: inline-block;
+      padding: 16px 40px;
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 11px; letter-spacing: 0.3em;
+      text-transform: uppercase;
+      transition: border-color .2s, color .2s;
+    }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 40px;
+      text-align: center;
+      font-size: 11px; color: var(--muted);
+      letter-spacing: 0.15em;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      header { padding: 0 20px; }
+      nav { display: none; }
+      .hero { padding: 80px 20px; }
+      .section { padding: 60px 20px; }
+      .story-grid { grid-template-columns: 1fr; gap: 32px; }
+      .numbers { grid-template-columns: 1fr; }
+      .material-grid { grid-template-columns: 1fr; }
+      .cta-block { padding: 32px 20px; }
+      .cta-buttons { flex-direction: column; align-items: center; }
+      footer { padding: 32px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="/">IRONWORKS <span>ado</span></a>
+    <nav>
+      <a href="/item.html">Item</a>
+      <a href="/category.html">Category</a>
+      <a href="/about.html" class="active">About</a>
+      <a href="/blog.html">Blog</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <p class="hero-label">Our Story</p>
+      <h1 class="hero-title">鉄を知る者だけが<br>つくれる美がある。</h1>
+      <p class="hero-text">
+        IRONWORKS adoは、一人の鍛冶職人が手がけるアイアン建材のブランドです。<br>
+        工業製品にはない「つくり手の意志」を、日常の住空間に届けます。
+      </p>
+    </div>
+  </div>
+
+  <!-- STORY -->
+  <div class="section section-border">
+    <div class="story-grid">
+      <div class="story-image">
+        <img src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=800&q=80"
+             alt="職人の作業">
+      </div>
+      <div class="story-text">
+        <p class="section-label">Brand Story</p>
+        <h2 class="section-title">素材と向き合う、<br>職人の手仕事</h2>
+        <p class="body-text">
+          大阪の鍛冶工房での修行を経て独立。「鉄は素直だ」と職人は言います。
+          熱を加えれば形を変え、冷えれば固く安定し、表面を整えれば
+          深みのある黒を見せる。誤魔化しが効かない分、
+          その応答は正直で清々しい。
+        </p>
+        <p class="body-text">
+          住まいの手すりや建具金物は、毎日触れるものです。
+          だからこそ、見た目の美しさと使いやすさ、そして長く使える
+          堅牢さの三つを諦めずに追い求めています。
+          受注から制作まで一人で担うからこそ実現できる、
+          細部への責任がIRONWORKS adoの仕事です。
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- NUMBERS -->
+  <div class="section section-border">
+    <p class="section-label">By the Numbers</p>
+    <div class="numbers">
+      <div class="number-item">
+        <div class="number-value">8<span class="number-unit">年</span></div>
+        <div class="number-label">鍛冶職人としての経験</div>
+      </div>
+      <div class="number-item">
+        <div class="number-value">300<span class="number-unit">+</span></div>
+        <div class="number-label">累計制作本数</div>
+      </div>
+      <div class="number-item">
+        <div class="number-value">3<span class="number-unit">–4w</span></div>
+        <div class="number-label">標準的な制作期間</div>
+      </div>
+    </div>
+
+    <div class="quote-block">
+      <p class="quote-text">
+        「量産品が持てない個性を、鉄は持っています。<br>
+        一本の手すりにも、つくり手の考え方が宿る。<br>
+        それが職人仕事の豊かさだと思っています。」
+      </p>
+      <p class="quote-source">— 蠣崎 良治 / Ryoji Kakizaki，鍛冶職人・代表</p>
+    </div>
+  </div>
+
+  <!-- PROCESS -->
+  <div class="section section-border">
+    <p class="section-label">Manufacturing Process</p>
+    <h2 class="section-title">一本の手すりが<br>届くまで</h2>
+    <div class="process-list">
+      <div class="process-item">
+        <span class="process-num">01</span>
+        <div class="process-content">
+          <div class="process-title">素材の選定・切断</div>
+          <div class="process-desc">
+            SS400・STKM規格の丸パイプを使用。用途と強度を考慮し、
+            φ25.4mm × t2.3mmを標準仕様としています。
+            指定寸法に切断後、切口をヤスリで丁寧に整えます。
+          </div>
+        </div>
+      </div>
+      <div class="process-item">
+        <span class="process-num">02</span>
+        <div class="process-content">
+          <div class="process-title">溶接・成形</div>
+          <div class="process-desc">
+            座金（ブラケット）との接合はTIG溶接を使用。
+            溶接ビードは削って平らに整え、継ぎ目が見えない仕上がりを目指します。
+            折り曲げが必要な形状はベンダーで精密に成形します。
+          </div>
+        </div>
+      </div>
+      <div class="process-item">
+        <span class="process-num">03</span>
+        <div class="process-content">
+          <div class="process-title">素地調整（研磨）</div>
+          <div class="process-desc">
+            塗装の密着を高めるため、全面をサンドペーパーおよびグラインダーで研磨。
+            スケールや油分を徹底的に除去します。
+            この下地処理が塗装の耐久性を大きく左右します。
+          </div>
+        </div>
+      </div>
+      <div class="process-item">
+        <span class="process-num">04</span>
+        <div class="process-content">
+          <div class="process-title">塗装（プライマー + 仕上げ）</div>
+          <div class="process-desc">
+            防錆プライマーを塗布後、2液型ウレタン塗料でトップコート。
+            スプレーガンによる均一塗装と、乾燥・硬化の時間管理が
+            マットブラックの美しい質感を生みます。
+          </div>
+        </div>
+      </div>
+      <div class="process-item">
+        <span class="process-num">05</span>
+        <div class="process-content">
+          <div class="process-title">検品・梱包・発送</div>
+          <div class="process-desc">
+            完成品は寸法・塗装面・溶接部を最終確認。
+            傷防止のクッション材で丁寧に梱包し、
+            壁面への取り付け説明書・アンカーボルト一式を同梱してお届けします。
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MATERIALS -->
+  <div class="section section-border">
+    <p class="section-label">Materials</p>
+    <h2 class="section-title">使用素材と仕上げ</h2>
+    <div class="material-grid">
+      <div class="material-card">
+        <div class="material-card-label">パイプ素材</div>
+        <div class="material-card-title">SS400 / STKM 丸パイプ</div>
+        <div class="material-card-desc">
+          国内流通の一般構造用炭素鋼。機械構造用炭素鋼管（STKM）も
+          用途に応じて使い分けます。強度・加工性・コストのバランスに優れた
+          建材の定番材料です。
+        </div>
+      </div>
+      <div class="material-card">
+        <div class="material-card-label">座金・ブラケット</div>
+        <div class="material-card-title">SS400 レーザーカット品</div>
+        <div class="material-card-desc">
+          取付部のプレートは6mm厚のSS400鋼板をレーザーカット加工。
+          均一な形状と高い寸法精度で、壁面への安定した固定を実現します。
+        </div>
+      </div>
+      <div class="material-card">
+        <div class="material-card-label">プライマー</div>
+        <div class="material-card-title">エポキシ系防錆プライマー</div>
+        <div class="material-card-desc">
+          鉄素材の錆を防ぐ一液エポキシプライマーを全面塗布。
+          屋内使用を前提とした設計ですが、下地処理を丁寧に行うことで
+          湿気の多い玄関や洗面所にも対応します。
+        </div>
+      </div>
+      <div class="material-card">
+        <div class="material-card-label">トップコート</div>
+        <div class="material-card-title">2液型ウレタン塗料（マットブラック）</div>
+        <div class="material-card-desc">
+          主剤と硬化剤を混合して使用する高耐久塗料。硬化後は非常に強固な
+          塗膜を形成し、傷・剥がれ・色あせに強い仕上がりになります。
+          光沢のないマットな質感が上品な空間をつくります。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="section section-border">
+    <div class="cta-block">
+      <h2 class="cta-title">あなたの空間に合う一本を</h2>
+      <p class="cta-desc">
+        サイズのご相談、取り付け環境の確認、カスタムオーダーのご依頼など、<br>
+        お気軽にお問い合わせください。
+      </p>
+      <div class="cta-buttons">
+        <a class="btn-primary" href="/contact.html">お問い合わせ</a>
+        <a class="btn-outline" href="/item.html">製品を見る</a>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    © IRONWORKS ado ｜ All rights reserved
+  </footer>
+
+</body>
+</html>
