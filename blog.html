@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BLOG ｜ IRONWORKS ado</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root { --black:#0e0e0e; --dark:#1a1a1a; --mid:#2c2c2c; --line:#333333; --muted:#888888; --light:#cccccc; --white:#f5f5f5; --accent:#c8a96e; --font:'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif; }
+    html { scroll-behavior: smooth; }
+    body { background:var(--black); color:var(--white); font-family:var(--font); font-size:14px; line-height:1.7; }
+    header { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; align-items:center; justify-content:space-between; padding:0 40px; height:64px; background:rgba(14,14,14,0.92); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); }
+    .logo { font-size:11px; letter-spacing:0.35em; text-transform:uppercase; color:var(--white); text-decoration:none; }
+    .logo span { color:var(--accent); }
+    nav a { color:var(--muted); text-decoration:none; font-size:11px; letter-spacing:0.2em; text-transform:uppercase; margin-left:32px; transition:color .2s; }
+    nav a:hover, nav a.active { color:var(--white); }
+    .page-header { padding:120px 40px 60px; border-bottom:1px solid var(--line); }
+    .page-header-inner { max-width:900px; margin:0 auto; }
+    .page-label { font-size:10px; letter-spacing:0.4em; text-transform:uppercase; color:var(--accent); margin-bottom:16px; }
+    .page-title { font-size:clamp(32px,5vw,56px); font-weight:300; letter-spacing:0.05em; line-height:1.1; }
+    .page-subtitle { margin-top:20px; font-size:13px; color:var(--muted); line-height:1.9; }
+    .blog-layout { max-width:900px; margin:0 auto; padding:60px 40px 100px; }
+    .featured-post { display:grid; grid-template-columns:1fr 1fr; gap:0; border:1px solid var(--line); margin-bottom:48px; text-decoration:none; color:inherit; transition:border-color .3s; }
+    .featured-post:hover { border-color:var(--accent); }
+    .featured-image { aspect-ratio:4/3; overflow:hidden; background:var(--dark); }
+    .featured-image img { width:100%; height:100%; object-fit:cover; transition:transform .6s ease; filter:grayscale(15%); }
+    .featured-post:hover .featured-image img { transform:scale(1.04); filter:grayscale(0%); }
+    .featured-body { padding:40px; display:flex; flex-direction:column; justify-content:space-between; background:var(--dark); }
+    .featured-tag { display:inline-block; font-size:9px; letter-spacing:0.35em; text-transform:uppercase; color:var(--accent); border:1px solid var(--accent); padding:3px 10px; margin-bottom:20px; align-self:flex-start; }
+    .featured-title { font-size:20px; font-weight:300; line-height:1.5; color:var(--white); margin-bottom:16px; }
+    .featured-excerpt { font-size:13px; color:var(--muted); line-height:1.9; flex:1; }
+    .featured-meta { margin-top:24px; font-size:11px; color:var(--muted); letter-spacing:0.1em; display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--line); padding-top:16px; }
+    .read-more { color:var(--accent); font-size:10px; letter-spacing:0.3em; text-transform:uppercase; }
+    .posts-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:24px; }
+    .post-card { text-decoration:none; color:inherit; border:1px solid var(--line); background:var(--dark); transition:border-color .3s; display:flex; flex-direction:column; }
+    .post-card:hover { border-color:var(--accent); }
+    .post-thumb { aspect-ratio:16/9; overflow:hidden; background:var(--mid); }
+    .post-thumb img { width:100%; height:100%; object-fit:cover; transition:transform .5s ease; filter:grayscale(20%); }
+    .post-card:hover .post-thumb img { transform:scale(1.06); filter:grayscale(0%); }
+    .post-body { padding:24px; flex:1; display:flex; flex-direction:column; }
+    .post-tag { font-size:9px; letter-spacing:0.3em; text-transform:uppercase; color:var(--accent); margin-bottom:10px; }
+    .post-title { font-size:14px; font-weight:400; line-height:1.6; color:var(--white); margin-bottom:10px; flex:1; }
+    .post-meta { font-size:11px; color:var(--muted); letter-spacing:0.05em; margin-top:16px; border-top:1px solid var(--line); padding-top:12px; }
+    .blog-sidebar { margin-top:64px; border-top:1px solid var(--line); padding-top:48px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:48px; }
+    .sidebar-section-label { font-size:10px; letter-spacing:0.3em; text-transform:uppercase; color:var(--accent); margin-bottom:20px; }
+    .topic-list { list-style:none; }
+    .topic-list li { border-bottom:1px solid var(--line); }
+    .topic-list a { display:flex; justify-content:space-between; padding:10px 0; color:var(--muted); text-decoration:none; font-size:13px; transition:color .2s; }
+    .topic-list a:hover { color:var(--accent); }
+    .topic-count { font-size:11px; color:var(--line); }
+    footer { border-top:1px solid var(--line); padding:40px; text-align:center; font-size:11px; color:var(--muted); letter-spacing:0.15em; }
+    @media (max-width:768px) { header { padding:0 20px; } nav { display:none; } .page-header { padding:96px 20px 40px; } .blog-layout { padding:40px 20px 80px; } .featured-post { grid-template-columns:1fr; } .featured-body { padding:24px; } .posts-grid { grid-template-columns:1fr; } .blog-sidebar { grid-template-columns:1fr; gap:32px; } footer { padding:32px 20px; } }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="logo" href="/">IRONWORKS <span>ado</span></a>
+    <nav>
+      <a href="/item.html">Item</a>
+      <a href="/category.html">Category</a>
+      <a href="/about.html">About</a>
+      <a href="/blog.html" class="active">Blog</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+  </header>
+  <div class="page-header">
+    <div class="page-header-inner">
+      <p class="page-label">Blog</p>
+      <h1 class="page-title">鉄と、暮らしと。</h1>
+      <p class="page-subtitle">素材・制作・施工・お手入れについて。職人が現場から発信します。</p>
+    </div>
+  </div>
+  <div class="blog-layout">
+    <a class="featured-post" href="#">
+      <div class="featured-image">
+        <img src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=900&q=80" alt="制作風景">
+      </div>
+      <div class="featured-body">
+        <div>
+          <span class="featured-tag">制作工程</span>
+          <h2 class="featured-title">2液型ウレタン塗装とは何か。<br>なぜ選ぶのか、なぜ長持ちするのか。</h2>
+          <p class="featured-excerpt">アイアン製品の塗装には様々な種類があります。ラッカー、粉体塗装、焼付塗装、そして私が採用する2液型ウレタン塗装。それぞれに特性があり、用途や環境によって使い分けが必要です。今回はなぜ2液型ウレタンを選んでいるのか、その理由を詳しく解説します。</p>
+        </div>
+        <div class="featured-meta">
+          <span>2026年 3月 15日</span>
+          <span class="read-more">Read More →</span>
+        </div>
+      </div>
+    </a>
+    <div class="posts-grid">
+      <a class="post-card" href="#">
+        <div class="post-thumb"><img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80" alt=""></div>
+        <div class="post-body">
+          <div class="post-tag">素材</div>
+          <h3 class="post-title">SS400とSTKMの違い。手すりにはどちらを使うべきか</h3>
+          <div class="post-meta">2026年 3月 2日</div>
+        </div>
+      </a>
+      <a class="post-card" href="#">
+        <div class="post-thumb"><img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&q=80" alt=""></div>
+        <div class="post-body">
+          <div class="post-tag">施工</div>
+          <h3 class="post-title">アンカーボルトの選び方と、下地材別の注意点</h3>
+          <div class="post-meta">2026年 2月 18日</div>
+        </div>
+      </a>
+      <a class="post-card" href="#">
+        <div class="post-thumb"><img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=600&q=80" alt=""></div>
+        <div class="post-body">
+          <div class="post-tag">採寸・設計</div>
+          <h3 class="post-title">手すりの高さと長さ、正しい採寸の手順</h3>
+          <div class="post-meta">2026年 2月 5日</div>
+        </div>
+      </a>
+      <a class="post-card" href="#">
+        <div class="post-thumb"><img src="https://images.unsplash.com/photo-1565193566173-7a0ee3dbe261?w=600&q=80" alt=""></div>
+        <div class="post-body">
+          <div class="post-tag">メンテナンス</div>
+          <h3 class="post-title">アイアン製品のお手入れ方法。錆が出たときの対処法</h3>
+          <div class="post-meta">2026年 1月 22日</div>
+        </div>
+      </a>
+      <a class="post-card" href="#">
+        <div class="post-thumb"><img src="https://images.unsplash.com/photo-1505409859467-3a796fd5798e?w=600&q=80" alt=""></div>
+        <div class="post-body">
+          <div class="post-tag">カスタム</div>
+          <h3 class="post-title">特注オーダーの流れ。相談から納品まで何日かかる？</h3>
+          <div class="post-meta">2026年 1月 10日</div>
+        </div>
+      </a>
+      <a class="post-card" href="#">
+        <div class="post-thumb"><img src="https://images.unsplash.com/photo-1518455027359-f3f8164ba6bd?w=600&q=80" alt=""></div>
+        <div class="post-body">
+          <div class="post-tag">デザイン</div>
+          <h3 class="post-title">笠木型と横型の違い。インテリアに合う手すりの選び方</h3>
+          <div class="post-meta">2025年 12月 18日</div>
+        </div>
+      </a>
+    </div>
+    <div class="blog-sidebar">
+      <div>
+        <p class="sidebar-section-label">Topics</p>
+        <ul class="topic-list">
+          <li><a href="#">制作工程 <span class="topic-count">3</span></a></li>
+          <li><a href="#">素材 <span class="topic-count">2</span></a></li>
+          <li><a href="#">施工・取り付け <span class="topic-count">2</span></a></li>
+          <li><a href="#">採寸・設計 <span class="topic-count">2</span></a></li>
+          <li><a href="#">メンテナンス <span class="topic-count">1</span></a></li>
+          <li><a href="#">カスタム <span class="topic-count">1</span></a></li>
+          <li><a href="#">デザイン <span class="topic-count">2</span></a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="sidebar-section-label">Products</p>
+        <ul class="topic-list">
+          <li><a href="/">René ルネ（壁付け横型）</a></li>
+          <li><a href="/marie.html">Marie マリー（壁付け縦型）</a></li>
+          <li><a href="/leon.html">Leon レオン（笠木型）</a></li>
+          <li><a href="/contact.html">カスタムオーダー</a></li>
+        </ul>
+      </div>
+      <div>
+        <p class="sidebar-section-label">Contact</p>
+        <ul class="topic-list">
+          <li><a href="/contact.html">お問い合わせフォーム</a></li>
+          <li><a href="mailto:info@tantetuzest.com">info@tantetuzest.com</a></li>
+          <li><a href="/about.html">ブランドについて</a></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <footer>© IRONWORKS ado ｜ All rights reserved</footer>
+</body>
+</html>
