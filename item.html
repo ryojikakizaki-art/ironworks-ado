@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ITEM ｜ IRONWORKS ado</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0e0e0e;
+      --dark:    #1a1a1a;
+      --mid:     #2c2c2c;
+      --line:    #333333;
+      --muted:   #888888;
+      --light:   #cccccc;
+      --white:   #f5f5f5;
+      --accent:  #c8a96e;
+      --font:    'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    /* ── HEADER ── */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px;
+      height: 64px;
+      background: rgba(14,14,14,0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+    }
+    .logo {
+      font-size: 11px; letter-spacing: 0.35em;
+      text-transform: uppercase; color: var(--white);
+      text-decoration: none;
+    }
+    .logo span { color: var(--accent); }
+    nav a {
+      color: var(--muted); text-decoration: none;
+      font-size: 11px; letter-spacing: 0.2em;
+      text-transform: uppercase; margin-left: 32px;
+      transition: color .2s;
+    }
+    nav a:hover, nav a.active { color: var(--white); }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      padding: 120px 40px 60px;
+      border-bottom: 1px solid var(--line);
+    }
+    .page-header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+    }
+    .page-label {
+      font-size: 10px; letter-spacing: 0.4em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 16px;
+    }
+    .page-title {
+      font-size: clamp(32px, 5vw, 56px);
+      font-weight: 300;
+      letter-spacing: 0.05em;
+      line-height: 1.1;
+    }
+    .filter-bar {
+      display: flex; gap: 8px;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-family: var(--font);
+      font-size: 10px; letter-spacing: 0.25em;
+      text-transform: uppercase;
+      padding: 8px 16px;
+      cursor: pointer;
+      transition: border-color .2s, color .2s, background .2s;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+    .filter-btn.active {
+      background: rgba(200,169,110,0.08);
+    }
+
+    /* ── PRODUCT GRID ── */
+    .products-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 60px 40px 100px;
+    }
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+    .product-card {
+      text-decoration: none;
+      color: inherit;
+      background: var(--dark);
+      position: relative;
+      overflow: hidden;
+      display: block;
+    }
+    .product-image {
+      aspect-ratio: 3/4;
+      overflow: hidden;
+      background: var(--mid);
+      position: relative;
+    }
+    .product-image img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform .8s ease;
+      filter: grayscale(10%);
+    }
+    .product-card:hover .product-image img {
+      transform: scale(1.05);
+      filter: grayscale(0%);
+    }
+    .product-badge {
+      position: absolute; top: 16px; left: 16px;
+      background: var(--accent); color: var(--black);
+      font-size: 9px; letter-spacing: 0.25em;
+      text-transform: uppercase;
+      padding: 3px 10px;
+      font-weight: 600;
+    }
+    .product-body {
+      padding: 24px;
+      border-top: 1px solid var(--line);
+    }
+    .product-category {
+      font-size: 10px; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .product-name {
+      font-size: 18px; font-weight: 300;
+      letter-spacing: 0.04em;
+      color: var(--white);
+      margin-bottom: 4px;
+    }
+    .product-name-ja {
+      font-size: 11px; color: var(--muted);
+      letter-spacing: 0.1em;
+      margin-bottom: 16px;
+    }
+    .product-spec {
+      font-size: 12px; color: var(--muted);
+      line-height: 1.7;
+    }
+    .product-price {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      display: flex; justify-content: space-between; align-items: baseline;
+    }
+    .price-from {
+      font-size: 10px; letter-spacing: 0.15em;
+      color: var(--muted);
+      text-transform: uppercase;
+    }
+    .price-value {
+      font-size: 20px; font-weight: 300;
+      color: var(--white);
+      letter-spacing: -0.01em;
+    }
+    .price-tax {
+      font-size: 10px; color: var(--muted);
+      margin-left: 4px;
+    }
+
+    /* ── CUSTOM CTA ── */
+    .custom-cta {
+      margin-top: 64px;
+      border: 1px solid var(--line);
+      padding: 48px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 40px;
+      align-items: center;
+      background: var(--dark);
+    }
+    .custom-cta-title {
+      font-size: 18px; font-weight: 300;
+      letter-spacing: 0.03em;
+      margin-bottom: 8px;
+    }
+    .custom-cta-desc {
+      font-size: 13px; color: var(--muted);
+      line-height: 1.8;
+    }
+    .btn-outline {
+      display: inline-block;
+      padding: 16px 32px;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 10px; letter-spacing: 0.3em;
+      text-transform: uppercase;
+      transition: background .2s, color .2s;
+      white-space: nowrap;
+    }
+    .btn-outline:hover {
+      background: var(--accent);
+      color: var(--black);
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 40px;
+      text-align: center;
+      font-size: 11px; color: var(--muted);
+      letter-spacing: 0.15em;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .products-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      header { padding: 0 20px; }
+      nav { display: none; }
+      .page-header { padding: 96px 20px 40px; }
+      .page-header-inner { flex-direction: column; align-items: flex-start; }
+      .products-wrap { padding: 40px 20px 80px; }
+      .products-grid { grid-template-columns: 1fr; }
+      .custom-cta { grid-template-columns: 1fr; padding: 32px 20px; }
+      footer { padding: 32px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a class="logo" href="/">IRONWORKS <span>ado</span></a>
+    <nav>
+      <a href="/item.html" class="active">Item</a>
+      <a href="/category.html">Category</a>
+      <a href="/about.html">About</a>
+      <a href="/blog.html">Blog</a>
+      <a href="/contact.html">Contact</a>
+    </nav>
+  </header>
+
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div>
+        <p class="page-label">Item</p>
+        <h1 class="page-title">製品一覧</h1>
+      </div>
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterItems('all', this)">All</button>
+        <button class="filter-btn" onclick="filterItems('horizontal', this)">壁付け横型</button>
+        <button class="filter-btn" onclick="filterItems('vertical', this)">壁付け縦型</button>
+        <button class="filter-btn" onclick="filterItems('cap', this)">笠木型</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="products-wrap">
+    <div class="products-grid" id="productsGrid">
+
+      <!-- René -->
+      <a class="product-card" href="/" data-cat="horizontal">
+        <div class="product-image">
+          <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80"
+               alt="René ルネ">
+          <span class="product-badge">Best Seller</span>
+        </div>
+        <div class="product-body">
+          <div class="product-category">壁付け手すり ・ 横型</div>
+          <div class="product-name">René　ルネ</div>
+          <div class="product-name-ja">25φ マットブラック</div>
+          <div class="product-spec">
+            SS400 STKM 25.4φ t2.3<br>
+            50〜300cm セミオーダー対応
+          </div>
+          <div class="product-price">
+            <span class="price-from">From</span>
+            <div>
+              <span class="price-value">¥40,150</span>
+              <span class="price-tax">税込</span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- Marie -->
+      <a class="product-card" href="/marie.html" data-cat="vertical">
+        <div class="product-image">
+          <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&q=80"
+               alt="Marie マリー">
+        </div>
+        <div class="product-body">
+          <div class="product-category">壁付け手すり ・ 縦型</div>
+          <div class="product-name">Marie　マリー</div>
+          <div class="product-name-ja">25φ マットブラック</div>
+          <div class="product-spec">
+            SS400 STKM 25.4φ t2.3<br>
+            60〜120cm セミオーダー対応
+          </div>
+          <div class="product-price">
+            <span class="price-from">From</span>
+            <div>
+              <span class="price-value">¥33,000</span>
+              <span class="price-tax">税込</span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+      <!-- Leon -->
+      <a class="product-card" href="/leon.html" data-cat="cap">
+        <div class="product-image">
+          <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=600&q=80"
+               alt="Leon レオン">
+        </div>
+        <div class="product-body">
+          <div class="product-category">笠木型手すり</div>
+          <div class="product-name">Leon　レオン</div>
+          <div class="product-name-ja">角パイプ マットブラック</div>
+          <div class="product-spec">
+            SS400 角パイプ 40×20×t2.3<br>
+            80〜240cm セミオーダー対応
+          </div>
+          <div class="product-price">
+            <span class="price-from">From</span>
+            <div>
+              <span class="price-value">¥49,500</span>
+              <span class="price-tax">税込</span>
+            </div>
+          </div>
+        </div>
+      </a>
+
+    </div>
+
+    <!-- CUSTOM CTA -->
+    <div class="custom-cta">
+      <div>
+        <div class="custom-cta-title">ご要望に合わせたカスタムオーダー</div>
+        <p class="custom-cta-desc">
+          掲載製品以外のデザイン・サイズ・仕様にも対応します。<br>
+          まずはお気軽にお問い合わせください。
+        </p>
+      </div>
+      <a class="btn-outline" href="/contact.html">お問い合わせ</a>
+    </div>
+  </div>
+
+  <footer>
+    © IRONWORKS ado ｜ All rights reserved
+  </footer>
+
+  <script>
+    function filterItems(cat, btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.product-card').forEach(card => {
+        if (cat === 'all' || card.dataset.cat === cat) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+  </script>
+
+</body>
+</html>
