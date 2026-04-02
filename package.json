@@ -1,7 +1,6 @@
-a {
+{
   "name": "ironworks-ado",
   "version": "1.0.0",
-  "private": true,
   "dependencies": {
     "stripe": "^14.25.0"
   }
