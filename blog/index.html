@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ブログ | IRONWORKS ado</title>
+  <style>
+    :root {
+      --black: #0e0e0e; --dark: #1a1a1a; --mid: #2c2c2c; --line: #333333;
+      --muted: #888888; --light: #cccccc; --white: #f5f5f5; --accent: #c8a96e;
+      --font: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--black); color: var(--white); font-size: 14px; line-height: 1.7; font-family: var(--font); }
+
+    header {
+      position: fixed; top: 0; left: 0; right: 0; height: 64px;
+      background: rgba(14, 14, 14, 0.95); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line); display: flex; justify-content: space-between;
+      align-items: center; padding: 0 40px; z-index: 1000;
+    }
+
+    header .logo { font-size: 14px; font-weight: bold; letter-spacing: 0.15em; text-decoration: none; color: var(--white); text-transform: uppercase; }
+    header .logo span { color: var(--accent); }
+    header nav { display: flex; gap: 40px; }
+    header nav a { font-size: 12px; letter-spacing: 0.1em; text-decoration: none; color: var(--light); text-transform: uppercase; transition: color 0.3s ease; }
+    header nav a:hover { color: var(--accent); }
+
+    main { margin-top: 64px; }
+
+    .page-hero {
+      padding: 80px 40px; text-align: center; border-bottom: 1px solid var(--line);
+    }
+
+    .page-hero h1 {
+      font-size: 48px; font-weight: normal; letter-spacing: 0.05em; margin-bottom: 10px;
+    }
+
+    .blog-container {
+      max-width: 1000px; margin: 0 auto; padding: 80px 40px;
+    }
+
+    .blog-list {
+      display: flex; flex-direction: column; gap: 60px;
+    }
+
+    .blog-item {
+      padding-bottom: 60px; border-bottom: 1px solid var(--line);
+    }
+
+    .blog-item:last-child {
+      border-bottom: none; padding-bottom: 0;
+    }
+
+    .blog-item a {
+      text-decoration: none; color: inherit;
+      transition: all 0.3s ease;
+      display: block;
+    }
+
+    .blog-item a:hover {
+      color: var(--accent);
+    }
+
+    .blog-date {
+      font-size: 12px; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 0.1em; margin-bottom: 12px;
+    }
+
+    .blog-item h2 {
+      font-size: 28px; font-weight: normal; letter-spacing: 0.05em;
+      margin-bottom: 15px; line-height: 1.4;
+    }
+
+    .blog-category {
+      display: inline-block; font-size: 10px; padding: 6px 12px;
+      background: var(--mid); color: var(--accent); margin-bottom: 15px;
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+
+    .blog-excerpt {
+      font-size: 14px; color: var(--light); line-height: 1.7; margin-bottom: 20px;
+    }
+
+    .blog-link {
+      font-size: 12px; color: var(--accent); text-decoration: none;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      border-bottom: 1px solid var(--accent);
+      display: inline-block;
+      padding-bottom: 2px;
+      transition: all 0.3s ease;
+    }
+
+    .blog-link:hover {
+      color: var(--white); border-color: var(--white);
+    }
+
+    footer {
+      background: var(--black); border-top: 1px solid var(--line);
+      padding: 48px 40px; display: flex; justify-content: space-between;
+      align-items: center; margin-top: 60px;
+    }
+
+    footer .logo-f { font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; }
+    footer .logo-f span { color: var(--accent); }
+    footer .copy { font-size: 11px; color: var(--muted); }
+
+    @media (max-width: 768px) {
+      header { padding: 0 20px; } header nav { gap: 20px; } .page-hero { padding: 50px 20px; } .page-hero h1 { font-size: 36px; } .blog-container { padding: 50px 20px; } .blog-item h2 { font-size: 22px; } footer { flex-direction: column; gap: 20px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/" class="logo">IRONWORKS <span>ADO</span></a>
+    <nav>
+      <a href="/item/">ITEM</a>
+      <a href="/item/#category">CATEGORY</a>
+      <a href="/about.html">ABOUT</a>
+      <a href="/blog/">BLOG</a>
+      <a href="/contact.html">CONTACT</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="page-hero">
+      <h1>BLOG</h1>
+    </div>
+
+    <div class="blog-container">
+      <div class="blog-list">
+        <a href="/blog/kaidan.html" class="blog-item">
+          <div class="blog-date">2025.12.10</div>
+          <h2>回り階段の手すり</h2>
+          <div class="blog-category">施工事例</div>
+          <p class="blog-excerpt">複雑な形状の回り階段に対応するカスタムハンドレイルの製作事例をご紹介します。職人の技術を活かした美しい仕上がりと、安全性を兼ね備えた手すりのこだわりについて詳しく解説いたします。</p>
+          <span class="blog-link">続きを読む</span>
+        </a>
+
+        <a href="/blog/pet.html" class="blog-item">
+          <div class="blog-date">2025.10.01</div>
+          <h2>ペットと普らす</h2>
+          <div class="blog-category">生活提案</div>
+          <p class="blog-excerpt">ペットとの生活を快適にするアイアンゲートやフェンスのご提案です。小さなお子様からペットまで、みんなが安全に普らせる空間づくりについて、事例を交えてご紹介いたします。</p>
+          <span class="blog-link">続きを読む</span>
+        </a>
+
+        <a href="/blog/handrail.html" class="blog-item">
+          <div class="blog-date">2025.09.10</div>
+          <h2>ここにも手すり付けられる？</h2>
+          <div class="blog-category">手すりのこと</div>
+          <p class="blog-excerpt">予期しない場所では、手すりと場所では、手すりと場所では、手すりと場所では.</p>
+          <span class="blog-link">続きを読む</span>
+        </a>
+
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p class="logo-f">IRONWORKS <span>ADO</span></p>
+    <p class="copy">&copy; 2025 IRONWORKS ado</p>
+  </footer>
+</body>
+</html> <p class="logo-f">IRONWORKS <span>ADO</span></p>
+    <p class="copy">&copy; 2025 IRONWORKS ado</p>
+  </footer>
+</body>
+</html>
