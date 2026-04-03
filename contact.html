@@ -3,171 +3,213 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CONTACT ｜ IRONWORKS ado</title>
+  <title>お問い合わせ | IRONWORKS ado</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --black:#0e0e0e;--dark:#1a1a1a;--mid:#2c2c2c;--line:#333333;
-      --muted:#888888;--light:#cccccc;--white:#f5f5f5;--accent:#c8a96e;
-      --font:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;
+      --black: #0e0e0e; --dark: #1a1a1a; --mid: #2c2c2c; --line: #333333;
+      --muted: #888888; --light: #cccccc; --white: #f5f5f5; --accent: #c8a96e;
+      --font: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
     }
-    html{scroll-behavior:smooth;}
-    body{background:var(--black);color:var(--white);font-family:var(--font);font-size:14px;line-height:1.7;}
-    header{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:64px;background:rgba(14,14,14,0.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);}
-    .logo{font-size:11px;letter-spacing:0.35em;text-transform:uppercase;color:var(--white);text-decoration:none;}
-    .logo span{color:var(--accent);}
-    nav a{color:var(--muted);text-decoration:none;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;margin-left:32px;transition:color .2s;}
-    nav a:hover,nav a.active{color:var(--white);}
-    .page-header{padding:120px 40px 60px;border-bottom:1px solid var(--line);}
-    .page-header-inner{max-width:900px;margin:0 auto;}
-    .page-label{font-size:10px;letter-spacing:0.4em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;}
-    .page-title{font-size:clamp(32px,5vw,56px);font-weight:300;letter-spacing:0.05em;line-height:1.1;color:var(--white);}
-    .page-subtitle{margin-top:20px;font-size:13px;color:var(--muted);line-height:1.9;max-width:560px;}
-    .contact-layout{max-width:900px;margin:0 auto;padding:60px 40px 100px;display:grid;grid-template-columns:1fr 1.6fr;gap:60px;align-items:start;}
-    .info-block{margin-bottom:40px;}
-    .info-block-label{font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:var(--accent);margin-bottom:12px;}
-    .info-block-text{font-size:13px;color:var(--light);line-height:1.9;}
-    .info-block-text a{color:var(--light);text-decoration:none;border-bottom:1px solid var(--line);padding-bottom:1px;transition:color .2s,border-color .2s;}
-    .info-block-text a:hover{color:var(--accent);border-color:var(--accent);}
-    .note-box{background:var(--dark);border:1px solid var(--line);border-left:2px solid var(--accent);padding:16px 20px;font-size:12px;color:var(--muted);line-height:1.8;margin-top:32px;}
-    .form-group{margin-bottom:24px;}
-    .form-group label{display:block;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
-    .form-group label .required{color:var(--accent);margin-left:4px;}
-    .form-group input,.form-group select,.form-group textarea{width:100%;background:var(--dark);border:1px solid var(--line);color:var(--white);font-family:var(--font);font-size:14px;padding:14px 16px;outline:none;transition:border-color .2s;appearance:none;-webkit-appearance:none;}
-    .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--accent);}
-    .form-group textarea{height:160px;resize:vertical;line-height:1.7;}
-    .form-group select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:40px;cursor:pointer;}
-    .form-group select option{background:var(--dark);}
-    .form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-    .form-submit{margin-top:8px;}
-    .btn-submit{width:100%;background:transparent;border:1px solid var(--accent);color:var(--accent);font-family:var(--font);font-size:11px;letter-spacing:0.3em;text-transform:uppercase;padding:18px 32px;cursor:pointer;transition:background .2s,color .2s;display:flex;align-items:center;justify-content:center;gap:10px;}
-    .btn-submit:hover{background:var(--accent);color:var(--black);}
-    .btn-submit:disabled{opacity:0.5;cursor:not-allowed;}
-    .btn-submit svg{width:14px;height:14px;}
-    .form-message{display:none;padding:16px 20px;font-size:13px;line-height:1.7;margin-top:20px;}
-    .form-message.success{display:block;background:rgba(200,169,110,0.08);border:1px solid var(--accent);color:var(--accent);}
-    .form-message.error{display:block;background:rgba(200,80,80,0.08);border:1px solid #c85050;color:#c88888;}
-    .privacy-note{margin-top:16px;font-size:11px;color:var(--muted);line-height:1.7;}
-    footer{border-top:1px solid var(--line);padding:40px;text-align:center;font-size:11px;color:var(--muted);letter-spacing:0.15em;}
-    @media(max-width:768px){
-      header{padding:0 20px;}nav{display:none;}
-      .page-header{padding:96px 20px 40px;}
-      .contact-layout{grid-template-columns:1fr;padding:40px 20px 80px;gap:40px;}
-      .form-row{grid-template-columns:1fr;gap:0;}
-      footer{padding:32px 20px;}
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--black); color: var(--white); font-size: 14px; line-height: 1.7; font-family: var(--font); }
+
+    header {
+      position: fixed; top: 0; left: 0; right: 0; height: 64px;
+      background: rgba(14, 14, 14, 0.95); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line); display: flex; justify-content: space-between;
+      align-items: center; padding: 0 40px; z-index: 1000;
+    }
+
+    header .logo { font-size: 14px; font-weight: bold; letter-spacing: 0.15em; text-decoration: none; color: var(--white); text-transform: uppercase; }
+    header .logo span { color: var(--accent); }
+    header nav { display: flex; gap: 40px; }
+    header nav a { font-size: 12px; letter-spacing: 0.1em; text-decoration: none; color: var(--light); text-transform: uppercase; transition: color 0.3s ease; }
+    header nav a:hover { color: var(--accent); }
+
+    main { margin-top: 64px; }
+
+    .page-hero {
+      padding: 80px 40px; text-align: center; border-bottom: 1px solid var(--line);
+    }
+
+    .page-hero h1 {
+      font-size: 48px; font-weight: normal; letter-spacing: 0.05em; margin-bottom: 10px;
+    }
+
+    .contact-container {
+      max-width: 900px; margin: 0 auto; padding: 80px 40px;
+    }
+
+    .contact-info {
+      background: var(--dark); padding: 40px; margin-bottom: 60px; border: 1px solid var(--line);
+    }
+
+    .contact-info h2 {
+      font-size: 18px; margin-bottom: 20px; font-weight: normal; letter-spacing: 0.05em;
+    }
+
+    .contact-email {
+      font-size: 14px; color: var(--white); word-break: break-all;
+      text-decoration: none;
+    }
+
+    .contact-email:hover {
+      color: var(--accent);
+    }
+
+    .form-section h2 {
+      font-size: 24px; margin-bottom: 30px; font-weight: normal; letter-spacing: 0.05em;
+    }
+
+    .form-group {
+      margin-bottom: 30px;
+    }
+
+    .form-group label {
+      display: block; font-size: 12px; color: var(--muted); text-transform: uppercase;
+      letter-spacing: 0.1em; margin-bottom: 10px;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%; padding: 12px; background: var(--dark); border: 1px solid var(--line);
+      color: var(--white); font-family: var(--font); font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none; border-color: var(--accent); background: var(--mid);
+    }
+
+    .form-group textarea {
+      resize: vertical; min-height: 150px;
+    }
+
+    .required {
+      color: var(--accent);
+    }
+
+    .submit-btn {
+      display: inline-block; padding: 14px 40px; background: var(--accent);
+      color: var(--black); border: none; text-decoration: none; font-size: 12px;
+      letter-spacing: 0.1em; text-transform: uppercase; font-weight: bold;
+      transition: all 0.3s ease; cursor: pointer;
+    }
+
+    .submit-btn:hover {
+      background: #dbb875; transform: translateY(-2px);
+    }
+
+    .form-note {
+      font-size: 12px; color: var(--muted); margin-bottom: 30px; line-height: 1.6;
+    }
+
+    footer {
+      background: var(--black); border-top: 1px solid var(--line);
+      padding: 48px 40px; display: flex; justify-content: space-between;
+      align-items: center; margin-top: 60px;
+    }
+
+    footer .logo-f { font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; }
+    footer .logo-f span { color: var(--accent); }
+    footer .copy { font-size: 11px; color: var(--muted); }
+
+    @media (max-width: 768px) {
+      header { padding: 0 20px; } header nav { gap: 20px; } .page-hero { padding: 50px 20px; } .page-hero h1 { font-size: 36px; } .contact-container { padding: 40px 20px; } footer { flex-direction: column; gap: 20px; text-align: center; }
     }
   </style>
 </head>
 <body>
   <header>
-    <a class="logo" href="/">IRONWORKS <span>ado</span></a>
+    <a href="/" class="logo">IRONWORKS <span>ADO</span></a>
     <nav>
-      <a href="/item.html">Item</a>
-      <a href="/category.html">Category</a>
-      <a href="/about.html">About</a>
-      <a href="/blog.html">Blog</a>
-      <a href="/contact.html" class="active">Contact</a>
+      <a href="/item/">ITEM</a>
+      <a href="/item/#category">CATEGORY</a>
+      <a href="/about.html">ABOUT</a>
+      <a href="/blog/">BLOG</a>
+      <a href="/contact.html">CONTACT</a>
     </nav>
   </header>
-  <div class="page-header">
-    <div class="page-header-inner">
-      <p class="page-label">Contact</p>
-      <h1 class="page-title">お問い合わせ</h1>
-      <p class="page-subtitle">製品のご質問・サイズのご相談・特注のご依頼など、お気軽にご連絡ください。<br>通常2〜3営業日以内にご返信いたします。</p>
+
+  <main>
+    <div class="page-hero">
+      <h1>CONTACT</h1>
     </div>
-  </div>
-  <div class="contact-layout">
-    <aside class="contact-info">
-      <div class="info-block">
-        <p class="info-block-label">Email</p>
-        <p class="info-block-text"><a href="mailto:info@tantetuzest.com">info@tantetuzest.com</a></p>
+
+    <div class="contact-container">
+      <div class="contact-info">
+        <h2>メールでのお問い合わせ</h2>
+        <p>ご質問やご注文のご相談は、下記のメールアドレスからもお気軽にお問い合わせください。</p>
+        <p style="margin-top: 15px;">
+          <a href="mailto:ado@tantetuzest.com" class="contact-email">ado@tantetuzest.com</a>
+        </p>
       </div>
-      <div class="info-block">
-        <p class="info-block-label">営業時間</p>
-        <p class="info-block-text">月〜金 / 9:00 – 18:00<br>土日・祝日は翌営業日対応</p>
-      </div>
-      <div class="info-block">
-        <p class="info-block-label">製作・納期</p>
-        <p class="info-block-text">受注生産のため、ご注文確定後<br>通常 3〜4 週間での発送となります。</p>
-      </div>
-      <div class="note-box">ご注文前に採寸・取付環境のご確認をお願いしております。ご不明な点はフォームよりお気軽にご相談ください。</div>
-    </aside>
-    <div class="contact-form-wrap">
-      <form id="contactForm" novalidate>
-        <div class="form-row">
+
+      <div class="form-section">
+        <h2>お問い合わせフォーム</h2>
+        <p class="form-note">以下のフォームに必要事項をご入力の上、送信ボタンをクリックしてください。<span class="required">*</span> は必須項目です。</p>
+
+        <form action="https://formspree.io/f/xdkopqzb" method="POST">
           <div class="form-group">
-            <label>お名前<span class="required">*</span></label>
-            <input type="text" name="name" placeholder="山田 太郎" required>
+            <label for="name">お名前 <span class="required">*</span></label>
+            <input type="text" id="name" name="name" required>
           </div>
+
           <div class="form-group">
-            <label>ふりがな</label>
-            <input type="text" name="name_kana" placeholder="やまだ たろう">
+            <label for="email">メールアドレス <span class="required">*</span></label>
+            <input type="email" id="email" name="email" required>
           </div>
-        </div>
-        <div class="form-group">
-          <label>メールアドレス<span class="required">*</span></label>
-          <input type="email" name="email" placeholder="your@email.com" required>
-        </div>
-        <div class="form-group">
-          <label>お問い合わせ種別<span class="required">*</span></label>
-          <select name="category" required>
-            <option value="" disabled selected>選択してください</option>
-            <option value="product">製品について</option>
-            <option value="size">サイズ・採寸のご相談</option>
-            <option value="custom">特注・カスタムオーダー</option>
-            <option value="order">ご注文・お届けについて</option>
-            <option value="other">その他</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>対象製品（任意）</label>
-          <select name="product">
-            <option value="" selected>— 選択してください —</option>
-            <option value="rene">René ルネ（壁付け横型）</option>
-            <option value="marie">Marie マリー（壁付け縦型）</option>
-            <option value="leon">Leon レオン（笠木型）</option>
-            <option value="other">その他・複数</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>お問い合わせ内容<span class="required">*</span></label>
-          <textarea name="message" placeholder="ご質問・ご要望をご記入ください。" required></textarea>
-        </div>
-        <div class="form-submit">
-          <button type="submit" class="btn-submit" id="submitBtn">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
-            送信する
-          </button>
-        </div>
-        <p class="privacy-note">ご入力いただいた個人情報は、お問い合わせへの返信のみに使用し、第三者への提供はいたしません。</p>
-        <div class="form-message" id="formMessage"></div>
-      </form>
+
+          <div class="form-group">
+            <label for="phone">電話番号</label>
+            <input type="tel" id="phone" name="phone">
+          </div>
+
+          <div class="form-group">
+            <label for="product">ご興味のある商品</label>
+            <select id="product" name="product">
+              <option value="">- 選択してください -</option>
+              <option value="René ルネ">René ルネ</option>
+              <option value="Claire クレール">Claire クレール</option>
+              <option value="Marcel マルセル">Marcel マルセル</option>
+              <option value="Emile エミール">Emile エミール</option>
+              <option value="Élisabeth エリザベート">Élisabeth エリザベート</option>
+              <option value="Clémence クレマンス">Clémence クレマンス</option>
+              <option value="Claude クロード">Claude クロード</option>
+              <option value="Catherine カトリーヌ">Catherine カトリーヌ</option>
+              <option value="Alexandre アレクサンドル">Alexandre アレクサンドル</option>
+              <option value="Antoine アントワーヌ">Antoine アントワーヌ</option>
+              <option value="Scroll 16φ">Scroll 16φ</option>
+              <option value="Scroll 19φ">Scroll 19φ</option>
+              <option value="Scroll 22φ">Scroll 22φ</option>
+              <option value="Fabrice ファブリス">Fabrice ファブリス</option>
+              <option value="鎚目 TSUCHIME">鎚目 TSUCHIME</option>
+              <option value="その他">その他</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="message">ご質問・ご要望</label>
+            <textarea id="message" name="message" placeholder="ご不明な点やご要望などをお気軽にお書きください。"></textarea>
+          </div>
+
+          <button type="submit" class="submit-btn">送信する</button>
+        </form>
+      </div>
+
+      <p style="font-size: 12px; color: var(--muted); margin-top: 60px; line-height: 1.6;">
+        注記: このフォームはFormspreeを使用しています。送信いただいた情報は安全に送信され、当工房にて確認させていただきます。お返事までお時間をいただく場合がございます。予めご了承ください。
+      </p>
     </div>
-  </div>
-  <footer>© IRONWORKS ado ｜ All rights reserved</footer>
-  <script>
-    const form=document.getElementById('contactForm');
-    const submitBtn=document.getElementById('submitBtn');
-    const msgEl=document.getElementById('formMessage');
-    form.addEventListener('submit',async(e)=>{
-      e.preventDefault();
-      const name=form.name.value.trim();
-      const email=form.email.value.trim();
-      const category=form.category.value;
-      const message=form.message.value.trim();
-      if(!name||!email||!category||!message){showMessage('error','必須項目をすべてご入力ください。');return;}
-      if(!/^[^s@]+@[^s@]+.[^s@]+$/.test(email)){showMessage('error','メールアドレスの形式が正しくありません。');return;}
-      submitBtn.disabled=true;submitBtn.textContent='送信中…';
-      try{
-        const res=await fetch('/api/contact',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,name_kana:form.name_kana.value.trim(),email,category,product:form.product.value,message})});
-        if(res.ok){form.reset();showMessage('success','お問い合わせを承りました。
-2〜3営業日以内にご返信いたします。
-自動返信メールをご確認ください。');}
-        else{const data=await res.json().catch(()=>({}));showMessage('error',data.error||'送信に失敗しました。時間をおいて再度お試しください。');}
-      }catch(err){showMessage('error','通信エラーが発生しました。インターネット接続をご確認ください。');}
-      finally{submitBtn.disabled=false;submitBtn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg> 送信する';}
-    });
-    function showMessage(type,text){msgEl.className='form-message '+type;msgEl.style.whiteSpace='pre-line';msgEl.textContent=text;msgEl.scrollIntoView({behavior:'smooth',block:'nearest'});}
-  </script>
+  </main>
+
+  <footer>
+    <p class="logo-f">IRONWORKS <span>ADO</span></p>
+    <p class="copy">&copy; 2025 IRONWORKS ado</p>
+  </footer>
 </body>
 </html>
