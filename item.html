@@ -1,389 +1,170 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ITEM ｜ IRONWORKS ado</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --black:   #0e0e0e;
-      --dark:    #1a1a1a;
-      --mid:     #2c2c2c;
-      --line:    #333333;
-      --muted:   #888888;
-      --light:   #cccccc;
-      --white:   #f5f5f5;
-      --accent:  #c8a96e;
-      --font:    'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      background: var(--black);
-      color: var(--white);
-      font-family: var(--font);
-      font-size: 14px;
-      line-height: 1.7;
-    }
-
-    /* ── HEADER ── */
-    header {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 40px;
-      height: 64px;
-      background: rgba(14,14,14,0.92);
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid var(--line);
-    }
-    .logo {
-      font-size: 11px; letter-spacing: 0.35em;
-      text-transform: uppercase; color: var(--white);
-      text-decoration: none;
-    }
-    .logo span { color: var(--accent); }
-    nav a {
-      color: var(--muted); text-decoration: none;
-      font-size: 11px; letter-spacing: 0.2em;
-      text-transform: uppercase; margin-left: 32px;
-      transition: color .2s;
-    }
-    nav a:hover, nav a.active { color: var(--white); }
-
-    /* ── PAGE HEADER ── */
-    .page-header {
-      padding: 120px 40px 60px;
-      border-bottom: 1px solid var(--line);
-    }
-    .page-header-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      gap: 24px;
-    }
-    .page-label {
-      font-size: 10px; letter-spacing: 0.4em;
-      text-transform: uppercase; color: var(--accent);
-      margin-bottom: 16px;
-    }
-    .page-title {
-      font-size: clamp(32px, 5vw, 56px);
-      font-weight: 300;
-      letter-spacing: 0.05em;
-      line-height: 1.1;
-    }
-    .filter-bar {
-      display: flex; gap: 8px;
-      flex-wrap: wrap;
-    }
-    .filter-btn {
-      background: transparent;
-      border: 1px solid var(--line);
-      color: var(--muted);
-      font-family: var(--font);
-      font-size: 10px; letter-spacing: 0.25em;
-      text-transform: uppercase;
-      padding: 8px 16px;
-      cursor: pointer;
-      transition: border-color .2s, color .2s, background .2s;
-    }
-    .filter-btn:hover, .filter-btn.active {
-      border-color: var(--accent);
-      color: var(--accent);
-    }
-    .filter-btn.active {
-      background: rgba(200,169,110,0.08);
-    }
-
-    /* ── PRODUCT GRID ── */
-    .products-wrap {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 60px 40px 100px;
-    }
-    .products-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 2px;
-    }
-    .product-card {
-      text-decoration: none;
-      color: inherit;
-      background: var(--dark);
-      position: relative;
-      overflow: hidden;
-      display: block;
-    }
-    .product-image {
-      aspect-ratio: 3/4;
-      overflow: hidden;
-      background: var(--mid);
-      position: relative;
-    }
-    .product-image img {
-      width: 100%; height: 100%; object-fit: cover;
-      transition: transform .8s ease;
-      filter: grayscale(10%);
-    }
-    .product-card:hover .product-image img {
-      transform: scale(1.05);
-      filter: grayscale(0%);
-    }
-    .product-badge {
-      position: absolute; top: 16px; left: 16px;
-      background: var(--accent); color: var(--black);
-      font-size: 9px; letter-spacing: 0.25em;
-      text-transform: uppercase;
-      padding: 3px 10px;
-      font-weight: 600;
-    }
-    .product-body {
-      padding: 24px;
-      border-top: 1px solid var(--line);
-    }
-    .product-category {
-      font-size: 10px; letter-spacing: 0.3em;
-      text-transform: uppercase; color: var(--accent);
-      margin-bottom: 8px;
-    }
-    .product-name {
-      font-size: 18px; font-weight: 300;
-      letter-spacing: 0.04em;
-      color: var(--white);
-      margin-bottom: 4px;
-    }
-    .product-name-ja {
-      font-size: 11px; color: var(--muted);
-      letter-spacing: 0.1em;
-      margin-bottom: 16px;
-    }
-    .product-spec {
-      font-size: 12px; color: var(--muted);
-      line-height: 1.7;
-    }
-    .product-price {
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid var(--line);
-      display: flex; justify-content: space-between; align-items: baseline;
-    }
-    .price-from {
-      font-size: 10px; letter-spacing: 0.15em;
-      color: var(--muted);
-      text-transform: uppercase;
-    }
-    .price-value {
-      font-size: 20px; font-weight: 300;
-      color: var(--white);
-      letter-spacing: -0.01em;
-    }
-    .price-tax {
-      font-size: 10px; color: var(--muted);
-      margin-left: 4px;
-    }
-
-    /* ── CUSTOM CTA ── */
-    .custom-cta {
-      margin-top: 64px;
-      border: 1px solid var(--line);
-      padding: 48px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 40px;
-      align-items: center;
-      background: var(--dark);
-    }
-    .custom-cta-title {
-      font-size: 18px; font-weight: 300;
-      letter-spacing: 0.03em;
-      margin-bottom: 8px;
-    }
-    .custom-cta-desc {
-      font-size: 13px; color: var(--muted);
-      line-height: 1.8;
-    }
-    .btn-outline {
-      display: inline-block;
-      padding: 16px 32px;
-      border: 1px solid var(--accent);
-      color: var(--accent);
-      text-decoration: none;
-      font-size: 10px; letter-spacing: 0.3em;
-      text-transform: uppercase;
-      transition: background .2s, color .2s;
-      white-space: nowrap;
-    }
-    .btn-outline:hover {
-      background: var(--accent);
-      color: var(--black);
-    }
-
-    /* ── FOOTER ── */
-    footer {
-      border-top: 1px solid var(--line);
-      padding: 40px;
-      text-align: center;
-      font-size: 11px; color: var(--muted);
-      letter-spacing: 0.15em;
-    }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 900px) {
-      .products-grid { grid-template-columns: repeat(2, 1fr); }
-    }
-    @media (max-width: 768px) {
-      header { padding: 0 20px; }
-      nav { display: none; }
-      .page-header { padding: 96px 20px 40px; }
-      .page-header-inner { flex-direction: column; align-items: flex-start; }
-      .products-wrap { padding: 40px 20px 80px; }
-      .products-grid { grid-template-columns: 1fr; }
-      .custom-cta { grid-template-columns: 1fr; padding: 32px 20px; }
-      footer { padding: 32px 20px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ITEM ｜ IRONWORKS ado</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--black:#0e0e0e;--dark:#1a1a1a;--mid:#2c2c2c;--line:#333333;--muted:#888888;--light:#cccccc;--white:#f5f5f5;--accent:#c8a96e;--font:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--white);font-family:var(--font);font-size:14px;line-height:1.7;}
+header{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:64px;background:rgba(14,14,14,0.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);}
+.logo{font-size:11px;letter-spacing:0.35em;text-transform:uppercase;color:var(--white);text-decoration:none;}
+.logo span{color:var(--accent);}
+nav a{color:var(--muted);text-decoration:none;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;margin-left:32px;transition:color .2s;}
+nav a:hover,nav a.active{color:var(--white);}
+.page-header{padding:120px 40px 60px;border-bottom:1px solid var(--line);}
+.page-header-inner{max-width:1200px;margin:0 auto;display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;}
+.page-label{font-size:10px;letter-spacing:0.4em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;}
+.page-title{font-size:clamp(32px,5vw,56px);font-weight:300;letter-spacing:0.05em;line-height:1.1;}
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;}
+.filter-btn{background:transparent;border:1px solid var(--line);color:var(--muted);font-family:var(--font);font-size:10px;letter-spacing:0.25em;text-transform:uppercase;padding:8px 16px;cursor:pointer;transition:border-color .2s,color .2s,background .2s;}
+.filter-btn:hover,.filter-btn.active{border-color:var(--accent);color:var(--accent);}
+.filter-btn.active{background:rgba(200,169,110,0.08);}
+.products-wrap{max-width:1200px;margin:0 auto;padding:60px 40px 100px;}
+.products-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px;}
+.product-card{text-decoration:none;color:inherit;background:var(--dark);position:relative;overflow:hidden;display:block;}
+.product-image{aspect-ratio:3/4;overflow:hidden;background:var(--mid);position:relative;}
+.product-image img{width:100%;height:100%;object-fit:cover;transition:transform .8s ease;filter:grayscale(10%);}
+.product-card:hover .product-image img{transform:scale(1.05);filter:grayscale(0%);}
+.product-badge{position:absolute;top:16px;left:16px;background:var(--accent);color:var(--black);font-size:9px;letter-spacing:0.25em;text-transform:uppercase;padding:3px 10px;font-weight:600;}
+.product-body{padding:24px;border-top:1px solid var(--line);}
+.product-category{font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:var(--accent);margin-bottom:8px;}
+.product-name{font-size:18px;font-weight:300;letter-spacing:0.04em;color:var(--white);margin-bottom:4px;}
+.product-name-ja{font-size:11px;color:var(--muted);letter-spacing:0.1em;margin-bottom:16px;}
+.product-price{margin-top:16px;padding-top:16px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline;}
+.price-from{font-size:10px;letter-spacing:0.15em;color:var(--muted);text-transform:uppercase;}
+.price-value{font-size:20px;font-weight:300;color:var(--white);letter-spacing:-0.01em;}
+.price-tax{font-size:10px;color:var(--muted);margin-left:4px;}
+.price-inquiry{font-size:12px;color:var(--muted);letter-spacing:0.1em;}
+.custom-cta{margin-top:64px;border:1px solid var(--line);padding:48px;display:grid;grid-template-columns:1fr auto;gap:40px;align-items:center;background:var(--dark);}
+.custom-cta-title{font-size:18px;font-weight:300;letter-spacing:0.03em;margin-bottom:8px;}
+.custom-cta-desc{font-size:13px;color:var(--muted);line-height:1.8;}
+.btn-outline{display:inline-block;padding:16px 32px;border:1px solid var(--accent);color:var(--accent);text-decoration:none;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;transition:background .2s,color .2s;white-space:nowrap;}
+.btn-outline:hover{background:var(--accent);color:var(--black);}
+footer{border-top:1px solid var(--line);padding:40px;text-align:center;font-size:11px;color:var(--muted);letter-spacing:0.15em;}
+@media(max-width:900px){.products-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:768px){
+  header{padding:0 20px;}nav{display:none;}
+  .page-header{padding:96px 20px 40px;}
+  .page-header-inner{flex-direction:column;align-items:flex-start;}
+  .products-wrap{padding:40px 20px 80px;}
+  .products-grid{grid-template-columns:1fr;}
+  .custom-cta{grid-template-columns:1fr;padding:32px 20px;}
+  footer{padding:32px 20px;}
+}
+</style>
 </head>
 <body>
+<header>
+  <a class="logo" href="/">IRONWORKS <span>ado</span></a>
+  <nav>
+    <a href="/item.html" class="active">Item</a>
+    <a href="/category.html">Category</a>
+    <a href="/about.html">About</a>
+    <a href="/blog.html">Blog</a>
+    <a href="/contact.html">Contact</a>
+  </nav>
+</header>
 
-  <header>
-    <a class="logo" href="/">IRONWORKS <span>ado</span></a>
-    <nav>
-      <a href="/item.html" class="active">Item</a>
-      <a href="/category.html">Category</a>
-      <a href="/about.html">About</a>
-      <a href="/blog.html">Blog</a>
-      <a href="/contact.html">Contact</a>
-    </nav>
-  </header>
-
-  <div class="page-header">
-    <div class="page-header-inner">
-      <div>
-        <p class="page-label">Item</p>
-        <h1 class="page-title">製品一覧</h1>
-      </div>
-      <div class="filter-bar">
-        <button class="filter-btn active" onclick="filterItems('all', this)">All</button>
-        <button class="filter-btn" onclick="filterItems('horizontal', this)">壁付け横型</button>
-        <button class="filter-btn" onclick="filterItems('vertical', this)">壁付け縦型</button>
-        <button class="filter-btn" onclick="filterItems('cap', this)">笠木型</button>
-      </div>
+<div class="page-header">
+  <div class="page-header-inner">
+    <div>
+      <p class="page-label">Item</p>
+      <h1 class="page-title">製品一覧</h1>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterItems('all',this)">All</button>
+      <button class="filter-btn" onclick="filterItems('handrail_h',this)">手すり 横型</button>
+      <button class="filter-btn" onclick="filterItems('handrail_v',this)">手すり 縦型</button>
+      <button class="filter-btn" onclick="filterItems('approach',this)">アプローチ</button>
+      <button class="filter-btn" onclick="filterItems('fence',this)">フェンス</button>
+      <button class="filter-btn" onclick="filterItems('door',this)">ドア</button>
+      <button class="filter-btn" onclick="filterItems('stair',this)">階段</button>
+      <button class="filter-btn" onclick="filterItems('other',this)">その他</button>
     </div>
   </div>
+</div>
 
-  <div class="products-wrap">
-    <div class="products-grid" id="productsGrid">
-
-      <!-- René -->
-      <a class="product-card" href="/" data-cat="horizontal">
-        <div class="product-image">
-          <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80"
-               alt="René ルネ">
-          <span class="product-badge">Best Seller</span>
-        </div>
-        <div class="product-body">
-          <div class="product-category">壁付け手すり ・ 横型</div>
-          <div class="product-name">René　ルネ</div>
-          <div class="product-name-ja">25φ マットブラック</div>
-          <div class="product-spec">
-            SS400 STKM 25.4φ t2.3<br>
-            50〜300cm セミオーダー対応
-          </div>
-          <div class="product-price">
-            <span class="price-from">From</span>
-            <div>
-              <span class="price-value">¥40,150</span>
-              <span class="price-tax">税込</span>
-            </div>
-          </div>
-        </div>
-      </a>
-
-      <!-- Marie -->
-      <a class="product-card" href="/marie.html" data-cat="vertical">
-        <div class="product-image">
-          <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&q=80"
-               alt="Marie マリー">
-        </div>
-        <div class="product-body">
-          <div class="product-category">壁付け手すり ・ 縦型</div>
-          <div class="product-name">Marie　マリー</div>
-          <div class="product-name-ja">25φ マットブラック</div>
-          <div class="product-spec">
-            SS400 STKM 25.4φ t2.3<br>
-            60〜120cm セミオーダー対応
-          </div>
-          <div class="product-price">
-            <span class="price-from">From</span>
-            <div>
-              <span class="price-value">¥33,000</span>
-              <span class="price-tax">税込</span>
-            </div>
-          </div>
-        </div>
-      </a>
-
-      <!-- Leon -->
-      <a class="product-card" href="/leon.html" data-cat="cap">
-        <div class="product-image">
-          <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=600&q=80"
-               alt="Leon レオン">
-        </div>
-        <div class="product-body">
-          <div class="product-category">笠木型手すり</div>
-          <div class="product-name">Leon　レオン</div>
-          <div class="product-name-ja">角パイプ マットブラック</div>
-          <div class="product-spec">
-            SS400 角パイプ 40×20×t2.3<br>
-            80〜240cm セミオーダー対応
-          </div>
-          <div class="product-price">
-            <span class="price-from">From</span>
-            <div>
-              <span class="price-value">¥49,500</span>
-              <span class="price-tax">税込</span>
-            </div>
-          </div>
-        </div>
-      </a>
-
+<div class="products-wrap">
+  <div class="products-grid" id="productsGrid"></div>
+  <div class="custom-cta">
+    <div>
+      <div class="custom-cta-title">ご要望に合わせたカスタムオーダー</div>
+      <p class="custom-cta-desc">掲載製品以外のヅザインセサイズ・仕様にも対応します。<br>まずはお気軽にお問い合わせください。</p>
     </div>
-
-    <!-- CUSTOM CTA -->
-    <div class="custom-cta">
-      <div>
-        <div class="custom-cta-title">ご要望に合わせたカスタムオーダー</div>
-        <p class="custom-cta-desc">
-          掲載製品以外のデザイン・サイズ・仕様にも対応します。<br>
-          まずはお気軽にお問い合わせください。
-        </p>
-      </div>
-      <a class="btn-outline" href="/contact.html">お問い合わせ</a>
-    </div>
+    <a class="btn-outline" href="/contact.html">お問い合わせ</a>
   </div>
+</div>
 
-  <footer>
-    © IRONWORKS ado ｜ All rights reserved
-  </footer>
+<footer>© IRONWORKS ado ｜ All rights reserved</footer>
 
-  <script>
-    function filterItems(cat, btn) {
-      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      document.querySelectorAll('.product-card').forEach(card => {
-        if (cat === 'all' || card.dataset.cat === cat) {
-          card.style.display = 'block';
-        } else {
-          card.style.display = 'none';
-        }
-      });
-    }
-  </script>
+<script>
+const IMG = 'https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/';
+const PRODUCTS = [
+  {cat:'handrail_h',label:'壁付け手すり ・ 横型',name:'René ルネ',sub:'25φ マットブラック',price:36500,badge:'Best Seller',img:'d0f5f0e83d40a4d29044',url:'https://ironworks-ado.stores.jp/items/63e9d7c27c42ee0eb59dea58'},
+  {cat:'handrail_h',label:'壁付け手すり ・ 横型',name:'Claire クレール',sub:'25φ マットホワイト',price:42000,badge:'',img:'0a0c0c78f9f636cca733',url:'https://ironworks-ado.stores.jp/items/63e9d6fc39da5f21e7fd8a66'},
+  {cat:'handrail_h',label:'壁付け手すり ・ 横型',name:'Marcel マルセル',sub:'フラットバー マットブラック',price:36000,badge:'',img:'939d0690971c550c1dd9',url:'https://ironworks-ado.stores.jp/items/63e5fad57c42ee25e253aea9'},
+  {cat:'handrail_h',label:'壁付け手すり ・ 横型',name:'Emile エミール',sub:'フラットバー 鎚目 銀古美仕上げ',price:45800,badge:'',img:'fa95f550baa05216d291',url:'https://ironworks-ado.stores.jp/items/63e996fe7c42ee34d543ce55'},
+  {cat:'handrail_h',label:'ロートアイアン ・ 横型',name:'Élisabeth エリザベート',sub:'22φ 無垢鉄 火造り鍛造',price:149000,badge:'Artisan',img:'9a24b2c661dea08ef6f4',url:'https://ironworks-ado.stores.jp/items/63ea2bfd34e01709f8fa4ac9'},
+  {cat:'handrail_h',label:'ロートアイアン ・ L型',name:'Clémence クレマンス',sub:'L型 22φ 無垢鉄',price:88000,badge:'',img:'9c1e7cf67204880a41e2',url:'https://ironworks-ado.stores.jp/items/68f839882fa52af95b4e403e'},
+  {cat:'handrail_v',label:'壁付け手すり ・ 縦型',name:'Claude クロード',sub:'25φ マットブラック',price:30000,badge:'',img:'86278edb68c21957e339',url:'https://ironworks-ado.stores.jp/items/660507c14adc32007e2c89d0'},
+  {cat:'handrail_v',label:'壁付け手すり ・ 縦型',name:'Catherine カトリーヌ',sub:'25φ マットホワイト',price:34500,badge:'',img:'8775cfcb40298257834a',url:'https://ironworks-ado.stores.jp/items/646b165bb4ac74002b853a14'},
+  {cat:'handrail_v',label:'壁付け手すり ・ 縦型',name:'Alexandre アレクサンドル',sub:'太 31.8φ マットブラック',price:32000,badge:'',img:'759848de1a99945b4d90',url:'https://ironworks-ado.stores.jp/items/649154701886eb002f52e6e7'},
+  {cat:'handrail_v',label:'壁付け手すり ・ 縦型',name:'Antoine アントワーヌ',sub:'ロング 25φ マットブラック',price:56000,badge:'',img:'2d1043dcd7658a96e5f3',url:'https://ironworks-ado.stores.jp/items/66c843839dd5030955588e20'},
+  {cat:'handrail_v',label:'ロートアイアン ・ 縦型',name:'Scroll スクロール 16φ',sub:'70cm 無垢鉄 火造り鍛造',price:18000,badge:'',img:'2a64ecfb5e50e78cb374',url:'https://ironworks-ado.stores.jp/items/65fe7e7c5804470df54dfd01'},
+  {cat:'handrail_v',label:'ロートアイアン ・ 縦型',name:'Scroll スクロール 19φ',sub:'70cm 無垢鉄 火造り鍛造',price:32000,badge:'',img:'25b6438ea6a9393aa027',url:'https://ironworks-ado.stores.jp/items/65fa0fd65b4cc5205bb4d1d1'},
+  {cat:'handrail_v',label:'ロートアイアン ・ 縦型',name:'Scroll スクロール 22φ',sub:'80cm 無垢鉄 火造り鍛造',price:60000,badge:'',img:'d09c9426e8510d2ca152',url:'https://ironworks-ado.stores.jp/items/660289ce145555003eb036c0'},
+  {cat:'handrail_v',label:'ロートアイアン ・ 縦型',name:'Fabrice ファブリス',sub:'80cm 無垢鉄 火造り鍛造',price:100000,badge:'Artisan',img:'66a699b295bcdb8f3598',url:'https://ironworks-ado.stores.jp/items/64be6290c99430002e93fa5c'},
+  {cat:'handrail_v',label:'ロートアイアン ・ 縦型',name:'鎚目 TSUCHIME',sub:'80cm 無垢鉄 火造り鍛造',price:70000,badge:'Artisan',img:'569af3ee76a1999863e7',url:'https://ironworks-ado.stores.jp/items/66e3f1939b5b82073548df6b'},
+  {cat:'approach',label:'アプローチ手すり',name:'Simple -black-',sub:'フラットバー マットブラック',price:0,badge:'',img:'579e79e794eed28d9ac7',url:'https://ironworks-ado.stores.jp/items/678f8682c6500803fc924386'},
+  {cat:'approach',label:'アプローチ手すり',name:"アプローチ手すり『蔦'",sub:'アートアイアン 亜鉛メッキ',price:132000,badge:'Artisan',img:'051b216ddd9e64d0ae37',url:'https://ironworks-ado.stores.jp/items/64584887edfbca00302b343f'},
+  {cat:'approach',label:'アプローチ手すり',name:'Simple -white-',sub:'フラットバー マットホワイト',price:0,badge:'',img:'ef1a6b4999d530d6fb67',url:'https://ironworks-ado.stores.jp/items/64585625559798002e8072e2'},
+  {cat:'fence',label:'アイアンフェンス',name:'吹き抜けアイアンフェンス',sub:'オーダーメイド',price:0,badge:'',img:'1aaca5578d6e1f890e31',url:'https://ironworks-ado.stores.jp/items/63eaf4431c151869487fdc83'},
+  {cat:'fence',label:'アイアンフェンス',name:"屋外フェンス『zigzag'",sub:'外構 フェンス オーダーメイド',price:0,badge:'',img:'ff214d4dd6a4e6f0b3b1',url:'https://ironworks-ado.stores.jp/items/645882ac32510f002d97ec96'},
+  {cat:'fence',label:'ロートアイアン面格子',name:'面格子 -simple-',sub:'窓 防犯 後付け',price:0,badge:'',img:'9a7ccb077d6627266f13',url:'https://ironworks-ado.stores.jp/items/67959f99ce75b203a869f649'},
+  {cat:'door',label:'アイアンドア',name:'Barn Door バーンドア',sub:'室内スライドドア マットブラック',price:275000,badge:'',img:'ef8821265072eeb099dc',url:'https://ironworks-ado.stores.jp/items/689dc80a62bb05fe83b69ed0'},
+  {cat:'door',label:'ロートアイアンドア',name:'Arabesque Gate',sub:'室内扉 マットブラック',price:253000,badge:'Artisan',img:'b8269f71f7c7462e47a1',url:'https://ironworks-ado.stores.jp/items/67bd6f532a10e40a2e61cc20'},
+  {cat:'stair',label:'スケルトン階段',name:'スケルトン階段 -直線-',sub:'オーダーメイド',price:0,badge:'',img:'7a3358b5d7a86318eda1',url:'https://ironworks-ado.stores.jp/items/6458a2646e44950030b06a70'},
+  {cat:'stair',label:'スケルトン階段',name:'スケルトン階段 -廻り階段-',sub:'力桁1本型 オーダーメイド',price:1400000,badge:'',img:'853fb7dae26475eee4a0',url:'https://ironworks-ado.stores.jp/items/645b965813edcc003101fec5'},
+  {cat:'stair',label:'鉄骨外階段',name:'鉄骨外階段 -かね折れ-',sub:'外階段 オーダーメイド',price:0,badge:'',img:'6957d69de71788107932',url:'https://ironworks-ado.stores.jp/items/6460dfe3418fdf00312349c1'},
+  {cat:'other',label:'ペット用品',name:'ドッグゲート',sub:'H95×W70〜80cm',price:130000,badge:'',img:'f91ef98ec5690d2f9562',url:'https://ironworks-ado.stores.jp/items/645a32986ebf640035c692b3'},
+  {cat:'other',label:'インテリア',name:'パーテーション',sub:'アイアンフレーム アクリルパc��ル',price:0,badge:'',img:'162201d592318f444a98',url:'https://ironworks-ado.stores.jp/items/645b851613edcc002b021dc9'},
+  {cat:'other',label:'家具',name:'アイアンヨッェンサ',sub:'アイアンレッグ サイズオーダー',price:0,badge:'',img:'720c42cc222961d0c4f7',url:'https://ironworks-ado.stores.jp/items/64cc5d6bf55a3000329bb450'},
+  {cat:'other',label:'家具・インテリア',name:'アイアンラック',sub:'アイアンシェルフ 棚 什器',price:0,badge:'',img:'2aecc4e6b289986d9859',url:'https://ironworks-ado.stores.jp/items/64be2861d397ae002db004cd'},
+];
 
+function priceHtml(p) {
+  if (!p) return '<span class="price-inquiry">要見積もり</span>';
+  return `<span class="price-from">From</span><div><span class="price-value">¥${p.toLocaleString()}</span><span class="price-tax">税込</span></div>`;
+}
+
+function renderProducts(filter) {
+  const grid = document.getElementById('productsGrid');
+  const list = filter === 'all' ? PRODUCTS : PRODUCTS.filter(p => p.cat === filter);
+  grid.innerHTML = list.map(p => `
+    <a class="product-card" href="${p.url}" target="_blank" rel="noopener" data-cat="${p.cat}">
+      <div class="product-image">
+        <img src="${IMG}${p.img}.jpg/fit=cover,w=600,h=800" alt="${p.name}" loading="lazy">
+        ${p.badge ? `<span class="product-badge">${p.badge}</span>` : ''}
+      </div>
+      <div class="product-body">
+        <div class="product-category">${p.label}</div>
+        <div class="product-name">${p.name}</div>
+        <div class="product-name-ja">${p.sub}</div>
+        <div class="product-price">${priceHtml(p.price)}</div>
+      </div>
+    </a>`).join('');
+}
+
+function filterItems(cat, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProducts(cat);
+}
+
+renderProducts('all');
+</script>
 </body>
 </html>

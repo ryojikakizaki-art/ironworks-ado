@@ -1,341 +1,198 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CATEGORY ｜ IRONWORKS ado</title>
-  <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    :root {
-      --black:   #0e0e0e;
-      --dark:    #1a1a1a;
-      --mid:     #2c2c2c;
-      --line:    #333333;
-      --muted:   #888888;
-      --light:   #cccccc;
-      --white:   #f5f5f5;
-      --accent:  #c8a96e;
-      --font:    'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
-    }
-
-    html { scroll-behavior: smooth; }
-    body {
-      background: var(--black);
-      color: var(--white);
-      font-family: var(--font);
-      font-size: 14px;
-      line-height: 1.7;
-    }
-
-    /* ── HEADER ── */
-    header {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 40px; height: 64px;
-      background: rgba(14,14,14,0.92);
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid var(--line);
-    }
-    .logo { font-size: 11px; letter-spacing: 0.35em; text-transform: uppercase; color: var(--white); text-decoration: none; }
-    .logo span { color: var(--accent); }
-    nav a { color: var(--muted); text-decoration: none; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; margin-left: 32px; transition: color .2s; }
-    nav a:hover, nav a.active { color: var(--white); }
-
-    /* ── PAGE HEADER ── */
-    .page-header { padding: 120px 40px 60px; border-bottom: 1px solid var(--line); }
-    .page-header-inner { max-width: 900px; margin: 0 auto; }
-    .page-label { font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
-    .page-title { font-size: clamp(32px, 5vw, 56px); font-weight: 300; letter-spacing: 0.05em; line-height: 1.1; }
-    .page-subtitle { margin-top: 20px; font-size: 13px; color: var(--muted); line-height: 1.9; }
-
-    /* ── CATEGORY GRID ── */
-    .categories-wrap {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 60px 40px 100px;
-    }
-    .categories-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 2px;
-    }
-
-    /* Category card */
-    .cat-card {
-      text-decoration: none;
-      color: inherit;
-      position: relative;
-      overflow: hidden;
-      display: block;
-      background: var(--dark);
-    }
-    .cat-image {
-      aspect-ratio: 16/9;
-      overflow: hidden;
-      position: relative;
-    }
-    .cat-image img {
-      width: 100%; height: 100%; object-fit: cover;
-      transition: transform .8s ease;
-      filter: brightness(0.55) grayscale(20%);
-    }
-    .cat-card:hover .cat-image img {
-      transform: scale(1.06);
-      filter: brightness(0.65) grayscale(0%);
-    }
-    .cat-overlay {
-      position: absolute; inset: 0;
-      display: flex; flex-direction: column; justify-content: flex-end;
-      padding: 32px;
-    }
-    .cat-label {
-      font-size: 9px; letter-spacing: 0.4em;
-      text-transform: uppercase; color: var(--accent);
-      margin-bottom: 10px;
-    }
-    .cat-title {
-      font-size: 22px; font-weight: 300;
-      letter-spacing: 0.04em;
-      color: var(--white);
-      margin-bottom: 8px;
-    }
-    .cat-title-ja {
-      font-size: 11px; color: var(--light);
-      letter-spacing: 0.1em;
-    }
-    .cat-body {
-      padding: 24px 32px 32px;
-      border-top: 1px solid var(--line);
-    }
-    .cat-products {
-      display: flex; gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 16px;
-    }
-    .cat-product-chip {
-      font-size: 11px; color: var(--muted);
-      border: 1px solid var(--line);
-      padding: 4px 12px;
-      letter-spacing: 0.05em;
-    }
-    .cat-desc {
-      font-size: 13px; color: var(--muted);
-      line-height: 1.8;
-    }
-    .cat-link {
-      display: inline-flex; align-items: center; gap: 8px;
-      margin-top: 16px;
-      font-size: 10px; letter-spacing: 0.3em;
-      text-transform: uppercase; color: var(--accent);
-    }
-    .cat-link::after { content: '→'; transition: transform .2s; }
-    .cat-card:hover .cat-link::after { transform: translateX(4px); }
-
-    /* ── HOW TO CHOOSE ── */
-    .guide-section {
-      margin-top: 64px;
-      border-top: 1px solid var(--line);
-      padding-top: 48px;
-    }
-    .guide-label { font-size: 10px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
-    .guide-title { font-size: 22px; font-weight: 300; margin-bottom: 32px; }
-    .guide-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-    }
-    .guide-item {
-      background: var(--dark);
-      border: 1px solid var(--line);
-      padding: 28px;
-    }
-    .guide-num {
-      font-size: 32px; font-weight: 200;
-      color: var(--accent);
-      letter-spacing: -0.02em;
-      line-height: 1;
-      margin-bottom: 16px;
-    }
-    .guide-item-title { font-size: 14px; color: var(--white); margin-bottom: 8px; font-weight: 400; }
-    .guide-item-desc { font-size: 12px; color: var(--muted); line-height: 1.8; }
-
-    /* ── FOOTER ── */
-    footer { border-top: 1px solid var(--line); padding: 40px; text-align: center; font-size: 11px; color: var(--muted); letter-spacing: 0.15em; }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 768px) {
-      header { padding: 0 20px; }
-      nav { display: none; }
-      .page-header { padding: 96px 20px 40px; }
-      .categories-wrap { padding: 40px 20px 80px; }
-      .categories-grid { grid-template-columns: 1fr; }
-      .guide-grid { grid-template-columns: 1fr; }
-      footer { padding: 32px 20px; }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CATEGORY ｜ IRONWORKS ado</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{--black:#0e0e0e;--dark:#1a1a1a;--mid:#2c2c2c;--line:#333333;--muted:#888888;--light:#cccccc;--white:#f5f5f5;--accent:#c8a96e;--font:'Helvetica Neue',Arial,'Hiragino Kaku Gothic ProN',sans-serif;}
+html{scroll-behavior:smooth;}
+body{background:var(--black);color:var(--white);font-family:var(--font);font-size:14px;line-height:1.7;}
+header{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 40px;height:64px;background:rgba(14,14,14,0.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);}
+.logo{font-size:11px;letter-spacing:0.35em;text-transform:uppercase;color:var(--white);text-decoration:none;}
+.logo span{color:var(--accent);}
+nav a{color:var(--muted);text-decoration:none;font-size:11px;letter-spacing:0.2em;text-transform:uppercase;margin-left:32px;transition:color .2s;}
+nav a:hover,nav a.active{color:var(--white);}
+.page-header{padding:120px 40px 60px;border-bottom:1px solid var(--line);}
+.page-header-inner{max-width:900px;margin:0 auto;}
+.page-label{font-size:10px;letter-spacing:0.4em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;}
+.page-title{font-size:clamp(32px,5vw,56px);font-weight:300;letter-spacing:0.05em;line-height:1.1;}
+.page-subtitle{margin-top:20px;font-size:13px;color:var(--muted);line-height:1.9;}
+.categories-wrap{max-width:1200px;margin:0 auto;padding:60px 40px 100px;}
+.categories-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;}
+.cat-card{text-decoration:none;color:inherit;position:relative;overflow:hidden;display:block;background:var(--dark);}
+.cat-image{aspect-ratio:16/9;overflow:hidden;position:relative;}
+.cat-image img{width:100%;height:100%;object-fit:cover;transition:transform .8s ease;filter:brightness(0.55) grayscale(20%);}
+.cat-card:hover .cat-image img{transform:scale(1.06);filter:brightness(0.65) grayscale(0%);}
+.cat-overlay{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:flex-end;padding:32px;}
+.cat-label{font-size:9px;letter-spacing:0.4em;text-transform:uppercase;color:var(--accent);margin-bottom:10px;}
+.cat-title{font-size:22px;font-weight:300;letter-spacing:0.04em;color:var(--white);margin-bottom:8px;}
+.cat-title-ja{font-size:11px;color:var(--light);letter-spacing:0.1em;}
+.cat-body{padding:24px 32px 32px;border-top:1px solid var(--line);}
+.cat-products{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;}
+.cat-product-chip{font-size:11px;color:var(--muted);border:1px solid var(--line);padding:4px 12px;letter-spacing:0.05em;}
+.cat-desc{font-size:13px;color:var(--muted);line-height:1.8;}
+.cat-link{display:inline-flex;align-items:center;gap:8px;margin-top:16px;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;color:var(--accent);}
+.cat-link::after{content:'→';transition:transform .2s;}
+.cat-card:hover .cat-link::after{transform:translateX(4px);}
+.guide-section{margin-top:64px;border-top:1px solid var(--line);padding-top:48px;}
+.guide-label{font-size:10px;letter-spacing:0.4em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;}
+.guide-title{font-size:22px;font-weight:300;margin-bottom:32px;}
+.guide-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;}
+.guide-item{background:var(--dark);border:1px solid var(--line);padding:28px;}
+.guide-num{font-size:32px;font-weight:200;color:var(--accent);letter-spacing:-0.02em;line-height:1;margin-bottom:16px;}
+.guide-item-title{font-size:14px;color:var(--white);margin-bottom:8px;font-weight:400;}
+.guide-item-desc{font-size:12px;color:var(--muted);line-height:1.8;}
+footer{border-top:1px solid var(--line);padding:40px;text-align:center;font-size:11px;color:var(--muted);letter-spacing:0.15em;}
+@media(max-width:768px){
+  header{padding:0 20px;}nav{display:none;}
+  .page-header{padding:96px 20px 40px;}
+  .categories-wrap{padding:40px 20px 80px;}
+  .categories-grid{grid-template-columns:1fr;}
+  .guide-grid{grid-template-columns:1fr;}
+  footer{padding:32px 20px;}
+}
+</style>
 </head>
 <body>
+<header>
+  <a class="logo" href="/">IRONWORKS <span>ado</span></a>
+  <nav>
+    <a href="/item.html">Item</a>
+    <a href="/category.html" class="active">Category</a>
+    <a href="/about.html">About</a>
+    <a href="/blog.html">Blog</a>
+    <a href="/contact.html">Contact</a>
+  </nav>
+</header>
 
-  <header>
-    <a class="logo" href="/">IRONWORKS <span>ado</span></a>
-    <nav>
-      <a href="/item.html">Item</a>
-      <a href="/category.html" class="active">Category</a>
-      <a href="/about.html">About</a>
-      <a href="/blog.html">Blog</a>
-      <a href="/contact.html">Contact</a>
-    </nav>
-  </header>
-
-  <div class="page-header">
-    <div class="page-header-inner">
-      <p class="page-label">Category</p>
-      <h1 class="page-title">カテゴリから選ぶ</h1>
-      <p class="page-subtitle">
-        取り付け場所と用途に合わせて、最適な手すりをお選びください。
-      </p>
-    </div>
+<div class="page-header">
+  <div class="page-header-inner">
+    <p class="page-label">Category</p>
+    <h1 class="page-title">カテゴリから選ぶ</h1>
+    <p class="page-subtitle">取り付け場所と用途に合わせて、最適な製品をお選びください。</p>
   </div>
+</div>
 
-  <div class="categories-wrap">
+<div class="categories-wrap">
+  <div class="categories-grid">
 
-    <div class="categories-grid">
-
-      <!-- 壁付け横型 -->
-      <a class="cat-card" href="/item.html">
-        <div class="cat-image">
-          <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80" alt="壁付け横型">
-          <div class="cat-overlay">
-            <p class="cat-label">Wall-mounted Horizontal</p>
-            <h2 class="cat-title">壁付け手すり</h2>
-            <p class="cat-title-ja">横型</p>
-          </div>
-        </div>
-        <div class="cat-body">
-          <div class="cat-products">
-            <span class="cat-product-chip">René ルネ</span>
-          </div>
-          <p class="cat-desc">
-            廊下・階段の側面壁に取り付ける横型手すり。
-            歩行補助として最もポピュラーなタイプです。
-            玄関の段差解消や廊下の安全対策として幅広く使われます。
-          </p>
-          <span class="cat-link">製品を見る</span>
-        </div>
-      </a>
-
-      <!-- 壁付け縦型 -->
-      <a class="cat-card" href="/marie.html">
-        <div class="cat-image">
-          <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=900&q=80" alt="壁付け縦型">
-          <div class="cat-overlay">
-            <p class="cat-label">Wall-mounted Vertical</p>
-            <h2 class="cat-title">壁付け手すり</h2>
-            <p class="cat-title-ja">縦型</p>
-          </div>
-        </div>
-        <div class="cat-body">
-          <div class="cat-products">
-            <span class="cat-product-chip">Marie マリー</span>
-          </div>
-          <p class="cat-desc">
-            玄関の上がり框や段差部分に縦方向に設置する手すり。
-            立ち上がり・降り動作の補助に特化しており、
-            コンパクトな設置面積で大きな安心感を生みます。
-          </p>
-          <span class="cat-link">製品を見る</span>
-        </div>
-      </a>
-
-      <!-- 笠木型 -->
-      <a class="cat-card" href="/leon.html">
-        <div class="cat-image">
-          <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=900&q=80" alt="笠木型">
-          <div class="cat-overlay">
-            <p class="cat-label">Cap Rail</p>
-            <h2 class="cat-title">笠木型手すり</h2>
-            <p class="cat-title-ja">上置き型</p>
-          </div>
-        </div>
-        <div class="cat-body">
-          <div class="cat-products">
-            <span class="cat-product-chip">Leon レオン</span>
-          </div>
-          <p class="cat-desc">
-            階段・ロフト・ウッドデッキの腰壁上部に設置する笠木型。
-            構造体の上に乗せるため壁への穿孔が不要なケースもあり、
-            デザイン性と機能性を両立します。
-          </p>
-          <span class="cat-link">製品を見る</span>
-        </div>
-      </a>
-
-      <!-- カスタム -->
-      <a class="cat-card" href="/contact.html">
-        <div class="cat-image">
-          <img src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=900&q=80" alt="カスタム">
-          <div class="cat-overlay">
-            <p class="cat-label">Custom Order</p>
-            <h2 class="cat-title">カスタムオーダー</h2>
-            <p class="cat-title-ja">完全特注</p>
-          </div>
-        </div>
-        <div class="cat-body">
-          <div class="cat-products">
-            <span class="cat-product-chip">ご相談ください</span>
-          </div>
-          <p class="cat-desc">
-            既製品に収まらない形状・長さ・デザインにも対応します。
-            アール加工、L字折り曲げ、複数連結など、
-            現場の要件に応じた完全特注品を制作します。
-          </p>
-          <span class="cat-link">お問い合わせ</span>
-        </div>
-      </a>
-
-    </div>
-
-    <!-- HOW TO CHOOSE -->
-    <div class="guide-section">
-      <p class="guide-label">Buying Guide</p>
-      <h2 class="guide-title">選び方のポイント</h2>
-      <div class="guide-grid">
-        <div class="guide-item">
-          <div class="guide-num">01</div>
-          <div class="guide-item-title">取り付け場所を確認する</div>
-          <div class="guide-item-desc">
-            廊下・階段・玄関・ロフトなど、設置場所によって
-            適切なカテゴリが変わります。壁の向き（縦・横）と
-            下地材（木・コンクリート・石膏ボード）も確認してください。
-          </div>
-        </div>
-        <div class="guide-item">
-          <div class="guide-num">02</div>
-          <div class="guide-item-title">必要な長さを採寸する</div>
-          <div class="guide-item-desc">
-            手すりの端から端までの長さを計測します。
-            壁の端から端まで？ それとも動線に必要な長さだけ？
-            迷ったときはお問い合わせフォームからご相談ください。
-          </div>
-        </div>
-        <div class="guide-item">
-          <div class="guide-num">03</div>
-          <div class="guide-item-title">サイズシミュレーターで価格確認</div>
-          <div class="guide-item-desc">
-            各製品ページのシミュレーターに長さを入力すると、
-            座金数と価格（税込）が即座に計算されます。
-            ご納得いただけたらそのままご注文いただけます。
-          </div>
+    <!-- 壁付け手すり 横型 -->
+    <a class="cat-card" href="/item.html">
+      <div class="cat-image">
+        <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/d0f5f0e83d40a4d29044.jpg/fit=cover,w=900,h=506" alt="壁付け手すり 横型">
+        <div class="cat-overlay">
+          <p class="cat-label">Wall-mounted Horizontal</p>
+          <h2 class="cat-title">壁付け手すり</h2>
+          <p class="cat-title-ja">横型</p>
         </div>
       </div>
-    </div>
+      <div class="cat-body">
+        <div class="cat-products">
+          <span class="cat-product-chip">René ルネ</span>
+          <span class="cat-product-chip">Claire クレール</span>
+          <span class="cat-product-chip">Marcel マルセル</span>
+          <span class="cat-product-chip">Emile エミール</span>
+          <span class="cat-product-chip">Élisabeth</span>
+        </div>
+        <p class="cat-desc">廊下・階段の側面壁に取り付ける横型手すり。丸パイプからフラットバー、火造り鍛造のロートアイアンまで、素材と仕上げを幅広くご用意しています。</p>
+        <span class="cat-link">製品を見る</span>
+      </div>
+    </a>
+
+    <!-- 壁付け手すり 縦型 -->
+    <a class="cat-card" href="/item.html">
+      <div class="cat-image">
+        <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/86278edb68c21957e339.jpg/fit=cover,w=900,h=506" alt="壁付け手すり 縦型">
+        <div class="cat-overlay">
+          <p class="cat-label">Wall-mounted Vertical</p>
+          <h2 class="cat-title">壁付け手すり</h2>
+          <p class="cat-title-ja">縦型</p>
+        </div>
+      </div>
+      <div class="cat-body">
+        <div class="cat-products">
+          <span class="cat-product-chip">Claude クロード</span>
+          <span class="cat-product-chip">Catherine</span>
+          <span class="cat-product-chip">Alexandre</span>
+          <span class="cat-product-chip">Scroll シリーズ</span>
+          <span class="cat-product-chip">Fabrice</span>
+        </div>
+        <p class="cat-desc">玄関の丌がり框あ段差部分に縦方向に設置する手すり。立ち丌がり・降り動作の補助に特化し、コンパクトながら確かな安心感をお届けします。</p>
+        <span class="cat-link">製品を見る</span>
+      </div>
+    </a>
+
+    <!-- アプローチ・外部手すり -->
+    <a class="cat-card" href="/item.html">
+      <div class="cat-image">
+        <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/051b216ddd9e64d0ae37.jpg/fit=cover,w=900,h=506" alt="アプローチ手すり">
+        <div class="cat-overlay">
+          <p class="cat-label">Approach / Exterior</p>
+          <h2 class="cat-title">アプローチ手すり</h2>
+          <p class="cat-title-ja">外部・玄関アプローチ</p>
+        </div>
+      </div>
+      <div class="cat-body">
+        <div class="cat-products">
+          <span class="cat-product-chip">Simple -black-</span>
+          <span class="cat-product-chip">Simple -white-</span>
+          <span class="cat-product-chip">アプローチ手すりぎ蔦'</span>
+        </div>
+        <p class="cat-desc">玄関アプローチや外部階段に設置する屋外対応手すり。錆びにくい亜鉛メッキ仕上げで、庭・外構のデザインに自然に溶け込みます。</p>
+        <span class="cat-link">製品を見る</span>
+      </div>
+    </a>
+
+    <!-- 階段・ドア・大型オーダーメイド -->
+    <a class="cat-card" href="/item.html">
+      <div class="cat-image">
+        <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/7a3358b5d7a86318eda1.jpg/fit=cover,w=900,h=506" alt="スケルトン階段">
+        <div class="cat-overlay">
+          <p class="cat-label">Stair / Door / Custom</p>
+          <h2 class="cat-title">階段・ドア</h2>
+          <p class="cat-title-ja">大型オーダーメイド</p>
+        </div>
+      </div>
+      <div class="cat-body">
+        <div class="cat-products">
+          <span class="cat-product-chip">スケルトン階段</span>
+          <span class="cat-product-chip">鉄骨外階段</span>
+          <span class="cat-product-chip">Barn Door</span>
+          <span class="cat-product-chip">Arabesque Gate</span>
+        </div>
+        <p class="cat-desc">空間を一変させる大型アイアン製品。スケルトン階段からロートアイアンの室内扉まで、鍛冶職人が設計から施工まで一貫してお受けします。</p>
+        <span class="cat-link">製品を見る</span>
+      </div>
+    </a>
 
   </div>
 
-  <footer>
-    © IRONWORKS ado ｜ All rights reserved
-  </footer>
+  <!-- HOW TO CHOOSE -->
+  <div class="guide-section">
+    <p class="guide-label">Buying Guide</p>
+    <h2 class="guide-title">選び方のポイント</h2>
+    <div class="guide-grid">
+      <div class="guide-item">
+        <div class="guide-num">01</div>
+        <div class="guide-item-title">取り付け場所を確認する</div>
+        <div class="guide-item-desc">廊下・階段ヷ玄関・アプローチなど設置場所によって適切なカテゴリが変わります。壁の向き（縦・横）と下地材（木・コンクリート・石膏ボード）も確認してください。</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-num">02</div>
+        <div class="guide-item-title">必要な長さを採寸する</div>
+        <div class="guide-item-desc">手すりの端から端までの長さを計測します。壁の端から端まで？それとも動線に必要な長さだけ？迷ったときはお問い合わせフォームからご相談ください。</div>
+      </div>
+      <div class="guide-item">
+        <div class="guide-num">03</div>
+        <div class="guide-item-title">Storesでご注文・お見積アり</div>
+        <div class="guide-item-desc">各製品はオーダーメイド対応です。商品ページに寸法をご記入いただくか、お問い合わせフォームよりお見積もりをご依頼ください。</div>
+      </div>
+    </div>
+  </div>
+</div>
 
+<footer>© IRONWORKS ado ｜ All rights reserved</footer>
 </body>
 </html>
