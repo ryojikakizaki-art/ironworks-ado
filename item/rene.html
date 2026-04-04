@@ -522,20 +522,12 @@
           <span class="breakdown-label">長尺割増</span>
           <span class="breakdown-value" id="surchargeVal">—</span>
         </div>
-        <div class="breakdown-row subtotal">
-          <span class="breakdown-label">小計（税抜）</span>
-          <span class="breakdown-value" id="subtotalVal">¥36,500</span>
-        </div>
-        <div class="breakdown-row">
-          <span class="breakdown-label">消費税（10%）</span>
-          <span class="breakdown-value" id="taxVal">¥3,650</span>
-        </div>
       </div>
 
       <div class="total-price">
         <span class="total-label">合計（税込）</span>
         <div>
-          <span class="total-amount" id="totalVal">¥40,150</span>
+          <span class="total-amount" id="totalVal">¥36,500</span>
           <span class="total-tax">税込</span>
         </div>
       </div>
@@ -621,7 +613,6 @@
   const SURGE_START_MM = 2000;
   const SURGE_BASE     = 1.2;
   const SURGE_INTERVAL_MM = 500;
-  const TAX_RATE       = 0.10;
   const MAX_LENGTH_MM  = 5000;
 
   // 座金数計算（1050mm以下=2点、1051mm以上=3点〜、最大間隔850mm）
@@ -631,7 +622,7 @@
     return 1 + Math.ceil(inner / MAX_SPAN_MM);
   }
 
-  // 価格計算（入力はmm）
+  // 価格計算（入力はmm、全額税込）
   function calcPrice(L_mm) {
     const addon     = Math.max(0, L_mm - STD_LENGTH_MM) * PRICE_PER_MM;
     const longM     = L_mm > SURGE_START_MM
@@ -640,9 +631,8 @@
     const surcharge = L_mm > SURGE_START_MM ? addon * (longM - 1) : 0;
     const zakin     = calcZakin(L_mm);
     const addZakin  = Math.max(0, zakin - INCLUDED_ZAKIN) * ZAKIN_PRICE;
-    const subtotal  = BASE_PRICE + addon + addZakin + surcharge;
-    const tax       = subtotal * TAX_RATE;
-    return { addon, surcharge, addZakin, zakin, subtotal, tax, total: subtotal + tax };
+    const total     = BASE_PRICE + addon + addZakin + surcharge;
+    return { addon, surcharge, addZakin, zakin, total };
   }
 
   // 座金配置図（両端100mm固定、中間は均等配置）
@@ -713,9 +703,7 @@
       notice.style.display = 'none';
     }
 
-    document.getElementById('subtotalVal').textContent = fmt(p.subtotal);
-    document.getElementById('taxVal').textContent      = fmt(p.tax);
-    document.getElementById('totalVal').textContent    = fmt(p.total);
+    document.getElementById('totalVal').textContent = fmt(p.total);
   }
 
   function onLengthChange(v) { update(v); }

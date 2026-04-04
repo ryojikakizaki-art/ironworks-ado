@@ -19,7 +19,6 @@ const MAX_SPAN_MM     = 850;
 const SURGE_START_MM  = 2000;
 const SURGE_BASE      = 1.2;
 const SURGE_INTERVAL_MM = 500;
-const TAX_RATE        = 0.10;
 
 function calcZakin(L_mm) {
   if (L_mm <= 1050) return 2;
@@ -35,9 +34,8 @@ function calcPrice(L_mm, prod) {
   const surcharge = L_mm > SURGE_START_MM ? addon * (longM - 1) : 0;
   const zakin     = calcZakin(L_mm);
   const addZakin  = Math.max(0, zakin - prod.includedZakin) * ZAKIN_PRICE;
-  const subtotal  = prod.basePrice + addon + addZakin + surcharge;
-  const tax       = subtotal * TAX_RATE;
-  return { addon, surcharge, addZakin, zakin, subtotal, tax, total: subtotal + tax };
+  const total     = prod.basePrice + addon + addZakin + surcharge;
+  return { addon, surcharge, addZakin, zakin, total };
 }
 
 module.exports = async (req, res) => {
@@ -84,8 +82,7 @@ module.exports = async (req, res) => {
         type:         prod.type,
         length_mm:    String(L),
         zakin_count:  String(p.zakin),
-        subtotal_yen: String(Math.round(p.subtotal)),
-        tax_yen:      String(Math.round(p.tax)),
+        total_yen:    String(Math.round(p.total)),
       },
       locale: 'ja',
       payment_intent_data: {
