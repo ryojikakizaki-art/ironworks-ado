@@ -202,10 +202,10 @@
               <span class="input-hint">500mm 〜 3000mm</span>
             </div>
             <div class="length-input-wrap">
-              <input type="number" id="lengthInput" value="1000" min="500" max="3000" step="10" oninput="onLengthChange(this.value)">
+              <input type="number" id="lengthInput" value="1000" min="500" max="3000" step="1" oninput="onLengthChange(this.value)">
               <div class="length-unit">mm</div>
             </div>
-            <input type="range" class="length-slider" id="lengthSlider" min="500" max="3000" step="10" value="1000" oninput="onSliderChange(this.value)">
+            <input type="range" class="length-slider" id="lengthSlider" min="500" max="3000" step="1" value="1000" oninput="onSliderChange(this.value)">
             <div class="slider-labels">
               <span>500</span><span>1000（標準）</span><span>2000（長尺）</span><span>3000mm</span>
             </div>
@@ -382,7 +382,7 @@
   function fmt(n) { return '\u00A5' + Math.round(n).toLocaleString('ja-JP'); }
 
   function update(lengthMm) {
-    const L = Math.max(500, Math.min(MAX_LENGTH_MM, Math.round(Number(lengthMm) / 10) * 10));
+    const L = Math.max(500, Math.min(MAX_LENGTH_MM, Math.round(Number(lengthMm))));
     const p = calcPrice(L);
     document.getElementById('lengthInput').value = L;
     document.getElementById('lengthSlider').value = L;
