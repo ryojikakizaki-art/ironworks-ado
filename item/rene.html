@@ -722,7 +722,7 @@
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lengthCm: L }),
+        body: JSON.stringify({ product: 'rene', lengthCm: L }),
       });
 
       if (!res.ok) {

@@ -259,6 +259,48 @@
       color: var(--muted);
     }
 
+    /* ── CALCULATOR ── */
+    .calc-section { background: var(--dark); border: 1px solid var(--line); padding: 28px; margin-top: 24px; }
+    .calc-title { font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--accent); margin-bottom: 20px; }
+    .input-group { margin-bottom: 20px; }
+    .input-label { display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: var(--light); letter-spacing: 0.05em; margin-bottom: 8px; }
+    .input-hint { font-size: 10px; color: var(--muted); }
+    .length-input-wrap { display: flex; align-items: stretch; border: 1px solid var(--line); background: var(--mid); transition: border-color .2s; }
+    .length-input-wrap:focus-within { border-color: var(--accent); }
+    .length-input-wrap input { flex: 1; background: transparent; border: none; outline: none; color: var(--white); font-size: 20px; font-weight: 300; padding: 12px 16px; font-family: var(--font); width: 0; }
+    .length-unit { display: flex; align-items: center; padding: 0 16px; font-size: 12px; color: var(--muted); border-left: 1px solid var(--line); letter-spacing: 0.1em; }
+    .length-slider { width: 100%; margin-top: 10px; -webkit-appearance: none; height: 2px; background: linear-gradient(to right, var(--accent) 0%, var(--line) 0%); border: none; outline: none; cursor: pointer; }
+    .length-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+    .slider-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 4px; }
+    .zakin-info { background: rgba(200,169,110,0.06); border: 1px solid rgba(200,169,110,0.2); padding: 14px 16px; font-size: 12px; }
+    .zakin-row { display: flex; justify-content: space-between; align-items: center; }
+    .zakin-label { color: var(--muted); }
+    .zakin-value { color: var(--accent); font-weight: 500; }
+    .zakin-diagram { margin-top: 10px; font-size: 10px; color: var(--muted); font-family: monospace; letter-spacing: 0.05em; }
+    .price-breakdown { margin-top: 20px; }
+    .breakdown-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
+    .breakdown-row:last-child { border-bottom: none; }
+    .breakdown-label { color: var(--muted); }
+    .breakdown-value { color: var(--light); }
+    .breakdown-row.subtotal { font-size: 13px; font-weight: 500; color: var(--white); }
+    .breakdown-row.subtotal .breakdown-value { color: var(--white); }
+    .total-price { margin-top: 16px; padding: 20px; background: var(--mid); border: 1px solid var(--accent); display: flex; align-items: baseline; justify-content: space-between; }
+    .total-label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); }
+    .total-amount { font-size: 32px; font-weight: 300; letter-spacing: 0.03em; color: var(--white); }
+    .total-tax { font-size: 11px; color: var(--muted); margin-left: 8px; }
+    .surcharge-notice { display: none; margin-top: 12px; padding: 10px 14px; background: rgba(200,80,80,0.1); border: 1px solid rgba(200,80,80,0.3); font-size: 11px; color: #e0a0a0; }
+    .cta-wrap { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
+    .btn-primary { display: block; width: 100%; padding: 18px; background: var(--accent); border: none; cursor: pointer; color: var(--black); font-size: 12px; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; font-family: var(--font); transition: background .2s, transform .1s, opacity .2s; }
+    .btn-primary:hover:not(:disabled) { background: #d4b87a; }
+    .btn-primary:active:not(:disabled) { transform: scale(0.99); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-secondary { display: block; width: 100%; padding: 16px; background: transparent; border: 1px solid var(--line); cursor: pointer; color: var(--muted); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-family: var(--font); transition: border-color .2s, color .2s; text-decoration: none; text-align: center; }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .checkout-error { display: none; margin-top: 10px; padding: 10px 14px; background: rgba(200,80,80,0.1); border: 1px solid rgba(200,80,80,0.3); font-size: 11px; color: #e0a0a0; }
+    .notes { margin-top: 24px; font-size: 11px; color: var(--muted); line-height: 2; }
+    .notes li { list-style: none; padding-left: 12px; position: relative; }
+    .notes li::before { content: "—"; position: absolute; left: 0; }
+
     @media (max-width: 768px) {
       header {
         padding: 0 20px;
@@ -353,7 +395,77 @@
           </div>
         </div>
 
-        <a href="/contact.html" class="cta-button">お問い合わせ・ご注文</a>
+        <div class="calc-section">
+          <div class="calc-title">サイズ・価格シミュレーター</div>
+          <div class="input-group">
+            <div class="input-label">
+              <span>ご希望の長さ</span>
+              <span class="input-hint">50cm 〜 300cm</span>
+            </div>
+            <div class="length-input-wrap">
+              <input type="number" id="lengthInput" value="150" min="50" max="300" step="1" oninput="onLengthChange(this.value)">
+              <div class="length-unit">cm</div>
+            </div>
+            <input type="range" class="length-slider" id="lengthSlider" min="50" max="300" step="1" value="150" oninput="onSliderChange(this.value)">
+            <div class="slider-labels">
+              <span>50cm</span><span>150cm（標準）</span><span>200cm（長尺）</span><span>300cm</span>
+            </div>
+          </div>
+          <div class="zakin-info">
+            <div class="zakin-row">
+              <span class="zakin-label">推奨座金数（自動計算）</span>
+              <span class="zakin-value" id="zakinCount">4 個</span>
+            </div>
+            <div class="zakin-diagram" id="zakinDiagram"></div>
+          </div>
+          <div class="surcharge-notice" id="surchargeNotice">
+            ⚠ 200cmを超えると長尺割増が加算されます。取り回しや施工の難易度が上がるため、事前に設置場所のご確認をお勧めします。
+          </div>
+          <div class="price-breakdown">
+            <div class="breakdown-row">
+              <span class="breakdown-label">基本料金（〜150cm）</span>
+              <span class="breakdown-value">¥42,000</span>
+            </div>
+            <div class="breakdown-row" id="rowAddon" style="display:none">
+              <span class="breakdown-label">長さ追加料金</span>
+              <span class="breakdown-value" id="addonVal">—</span>
+            </div>
+            <div class="breakdown-row" id="rowZakin" style="display:none">
+              <span class="breakdown-label">追加座金料金</span>
+              <span class="breakdown-value" id="zakinVal">—</span>
+            </div>
+            <div class="breakdown-row" id="rowSurcharge" style="display:none">
+              <span class="breakdown-label">長尺割増</span>
+              <span class="breakdown-value" id="surchargeVal">—</span>
+            </div>
+            <div class="breakdown-row subtotal">
+              <span class="breakdown-label">小計（税抜）</span>
+              <span class="breakdown-value" id="subtotalVal">¥42,000</span>
+            </div>
+            <div class="breakdown-row">
+              <span class="breakdown-label">消費税（10%）</span>
+              <span class="breakdown-value" id="taxVal">¥4,200</span>
+            </div>
+          </div>
+          <div class="total-price">
+            <span class="total-label">合計（税込）</span>
+            <div>
+              <span class="total-amount" id="totalVal">¥46,200</span>
+              <span class="total-tax">税込</span>
+            </div>
+          </div>
+          <div class="cta-wrap">
+            <button class="btn-primary" id="btnCheckout" onclick="addToCart()">カートに追加 — 購入手続きへ</button>
+            <a class="btn-secondary" href="mailto:info@tantetuzest.com">お問い合わせ・カスタム相談</a>
+          </div>
+          <div class="checkout-error" id="checkoutError">⚠ エラーが発生しました。しばらく後にもう一度お試しください。</div>
+          <ul class="notes">
+            <li>受注生産のため、お届けまで約3〜4週間かかります</li>
+            <li>施工・取り付けは含まれません（別途ご相談可）</li>
+            <li>サイズは指定寸法±5mm以内の精度でお届けします</li>
+            <li>クレジットカード決済（Stripe）対応</li>
+          </ul>
+        </div>
       </div>
     </div>
 
@@ -369,5 +481,95 @@
     <p class="logo-f">IRONWORKS <span>ADO</span></p>
     <p class="copy">&copy; 2025 IRONWORKS ado</p>
   </footer>
+<script>
+  const BASE_PRICE    = 42000;
+  const STD_LENGTH    = 150;
+  const PRICE_PER_CM  = 250;
+  const ZAKIN_PRICE   = 3500;
+  const INCLUDED_ZAKIN= 2;
+  const MIN_ZAKIN     = 4;
+  const END_DIST_MM   = 100;
+  const MAX_SPAN_MM   = 800;
+  const SURGE_START   = 200;
+  const SURGE_BASE    = 1.2;
+  const SURGE_INTERVAL= 50;
+  const TAX_RATE      = 0.10;
+  const PRODUCT_KEY   = 'claire';
+
+  function calcZakin(lengthCm) {
+    const span = lengthCm * 10 - 2 * END_DIST_MM;
+    return Math.max(MIN_ZAKIN, 1 + Math.ceil(span / MAX_SPAN_MM));
+  }
+
+  function calcPrice(lengthCm) {
+    const addon    = Math.max(0, lengthCm - STD_LENGTH) * PRICE_PER_CM;
+    const longM    = lengthCm > SURGE_START ? Math.pow(SURGE_BASE, (lengthCm - SURGE_START) / SURGE_INTERVAL) : 1;
+    const surcharge= lengthCm > SURGE_START ? addon * (longM - 1) : 0;
+    const zakin    = calcZakin(lengthCm);
+    const addZakin = Math.max(0, zakin - INCLUDED_ZAKIN) * ZAKIN_PRICE;
+    const subtotal = BASE_PRICE + addon + addZakin + surcharge;
+    const tax      = subtotal * TAX_RATE;
+    return { addon, surcharge, addZakin, zakin, subtotal, tax, total: subtotal + tax };
+  }
+
+  function buildDiagram(lengthCm, zakinCount) {
+    const L_mm = lengthCm * 10;
+    const positions = [100];
+    if (zakinCount > 2) {
+      const inner = L_mm - 200;
+      for (let i = 1; i <= zakinCount - 2; i++) positions.push(Math.round(100 + inner * i / (zakinCount - 1)));
+    }
+    positions.push(L_mm - 100);
+    const barLen = 40;
+    let bar = '|', last = 0;
+    positions.forEach(p => { const seg = Math.round((p - last) / L_mm * barLen); bar += '\u2500'.repeat(Math.max(0, seg - 1)) + '\u2739'; last = p; });
+    bar += '\u2500'.repeat(Math.max(0, barLen - Math.round(positions[positions.length - 1] / L_mm * barLen))) + '|';
+    return '\u914D\u7F6E\u56F3: ' + bar + '  \uFF08\u8A08 ' + zakinCount + '\u70B9\uFF09';
+  }
+
+  function fmt(n) { return '\u00A5' + Math.round(n).toLocaleString('ja-JP'); }
+
+  function update(lengthCm) {
+    const L = Math.max(50, Math.min(300, Number(lengthCm)));
+    const p = calcPrice(L);
+    document.getElementById('lengthInput').value = L;
+    document.getElementById('lengthSlider').value = L;
+    const pct = (L - 50) / 250 * 100;
+    document.getElementById('lengthSlider').style.background = 'linear-gradient(to right, var(--accent) ' + pct + '%, var(--line) ' + pct + '%)';
+    document.getElementById('zakinCount').textContent = p.zakin + ' \u500B';
+    document.getElementById('zakinDiagram').textContent = buildDiagram(L, p.zakin);
+    const rowAddon = document.getElementById('rowAddon');
+    if (p.addon > 0) { rowAddon.style.display = 'flex'; document.getElementById('addonVal').textContent = fmt(p.addon); } else { rowAddon.style.display = 'none'; }
+    const rowZakin = document.getElementById('rowZakin');
+    if (p.addZakin > 0) { rowZakin.style.display = 'flex'; document.getElementById('zakinVal').textContent = fmt(p.addZakin); } else { rowZakin.style.display = 'none'; }
+    const rowSurcharge = document.getElementById('rowSurcharge');
+    const notice = document.getElementById('surchargeNotice');
+    if (p.surcharge > 0) { rowSurcharge.style.display = 'flex'; document.getElementById('surchargeVal').textContent = fmt(p.surcharge); notice.style.display = 'block'; } else { rowSurcharge.style.display = 'none'; notice.style.display = 'none'; }
+    document.getElementById('subtotalVal').textContent = fmt(p.subtotal);
+    document.getElementById('taxVal').textContent = fmt(p.tax);
+    document.getElementById('totalVal').textContent = fmt(p.total);
+  }
+
+  function onLengthChange(v) { update(v); }
+  function onSliderChange(v) { update(v); }
+
+  async function addToCart() {
+    const L = Number(document.getElementById('lengthInput').value);
+    const btn = document.getElementById('btnCheckout');
+    const errEl = document.getElementById('checkoutError');
+    btn.disabled = true; btn.textContent = '\u51E6\u7406\u4E2D...'; errEl.style.display = 'none';
+    try {
+      const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product: PRODUCT_KEY, lengthCm: L }) });
+      if (!res.ok) { const data = await res.json().catch(() => ({})); throw new Error(data.error || 'HTTP ' + res.status); }
+      const { url } = await res.json();
+      window.location.href = url;
+    } catch (err) {
+      console.error('[checkout]', err);
+      errEl.style.display = 'block'; btn.disabled = false; btn.textContent = '\u30AB\u30FC\u30C8\u306B\u8FFD\u52A0 \u2014 \u8CFC\u5165\u624B\u7D9A\u304D\u3078';
+    }
+  }
+
+  update(150);
+</script>
 </body>
 </html>
