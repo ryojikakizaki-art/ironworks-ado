@@ -98,9 +98,9 @@
       width: 44px; height: 44px; border-radius: 50%;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
       transition: background .2s, opacity .3s;
-      opacity: 0.7;
+      opacity: 0;
     }
-    .gallery:hover .gallery-nav button { opacity: 1; }
+    .main-image:hover .gallery-nav button { opacity: 1; }
     .gallery-nav button:hover { background: rgba(0,0,0,0.7); }
     .gallery-counter {
       position: absolute; bottom: 12px; right: 12px;
@@ -430,10 +430,10 @@
     <div class="main-image">
       <img id="mainImg" src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/d0f5f0e83d40a4d29044.jpg/public" alt="René アイアン手すり">
       <div class="badge">Handcrafted</div>
-    </div>
-    <div class="gallery-nav">
-      <button onclick="galleryPrev()">&#8249;</button>
-      <button onclick="galleryNext()">&#8250;</button>
+      <div class="gallery-nav">
+        <button onclick="galleryPrev()">&#8249;</button>
+        <button onclick="galleryNext()">&#8250;</button>
+      </div>
     </div>
     <div class="gallery-counter" id="galleryCounter">1 / 21</div>
     <div class="thumbs" id="thumbStrip"></div>
