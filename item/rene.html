@@ -83,9 +83,30 @@
     }
     .main-image img {
       width: 100%; height: 100%; object-fit: cover;
-      transition: transform .6s ease;
+      transition: opacity .3s ease;
     }
-    .main-image:hover img { transform: scale(1.03); }
+    .gallery-nav {
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      display: flex; justify-content: space-between; align-items: center;
+      pointer-events: none;
+    }
+    .gallery-nav button {
+      pointer-events: auto;
+      background: rgba(0,0,0,0.4); border: none;
+      color: var(--white); font-size: 28px;
+      width: 48px; height: 48px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background .2s;
+      opacity: 0; transition: opacity .3s;
+    }
+    .main-image:hover ~ .gallery-nav button,
+    .gallery-nav:hover button { opacity: 1; }
+    .gallery-nav button:hover { background: rgba(0,0,0,0.7); }
+    .gallery-counter {
+      position: absolute; bottom: 12px; right: 12px;
+      background: rgba(0,0,0,0.5); color: var(--white);
+      font-size: 11px; padding: 4px 10px; letter-spacing: 0.1em;
+    }
     .badge {
       position: absolute; top: 20px; left: 20px;
       background: var(--accent); color: var(--black);
@@ -95,12 +116,13 @@
       font-weight: 600;
     }
     .thumbs {
-      display: flex; gap: 8px; margin-top: 8px;
+      display: flex; gap: 4px; margin-top: 8px;
+      overflow-x: auto; scrollbar-width: thin;
     }
     .thumb {
-      width: 72px; height: 72px;
+      width: 56px; height: 56px; flex-shrink: 0;
       background: var(--dark);
-      border: 1px solid transparent;
+      border: 2px solid transparent;
       cursor: pointer; overflow: hidden;
       transition: border-color .2s;
     }
@@ -406,22 +428,15 @@
   <!-- GALLERY -->
   <div class="gallery">
     <div class="main-image">
-      <img id="mainImg"
-        src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/d0f5f0e83d40a4d29044.jpg"
-        alt="René アイアン手すり">
+      <img id="mainImg" src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/d0f5f0e83d40a4d29044.jpg/public" alt="René アイアン手すり">
       <div class="badge">Handcrafted</div>
     </div>
-    <div class="thumbs">
-      <div class="thumb active" onclick="switchImg(this,'https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/d0f5f0e83d40a4d29044.jpg/public')">
-        <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/d0f5f0e83d40a4d29044.jpg/public" alt="">
-      </div>
-      <div class="thumb" onclick="switchImg(this,'https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/0a0c0c78f9f636cca733.jpg/public')">
-        <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/0a0c0c78f9f636cca733.jpg/public" alt="">
-      </div>
-      <div class="thumb" onclick="switchImg(this,'https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/86278edb68c21957e339.jpg/public')">
-        <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/86278edb68c21957e339.jpg/public" alt="">
-      </div>
+    <div class="gallery-nav">
+      <button onclick="galleryPrev()">&#8249;</button>
+      <button onclick="galleryNext()">&#8250;</button>
     </div>
+    <div class="gallery-counter" id="galleryCounter">1 / 21</div>
+    <div class="thumbs" id="thumbStrip"></div>
   </div>
 
   <!-- INFO -->
@@ -702,11 +717,49 @@
   function onLengthChange(v) { update(v); }
   function onSliderChange(v) { update(v); }
 
-  function switchImg(el, src) {
-    document.getElementById('mainImg').src = src;
-    document.querySelectorAll('.thumb').forEach(function(t) { t.classList.remove('active'); });
-    el.classList.add('active');
+  // ── ギャラリー ──────────────────────────────
+  const GALLERY_BASE = 'https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/';
+  const GALLERY_IDS = [
+    'd0f5f0e83d40a4d29044.jpg','441adb48d70157c88ced.jpg','7918619d2ac80c628b18.jpg',
+    '8b014530a248acab27b4.jpg','2f3045de2d64fb258555.jpg','95c11abfffdb58afc397.jpg',
+    'f5923b0c53f5c1fea716.jpg','7d7c66c9c805ef20aff7.jpg','b9519407dd0b4b289459.jpg',
+    '558035c05662b6447525.jpg','1cb251b4c76525126564.jpg','6a9cc507ff374b5ad7f3.jpg',
+    '550457e79b7c329b2543.jpg','a6febd2e52de5465d22a.jpg','ad695366e8e2d7623b38.jpg',
+    'f7f519fb453322a8cb2a.jpg','52e804336a605048b0ad.jpg','9c60c929bcf4b8d2f201.jpg',
+    '6af00541b422cefa2348.jpg','6431145df3f48a69b3ba.jpg','ef59fb2d37647f61563d.jpg'
+  ];
+  let galleryIdx = 0;
+
+  function galleryUrl(id) { return GALLERY_BASE + id + '/public'; }
+
+  function galleryGo(i) {
+    galleryIdx = (i + GALLERY_IDS.length) % GALLERY_IDS.length;
+    document.getElementById('mainImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
+    document.getElementById('galleryCounter').textContent = (galleryIdx + 1) + ' / ' + GALLERY_IDS.length;
+    document.querySelectorAll('.thumb').forEach(function(t, j) {
+      t.classList.toggle('active', j === galleryIdx);
+    });
+    var active = document.querySelector('.thumb.active');
+    if (active) active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
   }
+  function galleryPrev() { galleryGo(galleryIdx - 1); }
+  function galleryNext() { galleryGo(galleryIdx + 1); }
+
+  // サムネイル生成
+  (function() {
+    var strip = document.getElementById('thumbStrip');
+    GALLERY_IDS.forEach(function(id, i) {
+      var div = document.createElement('div');
+      div.className = 'thumb' + (i === 0 ? ' active' : '');
+      div.onclick = function() { galleryGo(i); };
+      var img = document.createElement('img');
+      img.src = galleryUrl(id);
+      img.alt = '';
+      img.loading = 'lazy';
+      div.appendChild(img);
+      strip.appendChild(div);
+    });
+  })();
 
   // Stripe Checkout
   async function addToCart() {
