@@ -14,9 +14,8 @@ const PRODUCTS = {
 // ── 共通価格パラメータ ──────────────────────────────
 const PRICE_PER_CM   = 250;
 const ZAKIN_PRICE    = 3500;
-const MIN_ZAKIN      = 4;
 const END_DIST_MM    = 100;
-const MAX_SPAN_MM    = 800;
+const MAX_SPAN_MM    = 850;
 const SURGE_START    = 200;
 const SURGE_BASE     = 1.2;
 const SURGE_INTERVAL = 50;
@@ -24,9 +23,9 @@ const TAX_RATE       = 0.10;
 
 function calcZakin(lengthCm) {
   const L_mm = lengthCm * 10;
-  const span = L_mm - 2 * END_DIST_MM;
-  const spans = Math.ceil(span / MAX_SPAN_MM);
-  return Math.max(MIN_ZAKIN, 1 + spans);
+  if (L_mm <= 1050) return 2;
+  const inner = L_mm - 2 * END_DIST_MM;
+  return 1 + Math.ceil(inner / MAX_SPAN_MM);
 }
 
 function calcPrice(lengthCm, prod) {
