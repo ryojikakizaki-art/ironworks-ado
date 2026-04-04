@@ -237,19 +237,11 @@
               <span class="breakdown-label">長尺割増</span>
               <span class="breakdown-value" id="surchargeVal">—</span>
             </div>
-            <div class="breakdown-row subtotal">
-              <span class="breakdown-label">小計（税抜）</span>
-              <span class="breakdown-value" id="subtotalVal">¥32,000</span>
-            </div>
-            <div class="breakdown-row">
-              <span class="breakdown-label">消費税（10%）</span>
-              <span class="breakdown-value" id="taxVal">¥3,200</span>
-            </div>
           </div>
           <div class="total-price">
             <span class="total-label">合計（税込）</span>
             <div>
-              <span class="total-amount" id="totalVal">¥35,200</span>
+              <span class="total-amount" id="totalVal">¥32,000</span>
               <span class="total-tax">税込</span>
             </div>
           </div>
@@ -336,7 +328,6 @@
   const SURGE_START_MM= 2000;
   const SURGE_BASE    = 1.2;
   const SURGE_INTERVAL_MM= 500;
-  const TAX_RATE      = 0.10;
   const MAX_LENGTH_MM = 3000;
   const PRODUCT_KEY   = 'alexandre';
 
@@ -352,9 +343,8 @@
     const surcharge= L_mm > SURGE_START_MM ? addon * (longM - 1) : 0;
     const zakin    = calcZakin(L_mm);
     const addZakin = Math.max(0, zakin - INCLUDED_ZAKIN) * ZAKIN_PRICE;
-    const subtotal = BASE_PRICE + addon + addZakin + surcharge;
-    const tax      = subtotal * TAX_RATE;
-    return { addon, surcharge, addZakin, zakin, subtotal, tax, total: subtotal + tax };
+    const total     = BASE_PRICE + addon + addZakin + surcharge;
+    return { addon, surcharge, addZakin, zakin, total };
   }
 
   function buildDiagram(L_mm, zakinCount) {
@@ -397,8 +387,6 @@
     const rowSurcharge = document.getElementById('rowSurcharge');
     const notice = document.getElementById('surchargeNotice');
     if (p.surcharge > 0) { rowSurcharge.style.display = 'flex'; document.getElementById('surchargeVal').textContent = fmt(p.surcharge); notice.style.display = 'block'; } else { rowSurcharge.style.display = 'none'; notice.style.display = 'none'; }
-    document.getElementById('subtotalVal').textContent = fmt(p.subtotal);
-    document.getElementById('taxVal').textContent = fmt(p.tax);
     document.getElementById('totalVal').textContent = fmt(p.total);
   }
 
