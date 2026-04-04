@@ -104,7 +104,7 @@
 
     .product-hero {
       display: grid;
-      grid-template-columns: 5fr 7fr;
+      grid-template-columns: 1fr 1fr;
       gap: 40px;
       padding: 60px 40px;
       max-width: 1400px;
@@ -299,8 +299,8 @@
     .gallery { position: relative; }
     .main-image { width: 100%; aspect-ratio: 1/1; background: var(--dark); overflow: hidden; position: relative; }
     .main-image img { width: 100%; height: 100%; object-fit: cover; transition: opacity .3s ease; }
-    .gallery-nav { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
-    .gallery-nav button { pointer-events: auto; background: rgba(0,0,0,0.4); border: none; color: #f5f5f5; font-size: 28px; width: 48px; height: 48px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .3s; }
+    .gallery-nav { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; align-items: center; padding: 0 8px; pointer-events: none; }
+    .gallery-nav button { pointer-events: auto; background: rgba(0,0,0,0.35); border: none; color: #fff; font-size: 32px; line-height: 1; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background .2s, opacity .3s; opacity: 0.7; }
     .gallery:hover .gallery-nav button { opacity: 1; }
     .gallery-nav button:hover { background: rgba(0,0,0,0.7); }
     .gallery-counter { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.5); color: #f5f5f5; font-size: 11px; padding: 4px 10px; letter-spacing: 0.1em; }
@@ -528,6 +528,12 @@
       var div = document.createElement('div');
       div.className = 'thumb' + (i === 0 ? ' active' : '');
       div.onclick = function() { galleryGo(i); };
+      div.onmouseenter = function() {
+        document.getElementById('mainImg').src = galleryUrl(id);
+      };
+      div.onmouseleave = function() {
+        document.getElementById('mainImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
+      };
       var img = document.createElement('img');
       img.src = galleryUrl(id);
       img.alt = '';
@@ -573,13 +579,21 @@
     const positions = [100];
     if (zakinCount > 2) {
       const inner = L_mm - 200;
-      for (let i = 1; i <= zakinCount - 2; i++) positions.push(Math.round(100 + inner * i / (zakinCount - 1)));
+      const gaps = zakinCount - 1;
+      for (let i = 1; i < zakinCount - 1; i++) {
+        positions.push(Math.round(100 + inner * i / gaps));
+      }
     }
     positions.push(L_mm - 100);
-    const barLen = 40;
-    let bar = '|', last = 0;
-    positions.forEach(p => { const seg = Math.round((p - last) / L_mm * barLen); bar += '\u2500'.repeat(Math.max(0, seg - 1)) + '\u2739'; last = p; });
-    bar += '\u2500'.repeat(Math.max(0, barLen - Math.round(positions[positions.length - 1] / L_mm * barLen))) + '|';
+    const barLen = 30;
+    var bar = '|';
+    var last = 0;
+    positions.forEach(function(p) {
+      var seg = Math.max(1, Math.round((p - last) / L_mm * barLen));
+      bar += '\u2500'.repeat(seg) + '\u25CF';
+      last = p;
+    });
+    bar += '\u2500'.repeat(Math.max(1, barLen - Math.round(last / L_mm * barLen))) + '|';
     return '\u914D\u7F6E\u56F3: ' + bar + '  \uFF08\u8A08 ' + zakinCount + '\u70B9\uFF09';
   }
 
