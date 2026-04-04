@@ -15,7 +15,7 @@
       --muted:   #888888;
       --light:   #cccccc;
       --white:   #f5f5f5;
-      --accent:  #c8a96e;   /* ゴールドアクセント */
+      --accent:  #c8a96e;
       --font:    'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
     }
 
@@ -29,7 +29,7 @@
       line-height: 1.7;
     }
 
-    /* ── HEADER ── */
+    /* HEADER */
     header {
       position: fixed; top: 0; left: 0; right: 0; z-index: 100;
       display: flex; align-items: center; justify-content: space-between;
@@ -53,7 +53,7 @@
     }
     nav a:hover { color: var(--white); }
 
-    /* ── BREADCRUMB ── */
+    /* BREADCRUMB */
     .breadcrumb {
       padding: 96px 40px 0;
       font-size: 11px; color: var(--muted);
@@ -63,7 +63,7 @@
     .breadcrumb a:hover { color: var(--accent); }
     .breadcrumb span { margin: 0 8px; }
 
-    /* ── PRODUCT LAYOUT ── */
+    /* PRODUCT LAYOUT */
     .product {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -73,7 +73,7 @@
       padding: 0 40px;
     }
 
-    /* ── GALLERY ── */
+    /* GALLERY */
     .gallery { position: relative; }
     .main-image {
       width: 100%; aspect-ratio: 1/1;
@@ -107,7 +107,7 @@
     .thumb.active { border-color: var(--accent); }
     .thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* ── PRODUCT INFO ── */
+    /* PRODUCT INFO */
     .info {
       padding: 0 0 0 64px;
       display: flex; flex-direction: column;
@@ -134,14 +134,13 @@
       margin: 20px 0;
     }
 
-    /* ── SPEC TABLE ── */
+    /* SPEC TABLE */
     .specs {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 12px 24px;
       margin-bottom: 0;
     }
-    .spec-item {}
     .spec-label {
       font-size: 10px; letter-spacing: 0.15em;
       text-transform: uppercase; color: var(--muted);
@@ -151,7 +150,7 @@
       font-size: 13px; color: var(--light);
     }
 
-    /* ── CALCULATOR ── */
+    /* CALCULATOR */
     .calc-section {
       background: var(--dark);
       border: 1px solid var(--line);
@@ -164,9 +163,7 @@
       margin-bottom: 20px;
     }
 
-    .input-group {
-      margin-bottom: 20px;
-    }
+    .input-group { margin-bottom: 20px; }
     .input-label {
       display: flex; justify-content: space-between;
       align-items: baseline;
@@ -174,9 +171,7 @@
       letter-spacing: 0.05em;
       margin-bottom: 8px;
     }
-    .input-hint {
-      font-size: 10px; color: var(--muted);
-    }
+    .input-hint { font-size: 10px; color: var(--muted); }
 
     .length-input-wrap {
       display: flex; align-items: stretch;
@@ -184,9 +179,7 @@
       background: var(--mid);
       transition: border-color .2s;
     }
-    .length-input-wrap:focus-within {
-      border-color: var(--accent);
-    }
+    .length-input-wrap:focus-within { border-color: var(--accent); }
     .length-input-wrap input {
       flex: 1;
       background: transparent;
@@ -205,7 +198,6 @@
       letter-spacing: 0.1em;
     }
 
-    /* スライダー */
     .length-slider {
       width: 100%; margin-top: 10px;
       -webkit-appearance: none;
@@ -226,7 +218,6 @@
       margin-top: 4px;
     }
 
-    /* 座金 */
     .zakin-info {
       background: rgba(200,169,110,0.06);
       border: 1px solid rgba(200,169,110,0.2);
@@ -246,10 +237,7 @@
       letter-spacing: 0.05em;
     }
 
-    /* 価格内訳 */
-    .price-breakdown {
-      margin-top: 20px;
-    }
+    .price-breakdown { margin-top: 20px; }
     .breakdown-row {
       display: flex; justify-content: space-between;
       padding: 8px 0;
@@ -259,10 +247,7 @@
     .breakdown-row:last-child { border-bottom: none; }
     .breakdown-label { color: var(--muted); }
     .breakdown-value { color: var(--light); }
-    .breakdown-row.subtotal {
-      font-size: 13px; font-weight: 500;
-      color: var(--white);
-    }
+    .breakdown-row.subtotal { font-size: 13px; font-weight: 500; color: var(--white); }
     .breakdown-row.subtotal .breakdown-value { color: var(--white); }
 
     .total-price {
@@ -281,12 +266,8 @@
       letter-spacing: 0.03em;
       color: var(--white);
     }
-    .total-tax {
-      font-size: 11px; color: var(--muted);
-      margin-left: 8px;
-    }
+    .total-tax { font-size: 11px; color: var(--muted); margin-left: 8px; }
 
-    /* 警告 */
     .surcharge-notice {
       display: none;
       margin-top: 12px;
@@ -296,7 +277,7 @@
       font-size: 11px; color: #e0a0a0;
     }
 
-    /* ── CTA ── */
+    /* CTA */
     .cta-wrap { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
 
     .btn-primary {
@@ -312,9 +293,7 @@
     }
     .btn-primary:hover:not(:disabled) { background: #d4b87a; }
     .btn-primary:active:not(:disabled) { transform: scale(0.99); }
-    .btn-primary:disabled {
-      opacity: 0.6; cursor: not-allowed;
-    }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .btn-secondary {
       display: block; width: 100%;
@@ -331,7 +310,6 @@
     }
     .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
 
-    /* エラー表示 */
     .checkout-error {
       display: none;
       margin-top: 10px;
@@ -341,7 +319,6 @@
       font-size: 11px; color: #e0a0a0;
     }
 
-    /* 注意書き */
     .notes {
       margin-top: 24px;
       font-size: 11px; color: var(--muted);
@@ -350,7 +327,7 @@
     .notes li { list-style: none; padding-left: 12px; position: relative; }
     .notes li::before { content: "—"; position: absolute; left: 0; }
 
-    /* ── DESCRIPTION ── */
+    /* DESCRIPTION */
     .description-section {
       max-width: 1280px;
       margin: 80px auto;
@@ -364,10 +341,7 @@
       text-transform: uppercase; color: var(--accent);
       margin-bottom: 20px;
     }
-    .desc-text {
-      font-size: 14px; color: var(--light);
-      line-height: 2;
-    }
+    .desc-text { font-size: 14px; color: var(--light); line-height: 2; }
     .feature-list { margin-top: 24px; }
     .feature-item {
       display: flex; gap: 16px;
@@ -381,11 +355,10 @@
       flex-shrink: 0;
       font-size: 14px; color: var(--accent);
     }
-    .feature-content {}
     .feature-title { font-size: 13px; color: var(--white); margin-bottom: 4px; }
     .feature-desc { font-size: 12px; color: var(--muted); line-height: 1.6; }
 
-    /* ── FOOTER ── */
+    /* FOOTER */
     footer {
       border-top: 1px solid var(--line);
       padding: 40px;
@@ -394,7 +367,7 @@
       letter-spacing: 0.15em;
     }
 
-    /* ── RESPONSIVE ── */
+    /* RESPONSIVE */
     @media (max-width: 768px) {
       header { padding: 0 20px; }
       nav { display: none; }
@@ -410,20 +383,20 @@
 
 <!-- HEADER -->
 <header>
-  <a class="logo" href="#">IRONWORKS <span>ado</span></a>
+  <a class="logo" href="/index.html">IRONWORKS <span>ado</span></a>
   <nav>
-    <a href="#">Item</a>
-    <a href="#">Category</a>
-    <a href="#">About</a>
-    <a href="#">Blog</a>
-    <a href="#">Contact</a>
+    <a href="/item/">Item</a>
+    <a href="/item/#category">Category</a>
+    <a href="/about.html">About</a>
+    <a href="/blog/">Blog</a>
+    <a href="/contact.html">Contact</a>
   </nav>
 </header>
 
 <!-- BREADCRUMB -->
 <div class="breadcrumb">
-  <a href="#">Home</a><span>/</span>
-  <a href="#">壁付け手すり・横型</a><span>/</span>
+  <a href="/index.html">Home</a><span>/</span>
+  <a href="/item/#yokogata">壁付け手すり・横型</a><span>/</span>
   René ルネ
 </div>
 
@@ -434,19 +407,19 @@
   <div class="gallery">
     <div class="main-image">
       <img id="mainImg"
-        src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80"
+        src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/d0f5f0e83d40a4d29044.jpg"
         alt="René アイアン手すり">
       <div class="badge">Handcrafted</div>
     </div>
     <div class="thumbs">
-      <div class="thumb active" onclick="switchImg(this,'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80')">
-        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=200&q=60" alt="">
+      <div class="thumb active" onclick="switchImg(this,'https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/d0f5f0e83d40a4d29044.jpg')">
+        <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/d0f5f0e83d40a4d29044.jpg" alt="">
       </div>
-      <div class="thumb" onclick="switchImg(this,'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80')">
-        <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=200&q=60" alt="">
+      <div class="thumb" onclick="switchImg(this,'https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/0a0c0c78f9f636cca733.jpg')">
+        <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/0a0c0c78f9f636cca733.jpg" alt="">
       </div>
-      <div class="thumb" onclick="switchImg(this,'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800&q=80')">
-        <img src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=200&q=60" alt="">
+      <div class="thumb" onclick="switchImg(this,'https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/86278edb68c21957e339.jpg')">
+        <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/86278edb68c21957e339.jpg" alt="">
       </div>
     </div>
   </div>
@@ -478,11 +451,10 @@
 
     <hr class="divider">
 
-    <!-- $��格計算機 -->
+    <!-- 価格計算機 -->
     <div class="calc-section">
       <div class="calc-title">サイズ・価格シミュレーター</div>
 
-      <!-- 長さ入力 -->
       <div class="input-group">
         <div class="input-label">
           <span>ご希望の長さ</span>
@@ -505,22 +477,19 @@
         </div>
       </div>
 
-      <!-- 座金情報 -->
       <div class="zakin-info">
         <div class="zakin-row">
           <span class="zakin-label">推奨座金数（自動計算）</span>
-          <span class="zakin-value" id="zakinCount">3 個</span>
+          <span class="zakin-value" id="zakinCount">4 個</span>
         </div>
         <div class="zakin-diagram" id="zakinDiagram"></div>
       </div>
 
-      <!-- 長尺警告 -->
       <div class="surcharge-notice" id="surchargeNotice">
         ⚠ 200cmを超えると長尺割増が加算されます。取り回しや施工の難易度が上がるため、
         事前に設置場所のご確認をお勧めします。
       </div>
 
-      <!-- 価格内訳 -->
       <div class="price-breakdown">
         <div class="breakdown-row">
           <span class="breakdown-label">基本料金（〜150cm）</span>
@@ -556,7 +525,6 @@
         </div>
       </div>
 
-      <!-- CTA -->
       <div class="cta-wrap">
         <button class="btn-primary" id="btnCheckout" onclick="addToCart()">
           カートに追加 — 購入手続きへ
@@ -566,12 +534,10 @@
         </a>
       </div>
 
-      <!-- エラー表示 -->
       <div class="checkout-error" id="checkoutError">
         ⚠ エラーが発生しました。しばらく後にもう一度お試しください。
       </div>
 
-      <!-- 注意書き -->
       <ul class="notes">
         <li>受注生産のため、お届けまで約3〜4週間かかります</li>
         <li>施工・取り付けは含まれません（別途ご相談可）</li>
@@ -588,7 +554,7 @@
     <div class="desc-title">Product Details</div>
     <div class="desc-text">
       世界でも第一線の技術力を持つ工房で修行し、鍛冶職人として独立。
-      価格以上の確かな品質で、こすから毎日お使いいただく方の
+      価格以上の確かな品質で、これから毎日お使いいただく方の
       心豊かな暮らしを思い、一本一本丁寧に制作しています。
       <br><br>
       René（ルネ）は、シンプルで普遍的なフォルムの横型手すりです。
@@ -629,21 +595,21 @@
 </footer>
 
 <script>
-  // ── D��格設定 ──────────────────────────────
-  const BASE_PRICE    = 36500;
-  const STD_LENGTH    = 150;
-  const PRICE_PER_CM  = 250;
-  const ZAKIN_PRICE   = 3500;
-  const INCLUDED_ZAKIN= 2;
-  const MIN_ZAKIN     = 4;
-  const END_DIST_MM   = 100;
-  const MAX_SPAN_MM   = 800;
-  const SURGE_START   = 200;
-  const SUP��EBASE    = 1.2;
-  const SURGE_INTERVAL= 50;
-  const TAX_RATE      = 0.10;
+  // 価格設定
+  const BASE_PRICE     = 36500;
+  const STD_LENGTH     = 150;
+  const PRICE_PER_CM   = 250;
+  const ZAKIN_PRICE    = 3500;
+  const INCLUDED_ZAKIN = 2;
+  const MIN_ZAKIN      = 4;
+  const END_DIST_MM    = 100;
+  const MAX_SPAN_MM    = 800;
+  const SURGE_START    = 200;
+  const SURGE_BASE     = 1.2;
+  const SURGE_INTERVAL = 50;
+  const TAX_RATE       = 0.10;
 
-  // ── 計算院数 ──────────────────────────────
+  // 座金数計算
   function calcZakin(lengthCm) {
     const L_mm = lengthCm * 10;
     const span = L_mm - 2 * END_DIST_MM;
@@ -651,25 +617,24 @@
     return Math.max(MIN_ZAKIN, 1 + spans);
   }
 
+  // 価格計算
   function calcPrice(lengthCm) {
-    const addon    = Math.max(0, lengthCm - STD_LENGTH) * PRICE_PER_CM;
-    const longM    = lengthCm > SURGE_START
-                   ? Math.pow(SURGE_BASE, (lengthCm - SURGE_START) / SURGE_INTERVAL)
-                   : 1;
-    const surcharge= lengthCm > SURGE_START ? addon * (longM - 1) : 0;
-    const zakin    = calcZakin(lengthCm);
-    const addZakin = Math.max(0, zakin - INCLUDED_ZAKIN) * ZAKIN_PRICE;
-    const subtotal = BASE_PRICE + addon + addZakin + surcharge;
-    const tax      = subtotal * TAX_RATE;
-    return { addon, surcharge, addZakin, zakin, subtotal, tax,
-             total: subtotal + tax };
+    const addon     = Math.max(0, lengthCm - STD_LENGTH) * PRICE_PER_CM;
+    const longM     = lengthCm > SURGE_START
+                    ? Math.pow(SURGE_BASE, (lengthCm - SURGE_START) / SURGE_INTERVAL)
+                    : 1;
+    const surcharge = lengthCm > SURGE_START ? addon * (longM - 1) : 0;
+    const zakin     = calcZakin(lengthCm);
+    const addZakin  = Math.max(0, zakin - INCLUDED_ZAKIN) * ZAKIN_PRICE;
+    const subtotal  = BASE_PRICE + addon + addZakin + surcharge;
+    const tax       = subtotal * TAX_RATE;
+    return { addon, surcharge, addZakin, zakin, subtotal, tax, total: subtotal + tax };
   }
 
-  // ── 产金図 ──────────────────────────────
+  // 座金配置図
   function buildDiagram(lengthCm, zakinCount) {
     const L_mm = lengthCm * 10;
-    const positions = [];
-    positions.push(100);
+    const positions = [100];
     if (zakinCount > 2) {
       const inner = L_mm - 200;
       const n = zakinCount - 2;
@@ -678,23 +643,16 @@
       }
     }
     positions.push(L_mm - 100);
-    const total = L_mm;
-    const barLen = 40;
-    let bar = '|';
-    let last = 0;
-    positions.forEach(p => {
-      const seg = Math.round((p - last) / total * barLen);
-      bar += '─'.repeat(Math.max(0,seg-1)) + '➗
-      last = p;
-    });
-    const remain = barLen - Math.round((positions[positions.length-1]) / total * barLen);
-    bar += '─'.repeat(Math.max(0,remain)) + '|';
-    return `配置図: ${bar}  （計 ${zakinCount}点）`;
+    return '座金配置: |' + positions.map((p, i) => {
+      const pct = Math.round(p / L_mm * 20);
+      return (i === 0 ? '' : '-'.repeat(Math.max(1, pct))) + '●';
+    }).join('') + '|  （計 ' + zakinCount + '点）';
   }
 
-  // ── UI更新 ──────────────────────────────
+  // 数値フォーマット
   function fmt(n) { return '¥' + Math.round(n).toLocaleString('ja-JP'); }
 
+  // UI更新
   function update(lengthCm) {
     const L = Math.max(50, Math.min(300, Number(lengthCm)));
     const p = calcPrice(L);
@@ -704,9 +662,9 @@
 
     const pct = (L - 50) / 250 * 100;
     document.getElementById('lengthSlider').style.background =
-      `linear-gradient(to right, var(--accent) ${pct}%, var(--line) ${pct}%)`;
+      'linear-gradient(to right, var(--accent) ' + pct + '%, var(--line) ' + pct + '%)';
 
-    document.getElementById('zakinCount').textContent = `${p.zakin} 個`;
+    document.getElementById('zakinCount').textContent = p.zakin + ' 個';
     document.getElementById('zakinDiagram').textContent = buildDiagram(L, p.zakin);
 
     const rowAddon = document.getElementById('rowAddon');
@@ -746,17 +704,16 @@
 
   function switchImg(el, src) {
     document.getElementById('mainImg').src = src;
-    document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.thumb').forEach(function(t) { t.classList.remove('active'); });
     el.classList.add('active');
   }
 
-  // ── Stripe Checkout ──────────────────────
+  // Stripe Checkout
   async function addToCart() {
     const L   = Number(document.getElementById('lengthInput').value);
     const btn = document.getElementById('btnCheckout');
     const errEl = document.getElementById('checkoutError');
 
-    // ボタンをローディング状態に
     btn.disabled = true;
     btn.textContent = '処理中...';
     errEl.style.display = 'none';
@@ -769,12 +726,12 @@
       });
 
       if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        throw new Error(data.error || `HTTP ${res.status}`);
+        const data = await res.json().catch(function() { return {}; });
+        throw new Error(data.error || 'HTTP ' + res.status);
       }
 
       const { url } = await res.json();
-      window.location.href = url; // Stripe Checkoutへリダイレクト
+      window.location.href = url;
 
     } catch (err) {
       console.error('[checkout]', err);
