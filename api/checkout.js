@@ -1,40 +1,39 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-// ── 商品マスター ─────────────────────────────────
+// ── 商品マスター（stdLengthMm: 基本料金に含まれる長さ, maxMm: 最大長さ）──
 const PRODUCTS = {
-  rene:       { name: 'René ルネ',               type: '横型', basePrice: 36500, stdLength: 150, finish: 'マットブラック', includedZakin: 2 },
-  claire:     { name: 'Claire クレール',          type: '横型', basePrice: 42000, stdLength: 150, finish: 'マットホワイト', includedZakin: 2 },
-  emile:      { name: 'Emile エミール',           type: '横型', basePrice: 45800, stdLength: 150, finish: '鎚目仕上げ 銀古美', includedZakin: 2 },
-  marcel:     { name: 'Marcel マルセル',          type: '横型', basePrice: 36000, stdLength: 150, finish: 'マットブラック', includedZakin: 2 },
-  alexandre:  { name: 'Alexandre アレクサンドル', type: '縦型', basePrice: 32000, stdLength: 100, finish: 'マットブラック', includedZakin: 2 },
-  catherine:  { name: 'Catherine カトリーヌ',     type: '縦型', basePrice: 34500, stdLength: 100, finish: 'マットホワイト', includedZakin: 2 },
-  claude:     { name: 'Claude クロード',          type: '縦型', basePrice: 30000, stdLength: 100, finish: 'マットブラック', includedZakin: 2 },
+  rene:       { name: 'René ルネ',               type: '横型', basePrice: 36500, stdLengthMm: 1500, maxMm: 5000, finish: 'マットブラック', includedZakin: 2 },
+  claire:     { name: 'Claire クレール',          type: '横型', basePrice: 42000, stdLengthMm: 1500, maxMm: 5000, finish: 'マットホワイト', includedZakin: 2 },
+  emile:      { name: 'Emile エミール',           type: '横型', basePrice: 45800, stdLengthMm: 1500, maxMm: 5000, finish: '鎚目仕上げ 銀古美', includedZakin: 2 },
+  marcel:     { name: 'Marcel マルセル',          type: '横型', basePrice: 36000, stdLengthMm: 1500, maxMm: 5000, finish: 'マットブラック', includedZakin: 2 },
+  alexandre:  { name: 'Alexandre アレクサンドル', type: '縦型', basePrice: 32000, stdLengthMm: 1000, maxMm: 3000, finish: 'マットブラック', includedZakin: 2 },
+  catherine:  { name: 'Catherine カトリーヌ',     type: '縦型', basePrice: 34500, stdLengthMm: 1000, maxMm: 3000, finish: 'マットホワイト', includedZakin: 2 },
+  claude:     { name: 'Claude クロード',          type: '縦型', basePrice: 30000, stdLengthMm: 1000, maxMm: 3000, finish: 'マットブラック', includedZakin: 2 },
 };
 
-// ── 共通価格パラメータ ──────────────────────────────
-const PRICE_PER_CM   = 250;
-const ZAKIN_PRICE    = 3500;
-const END_DIST_MM    = 100;
-const MAX_SPAN_MM    = 850;
-const SURGE_START    = 200;
-const SURGE_BASE     = 1.2;
-const SURGE_INTERVAL = 50;
-const TAX_RATE       = 0.10;
+// ── 共通価格パラメータ（mm単位）──
+const PRICE_PER_MM    = 25;
+const ZAKIN_PRICE     = 3500;
+const END_DIST_MM     = 100;
+const MAX_SPAN_MM     = 850;
+const SURGE_START_MM  = 2000;
+const SURGE_BASE      = 1.2;
+const SURGE_INTERVAL_MM = 500;
+const TAX_RATE        = 0.10;
 
-function calcZakin(lengthCm) {
-  const L_mm = lengthCm * 10;
+function calcZakin(L_mm) {
   if (L_mm <= 1050) return 2;
   const inner = L_mm - 2 * END_DIST_MM;
   return 1 + Math.ceil(inner / MAX_SPAN_MM);
 }
 
-function calcPrice(lengthCm, prod) {
-  const addon    = Math.max(0, lengthCm - prod.stdLength) * PRICE_PER_CM;
-  const longM    = lengthCm > SURGE_START
-                 ? Math.pow(SURGE_BASE, (lengthCm - SURGE_START) / SURGE_INTERVAL)
+function calcPrice(L_mm, prod) {
+  const addon    = Math.max(0, L_mm - prod.stdLengthMm) * PRICE_PER_MM;
+  const longM    = L_mm > SURGE_START_MM
+                 ? Math.pow(SURGE_BASE, (L_mm - SURGE_START_MM) / SURGE_INTERVAL_MM)
                  : 1;
-  const surcharge = lengthCm > SURGE_START ? addon * (longM - 1) : 0;
-  const zakin     = calcZakin(lengthCm);
+  const surcharge = L_mm > SURGE_START_MM ? addon * (longM - 1) : 0;
+  const zakin     = calcZakin(L_mm);
   const addZakin  = Math.max(0, zakin - prod.includedZakin) * ZAKIN_PRICE;
   const subtotal  = prod.basePrice + addon + addZakin + surcharge;
   const tax       = subtotal * TAX_RATE;
@@ -55,8 +54,8 @@ module.exports = async (req, res) => {
     const prod = PRODUCTS[productKey];
     if (!prod) return res.status(400).json({ error: `不明な商品: ${productKey}` });
 
-    const raw = req.body?.lengthCm;
-    const L   = Math.max(50, Math.min(300, Math.round(Number(raw) || prod.stdLength)));
+    const raw = req.body?.lengthMm || req.body?.lengthCm && req.body.lengthCm * 10;
+    const L   = Math.max(500, Math.min(prod.maxMm, Math.round(Number(raw) || prod.stdLengthMm)));
     const p   = calcPrice(L, prod);
     const totalYen = Math.round(p.total);
 
@@ -69,7 +68,7 @@ module.exports = async (req, res) => {
         price_data: {
           currency: 'jpy',
           product_data: {
-            name: `${prod.name} 壁付け手すり ${L}cm`,
+            name: `${prod.name} 壁付け手すり ${L}mm`,
             description: `${prod.finish} / 座金${p.zakin}個 / 受注生産 約3〜4週間`,
           },
           unit_amount: totalYen,
@@ -83,14 +82,14 @@ module.exports = async (req, res) => {
         product:      productKey,
         product_name: prod.name,
         type:         prod.type,
-        length_cm:    String(L),
+        length_mm:    String(L),
         zakin_count:  String(p.zakin),
         subtotal_yen: String(Math.round(p.subtotal)),
         tax_yen:      String(Math.round(p.tax)),
       },
       locale: 'ja',
       payment_intent_data: {
-        description: `IRONWORKS ado — ${prod.name} ${L}cm`,
+        description: `IRONWORKS ado — ${prod.name} ${L}mm`,
       },
     });
 
