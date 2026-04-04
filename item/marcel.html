@@ -55,7 +55,19 @@
       padding: 60px 40px; max-width: 1400px; margin: 0 auto;
     }
 
-    .product-image { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--dark); }
+    /* GALLERY */
+    .gallery { position: relative; }
+    .main-image { width: 100%; aspect-ratio: 1/1; background: var(--dark); overflow: hidden; position: relative; }
+    .main-image img { width: 100%; height: 100%; object-fit: cover; transition: opacity .3s ease; }
+    .gallery-nav { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
+    .gallery-nav button { pointer-events: auto; background: rgba(0,0,0,0.4); border: none; color: #f5f5f5; font-size: 28px; width: 48px; height: 48px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .3s; }
+    .main-image:hover ~ .gallery-nav button, .gallery-nav:hover button { opacity: 1; }
+    .gallery-nav button:hover { background: rgba(0,0,0,0.7); }
+    .gallery-counter { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.5); color: #f5f5f5; font-size: 11px; padding: 4px 10px; letter-spacing: 0.1em; }
+    .thumbs { display: flex; gap: 4px; margin-top: 8px; overflow-x: auto; scrollbar-width: thin; }
+    .thumb { width: 56px; height: 56px; flex-shrink: 0; background: var(--dark); border: 2px solid transparent; cursor: pointer; overflow: hidden; transition: border-color .2s; }
+    .thumb.active { border-color: var(--accent); }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; }
 
     .product-details h1 { font-size: 32px; font-weight: normal; margin-bottom: 10px; letter-spacing: 0.05em; }
     .product-details .subtitle { font-size: 13px; color: var(--muted); margin-bottom: 30px; text-transform: uppercase; letter-spacing: 0.1em; }
@@ -173,7 +185,17 @@
     </div>
 
     <div class="product-hero">
-      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/939d0690971c550c1dd9.jpg/public" alt="Marcel マルセル" class="product-image">
+      <div class="gallery">
+        <div class="main-image">
+          <img id="mainImg" src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/939d0690971c550c1dd9.jpg/public" alt="Marcel マルセル">
+        </div>
+        <div class="gallery-nav">
+          <button onclick="galleryPrev()">&#8249;</button>
+          <button onclick="galleryNext()">&#8250;</button>
+        </div>
+        <div class="gallery-counter" id="galleryCounter">1 / 17</div>
+        <div class="thumbs" id="thumbStrip"></div>
+      </div>
 
       <div class="product-details">
         <h1>Marcel</h1>
@@ -294,6 +316,43 @@
     <p class="logo-f">IRONWORKS <span>ADO</span></p>
     <p class="copy">&copy; 2025 IRONWORKS ado</p>
   </footer>
+<script>
+  var GALLERY_BASE = 'https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/';
+  var GALLERY_IDS = [
+    '939d0690971c550c1dd9.jpg','a3959136fa0812a028ab.jpg','c3d3980716a89741f308.jpg',
+    'c65c9c3e16afcb54dfd1.jpg','918bdf512ec60b0714fc.jpg','6ae94e74595cc9233f9a.jpg',
+    'c75334af59eaf090d4c2.jpg','f9eb8a412c6eb57c2c75.jpg','f1e384f0c04e4aa41cd2.jpg',
+    '6024fde062d0eba1a6ea.jpg','90b7b10f6116554b5c8d.jpg','2eac76404e96056b6e86.jpg',
+    'a9681609b2a2cbb8d71d.jpg','de07eb4bda3c3bc1a6d9.jpg','3ab4501143e0c6e65e21.jpg',
+    'acbe409bf05b3cefdd7c.jpg','0121262109ff2b470d7c.jpg'
+  ];
+  var galleryIdx = 0;
+  function galleryUrl(id) { return GALLERY_BASE + id + '/public'; }
+  function galleryGo(i) {
+    galleryIdx = (i + GALLERY_IDS.length) % GALLERY_IDS.length;
+    document.getElementById('mainImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
+    document.getElementById('galleryCounter').textContent = (galleryIdx + 1) + ' / ' + GALLERY_IDS.length;
+    document.querySelectorAll('.thumb').forEach(function(t, j) { t.classList.toggle('active', j === galleryIdx); });
+    var active = document.querySelector('.thumb.active');
+    if (active) active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+  }
+  function galleryPrev() { galleryGo(galleryIdx - 1); }
+  function galleryNext() { galleryGo(galleryIdx + 1); }
+  (function() {
+    var strip = document.getElementById('thumbStrip');
+    GALLERY_IDS.forEach(function(id, i) {
+      var div = document.createElement('div');
+      div.className = 'thumb' + (i === 0 ? ' active' : '');
+      div.onclick = function() { galleryGo(i); };
+      var img = document.createElement('img');
+      img.src = galleryUrl(id);
+      img.alt = '';
+      img.loading = 'lazy';
+      div.appendChild(img);
+      strip.appendChild(div);
+    });
+  })();
+</script>
 <script>
   const BASE_PRICE    = 36000;
   const STD_LENGTH    = 150;
