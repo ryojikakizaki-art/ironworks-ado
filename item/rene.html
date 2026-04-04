@@ -460,7 +460,7 @@
       </div>
       <div class="spec-item">
         <div class="spec-label">標準長さ</div>
-        <div class="spec-value">〜150cm 一律料金</div>
+        <div class="spec-value">〜1500mm 一律料金</div>
       </div>
     </div>
 
@@ -473,22 +473,22 @@
       <div class="input-group">
         <div class="input-label">
           <span>ご希望の長さ</span>
-          <span class="input-hint">50cm 〜 300cm</span>
+          <span class="input-hint">500mm 〜 5000mm</span>
         </div>
         <div class="length-input-wrap">
           <input type="number" id="lengthInput"
-            value="150" min="50" max="300" step="1"
+            value="1500" min="500" max="5000" step="10"
             oninput="onLengthChange(this.value)">
-          <div class="length-unit">cm</div>
+          <div class="length-unit">mm</div>
         </div>
         <input type="range" class="length-slider" id="lengthSlider"
-          min="50" max="300" step="1" value="150"
+          min="500" max="5000" step="10" value="1500"
           oninput="onSliderChange(this.value)">
         <div class="slider-labels">
-          <span>50cm</span>
-          <span>150cm（標準）</span>
-          <span>200cm（長尺）</span>
-          <span>300cm</span>
+          <span>500</span>
+          <span>1500（標準）</span>
+          <span>2000（長尺）</span>
+          <span>5000mm</span>
         </div>
       </div>
 
@@ -501,13 +501,13 @@
       </div>
 
       <div class="surcharge-notice" id="surchargeNotice">
-        ⚠ 200cmを超えると長尺割増が加算されます。取り回しや施工の難易度が上がるため、
+        ⚠ 2000mmを超えると長尺割増が加算されます。取り回しや施工の難易度が上がるため、
         事前に設置場所のご確認をお勧めします。
       </div>
 
       <div class="price-breakdown">
         <div class="breakdown-row">
-          <span class="breakdown-label">基本料金（〜150cm）</span>
+          <span class="breakdown-label">基本料金（〜1500mm）</span>
           <span class="breakdown-value">¥36,500</span>
         </div>
         <div class="breakdown-row" id="rowAddon" style="display:none">
@@ -584,7 +584,7 @@
         <div class="feature-icon">⟳</div>
         <div class="feature-content">
           <div class="feature-title">セミオーダー対応</div>
-          <div class="feature-desc">50〜300cmの範囲でご希望のサイズに制作します。座金位置も構造計算に基づき最適配置。</div>
+          <div class="feature-desc">500〜5000mmの範囲でご希望のサイズに制作します。座金位置も構造計算に基づき最適配置。</div>
         </div>
       </div>
       <div class="feature-item">
@@ -610,35 +610,35 @@
 </footer>
 
 <script>
-  // 価格設定
+  // 価格設定（単位: mm）
   const BASE_PRICE     = 36500;
-  const STD_LENGTH     = 150;
-  const PRICE_PER_CM   = 250;
+  const STD_LENGTH_MM  = 1500;
+  const PRICE_PER_MM   = 25;
   const ZAKIN_PRICE    = 3500;
   const INCLUDED_ZAKIN = 2;
   const END_DIST_MM    = 100;
   const MAX_SPAN_MM    = 850;
-  const SURGE_START    = 200;
+  const SURGE_START_MM = 2000;
   const SURGE_BASE     = 1.2;
-  const SURGE_INTERVAL = 50;
+  const SURGE_INTERVAL_MM = 500;
   const TAX_RATE       = 0.10;
+  const MAX_LENGTH_MM  = 5000;
 
   // 座金数計算（1050mm以下=2点、1051mm以上=3点〜、最大間隔850mm）
-  function calcZakin(lengthCm) {
-    const L_mm = lengthCm * 10;
+  function calcZakin(L_mm) {
     if (L_mm <= 1050) return 2;
     const inner = L_mm - 2 * END_DIST_MM;
     return 1 + Math.ceil(inner / MAX_SPAN_MM);
   }
 
-  // 価格計算
-  function calcPrice(lengthCm) {
-    const addon     = Math.max(0, lengthCm - STD_LENGTH) * PRICE_PER_CM;
-    const longM     = lengthCm > SURGE_START
-                    ? Math.pow(SURGE_BASE, (lengthCm - SURGE_START) / SURGE_INTERVAL)
+  // 価格計算（入力はmm）
+  function calcPrice(L_mm) {
+    const addon     = Math.max(0, L_mm - STD_LENGTH_MM) * PRICE_PER_MM;
+    const longM     = L_mm > SURGE_START_MM
+                    ? Math.pow(SURGE_BASE, (L_mm - SURGE_START_MM) / SURGE_INTERVAL_MM)
                     : 1;
-    const surcharge = lengthCm > SURGE_START ? addon * (longM - 1) : 0;
-    const zakin     = calcZakin(lengthCm);
+    const surcharge = L_mm > SURGE_START_MM ? addon * (longM - 1) : 0;
+    const zakin     = calcZakin(L_mm);
     const addZakin  = Math.max(0, zakin - INCLUDED_ZAKIN) * ZAKIN_PRICE;
     const subtotal  = BASE_PRICE + addon + addZakin + surcharge;
     const tax       = subtotal * TAX_RATE;
@@ -646,8 +646,7 @@
   }
 
   // 座金配置図（両端100mm固定、中間は均等配置）
-  function buildDiagram(lengthCm, zakinCount) {
-    const L_mm = lengthCm * 10;
+  function buildDiagram(L_mm, zakinCount) {
     const positions = [100];
     if (zakinCount > 2) {
       const inner = L_mm - 200;
@@ -672,15 +671,15 @@
   // 数値フォーマット
   function fmt(n) { return '¥' + Math.round(n).toLocaleString('ja-JP'); }
 
-  // UI更新
-  function update(lengthCm) {
-    const L = Math.max(50, Math.min(300, Number(lengthCm)));
+  // UI更新（入力はmm）
+  function update(lengthMm) {
+    const L = Math.max(500, Math.min(MAX_LENGTH_MM, Math.round(Number(lengthMm) / 10) * 10));
     const p = calcPrice(L);
 
     document.getElementById('lengthInput').value  = L;
     document.getElementById('lengthSlider').value = L;
 
-    const pct = (L - 50) / 250 * 100;
+    const pct = (L - 500) / (MAX_LENGTH_MM - 500) * 100;
     document.getElementById('lengthSlider').style.background =
       'linear-gradient(to right, var(--accent) ' + pct + '%, var(--line) ' + pct + '%)';
 
@@ -786,7 +785,7 @@
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product: 'rene', lengthCm: L }),
+        body: JSON.stringify({ product: 'rene', lengthMm: L }),
       });
 
       if (!res.ok) {
@@ -806,7 +805,7 @@
   }
 
   // 初期描画
-  update(150);
+  update(1500);
 </script>
 </body>
 </html>

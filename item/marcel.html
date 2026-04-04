@@ -222,7 +222,7 @@
           </div>
           <div class="spec-item">
             <span class="spec-label">標準寸法</span>
-            <span class="spec-value">長さ〜150cm 一律料金</span>
+            <span class="spec-value">長さ〜1500mm 一律料金</span>
           </div>
           <div class="spec-item">
             <span class="spec-label">納期</span>
@@ -235,15 +235,15 @@
           <div class="input-group">
             <div class="input-label">
               <span>ご希望の長さ</span>
-              <span class="input-hint">50cm 〜 300cm</span>
+              <span class="input-hint">500mm 〜 5000mm</span>
             </div>
             <div class="length-input-wrap">
-              <input type="number" id="lengthInput" value="150" min="50" max="300" step="1" oninput="onLengthChange(this.value)">
-              <div class="length-unit">cm</div>
+              <input type="number" id="lengthInput" value="1500" min="500" max="5000" step="10" oninput="onLengthChange(this.value)">
+              <div class="length-unit">mm</div>
             </div>
-            <input type="range" class="length-slider" id="lengthSlider" min="50" max="300" step="1" value="150" oninput="onSliderChange(this.value)">
+            <input type="range" class="length-slider" id="lengthSlider" min="500" max="5000" step="10" value="1500" oninput="onSliderChange(this.value)">
             <div class="slider-labels">
-              <span>50cm</span><span>150cm（標準）</span><span>200cm（長尺）</span><span>300cm</span>
+              <span>500</span><span>1500（標準）</span><span>2000（長尺）</span><span>5000mm</span>
             </div>
           </div>
           <div class="zakin-info">
@@ -254,11 +254,11 @@
             <div class="zakin-diagram" id="zakinDiagram"></div>
           </div>
           <div class="surcharge-notice" id="surchargeNotice">
-            ⚠ 200cmを超えると長尺割増が加算されます。取り回しや施工の難易度が上がるため、事前に設置場所のご確認をお勧めします。
+            ⚠ 2000mmを超えると長尺割増が加算されます。取り回しや施工の難易度が上がるため、事前に設置場所のご確認をお勧めします。
           </div>
           <div class="price-breakdown">
             <div class="breakdown-row">
-              <span class="breakdown-label">基本料金（〜150cm）</span>
+              <span class="breakdown-label">基本料金（〜1500mm）</span>
               <span class="breakdown-value">¥36,000</span>
             </div>
             <div class="breakdown-row" id="rowAddon" style="display:none">
@@ -361,38 +361,37 @@
 </script>
 <script>
   const BASE_PRICE    = 36000;
-  const STD_LENGTH    = 150;
-  const PRICE_PER_CM  = 250;
+  const STD_LENGTH_MM = 1500;
+  const PRICE_PER_MM  = 25;
   const ZAKIN_PRICE   = 3500;
   const INCLUDED_ZAKIN= 2;
   const END_DIST_MM   = 100;
   const MAX_SPAN_MM   = 850;
-  const SURGE_START   = 200;
+  const SURGE_START_MM= 2000;
   const SURGE_BASE    = 1.2;
-  const SURGE_INTERVAL= 50;
+  const SURGE_INTERVAL_MM= 500;
   const TAX_RATE      = 0.10;
+  const MAX_LENGTH_MM = 5000;
   const PRODUCT_KEY   = 'marcel';
 
-  function calcZakin(lengthCm) {
-    const L_mm = lengthCm * 10;
+  function calcZakin(L_mm) {
     if (L_mm <= 1050) return 2;
     const inner = L_mm - 2 * END_DIST_MM;
     return 1 + Math.ceil(inner / MAX_SPAN_MM);
   }
 
-  function calcPrice(lengthCm) {
-    const addon    = Math.max(0, lengthCm - STD_LENGTH) * PRICE_PER_CM;
-    const longM    = lengthCm > SURGE_START ? Math.pow(SURGE_BASE, (lengthCm - SURGE_START) / SURGE_INTERVAL) : 1;
-    const surcharge= lengthCm > SURGE_START ? addon * (longM - 1) : 0;
-    const zakin    = calcZakin(lengthCm);
+  function calcPrice(L_mm) {
+    const addon    = Math.max(0, L_mm - STD_LENGTH_MM) * PRICE_PER_MM;
+    const longM    = L_mm > SURGE_START_MM ? Math.pow(SURGE_BASE, (L_mm - SURGE_START_MM) / SURGE_INTERVAL_MM) : 1;
+    const surcharge= L_mm > SURGE_START_MM ? addon * (longM - 1) : 0;
+    const zakin    = calcZakin(L_mm);
     const addZakin = Math.max(0, zakin - INCLUDED_ZAKIN) * ZAKIN_PRICE;
     const subtotal = BASE_PRICE + addon + addZakin + surcharge;
     const tax      = subtotal * TAX_RATE;
     return { addon, surcharge, addZakin, zakin, subtotal, tax, total: subtotal + tax };
   }
 
-  function buildDiagram(lengthCm, zakinCount) {
-    const L_mm = lengthCm * 10;
+  function buildDiagram(L_mm, zakinCount) {
     const positions = [100];
     if (zakinCount > 2) {
       const inner = L_mm - 200;
@@ -416,12 +415,12 @@
 
   function fmt(n) { return '\u00A5' + Math.round(n).toLocaleString('ja-JP'); }
 
-  function update(lengthCm) {
-    const L = Math.max(50, Math.min(300, Number(lengthCm)));
+  function update(lengthMm) {
+    const L = Math.max(500, Math.min(MAX_LENGTH_MM, Math.round(Number(lengthMm) / 10) * 10));
     const p = calcPrice(L);
     document.getElementById('lengthInput').value = L;
     document.getElementById('lengthSlider').value = L;
-    const pct = (L - 50) / 250 * 100;
+    const pct = (L - 500) / (MAX_LENGTH_MM - 500) * 100;
     document.getElementById('lengthSlider').style.background = 'linear-gradient(to right, var(--accent) ' + pct + '%, var(--line) ' + pct + '%)';
     document.getElementById('zakinCount').textContent = p.zakin + ' \u500B';
     document.getElementById('zakinDiagram').textContent = buildDiagram(L, p.zakin);
@@ -446,7 +445,7 @@
     const errEl = document.getElementById('checkoutError');
     btn.disabled = true; btn.textContent = '\u51E6\u7406\u4E2D...'; errEl.style.display = 'none';
     try {
-      const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product: PRODUCT_KEY, lengthCm: L }) });
+      const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product: PRODUCT_KEY, lengthMm: L }) });
       if (!res.ok) { const data = await res.json().catch(() => ({})); throw new Error(data.error || 'HTTP ' + res.status); }
       const { url } = await res.json();
       window.location.href = url;
@@ -456,7 +455,7 @@
     }
   }
 
-  update(150);
+  update(1500);
 </script>
 </body>
 </html>
