@@ -111,12 +111,19 @@
       margin: 0 auto;
     }
 
-    .product-image {
-      width: 100%;
-      aspect-ratio: 1;
-      object-fit: cover;
-      background: var(--dark);
-    }
+    /* GALLERY */
+    .gallery { position: relative; }
+    .main-image { width: 100%; aspect-ratio: 1/1; background: var(--dark); overflow: hidden; position: relative; }
+    .main-image img { width: 100%; height: 100%; object-fit: cover; transition: opacity .3s ease; }
+    .gallery-nav { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
+    .gallery-nav button { pointer-events: auto; background: rgba(0,0,0,0.4); border: none; color: #f5f5f5; font-size: 28px; width: 48px; height: 48px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .3s; }
+    .main-image:hover ~ .gallery-nav button, .gallery-nav:hover button { opacity: 1; }
+    .gallery-nav button:hover { background: rgba(0,0,0,0.7); }
+    .gallery-counter { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.5); color: #f5f5f5; font-size: 11px; padding: 4px 10px; letter-spacing: 0.1em; }
+    .thumbs { display: flex; gap: 4px; margin-top: 8px; overflow-x: auto; scrollbar-width: thin; }
+    .thumb { width: 56px; height: 56px; flex-shrink: 0; background: var(--dark); border: 2px solid transparent; cursor: pointer; overflow: hidden; transition: border-color .2s; }
+    .thumb.active { border-color: var(--accent); }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; }
 
     .product-details h1 {
       font-size: 32px;
@@ -360,7 +367,17 @@
     </div>
 
     <div class="product-hero">
-      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/0a0c0c78f9f636cca733.jpg/public" alt="Claire クレール" class="product-image">
+      <div class="gallery">
+        <div class="main-image">
+          <img id="mainImg" src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/0a0c0c78f9f636cca733.jpg/public" alt="Claire クレール">
+        </div>
+        <div class="gallery-nav">
+          <button onclick="galleryPrev()">&#8249;</button>
+          <button onclick="galleryNext()">&#8250;</button>
+        </div>
+        <div class="gallery-counter" id="galleryCounter">1 / 24</div>
+        <div class="thumbs" id="thumbStrip"></div>
+      </div>
 
       <div class="product-details">
         <h1>Claire</h1>
@@ -481,6 +498,45 @@
     <p class="logo-f">IRONWORKS <span>ADO</span></p>
     <p class="copy">&copy; 2025 IRONWORKS ado</p>
   </footer>
+<script>
+  var GALLERY_BASE = 'https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/';
+  var GALLERY_IDS = [
+    '0a0c0c78f9f636cca733.jpg','eae60ee60278fdc5aef7.jpg','7669ac50e3027f2f4056.jpg',
+    '5bda48c8598f2c5e0fa4.jpg','28918bd828b8c4793b5a.jpg','1eb8f8e79ab4b31ec686.jpg',
+    '374085d195f2bd44031e.jpg','d7840abff7cfd7a131bb.jpg','cc1ea26a6a478049a3a1.jpg',
+    '0fb17f6f640b5245e77d.jpg','5d4d6b92202ca5bb041b.jpg','53f698a1ab1ec93519e2.jpg',
+    'df41b26c077e3e52e10c.jpg','c0b0cb5a64f885dc1253.jpg','102be58797d82ee14f65.jpg',
+    '0b272022f9aba67d8894.jpg','1bd38b194fc0153fe861.jpg','115127d7d836eea83193.jpg',
+    'ad9843b14844b53c2370.jpg','9bd7c49c093569f7c3e3.jpg','6e7454ad84c24a43c1ae.jpg',
+    'bb34c201580ca0240c31.jpg','93e0cdb295c2bf73c357.jpg','4e118a43e6e6a5fa942b.jpg'
+  ];
+  var galleryIdx = 0;
+  function galleryUrl(id) { return GALLERY_BASE + id + '/public'; }
+  function galleryGo(i) {
+    galleryIdx = (i + GALLERY_IDS.length) % GALLERY_IDS.length;
+    document.getElementById('mainImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
+    document.getElementById('galleryCounter').textContent = (galleryIdx + 1) + ' / ' + GALLERY_IDS.length;
+    document.querySelectorAll('.thumb').forEach(function(t, j) { t.classList.toggle('active', j === galleryIdx); });
+    var active = document.querySelector('.thumb.active');
+    if (active) active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+  }
+  function galleryPrev() { galleryGo(galleryIdx - 1); }
+  function galleryNext() { galleryGo(galleryIdx + 1); }
+  (function() {
+    var strip = document.getElementById('thumbStrip');
+    GALLERY_IDS.forEach(function(id, i) {
+      var div = document.createElement('div');
+      div.className = 'thumb' + (i === 0 ? ' active' : '');
+      div.onclick = function() { galleryGo(i); };
+      var img = document.createElement('img');
+      img.src = galleryUrl(id);
+      img.alt = '';
+      img.loading = 'lazy';
+      div.appendChild(img);
+      strip.appendChild(div);
+    });
+  })();
+</script>
 <script>
   const BASE_PRICE    = 42000;
   const STD_LENGTH    = 150;

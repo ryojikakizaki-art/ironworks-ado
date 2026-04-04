@@ -33,7 +33,6 @@
     .breadcrumb a:hover { color: var(--accent); }
 
     .product-hero { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; padding: 60px 40px; max-width: 1400px; margin: 0 auto; }
-    .product-image { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--dark); }
 
     .product-details h1 { font-size: 32px; font-weight: normal; margin-bottom: 10px; letter-spacing: 0.05em; }
     .product-details .subtitle { font-size: 13px; color: var(--muted); margin-bottom: 30px; text-transform: uppercase; letter-spacing: 0.1em; }
@@ -113,6 +112,20 @@
     .notes li { list-style: none; padding-left: 12px; position: relative; }
     .notes li::before { content: "—"; position: absolute; left: 0; }
 
+    /* GALLERY */
+    .gallery { position: relative; }
+    .main-image { width: 100%; aspect-ratio: 1/1; background: var(--dark); overflow: hidden; position: relative; }
+    .main-image img { width: 100%; height: 100%; object-fit: cover; transition: opacity .3s ease; }
+    .gallery-nav { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
+    .gallery-nav button { pointer-events: auto; background: rgba(0,0,0,0.4); border: none; color: #f5f5f5; font-size: 28px; width: 48px; height: 48px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .3s; }
+    .main-image:hover ~ .gallery-nav button, .gallery-nav:hover button { opacity: 1; }
+    .gallery-nav button:hover { background: rgba(0,0,0,0.7); }
+    .gallery-counter { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.5); color: #f5f5f5; font-size: 11px; padding: 4px 10px; letter-spacing: 0.1em; }
+    .thumbs { display: flex; gap: 4px; margin-top: 8px; overflow-x: auto; scrollbar-width: thin; }
+    .thumb { width: 56px; height: 56px; flex-shrink: 0; background: var(--dark); border: 2px solid transparent; cursor: pointer; overflow: hidden; transition: border-color .2s; }
+    .thumb.active { border-color: var(--accent); }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; }
+
     @media (max-width: 768px) {
       header { padding: 0 20px; } header nav { gap: 20px; } .product-hero { grid-template-columns: 1fr; gap: 30px; padding: 30px 20px; } .product-details h1 { font-size: 24px; } .spec-item { grid-template-columns: 1fr; gap: 8px; } .description-section { padding: 30px 20px; margin: 40px auto; } .breadcrumb { padding: 15px 20px; } footer { flex-direction: column; gap: 20px; text-align: center; }
     }
@@ -136,7 +149,17 @@
     </div>
 
     <div class="product-hero">
-      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/8775cfcb40298257834a.jpg/public" alt="Catherine カトリーヌ" class="product-image">
+      <div class="gallery">
+        <div class="main-image">
+          <img id="mainImg" src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/8775cfcb40298257834a.jpg/public" alt="Catherine カトリーヌ">
+        </div>
+        <div class="gallery-nav">
+          <button onclick="galleryPrev()">&#8249;</button>
+          <button onclick="galleryNext()">&#8250;</button>
+        </div>
+        <div class="gallery-counter" id="galleryCounter">1 / 22</div>
+        <div class="thumbs" id="thumbStrip"></div>
+      </div>
 
       <div class="product-details">
         <h1>Catherine</h1>
@@ -257,6 +280,45 @@
     <p class="logo-f">IRONWORKS <span>ADO</span></p>
     <p class="copy">&copy; 2025 IRONWORKS ado</p>
   </footer>
+<script>
+  var GALLERY_BASE = 'https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/';
+  var GALLERY_IDS = [
+    '8775cfcb40298257834a.jpg','5e4377eb8cce3ba15572.jpg','8e9f10b474c179961a81.jpg',
+    'f4a030f56d5784dc460c.jpg','dfc095e36e07842b1e1a.jpg','be8ace3369f4527a90ce.jpg',
+    '340d022f48e0aee6e96b.jpg','0867afe603e501db8ede.jpg','8f88e87c208e9273ed2a.jpg',
+    '99fc87f58c4321ab6a5f.jpg','dd16c6f3769ef886a8eb.jpg','82e1cc3d3168d6f46cd8.jpg',
+    '156414dbec3475dec9ae.jpg','b086a4aa3dae8339d586.jpg','c176c6746b8db4bf6b8f.jpg',
+    'd706b98edf0298cb0fde.jpg','e52b2cf97144be5b3ad9.jpg','bdac7a64dc3c49e65541.jpg',
+    '4d8beb3b89354bf181bf.jpg','b8fd8dbbe2b28beff3f1.jpg','33d99fc7e30df4dc8983.jpg',
+    '0c87b33aaf166d4e805e.jpg'
+  ];
+  var galleryIdx = 0;
+  function galleryUrl(id) { return GALLERY_BASE + id + '/public'; }
+  function galleryGo(i) {
+    galleryIdx = (i + GALLERY_IDS.length) % GALLERY_IDS.length;
+    document.getElementById('mainImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
+    document.getElementById('galleryCounter').textContent = (galleryIdx + 1) + ' / ' + GALLERY_IDS.length;
+    document.querySelectorAll('.thumb').forEach(function(t, j) { t.classList.toggle('active', j === galleryIdx); });
+    var active = document.querySelector('.thumb.active');
+    if (active) active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+  }
+  function galleryPrev() { galleryGo(galleryIdx - 1); }
+  function galleryNext() { galleryGo(galleryIdx + 1); }
+  (function() {
+    var strip = document.getElementById('thumbStrip');
+    GALLERY_IDS.forEach(function(id, i) {
+      var div = document.createElement('div');
+      div.className = 'thumb' + (i === 0 ? ' active' : '');
+      div.onclick = function() { galleryGo(i); };
+      var img = document.createElement('img');
+      img.src = galleryUrl(id);
+      img.alt = '';
+      img.loading = 'lazy';
+      div.appendChild(img);
+      strip.appendChild(div);
+    });
+  })();
+</script>
 <script>
   const BASE_PRICE    = 34500;
   const STD_LENGTH    = 100;

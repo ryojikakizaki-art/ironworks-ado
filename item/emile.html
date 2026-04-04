@@ -55,7 +55,6 @@
       padding: 60px 40px; max-width: 1400px; margin: 0 auto;
     }
 
-    .product-image { width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--dark); }
 
     .product-details h1 { font-size: 32px; font-weight: normal; margin-bottom: 10px; letter-spacing: 0.05em; }
     .product-details .subtitle { font-size: 13px; color: var(--muted); margin-bottom: 30px; text-transform: uppercase; letter-spacing: 0.1em; }
@@ -143,6 +142,20 @@
     .notes li { list-style: none; padding-left: 12px; position: relative; }
     .notes li::before { content: "—"; position: absolute; left: 0; }
 
+    /* GALLERY */
+    .gallery { position: relative; }
+    .main-image { width: 100%; aspect-ratio: 1/1; background: var(--dark); overflow: hidden; position: relative; }
+    .main-image img { width: 100%; height: 100%; object-fit: cover; transition: opacity .3s ease; }
+    .gallery-nav { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
+    .gallery-nav button { pointer-events: auto; background: rgba(0,0,0,0.4); border: none; color: #f5f5f5; font-size: 28px; width: 48px; height: 48px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity .3s; }
+    .main-image:hover ~ .gallery-nav button, .gallery-nav:hover button { opacity: 1; }
+    .gallery-nav button:hover { background: rgba(0,0,0,0.7); }
+    .gallery-counter { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.5); color: #f5f5f5; font-size: 11px; padding: 4px 10px; letter-spacing: 0.1em; }
+    .thumbs { display: flex; gap: 4px; margin-top: 8px; overflow-x: auto; scrollbar-width: thin; }
+    .thumb { width: 56px; height: 56px; flex-shrink: 0; background: var(--dark); border: 2px solid transparent; cursor: pointer; overflow: hidden; transition: border-color .2s; }
+    .thumb.active { border-color: var(--accent); }
+    .thumb img { width: 100%; height: 100%; object-fit: cover; }
+
     @media (max-width: 768px) {
       header { padding: 0 20px; }
       header nav { gap: 20px; }
@@ -173,7 +186,17 @@
     </div>
 
     <div class="product-hero">
-      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/fa95f550baa05216d291.jpg/public" alt="Emile エミール" class="product-image">
+      <div class="gallery">
+        <div class="main-image">
+          <img id="mainImg" src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/fa95f550baa05216d291.jpg/public" alt="Emile エミール">
+        </div>
+        <div class="gallery-nav">
+          <button onclick="galleryPrev()">&#8249;</button>
+          <button onclick="galleryNext()">&#8250;</button>
+        </div>
+        <div class="gallery-counter" id="galleryCounter">1 / 16</div>
+        <div class="thumbs" id="thumbStrip"></div>
+      </div>
 
       <div class="product-details">
         <h1>Emile</h1>
@@ -294,6 +317,43 @@
     <p class="logo-f">IRONWORKS <span>ADO</span></p>
     <p class="copy">&copy; 2025 IRONWORKS ado</p>
   </footer>
+<script>
+  var GALLERY_BASE = 'https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/';
+  var GALLERY_IDS = [
+    'fa95f550baa05216d291.jpg','52eb04f0bc4006be50ab.jpg','ad5c57a5a6d663f39de5.jpg',
+    'c31fc7db2bfd832d548d.jpg','f5a0332bb1ab9928a512.jpg','7feab012748952757a3c.jpg',
+    'a7781d91b2f4ffc4ff82.jpg','913ca1e1d0d87ec6b477.jpg','ffba9c3dfa8dbdd0692f.jpg',
+    '55e325fefaf128867661.jpg','d45406d07efddd68dee9.jpg','ec4cf1df9faef6c8875d.jpg',
+    'df7275a5e72204c7044c.jpg','4520446536bce11b67e2.jpg','55f37f48b3b04c253dd6.jpg',
+    '4b1c1130fefdfea3a146.jpg'
+  ];
+  var galleryIdx = 0;
+  function galleryUrl(id) { return GALLERY_BASE + id + '/public'; }
+  function galleryGo(i) {
+    galleryIdx = (i + GALLERY_IDS.length) % GALLERY_IDS.length;
+    document.getElementById('mainImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
+    document.getElementById('galleryCounter').textContent = (galleryIdx + 1) + ' / ' + GALLERY_IDS.length;
+    document.querySelectorAll('.thumb').forEach(function(t, j) { t.classList.toggle('active', j === galleryIdx); });
+    var active = document.querySelector('.thumb.active');
+    if (active) active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+  }
+  function galleryPrev() { galleryGo(galleryIdx - 1); }
+  function galleryNext() { galleryGo(galleryIdx + 1); }
+  (function() {
+    var strip = document.getElementById('thumbStrip');
+    GALLERY_IDS.forEach(function(id, i) {
+      var div = document.createElement('div');
+      div.className = 'thumb' + (i === 0 ? ' active' : '');
+      div.onclick = function() { galleryGo(i); };
+      var img = document.createElement('img');
+      img.src = galleryUrl(id);
+      img.alt = '';
+      img.loading = 'lazy';
+      div.appendChild(img);
+      strip.appendChild(div);
+    });
+  })();
+</script>
 <script>
   const BASE_PRICE    = 45800;
   const STD_LENGTH    = 150;
