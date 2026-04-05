@@ -23,6 +23,7 @@
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
 
     body {
       background: var(--dark);
@@ -75,6 +76,7 @@
       padding: 20px 40px;
       display: flex;
       justify-content: center;
+      align-items: center;
       gap: 36px;
       flex-wrap: wrap;
       position: sticky;
@@ -83,7 +85,7 @@
       backdrop-filter: blur(8px);
     }
 
-    .nav-bar a {
+    .nav-bar > a {
       color: var(--light);
       text-decoration: none;
       font-size: 12px;
@@ -92,7 +94,82 @@
       transition: color 0.2s;
     }
 
-    .nav-bar a:hover { color: var(--accent); }
+    .nav-bar > a:hover { color: var(--accent); }
+
+    /* ── CATEGORY DROPDOWN ── */
+    .nav-dropdown {
+      position: relative;
+    }
+
+    .nav-dropdown > a {
+      color: var(--light);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+      cursor: pointer;
+    }
+
+    .nav-dropdown:hover > a { color: var(--accent); }
+
+    .nav-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      margin-top: 16px;
+      background: var(--dark);
+      border: 1px solid var(--line);
+      min-width: 220px;
+      padding: 16px 0;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    }
+
+    .nav-dropdown:hover .nav-dropdown-menu {
+      display: block;
+    }
+
+    /* Invisible bridge between link and menu */
+    .nav-dropdown-menu::before {
+      content: '';
+      position: absolute;
+      top: -16px;
+      left: 0;
+      right: 0;
+      height: 16px;
+    }
+
+    .nav-dropdown-menu .dd-heading {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.15em;
+      padding: 8px 24px 4px;
+      text-transform: none;
+    }
+
+    .nav-dropdown-menu a {
+      display: block;
+      padding: 6px 24px 6px 36px;
+      font-size: 12px;
+      color: var(--light);
+      text-decoration: none;
+      letter-spacing: 0.05em;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .nav-dropdown-menu a:hover {
+      background: var(--mid);
+      color: var(--accent);
+    }
+
+    .nav-dropdown-menu .dd-divider {
+      height: 1px;
+      background: var(--line);
+      margin: 8px 24px;
+    }
 
     /* ── LINE BANNER ── */
     .line-banner {
@@ -150,6 +227,7 @@
     /* ── CATEGORY SECTION ── */
     .cat-section {
       border-top: 1px solid var(--line);
+      scroll-margin-top: 60px;
     }
 
     .cat-banner {
@@ -178,7 +256,7 @@
     .product-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 2px;
+      gap: 16px;
       max-width: 1400px;
       margin: 0 auto;
       padding: 0 40px 64px;
@@ -379,7 +457,18 @@
 
       .product-grid {
         grid-template-columns: repeat(2, 1fr);
-        padding: 0 8px 48px;
+        gap: 10px;
+        padding: 0 16px 48px;
+      }
+
+      .nav-dropdown-menu {
+        position: fixed;
+        top: auto;
+        left: 0;
+        right: 0;
+        transform: none;
+        min-width: 100%;
+        margin-top: 8px;
       }
 
       .about-section, .blog-section { padding: 60px 20px; }
@@ -396,7 +485,7 @@
     @media (max-width: 480px) {
       .product-grid {
         grid-template-columns: repeat(2, 1fr);
-        gap: 1px;
+        gap: 8px;
       }
 
       .p-card-body { padding: 12px 12px 16px; }
@@ -421,7 +510,27 @@
   <nav class="nav-bar">
     <a href="/">HOME</a>
     <a href="/item.html">ITEM</a>
-    <a href="/category.html">CATEGORY</a>
+    <div class="nav-dropdown">
+      <a href="/category.html">CATEGORY</a>
+      <div class="nav-dropdown-menu">
+        <div class="dd-heading">■ 壁付け手すり</div>
+        <a href="#yokogata">横型</a>
+        <a href="#tategata">縦型</a>
+        <a href="#wrought-iron">ロートアイアン（縦型）</a>
+        <div class="dd-divider"></div>
+        <div class="dd-heading">■ 階段手すり・フェンス</div>
+        <a href="#approach-fence">アプローチ・フェンス</a>
+        <div class="dd-divider"></div>
+        <div class="dd-heading">■ ゲート・ドア</div>
+        <a href="#gate-door">ゲート・ドア</a>
+        <div class="dd-divider"></div>
+        <div class="dd-heading">■ 階段</div>
+        <a href="#staircase">スケルトン階段・外階段</a>
+        <div class="dd-divider"></div>
+        <div class="dd-heading">■ その他</div>
+        <a href="#other">面格子・家具・インテリア</a>
+      </div>
+    </div>
     <a href="/contact.html">お問い合わせ</a>
     <a href="/about.html">ご注文について</a>
     <a href="/blog/">BLOG</a>
@@ -443,7 +552,7 @@
   </section>
 
   <!-- ══════════════ 横型手すり ══════════════ -->
-  <section class="cat-section">
+  <section class="cat-section" id="yokogata">
     <div class="cat-banner">
       <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/099d03cc97047ab07646.png/fit=cover,w=1880" alt="横型手すり" loading="lazy">
     </div>
@@ -510,7 +619,7 @@
   </section>
 
   <!-- ══════════════ 縦型手すり ══════════════ -->
-  <section class="cat-section">
+  <section class="cat-section" id="tategata">
     <div class="cat-banner">
       <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/904c4e500a5ed903b4ce.png/fit=cover,w=1880" alt="縦型手すり" loading="lazy">
     </div>
@@ -558,7 +667,7 @@
   </section>
 
   <!-- ══════════════ ロートアイアン縦型 ══════════════ -->
-  <section class="cat-section">
+  <section class="cat-section" id="wrought-iron">
     <div class="cat-banner">
       <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/631db8d7f762ff2e3b58.png/fit=cover,w=1880" alt="ロートアイアン手すり" loading="lazy">
     </div>
@@ -614,7 +723,7 @@
   </section>
 
   <!-- ══════════════ 階段手すり・フェンス ══════════════ -->
-  <section class="cat-section">
+  <section class="cat-section" id="approach-fence">
     <div class="cat-banner">
       <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/f1bcb6983ecd8d8f0e5c.png/fit=cover,w=1880" alt="階段手すり・フェンス" loading="lazy">
     </div>
@@ -669,7 +778,7 @@
   </section>
 
   <!-- ══════════════ ゲート・ドア ══════════════ -->
-  <section class="cat-section">
+  <section class="cat-section" id="gate-door">
     <div class="cat-banner">
       <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/c0b13a3892121ef83093.png/fit=cover,w=1880" alt="ゲート・ドア" loading="lazy">
     </div>
@@ -707,7 +816,7 @@
   </section>
 
   <!-- ══════════════ 階段 ══════════════ -->
-  <section class="cat-section">
+  <section class="cat-section" id="staircase">
     <div class="cat-banner">
       <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/eb06dbd055214e31605b.png/fit=cover,w=1880" alt="階段" loading="lazy">
     </div>
@@ -744,7 +853,7 @@
   </section>
 
   <!-- ══════════════ その他 ══════════════ -->
-  <section class="cat-section">
+  <section class="cat-section" id="other">
     <div class="cat-banner">
       <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/d9f6565fe96d355b130d.png/fit=cover,w=1880" alt="その他" loading="lazy">
     </div>
