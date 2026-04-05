@@ -103,10 +103,9 @@ footer{border-top:1px solid var(--line);padding:40px;text-align:center;font-size
 <script>
 const IMG = 'https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/';
 const PRODUCTS = [
-  {cat:'handrail_h',label:'壁付け手すり ・ 横型',name:'René ルネ',sub:'3Ɇ マットブラック',price:36500,badge:'Best Seller',img:'d0f5f0e83d40a4d29044',url:'https://ironworks-ado.stores.jp/items/63e9d7c27c42ee0eb59dea58"},
+  {cat:'handrail_h',label:'壁付け手すり ・ 横型',name:'René ルネ',sub:'25φ マットブラック',price:36500,badge:'Best Seller',img:'d0f5f0e83d40a4d29044',url:'https://ironworks-ado.stores.jp/items/63e9d7c27c42ee0eb59dea58"},
   {cat:'handrail_h',label:'壁付け手すり ・ 横型',name:'Claire クレール',sub:'25φ マットホワイト',price:42000,badge:'',img:'0a0c0c78f9f636cca733',url:'https://ironworks-ado.stores.jp/items/63e9d6fc39da5f21e7fd8a66'},
-  {cat:'handrail_h',label:'壁付け手すり ・ 横型',name:'Marcel マルスル',sub:'
-フラットバー マットブラック',price:36000,badge:'',img:'939d0690971c550c1dd9',url:'https://ironworks-ado.stores.jp/items/63e5fad57c42ee25e253aea9'},
+  {cat:'handrail_h',label:'壁付け手すり ・ 横型',name:'Marcel マルセル',sub:'フラットバー マットブラック',price:36000,badge:'',img:'939d0690971c550c1dd9',url:'https://ironworks-ado.stores.jp/items/63e5fad57c42ee25e253aea9'},
   {cat:'handrail_h',label:'壁付け手すり ・ 横型',name:'Emile エミール',sub:'フラットバー 鎚目 銀古美仕上げ',price:45800,badge:'',img:'fa95f550baa05216d291',url:'https://ironworks-ado.stores.jp/items/63e996fe7c42ee34d543ce55'},
   {cat:'handrail_h',label:'ロートアイアン ・ 横型',name:'Élisabeth エリザベート',sub:'鍛冶職人手打ち ロートアイアン 22φ',price:149000,badge:'Artisan',img:'9a24b2c661dea08ef6f4',url:'https://ironworks-ado.stores.jp/items/63ea2bfd34e01709f8fa4ac9'},
   {cat:'handrail_h',label:'ロートアイアン ・ L型',name:'Clémence クレマンス',sub:'L型 22φ 無垢鉄',price:88000,badge:'',img:'9c1e7cf67204880a41e2',url:'https://ironworks-ado.stores.jp/items/68f839882fa52af95b4e403e'},
@@ -147,7 +146,7 @@ function renderProducts(filter) {
   grid.innerHTML = list.map(p => `
     <a class="product-card" href="${p.url}" target="_blank" rel="noopener" data-cat="${p.cat}">
       <div class="product-image">
-        <img src="${IMG}${p.img}.jpg/fit=cover,w=600,h=800" alt="${p.name}" loading="lazy">
+        <img src="${IMG}${p.img}.jpg/public" alt="${p.name}" loading="lazy">
         ${p.badge ? `<span class="product-badge">${p.badge}</span>` : ''}
       </div>
       <div class="product-body">
