@@ -3,6 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Noto+Serif+JP:wght@200;300;400;500&display=swap" rel="stylesheet">
   <title>IRONWORKS ado | 鍛冶職人が作るアイアン手すり</title>
   <style>
     :root {
@@ -15,349 +18,349 @@
       --white: #f5f5f5;
       --accent: #c8a96e;
       --font: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+      --serif: 'Noto Serif JP', serif;
+      --serif-en: 'Cormorant Garamond', serif;
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      background: var(--black);
+      background: var(--dark);
       color: var(--white);
       font-size: 14px;
       line-height: 1.7;
       font-family: var(--font);
     }
 
-    /* Header */
-    header {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 64px;
-      background: rgba(14, 14, 14, 0.95);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 40px;
-      z-index: 1000;
-    }
-
-    header .logo {
-      font-size: 14px;
-      font-weight: bold;
-      letter-spacing: 0.15em;
-      text-decoration: none;
-      color: var(--white);
-      text-transform: uppercase;
-    }
-
-    header .logo span {
-      color: var(--accent);
-    }
-
-    header nav {
-      display: flex;
-      gap: 40px;
-    }
-
-    header nav a {
-      font-size: 12px;
-      letter-spacing: 0.1em;
-      text-decoration: none;
-      color: var(--light);
-      text-transform: uppercase;
-      transition: color 0.3s ease;
-    }
-
-    header nav a:hover {
-      color: var(--accent);
-    }
-
-    main {
-      margin-top: 64px;
-    }
-
-    /* Hero Section */
+    /* ── HERO ── */
     .hero {
-      background: linear-gradient(135deg, var(--black) 0%, var(--dark) 100%);
-      min-height: 600px;
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .hero-bg img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 1.4s ease;
+    }
+
+    .hero-bg img.active { opacity: 1; }
+
+    .hero-center {
+      position: absolute;
+      inset: 0;
       display: flex;
       flex-direction: column;
-      justify-content: center;
       align-items: center;
-      text-align: center;
-      padding: 60px 40px;
-      border-bottom: 1px solid var(--line);
+      justify-content: center;
+      z-index: 2;
     }
 
-    .hero h1 {
-      font-size: 48px;
-      line-height: 1.3;
-      margin-bottom: 20px;
-      font-weight: normal;
+    .hero-logo {
+      font-family: var(--serif-en);
+      font-size: clamp(80px, 15vw, 200px);
+      font-weight: 300;
       letter-spacing: 0.05em;
+      color: var(--white);
+      text-shadow: 0 2px 40px rgba(0,0,0,0.5);
+      line-height: 1;
     }
 
-    .hero .subtext {
-      font-size: 14px;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-      margin-bottom: 40px;
+    .hero-sub {
+      font-family: var(--serif-en);
+      font-size: clamp(12px, 2vw, 18px);
+      letter-spacing: 0.6em;
+      color: var(--white);
       text-transform: uppercase;
+      margin-top: 16px;
+      text-shadow: 0 1px 20px rgba(0,0,0,0.5);
     }
 
-    .hero .cta {
-      display: inline-block;
-      padding: 14px 40px;
-      background: var(--accent);
-      color: var(--black);
+    /* ── NAV BAR ── */
+    .nav-bar {
+      background: var(--dark);
+      border-bottom: 1px solid var(--line);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: center;
+      gap: 36px;
+      flex-wrap: wrap;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+
+    .nav-bar a {
+      color: var(--light);
       text-decoration: none;
       font-size: 12px;
-      letter-spacing: 0.1em;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-bar a:hover { color: var(--accent); }
+
+    /* ── LINE BANNER ── */
+    .line-banner {
+      text-align: center;
+      padding: 48px 40px;
+      background: var(--dark);
+    }
+
+    .line-banner a {
+      display: inline-block;
+      background: linear-gradient(135deg, #06C755 0%, #04a847 100%);
+      color: #fff;
+      font-size: 18px;
       font-weight: bold;
-      transition: background 0.3s ease, transform 0.3s ease;
-    }
-
-    .hero .cta:hover {
-      background: #dbb875;
-      transform: translateY(-2px);
-    }
-
-    /* Featured Items */
-    .featured {
-      padding: 80px 40px;
-      border-bottom: 1px solid var(--line);
-    }
-
-    .featured h2 {
-      font-size: 28px;
-      margin-bottom: 50px;
-      font-weight: normal;
+      padding: 18px 48px;
+      border-radius: 50px;
+      text-decoration: none;
       letter-spacing: 0.05em;
+      box-shadow: 0 4px 20px rgba(6,199,85,0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .line-banner a:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 28px rgba(6,199,85,0.4);
+    }
+
+    .line-banner p {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 12px;
+    }
+
+    /* ── INTRO ── */
+    .intro {
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 64px 40px;
+    }
+
+    .intro h2 {
+      font-family: var(--serif-en);
+      font-size: 20px;
+      font-weight: 400;
+      letter-spacing: 0.3em;
+      margin-bottom: 24px;
+    }
+
+    .intro p {
+      color: var(--light);
+      font-size: 14px;
+      line-height: 2;
+    }
+
+    /* ── CATEGORY SECTION ── */
+    .cat-section {
+      border-top: 1px solid var(--line);
+    }
+
+    .cat-banner {
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .cat-banner img {
+      width: 100%;
+      display: block;
+      filter: brightness(0.85);
+    }
+
+    .cat-title-bar {
+      padding: 40px 40px 32px;
       text-align: center;
     }
 
-    .featured-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 40px;
-      max-width: 1200px;
-      margin: 0 auto;
+    .cat-title-bar h2 {
+      font-family: var(--serif);
+      font-size: 24px;
+      font-weight: 300;
+      letter-spacing: 0.1em;
     }
 
-    .product-card {
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 2px;
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 40px 64px;
+    }
+
+    .p-card {
       text-decoration: none;
       color: inherit;
-      transition: transform 0.3s ease;
+      background: var(--black);
+      display: block;
+      transition: transform 0.3s;
     }
 
-    .product-card:hover {
-      transform: translateY(-8px);
-    }
+    .p-card:hover { transform: translateY(-4px); }
 
-    .product-card img {
-      width: 100%;
+    .p-card-img {
       aspect-ratio: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .p-card-img img {
+      width: 100%;
+      height: 100%;
       object-fit: cover;
-      background: var(--dark);
-      margin-bottom: 20px;
+      transition: transform 0.6s ease;
     }
 
-    .product-card h3 {
-      font-size: 16px;
-      margin-bottom: 8px;
-      font-weight: normal;
-      letter-spacing: 0.05em;
-    }
+    .p-card:hover .p-card-img img { transform: scale(1.05); }
 
-    .product-card .price {
-      font-size: 14px;
-      color: var(--accent);
-      margin-bottom: 16px;
-    }
-
-    .product-card .btn {
-      display: inline-block;
-      font-size: 11px;
-      padding: 10px 20px;
-      border: 1px solid var(--line);
-      color: var(--white);
-      text-decoration: none;
-      letter-spacing: 0.1em;
-      transition: all 0.3s ease;
-    }
-
-    .product-card .btn:hover {
+    .p-card-badge {
+      position: absolute;
+      top: 12px;
+      left: 12px;
       background: var(--accent);
       color: var(--black);
-      border-color: var(--accent);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 3px 10px;
     }
 
-    /* Category Section */
-    .categories {
-      padding: 80px 40px;
-      border-bottom: 1px solid var(--line);
+    .p-card-body {
+      padding: 16px 20px 24px;
     }
 
-    .categories h2 {
-      font-size: 28px;
-      margin-bottom: 50px;
-      font-weight: normal;
-      letter-spacing: 0.05em;
-      text-align: center;
-    }
-
-    .category-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 30px;
-      max-width: 1200px;
-      margin: 0 auto;
-    }
-
-    .category-card {
-      padding: 40px;
-      background: var(--dark);
-      border: 1px solid var(--line);
-      text-decoration: none;
-      color: var(--white);
-      transition: all 0.3s ease;
-      text-align: center;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 200px;
-    }
-
-    .category-card:hover {
-      background: var(--mid);
-      border-color: var(--accent);
-      transform: translateY(-4px);
-    }
-
-    .category-card h3 {
-      font-size: 16px;
-      font-weight: normal;
-      letter-spacing: 0.05em;
-    }
-
-    /* About Teaser */
-    .about-teaser {
-      padding: 80px 40px;
-      background: var(--dark);
-      border-bottom: 1px solid var(--line);
-      text-align: center;
-    }
-
-    .about-teaser h2 {
-      font-size: 24px;
-      margin-bottom: 30px;
-      font-weight: normal;
-      letter-spacing: 0.05em;
-    }
-
-    .about-teaser p {
-      max-width: 700px;
-      margin: 0 auto 40px;
+    .p-card-name {
+      font-size: 13px;
       color: var(--light);
-      line-height: 1.8;
+      line-height: 1.5;
+      margin-bottom: 8px;
     }
 
-    .about-teaser .cta {
+    .p-card-price {
+      font-size: 16px;
+      font-weight: 300;
+      color: var(--white);
+    }
+
+    .p-card-price .tax {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    /* ── PAINT / ABOUT SECTION ── */
+    .about-section {
+      border-top: 1px solid var(--line);
+      padding: 80px 40px;
+      text-align: center;
+    }
+
+    .about-section h2 {
+      font-family: var(--serif);
+      font-size: 22px;
+      font-weight: 300;
+      letter-spacing: 0.08em;
+      margin-bottom: 32px;
+    }
+
+    .about-section p {
+      max-width: 700px;
+      margin: 0 auto 16px;
+      color: var(--light);
+      font-size: 14px;
+      line-height: 2;
+    }
+
+    .about-section .cta {
       display: inline-block;
-      padding: 12px 32px;
+      margin-top: 24px;
+      padding: 14px 40px;
       border: 1px solid var(--accent);
       color: var(--accent);
       text-decoration: none;
-      font-size: 12px;
-      letter-spacing: 0.1em;
+      font-family: var(--serif-en);
+      font-size: 13px;
+      letter-spacing: 0.2em;
       text-transform: uppercase;
-      transition: all 0.3s ease;
+      transition: all 0.3s;
     }
 
-    .about-teaser .cta:hover {
+    .about-section .cta:hover {
       background: var(--accent);
       color: var(--black);
     }
 
-    /* Blog Teaser */
-    .blog-teaser {
+    /* ── BLOG ── */
+    .blog-section {
+      border-top: 1px solid var(--line);
       padding: 80px 40px;
-      border-bottom: 1px solid var(--line);
     }
 
-    .blog-teaser h2 {
-      font-size: 28px;
-      margin-bottom: 50px;
-      font-weight: normal;
-      letter-spacing: 0.05em;
+    .blog-section h2 {
+      font-family: var(--serif-en);
+      font-size: 24px;
+      font-weight: 400;
+      letter-spacing: 0.3em;
       text-align: center;
+      margin-bottom: 48px;
     }
 
     .blog-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 40px;
+      gap: 32px;
       max-width: 1200px;
       margin: 0 auto;
     }
 
     .blog-card {
-      padding: 30px;
       border: 1px solid var(--line);
+      padding: 28px;
       text-decoration: none;
       color: inherit;
-      transition: all 0.3s ease;
+      transition: all 0.3s;
     }
 
     .blog-card:hover {
-      background: var(--dark);
+      background: var(--mid);
       border-color: var(--accent);
     }
 
     .blog-card .date {
       font-size: 12px;
       color: var(--muted);
-      margin-bottom: 10px;
-      text-transform: uppercase;
       letter-spacing: 0.1em;
+      margin-bottom: 8px;
     }
 
     .blog-card h3 {
-      font-size: 18px;
-      margin-bottom: 15px;
-      font-weight: normal;
-      line-height: 1.4;
-    }
-
-    .blog-card .category {
-      display: inline-block;
-      font-size: 10px;
-      padding: 6px 12px;
-      background: var(--mid);
-      color: var(--accent);
-      margin-bottom: 15px;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
+      font-size: 17px;
+      font-weight: 400;
+      line-height: 1.5;
+      margin-bottom: 12px;
     }
 
     .blog-card p {
       font-size: 13px;
-      color: var(--light);
-      line-height: 1.6;
+      color: var(--muted);
+      line-height: 1.7;
     }
 
-    /* Footer */
+    /* ── FOOTER ── */
     footer {
-      background: var(--black);
       border-top: 1px solid var(--line);
+      background: var(--black);
       padding: 48px 40px;
       display: flex;
       justify-content: space-between;
@@ -365,177 +368,492 @@
     }
 
     footer .logo-f {
-      font-size: 12px;
+      font-family: var(--serif-en);
+      font-size: 14px;
       letter-spacing: 0.3em;
       text-transform: uppercase;
     }
 
-    footer .logo-f span {
-      color: var(--accent);
-    }
+    footer .logo-f span { color: var(--accent); }
+    footer .copy { font-size: 11px; color: var(--muted); }
 
-    footer .copy {
-      font-size: 11px;
-      color: var(--muted);
-    }
-
-    /* Responsive */
+    /* ── RESPONSIVE ── */
     @media (max-width: 768px) {
-      header {
-        padding: 0 20px;
+      .nav-bar {
+        padding: 16px 20px;
+        gap: 16px;
       }
 
-      header nav {
-        gap: 20px;
+      .nav-bar a { font-size: 11px; letter-spacing: 0.1em; }
+
+      .line-banner a { font-size: 15px; padding: 14px 32px; }
+
+      .intro { padding: 48px 20px; }
+
+      .cat-title-bar { padding: 32px 20px 24px; }
+
+      .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        padding: 0 8px 48px;
       }
 
-      .hero {
-        min-height: 400px;
-        padding: 40px 20px;
-      }
+      .about-section, .blog-section { padding: 60px 20px; }
 
-      .hero h1 {
-        font-size: 32px;
-      }
-
-      .featured,
-      .categories,
-      .about-teaser,
-      .blog-teaser {
-        padding: 50px 20px;
-      }
-
-      .featured h2,
-      .categories h2,
-      .blog-teaser h2 {
-        font-size: 22px;
-        margin-bottom: 30px;
-      }
-
-      .featured-grid,
-      .category-grid,
-      .blog-grid {
-        grid-template-columns: 1fr;
-      }
+      .blog-grid { grid-template-columns: 1fr; }
 
       footer {
         flex-direction: column;
-        gap: 20px;
+        gap: 16px;
         text-align: center;
       }
+    }
+
+    @media (max-width: 480px) {
+      .hero-logo { font-size: 72px; }
+
+      .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1px;
+      }
+
+      .p-card-body { padding: 12px 12px 16px; }
+      .p-card-name { font-size: 11px; }
+      .p-card-price { font-size: 14px; }
     }
   </style>
 </head>
 <body>
-  <header>
-    <a href="/" class="logo">IRONWORKS <span>ADO</span></a>
-    <nav>
-      <a href="/item/">ITEM</a>
-      <a href="/item/#category">CATEGORY</a>
-      <a href="/about.html">ABOUT</a>
-      <a href="/blog/">BLOG</a>
-      <a href="/contact.html">CONTACT</a>
-    </nav>
-  </header>
 
-  <main>
-    <!-- Hero Section -->
-    <section class="hero">
-      <h1>鍛冶職人が作る、アイアン手すり</h1>
-      <p class="subtext">IRONWORKS ado | セミオーダー | 受注生産</p>
-      <a href="/item/" class="cta">商品を見る</a>
-    </section>
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <div class="hero-bg">
+      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/15d661276dbd0289f040.png/fit=cover,w=1880" alt="" class="active">
+      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/82e07d8f98d32ffeeb4d.png/fit=cover,w=1880" alt="">
+    </div>
+    <div class="hero-center">
+      <div class="hero-logo">ado</div>
+      <div class="hero-sub">I R O N W O R K S</div>
+    </div>
+  </section>
 
-    <!-- Featured Items -->
-    <section class="featured">
-      <h2>人気商品</h2>
-      <div class="featured-grid">
-        <div class="product-card">
-          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/d0f5f0e83d40a4d29044.jpg" alt="René ルネ">
-          <h3>René ルネ</h3>
-          <div class="price">¥36,500〜</div>
-          <a href="/item/rene.html" class="btn">詳細を見る</a>
+  <!-- ── NAV BAR ── -->
+  <nav class="nav-bar">
+    <a href="/">HOME</a>
+    <a href="/item.html">ITEM</a>
+    <a href="/category.html">CATEGORY</a>
+    <a href="/contact.html">お問い合わせ</a>
+    <a href="/about.html">ご注文について</a>
+    <a href="/blog/">BLOG</a>
+    <a href="/about.html">ABOUT</a>
+  </nav>
+
+  <!-- ── LINE BANNER ── -->
+  <section class="line-banner">
+    <a href="https://lin.ee/yourlinelink" target="_blank" rel="noopener">【写真で簡単見積り】LINEで職人に直接相談する</a>
+    <p>現場写真を送るだけで簡単診断。サイズや下地の相談も LINE で承ります。</p>
+  </section>
+
+  <!-- ── INTRO ── -->
+  <section class="intro">
+    <h2>IRONWORKS ado</h2>
+    <p>世界でも第一線の技術力を持つ工房で修行し、鍛冶職人として独立した後、価格以上の確かな品質でこれから毎日お使いいただく方の心豊かな暮らしを思い制作しております。アイアン手すりを中心に、テーブルの脚や棚など、アイアンインテリアをセミオーダーでご提供いたします。</p>
+  </section>
+
+  <!-- ══════════════ 横型手すり ══════════════ -->
+  <section class="cat-section">
+    <div class="cat-banner">
+      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/099d03cc97047ab07646.png/fit=cover,w=1880" alt="横型手すり" loading="lazy">
+    </div>
+    <div class="cat-title-bar"><h2>横型手すり</h2></div>
+    <div class="product-grid">
+      <a class="p-card" href="/item/rene.html">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/d0f5f0e83d40a4d29044.jpg/public" alt="René ルネ" loading="lazy">
+          <span class="p-card-badge">Best Seller</span>
         </div>
-
-        <div class="product-card">
-          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/0a0c0c78f9f636cca733.jpg" alt="Claire クレール">
-          <h3>Claire クレール</h3>
-          <div class="price">¥42,000〜</div>
-          <a href="/item/claire.html" class="btn">詳細を見る</a>
+        <div class="p-card-body">
+          <div class="p-card-name">【René ルネ】アイアン手すり［横型］25φ｜マットブラック</div>
+          <div class="p-card-price">&#165;36,500 <span class="tax">税込</span></div>
         </div>
-
-        <div class="product-card">
-          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/86278edb68c21957e339.jpg" alt="Claude クロード">
-          <h3>Claude クロード</h3>
-          <div class="price">¥30,000〜</div>
-          <a href="/item/claude.html" class="btn">詳細を見る</a>
+      </a>
+      <a class="p-card" href="/item/claire.html">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/0a0c0c78f9f636cca733.jpg/public" alt="Claire クレール" loading="lazy">
+          <span class="p-card-badge">Best Seller</span>
         </div>
-      </div>
-    </section>
+        <div class="p-card-body">
+          <div class="p-card-name">【Claire クレール】アイアン手すり［横型］25φ｜マットホワイト</div>
+          <div class="p-card-price">&#165;42,000 <span class="tax">税込</span></div>
+        </div>
+      </a>
+      <a class="p-card" href="/item/marcel.html">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/939d0690971c550c1dd9.jpg/public" alt="Marcel マルセル" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【Marcel マルセル】アイアン手すり［横型］フラットバー｜マットブラック</div>
+          <div class="p-card-price">&#165;36,000 <span class="tax">税込</span></div>
+        </div>
+      </a>
+      <a class="p-card" href="/item/emile.html">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/fa95f550baa05216d291.jpg/public" alt="Emile エミール" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【Emile エミール】アイアン手すり［横型］フラットバー｜鎚目｜銀古美仕上げ</div>
+          <div class="p-card-price">&#165;45,800 <span class="tax">税込</span></div>
+        </div>
+      </a>
+      <a class="p-card" href="/item/elisabeth.html">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/9a24b2c661dea08ef6f4.jpg/public" alt="Elisabeth エリザベート" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【Elisabeth エリザベート】ロートアイアン手すり［横型］22φ｜無垢鉄｜火造り鍛造</div>
+          <div class="p-card-price">&#165;149,000 <span class="tax">税込</span></div>
+        </div>
+      </a>
+      <a class="p-card" href="/item/clemence.html">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/9c1e7cf67204880a41e2.jpg/public" alt="Clemence クレマンス" loading="lazy">
+          <span class="p-card-badge">New</span>
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【Clemence クレマンス】ロートアイアン手すり［L型］22φ｜無垢鉄</div>
+          <div class="p-card-price">&#165;88,000 <span class="tax">税込</span></div>
+        </div>
+      </a>
+    </div>
+  </section>
 
-    <!-- Category Section -->
-    <section class="categories">
-      <h2>カテゴリーから探す</h2>
-      <div class="category-grid">
-        <a href="/item/#yokogata" class="category-card">
-          <h3>壁付け手すり・横型</h3>
-        </a>
-        <a href="/item/#tategata" class="category-card">
-          <h3>壁付け手すり・縦型</h3>
-        </a>
-        <a href="/item/#kaidan" class="category-card">
-          <h3>階段手すり・フェンス</h3>
-        </a>
-        <a href="/item/#gate" class="category-card">
-          <h3>ゲート・ドア</h3>
-        </a>
-        <a href="/item/#staircase" class="category-card">
-          <h3>階段</h3>
-        </a>
-        <a href="/item/#other" class="category-card">
-          <h3>家具・その他</h3>
-        </a>
-      </div>
-    </section>
+  <!-- ══════════════ 縦型手すり ══════════════ -->
+  <section class="cat-section">
+    <div class="cat-banner">
+      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/904c4e500a5ed903b4ce.png/fit=cover,w=1880" alt="縦型手すり" loading="lazy">
+    </div>
+    <div class="cat-title-bar"><h2>縦型手すり</h2></div>
+    <div class="product-grid">
+      <a class="p-card" href="/item/claude.html">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/86278edb68c21957e339.jpg/public" alt="Claude クロード" loading="lazy">
+          <span class="p-card-badge">Best Seller</span>
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【Claude クロード】アイアン手すり［縦型］25φ｜マットブラック</div>
+          <div class="p-card-price">&#165;30,000 <span class="tax">税込</span></div>
+        </div>
+      </a>
+      <a class="p-card" href="/item/catherine.html">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/8775cfcb40298257834a.jpg/public" alt="Catherine カトリーヌ" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【Catherine カトリーヌ】アイアン手すり［縦型］25φ｜マットホワイト</div>
+          <div class="p-card-price">&#165;34,500 <span class="tax">税込</span></div>
+        </div>
+      </a>
+      <a class="p-card" href="/item/alexandre.html">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/759848de1a99945b4d90.jpg/public" alt="Alexandre アレクサンドル" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【Alexandre アレクサンドル】アイアン手すり［縦型］太 31.8φ｜マットブラック</div>
+          <div class="p-card-price">&#165;32,000 <span class="tax">税込</span></div>
+        </div>
+      </a>
+      <a class="p-card" href="/item/antoine.html">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/2d1043dcd7658a96e5f3.jpg/public" alt="Antoine アントワーヌ" loading="lazy">
+          <span class="p-card-badge">Best Seller</span>
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【Antoine アントワーヌ】アイアン手すり［縦型］ロング 25φ｜マットブラック</div>
+          <div class="p-card-price">&#165;56,000 <span class="tax">税込</span></div>
+        </div>
+      </a>
+    </div>
+  </section>
 
-    <!-- About Teaser -->
-    <section class="about-teaser">
-      <h2>IRONWORKS ado について</h2>
-      <p>世界でも第一線の技術力を持つ工房で修行し、鍛冶職人として独立した後、価格以上の確かな品質でこれから毎日お使いいただく方の心豊かな暮らざを思い制作しております。</p>
-      <a href="/about.html" class="cta">詳しく見る</a>
-    </section>
+  <!-- ══════════════ ロートアイアン縦型 ══════════════ -->
+  <section class="cat-section">
+    <div class="cat-banner">
+      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/631db8d7f762ff2e3b58.png/fit=cover,w=1880" alt="ロートアイアン手すり" loading="lazy">
+    </div>
+    <div class="cat-title-bar"><h2>本格ロートアイアン手すり［縦型］</h2></div>
+    <div class="product-grid">
+      <a class="p-card" href="/item/scroll16.html">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/2a64ecfb5e50e78cb374.jpg/public" alt="Scroll 16φ" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【Scroll スクロール 16φ】ロートアイアン手すり 70cm｜無垢鉄｜火造り鍛造</div>
+          <div class="p-card-price">&#165;18,000 <span class="tax">税込</span></div>
+        </div>
+      </a>
+      <a class="p-card" href="/item/scroll19.html">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/25b6438ea6a9393aa027.jpg/public" alt="Scroll 19φ" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【Scroll スクロール 19φ】ロートアイアン手すり 70cm｜無垢鉄｜火造り鍛造</div>
+          <div class="p-card-price">&#165;32,000 <span class="tax">税込</span></div>
+        </div>
+      </a>
+      <a class="p-card" href="/item/scroll22.html">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/d09c9426e8510d2ca152.jpg/public" alt="Scroll 22φ" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【Scroll スクロール 22φ】ロートアイアン手すり 80cm｜無垢鉄｜火造り鍛造</div>
+          <div class="p-card-price">&#165;60,000 <span class="tax">税込</span></div>
+        </div>
+      </a>
+      <a class="p-card" href="/item/fabrice.html">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/66a699b295bcdb8f3598.jpg/public" alt="Fabrice ファブリス" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【Fabrice ファブリス】本格ロートアイアン手すり 80cm｜無垢鉄｜火造り鍛造</div>
+          <div class="p-card-price">&#165;100,000 <span class="tax">税込</span></div>
+        </div>
+      </a>
+      <a class="p-card" href="/item/tsuchime.html">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/569af3ee76a1999863e7.jpg/public" alt="鎚目 TSUCHIME" loading="lazy">
+          <span class="p-card-badge">New</span>
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【鎚目 TSUCHIME】ロートアイアン手すり 80cm｜無垢鉄｜火造り鍛造</div>
+          <div class="p-card-price">&#165;70,000 <span class="tax">税込</span></div>
+        </div>
+      </a>
+    </div>
+  </section>
 
-    <!-- Blog Teaser -->
-    <section class="blog-teaser">
-      <h2>ブログ</h2>
-      <div class="blog-grid">
-        <a href="/blog/kaidan.html" class="blog-card">
-          <div class="date">2025.12.10</div>
-          <div class="category">施工事例</div>
-          <h3>回り階段の手すり</h3>
-          <p>複雑な形状の回り階段に対応するカスタムハンドレイルの製作事例をご紹介します。職人の技術を活かした美しい仕上がりをご覧ください。</p>
-        </a>
+  <!-- ══════════════ 階段手すり・フェンス ══════════════ -->
+  <section class="cat-section">
+    <div class="cat-banner">
+      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/f1bcb6983ecd8d8f0e5c.png/fit=cover,w=1880" alt="階段手すり・フェンス" loading="lazy">
+    </div>
+    <div class="cat-title-bar"><h2>階段手すり・フェンス</h2></div>
+    <div class="product-grid">
+      <a class="p-card" href="https://ironworks-ado.stores.jp/items/678f8682c6500803fc924386" target="_blank" rel="noopener">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/579e79e794eed28d9ac7.jpg/public" alt="Simple -black-" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【Simple -black-】アイアン階段手すり｜亜鉛めっき｜玄関アプローチ</div>
+          <div class="p-card-price">要見積もり</div>
+        </div>
+      </a>
+      <a class="p-card" href="https://ironworks-ado.stores.jp/items/64584887edfbca00302b343f" target="_blank" rel="noopener">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/051b216ddd9e64d0ae37.jpg/public" alt="アプローチ手すり 蔦" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【アプローチ手すり『蔦』】アートアイアン手すり｜亜鉛メッキ</div>
+          <div class="p-card-price">&#165;132,000 <span class="tax">税込</span></div>
+        </div>
+      </a>
+      <a class="p-card" href="https://ironworks-ado.stores.jp/items/64585625559798002e8072e2" target="_blank" rel="noopener">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/ef1a6b4999d530d6fb67.jpg/public" alt="Simple -white-" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【Simple -white-】アイアン階段手すり｜マットホワイト｜アプローチ</div>
+          <div class="p-card-price">要見積もり</div>
+        </div>
+      </a>
+      <a class="p-card" href="https://ironworks-ado.stores.jp/items/63eaf4431c151869487fdc83" target="_blank" rel="noopener">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/1aaca5578d6e1f890e31.jpg/public" alt="吹き抜けフェンス" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【吹き抜けアイアンフェンス】オーダーメイド</div>
+          <div class="p-card-price">要見積もり</div>
+        </div>
+      </a>
+      <a class="p-card" href="https://ironworks-ado.stores.jp/items/645882ac32510f002d97ec96" target="_blank" rel="noopener">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/ff214d4dd6a4e6f0b3b1.jpg/public" alt="屋外フェンス zigzag" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【屋外フェンス『zigzag』】オーダーメイド｜外構フェンス</div>
+          <div class="p-card-price">要見積もり</div>
+        </div>
+      </a>
+    </div>
+  </section>
 
-        <a href="/blog/pet.html" class="blog-card">
-          <div class="date">2025.10.01</div>
-          <div class="category">生活提案</div>
-          <h3>ペットと暮らす</h3>
-          <p>ペットとの生活を快適にするアイアンゲートやフェンスのご提案。安全性と美しさを兼ね備えた製品をご紹介します。</p>
-        </a>
+  <!-- ══════════════ ゲート・ドア ══════════════ -->
+  <section class="cat-section">
+    <div class="cat-banner">
+      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/c0b13a3892121ef83093.png/fit=cover,w=1880" alt="ゲート・ドア" loading="lazy">
+    </div>
+    <div class="cat-title-bar"><h2>ゲート・ドア</h2></div>
+    <div class="product-grid">
+      <a class="p-card" href="https://ironworks-ado.stores.jp/items/689dc80a62bb05fe83b69ed0" target="_blank" rel="noopener">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/ef8821265072eeb099dc.jpg/public" alt="Barn Door" loading="lazy">
+          <span class="p-card-badge">New</span>
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【Barn Door バーンドア】アイアン室内ドア｜スライドドア｜マットブラック</div>
+          <div class="p-card-price">&#165;275,000 <span class="tax">税込</span></div>
+        </div>
+      </a>
+      <a class="p-card" href="https://ironworks-ado.stores.jp/items/67bd6f532a10e40a2e61cc20" target="_blank" rel="noopener">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/b8269f71f7c7462e47a1.jpg/public" alt="Arabesque Gate" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【Arabesque Gate】ロートアイアン室内扉｜マットブラック</div>
+          <div class="p-card-price">&#165;253,000 <span class="tax">税込</span></div>
+        </div>
+      </a>
+      <a class="p-card" href="https://ironworks-ado.stores.jp/items/645a32986ebf640035c692b3" target="_blank" rel="noopener">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/f91ef98ec5690d2f9562.jpg/public" alt="ドッグゲート" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【ドッグゲート】ペットゲート｜アイアンゲート｜H95×W70〜80cm</div>
+          <div class="p-card-price">&#165;130,000 <span class="tax">税込</span></div>
+        </div>
+      </a>
+    </div>
+  </section>
 
-        <a href="/blog/handrail.html" class="blog-card">
-          <div class="date">2025.09.10</div>
-          <div class="category">手すりのこと</div>
-          <h3>ここにも手すり付ぅれる？</h3>
-          <p>予期しない場所での手すり設置の可能性を探ります。バリアフリー設計と美しさの両立について、事例と共にあ説明します。</p>
-        </a>
-      </div>
-    </section>
-  </main>
+  <!-- ══════════════ 階段 ══════════════ -->
+  <section class="cat-section">
+    <div class="cat-banner">
+      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/eb06dbd055214e31605b.png/fit=cover,w=1880" alt="階段" loading="lazy">
+    </div>
+    <div class="cat-title-bar"><h2>階段</h2></div>
+    <div class="product-grid">
+      <a class="p-card" href="https://ironworks-ado.stores.jp/items/6458a2646e44950030b06a70" target="_blank" rel="noopener">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/7a3358b5d7a86318eda1.jpg/public" alt="スケルトン階段 直線" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【スケルトン階段 -直線-】オーダーメイド｜ストリップ階段</div>
+          <div class="p-card-price">要見積もり</div>
+        </div>
+      </a>
+      <a class="p-card" href="https://ironworks-ado.stores.jp/items/645b965813edcc003101fec5" target="_blank" rel="noopener">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/853fb7dae26475eee4a0.jpg/public" alt="スケルトン階段 廻り" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【スケルトン階段 -廻り階段-】力桁1本型｜オーダーメイド</div>
+          <div class="p-card-price">&#165;1,400,000 <span class="tax">税込</span></div>
+        </div>
+      </a>
+      <a class="p-card" href="https://ironworks-ado.stores.jp/items/6460dfe3418fdf00312349c1" target="_blank" rel="noopener">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/6957d69de71788107932.jpg/public" alt="鉄骨外階段" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【鉄骨外階段 -かね折れ-】オーダーメイド｜外階段</div>
+          <div class="p-card-price">要見積もり</div>
+        </div>
+      </a>
+    </div>
+  </section>
 
+  <!-- ══════════════ その他 ══════════════ -->
+  <section class="cat-section">
+    <div class="cat-banner">
+      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/d9f6565fe96d355b130d.png/fit=cover,w=1880" alt="その他" loading="lazy">
+    </div>
+    <div class="cat-title-bar"><h2>その他</h2></div>
+    <div class="product-grid">
+      <a class="p-card" href="https://ironworks-ado.stores.jp/items/67959f99ce75b203a869f649" target="_blank" rel="noopener">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/9a7ccb077d6627266f13.jpg/public" alt="面格子" loading="lazy">
+          <span class="p-card-badge">New</span>
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【面格子 -simple-】ロートアイアン面格子｜窓｜防犯｜後付け</div>
+          <div class="p-card-price">要見積もり</div>
+        </div>
+      </a>
+      <a class="p-card" href="https://ironworks-ado.stores.jp/items/645b851613edcc002b021dc9" target="_blank" rel="noopener">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/162201d592318f444a98.jpg/public" alt="パーテーション" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【パーテーション】アイアンフレーム｜アクリルパネル｜インテリア</div>
+          <div class="p-card-price">要見積もり</div>
+        </div>
+      </a>
+      <a class="p-card" href="https://ironworks-ado.stores.jp/items/64cc5d6bf55a3000329bb450" target="_blank" rel="noopener">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/720c42cc222961d0c4f7.jpg/public" alt="テーブル脚" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【横揺れしないテーブル脚】アイアンレッグ｜サイズオーダー</div>
+          <div class="p-card-price">要見積もり</div>
+        </div>
+      </a>
+      <a class="p-card" href="https://ironworks-ado.stores.jp/items/64be2861d397ae002db004cd" target="_blank" rel="noopener">
+        <div class="p-card-img">
+          <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/2aecc4e6b289986d9859.jpg/public" alt="アイアンラック" loading="lazy">
+        </div>
+        <div class="p-card-body">
+          <div class="p-card-name">【アイアンラック】アイアンシェルフ｜棚｜什器｜収納</div>
+          <div class="p-card-price">要見積もり</div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <!-- ══════════════ 塗装について ══════════════ -->
+  <section class="about-section">
+    <h2>IRONWORKS adoの『塗装』</h2>
+    <p>『良い状態で永く使っていただきたい』という思いで、素地調整から下塗り、塗装までの工程を丁寧に作業しております。</p>
+    <a href="/about.html" class="cta">About</a>
+  </section>
+
+  <!-- ══════════════ BLOG ══════════════ -->
+  <section class="blog-section">
+    <h2>BLOG</h2>
+    <div class="blog-grid">
+      <a href="/blog/kaidan.html" class="blog-card">
+        <div class="date">2025.12.10</div>
+        <h3>回り階段の手すり</h3>
+        <p>複雑な形状の回り階段に対応するカスタムハンドレイルの製作事例をご紹介します。</p>
+      </a>
+      <a href="/blog/pet.html" class="blog-card">
+        <div class="date">2025.10.01</div>
+        <h3>ペットと暮らす</h3>
+        <p>ペットとの生活を快適にするアイアンゲートやフェンスのご提案。</p>
+      </a>
+      <a href="/blog/handrail.html" class="blog-card">
+        <div class="date">2025.09.10</div>
+        <h3>ここにも手すり付けれる？</h3>
+        <p>予期しない場所での手すり設置の可能性を探ります。</p>
+      </a>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
   <footer>
     <p class="logo-f">IRONWORKS <span>ADO</span></p>
     <p class="copy">&copy; 2025 IRONWORKS ado</p>
   </footer>
+
+  <!-- ── HERO SLIDESHOW ── -->
+  <script>
+    (function() {
+      var imgs = document.querySelectorAll('.hero-bg img');
+      if (imgs.length < 2) return;
+      var current = 0;
+      setInterval(function() {
+        imgs[current].classList.remove('active');
+        current = (current + 1) % imgs.length;
+        imgs[current].classList.add('active');
+      }, 5000);
+    })();
+  </script>
 </body>
 </html>
