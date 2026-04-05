@@ -44,8 +44,7 @@
     }
     .hero::before {
       content: ''; position: absolute; inset: 0;
-      /* placeholder: 塗装ガン画像に差し替え予定 */
-      background: url('https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/8de6eeecbc19d89336c2.png/fit=cover,w=1920') center/cover no-repeat;
+      background: url('/images/hero-spray-gun.png') center/cover no-repeat;
       filter: brightness(0.3); z-index: 0;
     }
     .hero * { position: relative; z-index: 1; }
@@ -75,10 +74,9 @@
     .step-card:hover::before { filter: brightness(0.35); }
     .step-card:hover { border-color: var(--accent); }
     .step-card > * { position: relative; z-index: 1; }
-    /* placeholder backgrounds - 生成画像に差し替え予定 */
-    .step-card:nth-child(1)::before { background-image: url('https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/226543adc5ef97fec406.jpg/fit=cover,w=600'); }
-    .step-card:nth-child(2)::before { background-image: url('https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/612f17221e9d76119139.jpg/fit=cover,w=600'); }
-    .step-card:nth-child(3)::before { background-image: url('https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/03d06fdae7c1352771ea.jpg/fit=cover,w=600'); }
+    .step-card:nth-child(1)::before { background-image: url('/images/steps-3panel.png'); background-position: 0% center; background-size: 300% auto; }
+    .step-card:nth-child(2)::before { background-image: url('/images/steps-3panel.png'); background-position: 50% center; background-size: 300% auto; }
+    .step-card:nth-child(3)::before { background-image: url('/images/steps-3panel.png'); background-position: 100% center; background-size: 300% auto; }
     .step-num { font-family: var(--serif-en); font-size: 40px; font-weight: 300; color: var(--accent); line-height: 1; margin-bottom: 16px; }
     .step-title { font-size: 15px; font-weight: 500; margin-bottom: 12px; letter-spacing: 0.05em; }
     .step-desc { font-size: 13px; color: var(--light); line-height: 1.8; }
@@ -352,8 +350,7 @@
     <p>一つひとつの工程を丁寧に。手すり最短5日発送を実現しながらも、品質に一切の妥協はありません。</p>
     <div class="gallery-grid">
       <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/226543adc5ef97fec406.jpg/fit=cover,w=600" alt="塗装工程1" loading="lazy">
-      <!-- 中央: 生成画像に差し替え予定 -->
-      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/612f17221e9d76119139.jpg/fit=cover,w=600" alt="塗装工程2" loading="lazy">
+      <img src="/images/hero-spray-gun.png" alt="スプレーガン塗装" loading="lazy">
       <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/03d06fdae7c1352771ea.jpg/fit=cover,w=600" alt="塗装工程3" loading="lazy">
     </div>
   </div>
