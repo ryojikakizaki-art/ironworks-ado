@@ -74,6 +74,40 @@
     @media (max-width: 768px) {
       header { padding: 0 20px; } header nav { gap: 20px; } .product-hero { grid-template-columns: 1fr; gap: 30px; padding: 30px 20px; } .product-details h1 { font-size: 24px; } .spec-item { grid-template-columns: 1fr; gap: 8px; } .description-section { padding: 30px 20px; margin: 40px auto; } .breadcrumb { padding: 15px 20px; } footer { flex-direction: column; gap: 20px; text-align: center; }
     }
+  /* CATEGORY DROPDOWN */
+.nav-dropdown { position: relative; }
+.nav-dropdown > a {
+  color: var(--light); text-decoration: none; font-size: 12px;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  transition: color 0.3s ease; cursor: pointer;
+}
+.nav-dropdown:hover > a { color: var(--accent); }
+.nav-dropdown-menu {
+  display: none; position: absolute; top: 100%; left: 50%;
+  transform: translateX(-50%); margin-top: 16px;
+  background: var(--dark); border: 1px solid var(--line);
+  min-width: 220px; padding: 16px 0;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5); z-index: 1001;
+}
+.nav-dropdown:hover .nav-dropdown-menu { display: block; }
+.nav-dropdown-menu::before {
+  content: ''; position: absolute; top: -16px; left: 0; right: 0; height: 16px;
+}
+.nav-dropdown-menu .dd-heading {
+  font-size: 11px; font-weight: 600; color: var(--accent);
+  letter-spacing: 0.15em; padding: 8px 24px 4px; text-transform: none;
+}
+.nav-dropdown-menu a {
+  display: block; padding: 6px 24px 6px 36px; font-size: 12px;
+  color: var(--light); text-decoration: none; letter-spacing: 0.05em;
+  transition: background 0.15s, color 0.15s; margin-left: 0;
+}
+.nav-dropdown-menu a:hover {
+  background: var(--mid); color: var(--accent);
+}
+.nav-dropdown-menu .dd-divider {
+  height: 1px; background: var(--line); margin: 8px 24px;
+}
   </style>
 </head>
 <body>
@@ -81,7 +115,27 @@
     <a href="/" class="logo">IRONWORKS <span>ADO</span></a>
     <nav>
       <a href="/item/">ITEM</a>
-      <a href="/item/#category">CATEGORY</a>
+      <div class="nav-dropdown">
+      <a href="/#yokogata">CATEGORY</a>
+      <div class="nav-dropdown-menu">
+        <div class="dd-heading">■ 壁付け手すり</div>
+        <a href="/#yokogata">横型</a>
+        <a href="/#tategata">縦型</a>
+        <a href="/#wrought-iron">ロートアイアン（縦型）</a>
+        <div class="dd-divider"></div>
+        <div class="dd-heading">■ 階段手すり・フェンス</div>
+        <a href="/#approach-fence">アプローチ・フェンス</a>
+        <div class="dd-divider"></div>
+        <div class="dd-heading">■ ゲート・ドア</div>
+        <a href="/#gate-door">ゲート・ドア</a>
+        <div class="dd-divider"></div>
+        <div class="dd-heading">■ 階段</div>
+        <a href="/#staircase">スケルトン階段・外階段</a>
+        <div class="dd-divider"></div>
+        <div class="dd-heading">■ その他</div>
+        <a href="/#other">面格子・家具・インテリア</a>
+      </div>
+    </div>
       <a href="/about.html">ABOUT</a>
       <a href="/blog/">BLOG</a>
       <a href="/contact.html">CONTACT</a>
