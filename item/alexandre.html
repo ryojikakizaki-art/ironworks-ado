@@ -23,7 +23,7 @@
 
     header .logo { font-size: 14px; font-weight: bold; letter-spacing: 0.15em; text-decoration: none; color: var(--white); text-transform: uppercase; }
     header .logo span { color: var(--accent); }
-    header nav { display: flex; gap: 40px; }
+    header nav { display: flex; gap: 40px; align-items: center; }
     header nav a { font-size: 12px; letter-spacing: 0.1em; text-decoration: none; color: var(--light); text-transform: uppercase; transition: color 0.3s ease; }
     header nav a:hover { color: var(--accent); }
 
@@ -130,7 +130,7 @@
       header { padding: 0 20px; } header nav { gap: 20px; } .product-hero { grid-template-columns: 1fr; gap: 30px; padding: 30px 20px; } .product-details h1 { font-size: 24px; } .spec-item { grid-template-columns: 1fr; gap: 8px; } .description-section { padding: 30px 20px; margin: 40px auto; } .breadcrumb { padding: 15px 20px; } footer { flex-direction: column; gap: 20px; text-align: center; }
     }
   /* CATEGORY DROPDOWN */
-.nav-dropdown { position: relative; }
+.nav-dropdown { position: relative; display: inline-flex; align-items: center; }
 .nav-dropdown > a {
   color: var(--light); text-decoration: none; font-size: 12px;
   letter-spacing: 0.1em; text-transform: uppercase;
