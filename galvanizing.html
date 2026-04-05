@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Noto+Serif+JP:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <title>溶融亜鉛メッキ ｜ IRONWORKS ado</title>
+  <style>
+    :root {
+      --black: #0e0e0e; --dark: #1a1a1a; --mid: #2c2c2c; --line: #333333;
+      --muted: #888888; --light: #cccccc; --white: #f5f5f5; --accent: #c8a96e;
+      --zinc: #7a9bb5;
+      --font: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+      --serif: 'Noto Serif JP', serif;
+      --serif-en: 'Cormorant Garamond', serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { background: var(--black); color: var(--white); font-family: var(--font); font-size: 14px; line-height: 1.7; }
+
+    /* ── NAV ── */
+    .nav-bar {
+      background: var(--dark); border-bottom: 1px solid var(--line);
+      padding: 20px 40px; display: flex; justify-content: center; align-items: center;
+      gap: 36px; flex-wrap: wrap; position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+    .nav-bar a { color: var(--light); text-decoration: none; font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; transition: color 0.2s; }
+    .nav-bar a:hover { color: var(--accent); }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative; min-height: 50vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; padding: 80px 40px;
+      background: var(--dark); border-bottom: 1px solid var(--line); overflow: hidden;
+    }
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background: url('https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/051b216ddd9e64d0ae37.jpg/fit=cover,w=1920') center/cover no-repeat;
+      filter: brightness(0.3); z-index: 0;
+    }
+    .hero * { position: relative; z-index: 1; }
+    .hero h1 { font-family: var(--serif); font-size: clamp(28px, 5vw, 44px); font-weight: 300; letter-spacing: 0.1em; margin-bottom: 16px; }
+    .hero p { font-size: 16px; color: var(--light); letter-spacing: 0.15em; font-weight: 300; }
+
+    /* ── SECTIONS ── */
+    .section { max-width: 900px; margin: 0 auto; padding: 80px 40px; border-bottom: 1px solid var(--line); }
+    .section-label { font-family: var(--serif-en); font-size: 11px; letter-spacing: 0.4em; text-transform: uppercase; color: var(--zinc); margin-bottom: 12px; }
+    .section h2 { font-family: var(--serif); font-size: clamp(22px, 4vw, 32px); font-weight: 300; letter-spacing: 0.08em; margin-bottom: 32px; }
+    .section p { color: var(--light); font-size: 14px; line-height: 2; margin-bottom: 20px; }
+
+    /* ── WHAT IS ── */
+    .highlight-text { color: var(--zinc); font-weight: 500; }
+
+    /* ── SVG DIAGRAM ── */
+    .diagram-wrap { margin: 48px 0; padding: 40px; background: var(--dark); border: 1px solid var(--line); border-radius: 4px; text-align: center; }
+    .diagram-wrap svg { max-width: 100%; height: auto; }
+    .diagram-caption { font-size: 12px; color: var(--muted); margin-top: 16px; letter-spacing: 0.05em; }
+
+    /* ── PROCESS STEPS ── */
+    .process-flow {
+      display: flex; align-items: flex-start; gap: 0; margin: 48px 0;
+      flex-wrap: wrap; justify-content: center;
+    }
+    .process-step {
+      flex: 1; min-width: 160px; max-width: 200px;
+      text-align: center; padding: 24px 16px;
+      position: relative;
+    }
+    .process-step::after {
+      content: ''; position: absolute; top: 36px; right: -12px;
+      width: 0; height: 0;
+      border-top: 8px solid transparent; border-bottom: 8px solid transparent;
+      border-left: 12px solid var(--zinc);
+    }
+    .process-step:last-child::after { display: none; }
+    .process-icon {
+      width: 64px; height: 64px; margin: 0 auto 16px;
+      border: 2px solid var(--zinc); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--serif-en); font-size: 24px; font-weight: 300; color: var(--zinc);
+    }
+    .process-step h3 { font-size: 13px; font-weight: 500; margin-bottom: 8px; letter-spacing: 0.05em; }
+    .process-step p { font-size: 12px; color: var(--muted); line-height: 1.7; margin: 0; }
+
+    /* ── COMPARISON TABLE ── */
+    .compare-table { width: 100%; border-collapse: collapse; margin: 40px 0; font-size: 13px; }
+    .compare-table th, .compare-table td { padding: 16px 20px; text-align: left; border-bottom: 1px solid var(--line); }
+    .compare-table thead th { font-size: 14px; font-weight: 500; letter-spacing: 0.1em; border-bottom: 2px solid var(--zinc); }
+    .compare-table thead th:first-child { color: var(--muted); }
+    .compare-table thead th:nth-child(2) { color: var(--muted); }
+    .compare-table thead th:nth-child(3) { color: var(--zinc); }
+    .compare-table tbody td:first-child { font-weight: 500; color: var(--white); }
+    .compare-table tbody td:nth-child(2) { color: var(--muted); }
+    .compare-table tbody td:nth-child(3) { color: var(--white); }
+    .compare-table .highlight-z { background: rgba(122, 155, 181, 0.06); }
+
+    /* ── LAYER DIAGRAM ── */
+    .layers-wrap { margin: 48px 0; text-align: center; }
+
+    /* ── ADO'S APPROACH (highlight) ── */
+    .section-highlight {
+      max-width: 900px; margin: 0 auto; padding: 80px 40px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(135deg, rgba(122,155,181,0.05) 0%, rgba(122,155,181,0.01) 100%);
+      border-left: 4px solid var(--zinc);
+    }
+    .quote-box { margin: 32px 0; padding: 32px; border-left: 3px solid var(--zinc); background: var(--dark); }
+    .quote-box p { font-family: var(--serif); font-size: 18px; font-weight: 300; line-height: 1.8; color: var(--white); margin-bottom: 12px; }
+    .quote-box .author { font-size: 12px; color: var(--zinc); letter-spacing: 0.15em; }
+
+    /* ── PRODUCT EXAMPLES ── */
+    .product-examples {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 16px; margin-top: 40px;
+    }
+    .example-card {
+      text-decoration: none; color: inherit;
+      background: var(--dark); border: 1px solid var(--line);
+      overflow: hidden; transition: border-color 0.3s, transform 0.3s;
+    }
+    .example-card:hover { border-color: var(--zinc); transform: translateY(-4px); }
+    .example-card img { width: 100%; aspect-ratio: 1; object-fit: cover; }
+    .example-card-body { padding: 16px; }
+    .example-card-body h3 { font-size: 13px; margin-bottom: 4px; }
+    .example-card-body p { font-size: 12px; color: var(--muted); margin: 0; }
+
+    /* ── LINKS ── */
+    .nav-links {
+      display: flex; gap: 16px; justify-content: center;
+      padding: 64px 40px; flex-wrap: wrap;
+    }
+    .btn-link {
+      display: inline-block; padding: 16px 40px;
+      border: 1px solid var(--line); color: var(--light);
+      text-decoration: none; font-size: 12px; letter-spacing: 0.15em;
+      transition: all 0.3s;
+    }
+    .btn-link:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-link.primary { border-color: var(--accent); color: var(--accent); }
+    .btn-link.primary:hover { background: var(--accent); color: var(--black); }
+
+    /* ── FOOTER ── */
+    footer { border-top: 1px solid var(--line); background: var(--black); padding: 48px 40px; display: flex; justify-content: space-between; align-items: center; }
+    footer .logo-f { font-family: var(--serif-en); font-size: 14px; letter-spacing: 0.3em; text-transform: uppercase; }
+    footer .logo-f span { color: var(--accent); }
+    footer .copy { font-size: 11px; color: var(--muted); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .nav-bar { padding: 16px 20px; gap: 16px; }
+      .section, .section-highlight { padding: 60px 20px; }
+      .process-flow { flex-direction: column; align-items: center; }
+      .process-step::after { display: none; }
+      .process-step { max-width: 100%; }
+      .product-examples { grid-template-columns: 1fr; }
+      .compare-table { font-size: 12px; }
+      .compare-table th, .compare-table td { padding: 12px 12px; }
+      .nav-links { flex-direction: column; align-items: center; }
+      footer { flex-direction: column; gap: 16px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── NAV ── -->
+  <nav class="nav-bar">
+    <a href="/">HOME</a>
+    <a href="/item.html">ITEM</a>
+    <a href="/category.html">CATEGORY</a>
+    <a href="/contact.html">お問い合わせ</a>
+    <a href="/about.html">ご注文について</a>
+    <a href="/blog/">BLOG</a>
+    <a href="/about.html">ABOUT</a>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="hero">
+    <h1>屋外用アイアンの『亜鉛メッキ』</h1>
+    <p>錆びない仕上げで、屋外でも永く美しく</p>
+  </section>
+
+  <!-- ══════════ 1. 溶融亜鉛メッキとは ══════════ -->
+  <div class="section">
+    <p class="section-label">Hot-Dip Galvanizing</p>
+    <h2>溶融亜鉛メッキとは？</h2>
+    <p>溶融亜鉛メッキ（ドブ漬けメッキ）とは、約450℃に溶かした亜鉛の浴槽に鉄製品を丸ごと浸漬し、鉄の表面に<strong class="highlight-text">亜鉛と鉄の合金層</strong>を形成させる防錆処理です。</p>
+    <p>単なる塗装と異なり、亜鉛が鉄と化学的に結合するため、剥がれにくく、傷がついても<strong class="highlight-text">「犠牲防食」</strong>の効果で周囲の亜鉛が鉄を守り続けます。橋梁・鉄塔・ガードレールなど、屋外インフラで広く採用されている信頼性の高い防錆技術です。</p>
+
+    <!-- 犠牲防食の仕組み SVG -->
+    <div class="diagram-wrap">
+      <svg viewBox="0 0 800 280" xmlns="http://www.w3.org/2000/svg">
+        <!-- 塗装のみ（左） -->
+        <text x="180" y="30" text-anchor="middle" fill="#888" font-size="13" font-weight="500">塗装のみの場合</text>
+        <!-- 鉄素地 -->
+        <rect x="40" y="120" width="280" height="60" rx="4" fill="#555" stroke="#666" stroke-width="1"/>
+        <text x="180" y="155" text-anchor="middle" fill="#ccc" font-size="14">鉄 素 地</text>
+        <!-- 塗膜 -->
+        <rect x="40" y="100" width="280" height="20" rx="4" fill="#444" stroke="#888" stroke-width="1"/>
+        <text x="180" y="115" text-anchor="middle" fill="#ccc" font-size="11">塗膜</text>
+        <!-- 傷 -->
+        <rect x="155" y="95" width="50" height="30" fill="var(--black)" stroke="none"/>
+        <text x="180" y="80" text-anchor="middle" fill="#e55" font-size="11">傷・剥がれ</text>
+        <!-- 錆 -->
+        <text x="180" y="215" text-anchor="middle" fill="#c55" font-size="12">→ 傷から水が浸入し錆が拡大</text>
+        <path d="M165,180 Q170,200 155,210 Q175,205 180,220 Q185,205 205,210 Q190,200 195,180" fill="#a44" opacity="0.6"/>
+
+        <!-- 亜鉛メッキ（右） -->
+        <text x="600" y="30" text-anchor="middle" fill="#7a9bb5" font-size="13" font-weight="500">溶融亜鉛メッキの場合</text>
+        <!-- 鉄素地 -->
+        <rect x="460" y="120" width="280" height="60" rx="4" fill="#555" stroke="#666" stroke-width="1"/>
+        <text x="600" y="155" text-anchor="middle" fill="#ccc" font-size="14">鉄 素 地</text>
+        <!-- 合金層 -->
+        <rect x="460" y="105" width="280" height="15" rx="2" fill="#6a8a9f" stroke="#7a9bb5" stroke-width="1"/>
+        <text x="600" y="90" text-anchor="middle" fill="#7a9bb5" font-size="11">亜鉛-鉄 合金層</text>
+        <!-- 亜鉛層 -->
+        <rect x="460" y="90" width="280" height="15" rx="2" fill="#8ab5cf" stroke="#7a9bb5" stroke-width="1"/>
+        <text x="600" y="70" text-anchor="middle" fill="#7a9bb5" font-size="11">純亜鉛層</text>
+        <!-- 傷 -->
+        <rect x="575" y="85" width="50" height="30" fill="var(--black)" stroke="none"/>
+        <text x="600" y="75" text-anchor="middle" fill="#7a9bb5" font-size="11">傷がついても</text>
+        <!-- 犠牲防食の矢印 -->
+        <path d="M565,115 L575,100" stroke="#7a9bb5" stroke-width="1.5" fill="none" marker-end="url(#arrowZ)"/>
+        <path d="M635,115 L625,100" stroke="#7a9bb5" stroke-width="1.5" fill="none" marker-end="url(#arrowZ)"/>
+        <text x="600" y="215" text-anchor="middle" fill="#7a9bb5" font-size="12">→ 周囲の亜鉛が鉄を守る（犠牲防食）</text>
+        <text x="600" y="235" text-anchor="middle" fill="#7a9bb5" font-size="11">亜鉛が先に溶けて鉄の錆を防止</text>
+        <defs>
+          <marker id="arrowZ" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="#7a9bb5"/>
+          </marker>
+        </defs>
+      </svg>
+      <p class="diagram-caption">犠牲防食のしくみ：傷がついても亜鉛が鉄を守り続ける</p>
+    </div>
+  </div>
+
+  <!-- ══════════ 2. adoの二重防錆 ══════════ -->
+  <div class="section-highlight">
+    <p class="section-label" style="color:var(--zinc)">Double Protection</p>
+    <h2 style="font-family:var(--serif);font-size:clamp(22px,4vw,32px);font-weight:300;letter-spacing:0.08em;margin-bottom:32px;">adoの二重防錆処理</h2>
+
+    <p style="color:var(--light);font-size:14px;line-height:2;margin-bottom:20px;">IRONWORKS adoでは、屋外設置のアイアン製品に<strong style="color:var(--zinc)">溶融亜鉛メッキ ＋ 2液型ウレタン塗装</strong>の二重防錆処理を標準で施しています。</p>
+
+    <div class="quote-box">
+      <p>メッキだけでも、塗装だけでもない。<br>両方を重ねることで、屋外でも10年以上の耐久性を実現します。</p>
+      <div class="author">IRONWORKS ado 鍛冶職人</div>
+    </div>
+
+    <p style="color:var(--light);font-size:14px;line-height:2;margin-bottom:20px;">亜鉛メッキが「鉄を錆から守る鎧」なら、2液型ウレタン塗装は「鎧を美しく保つコーティング」。この二重構造により、雨・紫外線・塩害にさらされる環境でも、美しさと耐久性を両立します。</p>
+
+    <!-- 断面図 SVG -->
+    <div class="diagram-wrap" style="border-color:var(--zinc)">
+      <svg viewBox="0 0 600 200" xmlns="http://www.w3.org/2000/svg">
+        <!-- 鉄素地 -->
+        <rect x="50" y="130" width="500" height="50" rx="4" fill="#555"/>
+        <text x="300" y="160" text-anchor="middle" fill="#ccc" font-size="14">鉄 素 地</text>
+        <!-- 合金層 -->
+        <rect x="50" y="115" width="500" height="15" rx="2" fill="#6a8a9f"/>
+        <text x="60" y="110" fill="#7a9bb5" font-size="11">← 亜鉛-鉄 合金層</text>
+        <!-- 純亜鉛層 -->
+        <rect x="50" y="100" width="500" height="15" rx="2" fill="#8ab5cf"/>
+        <text x="60" y="95" fill="#7a9bb5" font-size="11">← 純亜鉛層（犠牲防食）</text>
+        <!-- プライマー -->
+        <rect x="50" y="85" width="500" height="15" rx="2" fill="#666"/>
+        <text x="60" y="80" fill="#aaa" font-size="11">← プライマー（密着層）</text>
+        <!-- 2液ウレタン上塗り -->
+        <rect x="50" y="65" width="500" height="20" rx="4" fill="#333" stroke="#c8a96e" stroke-width="1.5"/>
+        <text x="60" y="60" fill="#c8a96e" font-size="11">← 2液型ウレタン塗装（美観・紫外線防護）</text>
+        <!-- 寸法 -->
+        <text x="300" y="35" text-anchor="middle" fill="#f5f5f5" font-size="14" font-weight="500">adoの二重防錆 断面イメージ</text>
+      </svg>
+      <p class="diagram-caption">溶融亜鉛メッキ＋2液型ウレタン塗装の4層構造</p>
+    </div>
+  </div>
+
+  <!-- ══════════ 3. 処理工程 ══════════ -->
+  <div class="section">
+    <p class="section-label">Process</p>
+    <h2>二重防錆の処理工程</h2>
+    <p>製作から仕上げまで、すべて一貫して行います。</p>
+
+    <div class="process-flow">
+      <div class="process-step">
+        <div class="process-icon">1</div>
+        <h3>製作・溶接</h3>
+        <p>手すり・フェンスを鍛冶職人が製作</p>
+      </div>
+      <div class="process-step">
+        <div class="process-icon">2</div>
+        <h3>溶融亜鉛メッキ</h3>
+        <p>450℃の亜鉛浴に浸漬し合金層を形成</p>
+      </div>
+      <div class="process-step">
+        <div class="process-icon">3</div>
+        <h3>素地調整</h3>
+        <p>メッキ表面を研磨し塗料の密着性を確保</p>
+      </div>
+      <div class="process-step">
+        <div class="process-icon">4</div>
+        <h3>2液ウレタン塗装</h3>
+        <p>プライマー＋上塗りで美しく仕上げ</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ 4. 塗装のみ vs メッキ+塗装 比較 ══════════ -->
+  <div class="section">
+    <p class="section-label">Comparison</p>
+    <h2>塗装のみ vs メッキ＋塗装</h2>
+    <p>屋外設置の場合、塗装だけでは数年で錆が発生します。メッキ＋塗装の二重処理で耐久性が大幅に向上します。</p>
+
+    <table class="compare-table">
+      <thead>
+        <tr><th>項目</th><th>塗装のみ</th><th>メッキ＋塗装（ado標準）</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>屋外耐久性</td><td>3〜5年</td><td class="highlight-z">10年以上</td></tr>
+        <tr><td>傷からの錆</td><td>傷口から錆が拡大</td><td class="highlight-z">犠牲防食で鉄を保護</td></tr>
+        <tr><td>塩害耐性</td><td>弱い</td><td class="highlight-z">強い（沿岸部でも使用可）</td></tr>
+        <tr><td>紫外線</td><td>塗膜劣化あり</td><td class="highlight-z">メッキ層が残り鉄を保護</td></tr>
+        <tr><td>メンテナンス</td><td>定期的な塗り直し必要</td><td class="highlight-z">ほぼメンテナンスフリー</td></tr>
+        <tr><td>コスト</td><td>安価</td><td class="highlight-z">初期費用は高いが長寿命</td></tr>
+        <tr><td>見た目</td><td>塗装色のみ</td><td class="highlight-z">塗装色（メッキは下地）</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══════════ 5. 対応製品 ══════════ -->
+  <div class="section">
+    <p class="section-label">Products</p>
+    <h2>亜鉛メッキ対応製品</h2>
+    <p>以下の屋外設置製品に溶融亜鉛メッキ＋塗装の二重防錆処理を施しています。</p>
+
+    <div class="product-examples">
+      <a class="example-card" href="https://ironworks-ado.stores.jp/items/678f8682c6500803fc924386" target="_blank" rel="noopener">
+        <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/579e79e794eed28d9ac7.jpg/public" alt="Simple -black-" loading="lazy">
+        <div class="example-card-body">
+          <h3>Simple -black-</h3>
+          <p>アプローチ手すり</p>
+        </div>
+      </a>
+      <a class="example-card" href="https://ironworks-ado.stores.jp/items/64584887edfbca00302b343f" target="_blank" rel="noopener">
+        <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/051b216ddd9e64d0ae37.jpg/public" alt="アプローチ手すり 蔦" loading="lazy">
+        <div class="example-card-body">
+          <h3>アプローチ手すり『蔦』</h3>
+          <p>アートアイアン・亜鉛メッキ</p>
+        </div>
+      </a>
+      <a class="example-card" href="https://ironworks-ado.stores.jp/items/64585625559798002e8072e2" target="_blank" rel="noopener">
+        <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/ef1a6b4999d530d6fb67.jpg/public" alt="Simple -white-" loading="lazy">
+        <div class="example-card-body">
+          <h3>Simple -white-</h3>
+          <p>アプローチ手すり</p>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <!-- ══════════ ページリンク ══════════ -->
+  <div class="nav-links">
+    <a href="/paint.html" class="btn-link">← 2液型ウレタン塗装について</a>
+    <a href="/contact.html" class="btn-link primary">お問い合わせ</a>
+  </div>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <p class="logo-f">IRONWORKS <span>ADO</span></p>
+    <p class="copy">&copy; 2025 IRONWORKS ado</p>
+  </footer>
+</body>
+</html>
