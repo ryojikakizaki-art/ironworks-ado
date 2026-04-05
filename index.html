@@ -37,7 +37,14 @@
       position: relative;
       width: 100%;
       height: 100vh;
+      max-height: 100svh;
       overflow: hidden;
+      background: var(--black);
+    }
+
+    .hero-bg {
+      position: absolute;
+      inset: 0;
     }
 
     .hero-bg img {
@@ -45,41 +52,20 @@
       inset: 0;
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      object-position: center;
       opacity: 0;
       transition: opacity 1.4s ease;
+      background: var(--black);
     }
 
     .hero-bg img.active { opacity: 1; }
 
-    .hero-center {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 2;
-    }
-
-    .hero-logo {
-      font-family: var(--serif-en);
-      font-size: clamp(80px, 15vw, 200px);
-      font-weight: 300;
-      letter-spacing: 0.05em;
-      color: var(--white);
-      text-shadow: 0 2px 40px rgba(0,0,0,0.5);
-      line-height: 1;
-    }
-
-    .hero-sub {
-      font-family: var(--serif-en);
-      font-size: clamp(12px, 2vw, 18px);
-      letter-spacing: 0.6em;
-      color: var(--white);
-      text-transform: uppercase;
-      margin-top: 16px;
-      text-shadow: 0 1px 20px rgba(0,0,0,0.5);
+    /* On wide screens, fill the width and crop height */
+    @media (min-aspect-ratio: 1/1) {
+      .hero-bg img {
+        object-fit: cover;
+      }
     }
 
     /* ── NAV BAR ── */
@@ -117,21 +103,20 @@
 
     .line-banner a {
       display: inline-block;
-      background: linear-gradient(135deg, #06C755 0%, #04a847 100%);
-      color: #fff;
-      font-size: 18px;
-      font-weight: bold;
-      padding: 18px 48px;
-      border-radius: 50px;
-      text-decoration: none;
-      letter-spacing: 0.05em;
-      box-shadow: 0 4px 20px rgba(6,199,85,0.3);
-      transition: transform 0.2s, box-shadow 0.2s;
+      max-width: 700px;
+      width: 100%;
+      transition: transform 0.2s, opacity 0.2s;
     }
 
     .line-banner a:hover {
       transform: translateY(-2px);
-      box-shadow: 0 6px 28px rgba(6,199,85,0.4);
+      opacity: 0.9;
+    }
+
+    .line-banner a img {
+      width: 100%;
+      height: auto;
+      display: block;
     }
 
     .line-banner p {
@@ -386,7 +371,7 @@
 
       .nav-bar a { font-size: 11px; letter-spacing: 0.1em; }
 
-      .line-banner a { font-size: 15px; padding: 14px 32px; }
+      .line-banner { padding: 32px 16px; }
 
       .intro { padding: 48px 20px; }
 
@@ -409,8 +394,6 @@
     }
 
     @media (max-width: 480px) {
-      .hero-logo { font-size: 72px; }
-
       .product-grid {
         grid-template-columns: repeat(2, 1fr);
         gap: 1px;
@@ -427,12 +410,10 @@
   <!-- ── HERO ── -->
   <section class="hero">
     <div class="hero-bg">
-      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/15d661276dbd0289f040.png/fit=cover,w=1880" alt="" class="active">
-      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/82e07d8f98d32ffeeb4d.png/fit=cover,w=1880" alt="">
-    </div>
-    <div class="hero-center">
-      <div class="hero-logo">ado</div>
-      <div class="hero-sub">I R O N W O R K S</div>
+      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/1d10ce6b577fb45fb686.jpg/fit=cover,w=1920" alt="吹き抜けフェンス" class="active">
+      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/058206b3316ab07acea1.jpg/fit=cover,w=1920" alt="ロートアイアン手すり">
+      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/05f9936d5ff48cdee5e1.jpg/fit=cover,w=1920" alt="アイアン手すり Claire">
+      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/eb49f5a93b424ad9e174.jpg/fit=cover,w=1920" alt="バルコニーフェンス">
     </div>
   </section>
 
@@ -449,7 +430,9 @@
 
   <!-- ── LINE BANNER ── -->
   <section class="line-banner">
-    <a href="https://lin.ee/yourlinelink" target="_blank" rel="noopener">【写真で簡単見積り】LINEで職人に直接相談する</a>
+    <a href="https://lin.ee/yourlinelink" target="_blank" rel="noopener">
+      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/15d661276dbd0289f040.png/fit=cover,w=1400" alt="【写真で簡単見積り】LINEで職人に直接相談する">
+    </a>
     <p>現場写真を送るだけで簡単診断。サイズや下地の相談も LINE で承ります。</p>
   </section>
 
