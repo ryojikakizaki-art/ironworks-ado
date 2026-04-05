@@ -108,6 +108,7 @@
     .radar-legend span::before { content: ''; display: inline-block; width: 12px; height: 12px; margin-right: 8px; vertical-align: middle; }
     .radar-legend .leg-one::before { background: rgba(136,136,136,0.4); border: 1px solid #888; }
     .radar-legend .leg-two::before { background: rgba(200,169,110,0.3); border: 1px solid #c8a96e; }
+    .radar-legend .leg-three::before { background: rgba(220,80,60,0.3); border: 1px solid #dc503c; }
 
     /* ── QUOTE BOX (with highlight bg) ── */
     .section-highlight {
@@ -246,23 +247,24 @@
 
     <table class="compare-table">
       <thead>
-        <tr><th>項目</th><th>1液型（ラッカー等）</th><th>2液型ウレタン</th></tr>
+        <tr><th>項目</th><th>1液型（ラッカー等）</th><th>2液型ウレタン</th><th style="color:#dc503c">焼付塗装</th></tr>
       </thead>
       <tbody>
-        <tr><td>硬化方式</td><td>溶剤の蒸発（自然乾燥）</td><td class="highlight">化学反応（架橋硬化）</td></tr>
-        <tr><td>耐久性</td><td><span class="stars">★★☆☆☆</span></td><td class="highlight"><span class="stars">★★★★★</span></td></tr>
-        <tr><td>耐薬品性</td><td><span class="stars">★★☆☆☆</span></td><td class="highlight"><span class="stars">★★★★☆</span></td></tr>
-        <tr><td>密着性</td><td><span class="stars">★★★☆☆</span></td><td class="highlight"><span class="stars">★★★★★</span></td></tr>
-        <tr><td>仕上がり</td><td>薄い塗膜、ムラが出やすい</td><td class="highlight">厚く均一、美しい光沢</td></tr>
-        <tr><td>施工性</td><td>簡単（そのまま塗れる）</td><td class="highlight">要技術（調合・可使時間あり）</td></tr>
-        <tr><td>コスト</td><td>安価</td><td class="highlight">高価（材料費 約3〜5倍）</td></tr>
-        <tr><td>主な用途</td><td>DIY、仮塗装、補修</td><td class="highlight">自動車、工業製品、建築</td></tr>
+        <tr><td>硬化方式</td><td>溶剤の蒸発（自然乾燥）</td><td class="highlight">化学反応（架橋硬化）</td><td>加熱硬化（150〜200℃）</td></tr>
+        <tr><td>耐久性</td><td><span class="stars">★★☆☆☆</span></td><td class="highlight"><span class="stars">★★★★★</span></td><td><span class="stars">★★★★★</span></td></tr>
+        <tr><td>耐薬品性</td><td><span class="stars">★★☆☆☆</span></td><td class="highlight"><span class="stars">★★★★☆</span></td><td><span class="stars">★★★★★</span></td></tr>
+        <tr><td>密着性</td><td><span class="stars">★★★☆☆</span></td><td class="highlight"><span class="stars">★★★★★</span></td><td><span class="stars">★★★★★</span></td></tr>
+        <tr><td>仕上がり</td><td>薄い塗膜、ムラが出やすい</td><td class="highlight">厚く均一、美しい光沢</td><td>均一で硬い塗膜</td></tr>
+        <tr><td>施工性</td><td>簡単（そのまま塗れる）</td><td class="highlight">要技術（調合・可使時間あり）</td><td>専用焼付炉が必要</td></tr>
+        <tr><td>コスト</td><td>安価</td><td class="highlight">高価（材料費 約3〜5倍）</td><td>非常に高価（設備費）</td></tr>
+        <tr><td>現場補修</td><td>可能</td><td class="highlight">可能</td><td>不可（炉が必要）</td></tr>
+        <tr><td>主な用途</td><td>DIY、仮塗装、補修</td><td class="highlight">自動車、工業製品、建築</td><td>家電、自動車部品、量産品</td></tr>
       </tbody>
     </table>
 
     <!-- 5角形レーダーチャート -->
     <div class="radar-wrap">
-      <svg viewBox="0 0 400 380" xmlns="http://www.w3.org/2000/svg">
+      <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
         <defs>
           <style>
             .radar-axis { stroke: #333; stroke-width: 1; }
@@ -270,49 +272,60 @@
             .radar-label { fill: #ccc; font-size: 12px; text-anchor: middle; }
           </style>
         </defs>
-        <!-- Center = 200, 190. Radius = 140 -->
-        <!-- 5 axes: 耐久性(top), 耐薬品性(top-right), 光沢仕上がり(bottom-right), 施工性(bottom-left), 密着性(top-left) -->
-        <!-- Axis angles: -90, -18, 54, 126, 198 degrees -->
+        <!-- Center = 200, 200. Radius = 150 -->
+        <!-- 5 axes: 耐久性(-90°), 耐薬品性(-18°), 光沢(54°), 施工性(126°), 密着性(198°) -->
 
         <!-- Grid rings (20%, 40%, 60%, 80%, 100%) -->
-        <polygon class="radar-grid" points="200,162 207,186 204,193 196,193 193,186"/>
-        <polygon class="radar-grid" points="200,134 215,182 209,197 191,197 185,182"/>
-        <polygon class="radar-grid" points="200,106 222,178 213,200 187,200 178,178"/>
-        <polygon class="radar-grid" points="200,78 230,174 218,204 182,204 170,174"/>
-        <polygon class="radar-grid" points="200,50 237,170 222,207 178,207 163,170"/>
+        <polygon class="radar-grid" points="200,170 228.5,190.7 217.6,224.3 182.4,224.3 171.5,190.7"/>
+        <polygon class="radar-grid" points="200,140 257.1,181.5 235.3,248.5 164.7,248.5 142.9,181.5"/>
+        <polygon class="radar-grid" points="200,110 285.6,172.2 252.9,272.8 147.1,272.8 114.4,172.2"/>
+        <polygon class="radar-grid" points="200,80 314.1,162.9 270.5,297.1 129.5,297.1 85.9,162.9"/>
+        <polygon class="radar-grid" points="200,50 342.7,153.6 288.2,321.4 111.8,321.4 57.3,153.6"/>
 
         <!-- Axes -->
-        <line class="radar-axis" x1="200" y1="190" x2="200" y2="50"/>
-        <line class="radar-axis" x1="200" y1="190" x2="337" y2="145"/>
-        <line class="radar-axis" x1="200" y1="190" x2="285" y2="310"/>
-        <line class="radar-axis" x1="200" y1="190" x2="115" y2="310"/>
-        <line class="radar-axis" x1="200" y1="190" x2="63" y2="145"/>
+        <line class="radar-axis" x1="200" y1="200" x2="200" y2="50"/>
+        <line class="radar-axis" x1="200" y1="200" x2="342.7" y2="153.6"/>
+        <line class="radar-axis" x1="200" y1="200" x2="288.2" y2="321.4"/>
+        <line class="radar-axis" x1="200" y1="200" x2="111.8" y2="321.4"/>
+        <line class="radar-axis" x1="200" y1="200" x2="57.3" y2="153.6"/>
 
-        <!-- 1液型 (40%, 35%, 45%, 90%, 50%) -->
-        <polygon fill="rgba(136,136,136,0.25)" stroke="#888" stroke-width="1.5"
-          points="200,134  215,180  210,199  168,197  185,178"/>
+        <!-- 1液型 (耐久40, 耐薬35, 光沢45, 施工90, 密着50) -->
+        <polygon fill="rgba(136,136,136,0.2)" stroke="#888" stroke-width="1.5"
+          points="200,140 249.9,183.8 239.7,254.6 120.6,309.2 128.7,176.8"/>
 
-        <!-- 2液型 (95%, 85%, 90%, 35%, 95%) -->
-        <polygon fill="rgba(200,169,110,0.2)" stroke="#c8a96e" stroke-width="2"
-          points="200,53  233,172  219,204  149,232  165,171"/>
+        <!-- 焼付塗装 (耐久100, 耐薬90, 光沢85, 施工20, 密着90) -->
+        <polygon fill="rgba(220,80,60,0.12)" stroke="#dc503c" stroke-width="1.5" stroke-dasharray="6,3"
+          points="200,50 328.4,158.3 274.9,303.1 182.4,224.3 71.6,158.3"/>
+
+        <!-- 2液型ウレタン (耐久95, 耐薬85, 光沢90, 施工35, 密着95) -->
+        <polygon fill="rgba(200,169,110,0.18)" stroke="#c8a96e" stroke-width="2"
+          points="200,57.5 321.3,160.6 279.4,309.2 169.1,242.5 64.5,156"/>
 
         <!-- Axis labels -->
-        <text class="radar-label" x="200" y="38">耐久性</text>
-        <text class="radar-label" x="350" y="143">耐薬品性</text>
-        <text class="radar-label" x="300" y="328">光沢・仕上がり</text>
-        <text class="radar-label" x="100" y="328">施工の手軽さ</text>
-        <text class="radar-label" x="50" y="143">密着性</text>
+        <text class="radar-label" x="200" y="30">耐久性</text>
+        <text class="radar-label" x="364" y="150">耐薬品性</text>
+        <text class="radar-label" x="305" y="342">光沢・仕上がり</text>
+        <text class="radar-label" x="95" y="342">施工の手軽さ</text>
+        <text class="radar-label" x="36" y="150">密着性</text>
 
-        <!-- Data points - 2液 -->
-        <circle cx="200" cy="53" r="4" fill="#c8a96e"/>
-        <circle cx="233" cy="172" r="4" fill="#c8a96e"/>
-        <circle cx="219" cy="204" r="4" fill="#c8a96e"/>
-        <circle cx="149" cy="232" r="4" fill="#c8a96e"/>
-        <circle cx="165" cy="171" r="4" fill="#c8a96e"/>
+        <!-- Data points - 2液ウレタン -->
+        <circle cx="200" cy="57.5" r="4" fill="#c8a96e"/>
+        <circle cx="321.3" cy="160.6" r="4" fill="#c8a96e"/>
+        <circle cx="279.4" cy="309.2" r="4" fill="#c8a96e"/>
+        <circle cx="169.1" cy="242.5" r="4" fill="#c8a96e"/>
+        <circle cx="64.5" cy="156" r="4" fill="#c8a96e"/>
+
+        <!-- Data points - 焼付塗装 -->
+        <circle cx="200" cy="50" r="3" fill="#dc503c"/>
+        <circle cx="328.4" cy="158.3" r="3" fill="#dc503c"/>
+        <circle cx="274.9" cy="303.1" r="3" fill="#dc503c"/>
+        <circle cx="182.4" cy="224.3" r="3" fill="#dc503c"/>
+        <circle cx="71.6" cy="158.3" r="3" fill="#dc503c"/>
       </svg>
       <div class="radar-legend">
         <span class="leg-one">1液型</span>
         <span class="leg-two">2液型ウレタン（ado使用）</span>
+        <span class="leg-three">焼付塗装</span>
       </div>
     </div>
   </div>
