@@ -639,7 +639,7 @@
   };
 
   // 発送サイズ→送料サイズ区分
-  var SIZE_BRACKETS = [[1400,140],[1600,160],[1700,170],[1800,180],[2000,200],[2200,220],[2400,240],[2600,260]];
+  var SIZE_BRACKETS = [[1400,140],[1600,160],[1700,170],[1800,180],[2000,200],[2200,220],[2400,240],[3700,260]];
   function getSizeBracket(shipMm) {
     for (var i = 0; i < SIZE_BRACKETS.length; i++) {
       if (shipMm <= SIZE_BRACKETS[i][0]) return SIZE_BRACKETS[i][1];
@@ -666,8 +666,8 @@
     isInquiryMode = false;
 
     // 要問い合わせ判定
-    if (L > 3000) {
-      inquiry.innerHTML = '⚠ 3,001mm以上のご注文は別途お見積もりとなります。<br><a href="mailto:info@tantetuzest.com">お問い合わせ</a>よりご相談ください。';
+    if (L > 3500) {
+      inquiry.innerHTML = '⚠ 3,501mm以上のご注文は別途お見積もりとなります。<br><a href="mailto:info@tantetuzest.com">お問い合わせ</a>よりご相談ください。';
       inquiry.style.display = 'block';
       rowShipping.style.display = 'none';
       btn.disabled = true;
