@@ -392,9 +392,6 @@
       div.onmouseenter = function() {
         document.getElementById('mainImg').src = galleryUrl(id);
       };
-      div.onmouseleave = function() {
-        document.getElementById('mainImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
-      };
       var img = document.createElement('img');
       img.src = galleryUrl(id);
       img.alt = '';
@@ -402,6 +399,9 @@
       div.appendChild(img);
       strip.appendChild(div);
     });
+    strip.onmouseleave = function() {
+      document.getElementById('mainImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
+    };
   })();
 </script>
 <script>
