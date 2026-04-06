@@ -830,6 +830,7 @@
     strip.onmouseleave = function() {
       document.getElementById('mainImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
     };
+  })();
 
   function openLightbox() {
     document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
@@ -860,8 +861,6 @@
     if (e.key === 'ArrowRight') { galleryGo(galleryIdx + 1); document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx]); }
   });
   document.getElementById('mainImg').onclick = openLightbox;
-
-  })();
 
   // Stripe Checkout
   async function addToCart() {
