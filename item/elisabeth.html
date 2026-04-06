@@ -108,6 +108,10 @@
 .nav-dropdown-menu .dd-divider {
   height: 1px; background: var(--line); margin: 8px 24px;
 }
+  
+    .video-section { margin-top: 16px; }
+    .video-section iframe { width: 100%; aspect-ratio: 16/9; border: none; background: var(--dark); }
+    .video-label { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 8px; text-transform: uppercase; }
   </style>
 </head>
 <body>
@@ -147,7 +151,13 @@
     </div>
 
     <div class="product-hero">
-      <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/9a24b2c661dea08ef6f4.jpg/public" alt="Élisabeth エリザベート" class="product-image">
+      <div>
+        <img src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/9a24b2c661dea08ef6f4.jpg/fit=cover,w=1200,h=1200" alt="Élisabeth エリザベート" class="product-image">
+        <div class="video-section">
+          <div class="video-label">制作動画</div>
+          <iframe src="https://www.youtube.com/embed/QgYF-a3tO5k" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+        </div>
+      </div>
 
       <div class="product-details">
         <h1>Élisabeth</h1>

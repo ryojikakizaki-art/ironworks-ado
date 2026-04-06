@@ -121,7 +121,7 @@
     .main-image:hover .gallery-nav button { opacity: 1; }
     .gallery-nav button:hover { background: rgba(0,0,0,0.7); }
     .gallery-counter { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.5); color: #f5f5f5; font-size: 11px; padding: 4px 10px; letter-spacing: 0.1em; }
-    .thumbs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; max-height: 124px; overflow-y: auto; scrollbar-width: thin; }
+    .thumbs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; max-height: none; scrollbar-width: thin; }
     .thumb { width: 56px; height: 56px; flex-shrink: 0; background: var(--dark); border: 2px solid transparent; cursor: pointer; overflow: hidden; transition: border-color .2s; }
     .thumb.active { border-color: var(--accent); }
     .thumb img { width: 100%; height: 100%; object-fit: cover; }
@@ -393,6 +393,17 @@
     .lightbox-prev { left:20px; }
     .lightbox-next { right:20px; }
     .main-image img { cursor: zoom-in; }
+  
+    .video-section { margin-top: 16px; }
+    .video-section iframe { width: 100%; aspect-ratio: 16/9; border: none; background: var(--dark); }
+    .video-label { font-size: 11px; color: var(--muted); letter-spacing: 0.08em; margin-bottom: 8px; text-transform: uppercase; }
+  
+    .qty-pref-group { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
+    .qty-pref-group label { font-size: 12px; color: var(--muted); letter-spacing: 0.08em; display: block; margin-bottom: 6px; }
+    .qty-pref-group input, .qty-pref-group select { width: 100%; padding: 10px 12px; background: var(--dark); border: 1px solid var(--line); color: var(--white); font-size: 14px; font-family: var(--font); border-radius: 0; appearance: none; -webkit-appearance: none; }
+    .qty-pref-group select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+    .qty-pref-group input:focus, .qty-pref-group select:focus { outline: none; border-color: var(--accent); }
+    .breakdown-row.shipping-row { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; }
   </style>
 </head>
 <body>
@@ -434,7 +445,7 @@
     <div class="product-hero">
       <div class="gallery">
         <div class="main-image">
-          <img id="mainImg" src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/0a0c0c78f9f636cca733.jpg/public" alt="Claire クレール">
+          <img id="mainImg" src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/0a0c0c78f9f636cca733.jpg/fit=cover,w=1200,h=1200" alt="Claire クレール">
           <div class="gallery-nav">
             <button onclick="galleryPrev()">&#8249;</button>
             <button onclick="galleryNext()">&#8250;</button>
@@ -442,6 +453,11 @@
         </div>
         <div class="gallery-counter" id="galleryCounter">1 / 24</div>
         <div class="thumbs" id="thumbStrip"></div>
+    <div class="video-section">
+      <div class="video-label">制作動画</div>
+      <iframe src="https://www.youtube.com/embed/NYRb4pMN0NI" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen loading="lazy"></iframe>
+    </div>
+
       </div>
 
       <div class="product-details">
@@ -492,8 +508,31 @@
             <div class="slider-labels">
               <span>500</span><span>1500（標準）</span><span>2000（長尺）</span><span>5000mm</span>
             </div>
-          </div>
-          <div class="zakin-info">
+
+      <div class="qty-pref-group">
+        <div>
+          <label for="qtyInput">数量</label>
+          <input type="number" id="qtyInput" value="1" min="1" max="99" oninput="onQtyChange()">
+        </div>
+        <div>
+          <label for="prefSelect">配送先（都道府県）</label>
+          <select id="prefSelect" onchange="onPrefChange()">
+            <option value="">選択してください</option>
+            <option value="hokkaido">北海道</option>
+            <option value="tohoku">青森県</option><option value="tohoku">岩手県</option><option value="tohoku">宮城県</option><option value="tohoku">秋田県</option><option value="tohoku">山形県</option><option value="tohoku">福島県</option>
+            <option value="kanto">茨城県</option><option value="kanto">栃木県</option><option value="kanto">群馬県</option><option value="kanto">埼玉県</option><option value="kanto">千葉県</option><option value="kanto">東京都</option><option value="kanto">神奈川県</option>
+            <option value="chubu">新潟県</option><option value="chubu">富山県</option><option value="chubu">石川県</option><option value="chubu">福井県</option><option value="chubu">山梨県</option><option value="chubu">長野県</option><option value="chubu">岐阜県</option><option value="chubu">静岡県</option><option value="chubu">愛知県</option>
+            <option value="kinki">三重県</option><option value="kinki">滋賀県</option><option value="kinki">京都府</option><option value="kinki">大阪府</option><option value="kinki">兵庫県</option><option value="kinki">奈良県</option><option value="kinki">和歌山県</option>
+            <option value="chugoku">鳥取県</option><option value="chugoku">島根県</option><option value="chugoku">岡山県</option><option value="chugoku">広島県</option><option value="chugoku">山口県</option>
+            <option value="shikoku">徳島県</option><option value="shikoku">香川県</option><option value="shikoku">愛媛県</option><option value="shikoku">高知県</option>
+            <option value="kyushu">福岡県</option><option value="kyushu">佐賀県</option><option value="kyushu">長崎県</option><option value="kyushu">熊本県</option><option value="kyushu">大分県</option><option value="kyushu">宮崎県</option><option value="kyushu">鹿児島県</option>
+            <option value="okinawa">沖縄県</option>
+          </select>
+        </div>
+      </div>
+      </div>
+
+      <div class="zakin-info">
             <div class="zakin-row">
               <span class="zakin-label">推奨座金数（自動計算）</span>
               <span class="zakin-value" id="zakinCount">4 個</span>
@@ -521,7 +560,11 @@
               <span class="breakdown-value" id="surchargeVal">—</span>
             </div>
           </div>
-          <div class="total-price">
+          <div class="breakdown-row shipping-row" id="rowShipping" style="display:none">
+          <span class="breakdown-label">送料</span>
+          <span class="breakdown-value" id="shippingVal">—</span>
+        </div>
+        <div class="total-price">
             <span class="total-label">合計（税込）</span>
             <div>
               <span class="total-amount" id="totalVal">¥42,000</span>
@@ -545,11 +588,15 @@
 
     <div class="description-section">
       <h2>Claire について</h2>
-      <p>Claire クレールは、シンプルでエレガントなデザインを実現した横型の壁付け手すりです。マットホワイトの上品な仕上げが、モダンインテリアと調和します。</p>
-      <p>直径25.4φのパイプ素材を採用し、十分な強度を確保しながら、スリムで洗練された見た目を実現しました。2液型ウレタン塗装により、耐久性と美しさを両立しています。</p>
-      <p>セミオーダー対応で、150cmまでの範囲内で自由に長さをお選びいただけます。玄関、廊下、階段周りなど、様々なシーンでご活用いただけます。</p>
+      <p>セミマットホワイトで仕上げた、明るく柔らかな印象の壁付け手すり。デザイナー住宅のようなコンクリート住宅から和風建築にもよく合います。</p>
+      <p>仕上がりの美しさ、使いやすさにこだわり、目立たない細かな部分も手をぬかず長く愛用していただけるように丁寧に制作しております。<br>IRONWORKS adoは、傷や錆が鉄の味わいと謳った不誠実なものづくりはいたしません。</p>
+      <p>手すりは毎日手に触れ、安全のために付けるもの。握りやすく安心して掴める強度を考え、25φ（単2電池より少し細いくらい）のしっかりした太さで作っています（16φや19φでは、手すりとしては不安を感じる細さです。一般的な大人の人差し指16φ、親指19φを握ってみてください）。</p>
+      <p>ブラケット座金はφ45mm・厚み4.5mmの小振りなサイズ。壁面に主張しすぎず、空間に自然と溶け込みます。</p>
+      <p>住まいづくりの中で、手すりはこだわる優先度が低いものかもしれませんが『丁寧に作られた』アイアン手すりのある空間は全体を引き締め毎日を上質で豊かにしてくれます。</p>
+      <p>角やひっかかる危ない箇所がないよう丁寧に仕上げておりますので小さなお子様がいるご家庭でも安心してお使いできます。</p>
+      <p>これから毎日お使いいただく方の心豊かな暮らしを思い制作しております。</p>
     </div>
-  </main>
+    </main>
 
   
   <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
@@ -576,7 +623,7 @@
     'bb34c201580ca0240c31.jpg','93e0cdb295c2bf73c357.jpg','4e118a43e6e6a5fa942b.jpg'
   ];
   var galleryIdx = 0;
-  function galleryUrl(id) { return GALLERY_BASE + id + '/public'; }
+  function galleryUrl(id, w) { return GALLERY_BASE + id + '/' + (w ? 'fit=cover,w=' + w + ',h=' + w : 'fit=cover,w=1200,h=1200'); }
   function galleryGo(i) {
     galleryIdx = (i + GALLERY_IDS.length) % GALLERY_IDS.length;
     document.getElementById('mainImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
@@ -597,7 +644,7 @@
         document.getElementById('mainImg').src = galleryUrl(id);
       };
       var img = document.createElement('img');
-      img.src = galleryUrl(id);
+      img.src = galleryUrl(id, 200);
       img.alt = '';
       img.loading = 'lazy';
       div.appendChild(img);
@@ -609,7 +656,7 @@
   })();
 
   function openLightbox() {
-    document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
+    document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx], 1880);
     document.getElementById('lightbox').classList.add('active');
     document.body.style.overflow = 'hidden';
   }
@@ -622,19 +669,19 @@
   function lightboxPrev(e) {
     e.stopPropagation();
     galleryGo(galleryIdx - 1);
-    document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
+    document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx], 1880);
   }
   function lightboxNext(e) {
     e.stopPropagation();
     galleryGo(galleryIdx + 1);
-    document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
+    document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx], 1880);
   }
   document.addEventListener('keydown', function(e) {
     var lb = document.getElementById('lightbox');
     if (!lb.classList.contains('active')) return;
     if (e.key === 'Escape') { lb.classList.remove('active'); document.body.style.overflow = ''; }
-    if (e.key === 'ArrowLeft') { galleryGo(galleryIdx - 1); document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx]); }
-    if (e.key === 'ArrowRight') { galleryGo(galleryIdx + 1); document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx]); }
+    if (e.key === 'ArrowLeft') { galleryGo(galleryIdx - 1); document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx], 1880); }
+    if (e.key === 'ArrowRight') { galleryGo(galleryIdx + 1); document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx], 1880); }
   });
   document.getElementById('mainImg').onclick = openLightbox;
 </script>
@@ -708,7 +755,10 @@
     const rowSurcharge = document.getElementById('rowSurcharge');
     const notice = document.getElementById('surchargeNotice');
     if (p.surcharge > 0) { rowSurcharge.style.display = 'flex'; document.getElementById('surchargeVal').textContent = fmt(p.surcharge); notice.style.display = 'block'; } else { rowSurcharge.style.display = 'none'; notice.style.display = 'none'; }
-    document.getElementById('totalVal').textContent = fmt(p.total);
+    document.getElementById('totalVal').dataset.base = p.total;
+    var q = (typeof currentQty !== 'undefined') ? currentQty : 1;
+    var s = (typeof currentShipping !== 'undefined') ? currentShipping : 0;
+    document.getElementById('totalVal').textContent = fmt(p.total * q + s * q);
   }
 
   function onLengthChange(v) { update(v); }
@@ -731,6 +781,44 @@
   }
 
   update(1500);
+
+  // 数量・送料（初期化）
+  var currentQty = 1;
+  var currentShipping = 0;
+
+  // 送料テーブル（税込）
+  var SHIPPING_TABLE = {
+    'hokkaido': 2500, 'tohoku': 1800, 'kanto': 1500, 'chubu': 1500,
+    'kinki': 1600, 'chugoku': 1800, 'shikoku': 1900, 'kyushu': 2000, 'okinawa': 3500
+  };
+
+  function onQtyChange() {
+    var q = parseInt(document.getElementById('qtyInput').value) || 1;
+    if (q < 1) q = 1;
+    if (q > 99) q = 99;
+    currentQty = q;
+    updateTotal();
+  }
+  function onPrefChange() {
+    var sel = document.getElementById('prefSelect');
+    var region = sel.value;
+    var rowShipping = document.getElementById('rowShipping');
+    if (region && SHIPPING_TABLE[region]) {
+      currentShipping = SHIPPING_TABLE[region];
+      rowShipping.style.display = 'flex';
+      document.getElementById('shippingVal').textContent = '¥' + currentShipping.toLocaleString();
+    } else {
+      currentShipping = 0;
+      rowShipping.style.display = 'none';
+    }
+    updateTotal();
+  }
+  function updateTotal() {
+    var baseTotal = parseInt(document.getElementById('totalVal').dataset.base) || 0;
+    var grandTotal = baseTotal * currentQty + currentShipping * currentQty;
+    document.getElementById('totalVal').textContent = (typeof fmt === 'function') ? fmt(grandTotal) : ('¥' + grandTotal.toLocaleString());
+  }
+
 </script>
 </body>
 </html>
