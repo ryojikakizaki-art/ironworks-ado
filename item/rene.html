@@ -436,14 +436,9 @@
 }
   
     /* Lightbox */
-    .lightbox { display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); z-index:9999; justify-content:center; align-items:center; cursor:zoom-out; }
-    .lightbox.active { display:flex; }
-    .lightbox img { max-width:96vw; max-height:96vh; object-fit:contain; cursor:default; }
-    .lightbox-close { position:absolute; top:20px; right:24px; color:#fff; font-size:36px; cursor:pointer; z-index:2001; background:none; border:none; line-height:1; }
-    .lightbox-nav { position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:#fff; border:none; font-size:32px; width:48px; height:48px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s; }
-    .lightbox-nav:hover { background:rgba(0,0,0,0.8); }
-    .lightbox-prev { left:20px; }
-    .lightbox-next { right:20px; }
+    .shipping-inquiry { background: rgba(200,169,110,0.12); border: 1px solid var(--accent); padding: 16px; margin-top: 12px; font-size: 13px; color: var(--accent); line-height: 1.6; display: none; }
+    .shipping-inquiry a { color: var(--accent); text-decoration: underline; }
+    .shipping-note { font-size: 11px; color: var(--muted); margin-top: 6px; }
     .main-image img { cursor: zoom-in; }
   
     .video-section { margin-top: 16px; }
@@ -457,6 +452,8 @@
     .qty-pref-group input:focus, .qty-pref-group select:focus { outline: none; border-color: var(--accent); }
     .breakdown-row.shipping-row { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; }
   </style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/js/glightbox.min.js"></script>
 </head>
 <body>
 
@@ -505,7 +502,6 @@
   <div class="gallery">
     <div class="main-image">
       <img id="mainImg" src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/d0f5f0e83d40a4d29044.jpg/fit=cover,w=1200,h=1200" alt="René アイアン手すり">
-      <div class="badge">Handcrafted</div>
       <div class="gallery-nav">
         <button onclick="galleryPrev()">&#8249;</button>
         <button onclick="galleryNext()">&#8250;</button>
@@ -581,15 +577,38 @@
           <label for="prefSelect">配送先（都道府県）</label>
           <select id="prefSelect" onchange="onPrefChange()">
             <option value="">選択してください</option>
-            <option value="hokkaido">北海道</option>
-            <option value="tohoku">青森県</option><option value="tohoku">岩手県</option><option value="tohoku">宮城県</option><option value="tohoku">秋田県</option><option value="tohoku">山形県</option><option value="tohoku">福島県</option>
-            <option value="kanto">茨城県</option><option value="kanto">栃木県</option><option value="kanto">群馬県</option><option value="kanto">埼玉県</option><option value="kanto">千葉県</option><option value="kanto">東京都</option><option value="kanto">神奈川県</option>
-            <option value="chubu">新潟県</option><option value="chubu">富山県</option><option value="chubu">石川県</option><option value="chubu">福井県</option><option value="chubu">山梨県</option><option value="chubu">長野県</option><option value="chubu">岐阜県</option><option value="chubu">静岡県</option><option value="chubu">愛知県</option>
-            <option value="kinki">三重県</option><option value="kinki">滋賀県</option><option value="kinki">京都府</option><option value="kinki">大阪府</option><option value="kinki">兵庫県</option><option value="kinki">奈良県</option><option value="kinki">和歌山県</option>
-            <option value="chugoku">鳥取県</option><option value="chugoku">島根県</option><option value="chugoku">岡山県</option><option value="chugoku">広島県</option><option value="chugoku">山口県</option>
-            <option value="shikoku">徳島県</option><option value="shikoku">香川県</option><option value="shikoku">愛媛県</option><option value="shikoku">高知県</option>
-            <option value="kyushu">福岡県</option><option value="kyushu">佐賀県</option><option value="kyushu">長崎県</option><option value="kyushu">熊本県</option><option value="kyushu">大分県</option><option value="kyushu">宮崎県</option><option value="kyushu">鹿児島県</option>
-            <option value="okinawa">沖縄県</option>
+            <option>北海道</option>
+            <optgroup label="東北">
+              <option>青森県</option><option>岩手県</option><option>秋田県</option>
+              <option>宮城県</option><option>山形県</option><option>福島県</option>
+            </optgroup>
+            <optgroup label="関東">
+              <option>茨城県</option><option>栃木県</option><option>群馬県</option><option>埼玉県</option>
+              <option>千葉県</option><option>東京都</option><option>神奈川県</option><option>山梨県</option>
+            </optgroup>
+            <optgroup label="信越・北陸">
+              <option>新潟県</option><option>長野県</option>
+              <option>富山県</option><option>石川県</option><option>福井県</option>
+            </optgroup>
+            <optgroup label="東海">
+              <option>岐阜県</option><option>静岡県</option><option>愛知県</option><option>三重県</option>
+            </optgroup>
+            <optgroup label="関西">
+              <option>滋賀県</option><option>京都府</option><option>大阪府</option>
+              <option>兵庫県</option><option>奈良県</option><option>和歌山県</option>
+            </optgroup>
+            <optgroup label="中国">
+              <option>鳥取県</option><option>島根県</option><option>岡山県</option>
+              <option>広島県</option><option>山口県</option>
+            </optgroup>
+            <optgroup label="四国">
+              <option>徳島県</option><option>香川県</option><option>愛媛県</option><option>高知県</option>
+            </optgroup>
+            <optgroup label="九州">
+              <option>福岡県</option><option>佐賀県</option><option>長崎県</option><option>熊本県</option>
+              <option>大分県</option><option>宮崎県</option><option>鹿児島県</option>
+            </optgroup>
+            <option>沖縄県</option>
           </select>
         </div>
       </div>
@@ -631,6 +650,7 @@
           <span class="breakdown-label">送料</span>
           <span class="breakdown-value" id="shippingVal">—</span>
         </div>
+        <div class="shipping-note" id="shippingNote" style="display:none"></div>
         <div class="total-price">
         <span class="total-label">合計（税込）</span>
         <div>
@@ -647,6 +667,8 @@
           お問い合わせ・カスタム相談
         </a>
       </div>
+
+      <div class="shipping-inquiry" id="shippingInquiry"></div>
 
       <div class="checkout-error" id="checkoutError">
         ⚠ エラーが発生しました。しばらく後にもう一度お試しください。
@@ -704,13 +726,6 @@
   </div>
 </div>
 
-
-  <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
-    <button class="lightbox-close" onclick="closeLightbox(event)">&times;</button>
-    <button class="lightbox-nav lightbox-prev" onclick="lightboxPrev(event)">&#8249;</button>
-    <img id="lightboxImg" src="" alt="">
-    <button class="lightbox-nav lightbox-next" onclick="lightboxNext(event)">&#8250;</button>
-  </div>
 
   <footer>
   © IRONWORKS ado ｜ All rights reserved
@@ -819,9 +834,11 @@
     }
 
     document.getElementById('totalVal').dataset.base = p.total;
-    var q = (typeof currentQty !== 'undefined') ? currentQty : 1;
-    var s = (typeof currentShipping !== 'undefined') ? currentShipping : 0;
-    document.getElementById('totalVal').textContent = fmt(p.total * q + s * q);
+    if (typeof calcShipping === 'function') {
+      calcShipping();
+    } else {
+      document.getElementById('totalVal').textContent = fmt(p.total);
+    }
   }
 
   function onLengthChange(v) { update(v); }
@@ -861,7 +878,7 @@
     GALLERY_IDS.forEach(function(id, i) {
       var div = document.createElement('div');
       div.className = 'thumb' + (i === 0 ? ' active' : '');
-      div.onclick = function() { galleryGo(i); openLightbox(); };
+      div.onclick = function() { galleryGo(i); openGLightbox(i); };
       div.onmouseenter = function() {
         document.getElementById('mainImg').src = galleryUrl(id);
       };
@@ -877,35 +894,37 @@
     };
   })();
 
-  function openLightbox() {
-    document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx], 1880);
-    document.getElementById('lightbox').classList.add('active');
-    document.body.style.overflow = 'hidden';
+  // GLightbox gallery
+  var glightboxInstance = null;
+  function buildGLightbox() {
+    var elements = GALLERY_IDS.map(function(id) {
+      return { href: galleryUrl(id, 1880), type: 'image' };
+    });
+    if (glightboxInstance) glightboxInstance.destroy();
+    glightboxInstance = GLightbox({
+      elements: elements,
+      touchNavigation: true,
+      loop: true,
+      closeOnOutsideClick: true,
+      openEffect: 'fade',
+      closeEffect: 'fade',
+      skin: 'clean',
+      svg: {
+        close: '<svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" fill="none"/></svg>',
+        next: '<svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" fill="none"/></svg>',
+        prev: '<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" fill="none"/></svg>'
+      }
+    });
+    glightboxInstance.on('slide_changed', function(data) {
+      galleryGo(data.current.index);
+    });
   }
-  function closeLightbox(e) {
-    if (e.target.id === 'lightbox' || e.target.classList.contains('lightbox-close')) {
-      document.getElementById('lightbox').classList.remove('active');
-      document.body.style.overflow = '';
-    }
+  function openGLightbox(idx) {
+    if (!glightboxInstance) buildGLightbox();
+    glightboxInstance.openAt(idx);
   }
-  function lightboxPrev(e) {
-    e.stopPropagation();
-    galleryGo(galleryIdx - 1);
-    document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx], 1880);
-  }
-  function lightboxNext(e) {
-    e.stopPropagation();
-    galleryGo(galleryIdx + 1);
-    document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx], 1880);
-  }
-  document.addEventListener('keydown', function(e) {
-    var lb = document.getElementById('lightbox');
-    if (!lb.classList.contains('active')) return;
-    if (e.key === 'Escape') { lb.classList.remove('active'); document.body.style.overflow = ''; }
-    if (e.key === 'ArrowLeft') { galleryGo(galleryIdx - 1); document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx], 1880); }
-    if (e.key === 'ArrowRight') { galleryGo(galleryIdx + 1); document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx], 1880); }
-  });
-  document.getElementById('mainImg').onclick = openLightbox;
+  buildGLightbox();
+  document.getElementById('mainImg').onclick = function() { openGLightbox(galleryIdx); };
 
   // Stripe Checkout
   async function addToCart() {
@@ -921,7 +940,7 @@
       const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product: 'rene', lengthMm: L }),
+        body: JSON.stringify({ product: 'rene', lengthMm: L, qty: currentQty }),
       });
 
       if (!res.ok) {
@@ -940,45 +959,178 @@
     }
   }
 
-  // 初期描画
-  update(1500);
-
-  // 数量・送料（初期化）
+  // ── 送料計算 ──────────────────────────────
+  var PRODUCT_TYPE = 'yokogata'; // yokogata=横型, tategata=縦型
   var currentQty = 1;
   var currentShipping = 0;
+  var currentRegion = '';
+  var isInquiryMode = false;
 
-  // 送料テーブル（税込）
-  var SHIPPING_TABLE = {
-    'hokkaido': 2500, 'tohoku': 1800, 'kanto': 1500, 'chubu': 1500,
-    'kinki': 1600, 'chugoku': 1800, 'shikoku': 1900, 'kyushu': 2000, 'okinawa': 3500
+  // 都道府県→地域マッピング
+  var PREF_TO_REGION = {
+    '北海道':'hokkaido',
+    '青森県':'kita_tohoku','岩手県':'kita_tohoku','秋田県':'kita_tohoku',
+    '宮城県':'minami_tohoku','山形県':'minami_tohoku','福島県':'minami_tohoku',
+    '茨城県':'kanto','栃木県':'kanto','群馬県':'kanto','埼玉県':'kanto',
+    '千葉県':'kanto','東京都':'kanto','神奈川県':'kanto','山梨県':'kanto',
+    '新潟県':'shinetsu','長野県':'shinetsu',
+    '富山県':'hokuriku','石川県':'hokuriku','福井県':'hokuriku',
+    '岐阜県':'tokai','静岡県':'tokai','愛知県':'tokai','三重県':'tokai',
+    '滋賀県':'kansai','京都府':'kansai','大阪府':'kansai','兵庫県':'kansai','奈良県':'kansai','和歌山県':'kansai',
+    '鳥取県':'chugoku','島根県':'chugoku','岡山県':'chugoku','広島県':'chugoku','山口県':'chugoku',
+    '徳島県':'shikoku','香川県':'shikoku','愛媛県':'shikoku','高知県':'shikoku',
+    '福岡県':'kita_kyushu','佐賀県':'kita_kyushu','長崎県':'kita_kyushu','大分県':'kita_kyushu',
+    '熊本県':'minami_kyushu','宮崎県':'minami_kyushu','鹿児島県':'minami_kyushu',
+    '沖縄県':'okinawa'
   };
+
+  // 送料テーブル（サイズ別×地域別、税込）
+  var SHIPPING_RATES = {
+    140:{minami_kyushu:1550,kita_kyushu:1500,shikoku:1400,chugoku:1500,kansai:1300,hokuriku:1200,tokai:1300,shinetsu:1100,kanto:1400,minami_tohoku:1400,kita_tohoku:1400,hokkaido:1550},
+    160:{minami_kyushu:2650,kita_kyushu:2650,shikoku:2550,chugoku:2400,kansai:2400,hokuriku:2200,tokai:2200,shinetsu:2200,kanto:2200,minami_tohoku:2200,kita_tohoku:2350,hokkaido:2650},
+    170:{minami_kyushu:4100,kita_kyushu:3800,shikoku:3550,chugoku:3550,kansai:3300,hokuriku:3300,tokai:3300,shinetsu:2600,kanto:3350,minami_tohoku:3550,kita_tohoku:3550,hokkaido:4100},
+    180:{minami_kyushu:4600,kita_kyushu:4150,shikoku:3900,chugoku:3900,kansai:3550,hokuriku:3550,tokai:3550,shinetsu:2850,kanto:3700,minami_tohoku:3900,kita_tohoku:3900,hokkaido:4600},
+    200:{minami_kyushu:5650,kita_kyushu:5150,shikoku:4700,chugoku:4700,kansai:4300,hokuriku:4300,tokai:4300,shinetsu:3400,kanto:4450,minami_tohoku:4700,kita_tohoku:4700,hokkaido:5600},
+    220:{minami_kyushu:6700,kita_kyushu:6100,shikoku:5600,chugoku:5600,kansai:5000,hokuriku:5000,tokai:5000,shinetsu:4000,kanto:5200,minami_tohoku:5550,kita_tohoku:5550,hokkaido:7150},
+    240:{minami_kyushu:8000,kita_kyushu:8000,shikoku:7200,chugoku:7200,kansai:6500,hokuriku:6500,tokai:6500,shinetsu:5000,kanto:6700,minami_tohoku:7200,kita_tohoku:7200,hokkaido:8900},
+    260:{minami_kyushu:11000,kita_kyushu:9900,shikoku:9000,chugoku:9000,kansai:8000,hokuriku:8000,tokai:8000,shinetsu:6200,kanto:8300,minami_tohoku:9000,kita_tohoku:9000,hokkaido:11100}
+  };
+
+  // 発送サイズ→送料サイズ区分
+  var SIZE_BRACKETS = [[1400,140],[1600,160],[1700,170],[1800,180],[2000,200],[2200,220],[2400,240],[2600,260]];
+  function getSizeBracket(shipMm) {
+    for (var i = 0; i < SIZE_BRACKETS.length; i++) {
+      if (shipMm <= SIZE_BRACKETS[i][0]) return SIZE_BRACKETS[i][1];
+    }
+    return null;
+  }
+
+  // 送料計算
+  function calcShipping() {
+    var L = Number(document.getElementById('lengthInput').value) || 1500;
+    var pref = document.getElementById('prefSelect').value;
+    var region = PREF_TO_REGION[pref] || '';
+    var qty = currentQty;
+
+    var inquiry = document.getElementById('shippingInquiry');
+    var rowShipping = document.getElementById('rowShipping');
+    var shippingNote = document.getElementById('shippingNote');
+    var btn = document.getElementById('btnCheckout');
+
+    // リセット
+    inquiry.style.display = 'none';
+    inquiry.textContent = '';
+    shippingNote.style.display = 'none';
+    isInquiryMode = false;
+
+    // 要問い合わせ判定
+    if (L > 3000) {
+      inquiry.innerHTML = '⚠ 3,001mm以上のご注文は別途お見積もりとなります。<br><a href="mailto:info@tantetuzest.com">お問い合わせ</a>よりご相談ください。';
+      inquiry.style.display = 'block';
+      rowShipping.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = '要問い合わせ（別途見積もり）';
+      isInquiryMode = true;
+      currentShipping = 0;
+      updateTotal();
+      return;
+    }
+    if (qty > 6) {
+      inquiry.innerHTML = '⚠ 7本以上のご注文は別途お見積もりとなります。<br><a href="mailto:info@tantetuzest.com">お問い合わせ</a>よりご相談ください。';
+      inquiry.style.display = 'block';
+      rowShipping.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = '要問い合わせ（別途見積もり）';
+      isInquiryMode = true;
+      currentShipping = 0;
+      updateTotal();
+      return;
+    }
+    if (region === 'okinawa') {
+      inquiry.innerHTML = '⚠ 沖縄県への配送は別途お見積もりとなります。<br><a href="mailto:info@tantetuzest.com">お問い合わせ</a>よりご相談ください。';
+      inquiry.style.display = 'block';
+      rowShipping.style.display = 'none';
+      btn.disabled = true;
+      btn.textContent = '要問い合わせ（別途見積もり）';
+      isInquiryMode = true;
+      currentShipping = 0;
+      updateTotal();
+      return;
+    }
+
+    // 購入可能状態に復帰
+    btn.disabled = false;
+    btn.textContent = 'カートに追加 — 購入手続きへ';
+
+    if (!region) {
+      currentShipping = 0;
+      rowShipping.style.display = 'none';
+      updateTotal();
+      return;
+    }
+
+    // 送料計算
+    var rate = 0;
+    var noteText = '';
+    if (L <= 1000) {
+      rate = 1000;
+      noteText = '1,000mm以下: 全国一律 ¥1,000';
+    } else if (PRODUCT_TYPE === 'tategata') {
+      rate = SHIPPING_RATES[260][region];
+      noteText = '縦型手すり: 260サイズ';
+    } else {
+      var shipSize = L + 200;
+      var bracket = getSizeBracket(shipSize);
+      if (!bracket) {
+        inquiry.innerHTML = '⚠ このサイズは通常配送できません。<br><a href="mailto:info@tantetuzest.com">お問い合わせ</a>よりご相談ください。';
+        inquiry.style.display = 'block';
+        rowShipping.style.display = 'none';
+        btn.disabled = true;
+        btn.textContent = '要問い合わせ（別途見積もり）';
+        isInquiryMode = true;
+        currentShipping = 0;
+        updateTotal();
+        return;
+      }
+      rate = SHIPPING_RATES[bracket][region];
+      noteText = '発送サイズ ' + shipSize + 'mm → ' + bracket + 'サイズ';
+    }
+
+    // 梱包数（1〜3本=1梱包、4〜6本=2梱包）
+    var bundles = qty <= 3 ? 1 : 2;
+    currentShipping = rate * bundles;
+
+    rowShipping.style.display = 'flex';
+    if (bundles > 1) {
+      document.getElementById('shippingVal').textContent = '¥' + rate.toLocaleString() + ' × ' + bundles + '梱包 = ¥' + currentShipping.toLocaleString();
+    } else {
+      document.getElementById('shippingVal').textContent = '¥' + currentShipping.toLocaleString();
+    }
+    if (noteText) {
+      shippingNote.textContent = noteText + (bundles > 1 ? '（3本まで同一梱包）' : '');
+      shippingNote.style.display = 'block';
+    }
+    updateTotal();
+  }
 
   function onQtyChange() {
     var q = parseInt(document.getElementById('qtyInput').value) || 1;
     if (q < 1) q = 1;
     if (q > 99) q = 99;
     currentQty = q;
-    updateTotal();
+    calcShipping();
   }
   function onPrefChange() {
-    var sel = document.getElementById('prefSelect');
-    var region = sel.value;
-    var rowShipping = document.getElementById('rowShipping');
-    if (region && SHIPPING_TABLE[region]) {
-      currentShipping = SHIPPING_TABLE[region];
-      rowShipping.style.display = 'flex';
-      document.getElementById('shippingVal').textContent = '¥' + currentShipping.toLocaleString();
-    } else {
-      currentShipping = 0;
-      rowShipping.style.display = 'none';
-    }
-    updateTotal();
+    calcShipping();
   }
   function updateTotal() {
     var baseTotal = parseInt(document.getElementById('totalVal').dataset.base) || 0;
-    var grandTotal = baseTotal * currentQty + currentShipping * currentQty;
-    document.getElementById('totalVal').textContent = (typeof fmt === 'function') ? fmt(grandTotal) : ('¥' + grandTotal.toLocaleString());
+    var grandTotal = baseTotal * currentQty + currentShipping;
+    document.getElementById('totalVal').textContent = fmt(grandTotal);
   }
+
+  // 初期描画
+  update(1500);
 
 </script>
 </body>
