@@ -200,6 +200,17 @@
 .nav-dropdown-menu .dd-divider {
   height: 1px; background: var(--line); margin: 8px 24px;
 }
+  
+    /* Lightbox */
+    .lightbox { display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.95); z-index:9999; justify-content:center; align-items:center; cursor:zoom-out; }
+    .lightbox.active { display:flex; }
+    .lightbox img { max-width:90vw; max-height:90vh; object-fit:contain; cursor:default; }
+    .lightbox-close { position:absolute; top:20px; right:24px; color:#fff; font-size:36px; cursor:pointer; z-index:2001; background:none; border:none; line-height:1; }
+    .lightbox-nav { position:absolute; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.5); color:#fff; border:none; font-size:32px; width:48px; height:48px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .2s; }
+    .lightbox-nav:hover { background:rgba(0,0,0,0.8); }
+    .lightbox-prev { left:20px; }
+    .lightbox-next { right:20px; }
+    .main-image img { cursor: zoom-in; }
   </style>
 </head>
 <body>
@@ -358,6 +369,14 @@
     </div>
   </main>
 
+  
+  <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+    <button class="lightbox-close" onclick="closeLightbox(event)">&times;</button>
+    <button class="lightbox-nav lightbox-prev" onclick="lightboxPrev(event)">&#8249;</button>
+    <img id="lightboxImg" src="" alt="">
+    <button class="lightbox-nav lightbox-next" onclick="lightboxNext(event)">&#8250;</button>
+  </div>
+
   <footer>
     <p class="logo-f">IRONWORKS <span>ADO</span></p>
     <p class="copy">&copy; 2025 IRONWORKS ado</p>
@@ -389,7 +408,7 @@
     GALLERY_IDS.forEach(function(id, i) {
       var div = document.createElement('div');
       div.className = 'thumb' + (i === 0 ? ' active' : '');
-      div.onclick = function() { galleryGo(i); };
+      div.onclick = function() { galleryGo(i); openLightbox(); };
       div.onmouseenter = function() {
         document.getElementById('mainImg').src = galleryUrl(id);
       };
@@ -404,6 +423,36 @@
       document.getElementById('mainImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
     };
   })();
+
+  function openLightbox() {
+    document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
+    document.getElementById('lightbox').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeLightbox(e) {
+    if (e.target.id === 'lightbox' || e.target.classList.contains('lightbox-close')) {
+      document.getElementById('lightbox').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  }
+  function lightboxPrev(e) {
+    e.stopPropagation();
+    galleryGo(galleryIdx - 1);
+    document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
+  }
+  function lightboxNext(e) {
+    e.stopPropagation();
+    galleryGo(galleryIdx + 1);
+    document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
+  }
+  document.addEventListener('keydown', function(e) {
+    var lb = document.getElementById('lightbox');
+    if (!lb.classList.contains('active')) return;
+    if (e.key === 'Escape') { lb.classList.remove('active'); document.body.style.overflow = ''; }
+    if (e.key === 'ArrowLeft') { galleryGo(galleryIdx - 1); document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx]); }
+    if (e.key === 'ArrowRight') { galleryGo(galleryIdx + 1); document.getElementById('lightboxImg').src = galleryUrl(GALLERY_IDS[galleryIdx]); }
+  });
+  document.getElementById('mainImg').onclick = openLightbox;
 </script>
 <script>
   const BASE_PRICE    = 45800;
