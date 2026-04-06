@@ -129,7 +129,9 @@
     .total-label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); }
     .total-amount { font-size: 32px; font-weight: 300; letter-spacing: 0.03em; color: var(--white); }
     .total-tax { font-size: 11px; color: var(--muted); margin-left: 8px; }
-    .surcharge-notice { display: none; margin-top: 12px; padding: 10px 14px; background: rgba(200,80,80,0.1); border: 1px solid rgba(200,80,80,0.3); font-size: 11px; color: #e0a0a0; }
+    .surcharge-notice {
+      font-size: 11px; color: var(--muted); line-height: 1.6;
+    }
     .cta-wrap { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
     .btn-primary { display: block; width: 100%; padding: 18px; background: var(--accent); border: none; cursor: pointer; color: var(--black); font-size: 12px; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; font-family: var(--font); transition: background .2s, transform .1s, opacity .2s; }
     .btn-primary:hover:not(:disabled) { background: #d4b87a; }
@@ -367,9 +369,6 @@
             </div>
             <div class="zakin-diagram" id="zakinDiagram"></div>
           </div>
-          <div class="surcharge-notice" id="surchargeNotice">
-            ⚠ 2000mmを超えると長尺割増が加算されます。取り回しや施工の難易度が上がるため、事前に設置場所のご確認をお勧めします。
-          </div>
           <div class="price-breakdown">
             <div class="breakdown-row">
               <span class="breakdown-label">基本料金（〜1500mm）</span>
@@ -412,6 +411,9 @@
             <li>サイズは指定寸法±5mm以内の精度でお届けします</li>
             <li>クレジットカード決済（Stripe）対応</li>
           </ul>
+      <div class="surcharge-notice" id="surchargeNotice">
+        ※ 2,000mmを超える長さには長尺割増が加算されます。取り回しや施工の難易度が上がるため、事前に設置場所のご確認をお勧めします。
+      </div>
         </div>
       </div>
     </div>
@@ -575,8 +577,6 @@
     const rowZakin = document.getElementById('rowZakin');
     if (p.addZakin > 0) { rowZakin.style.display = 'flex'; document.getElementById('zakinVal').textContent = fmt(p.addZakin); } else { rowZakin.style.display = 'none'; }
     const rowSurcharge = document.getElementById('rowSurcharge');
-    const notice = document.getElementById('surchargeNotice');
-    if (p.surcharge > 0) { rowSurcharge.style.display = 'flex'; document.getElementById('surchargeVal').textContent = fmt(p.surcharge); notice.style.display = 'block'; } else { rowSurcharge.style.display = 'none'; notice.style.display = 'none'; }
     document.getElementById('totalVal').dataset.base = p.total;
     if (typeof calcShipping === 'function') { calcShipping(); }
     else { document.getElementById('totalVal').textContent = fmt(p.total); }
