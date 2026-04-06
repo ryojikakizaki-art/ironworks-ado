@@ -292,12 +292,7 @@
     .total-tax { font-size: 11px; color: var(--muted); margin-left: 8px; }
 
     .surcharge-notice {
-      display: none;
-      margin-top: 12px;
-      padding: 10px 14px;
-      background: rgba(200,80,80,0.1);
-      border: 1px solid rgba(200,80,80,0.3);
-      font-size: 11px; color: #e0a0a0;
+      font-size: 11px; color: var(--muted); line-height: 1.6;
     }
 
     /* CTA */
@@ -622,11 +617,6 @@
         <div class="zakin-diagram" id="zakinDiagram"></div>
       </div>
 
-      <div class="surcharge-notice" id="surchargeNotice">
-        ⚠ 2000mmを超えると長尺割増が加算されます。取り回しや施工の難易度が上がるため、
-        事前に設置場所のご確認をお勧めします。
-      </div>
-
       <div class="price-breakdown">
         <div class="breakdown-row">
           <span class="breakdown-label">基本料金（〜1500mm）</span>
@@ -680,6 +670,9 @@
         <li>サイズは指定寸法±5mm以内の精度でお届けします</li>
         <li>クレジットカード決済（Stripe）対応</li>
       </ul>
+      <div class="surcharge-notice" id="surchargeNotice">
+        ※ 2,000mmを超える長さには長尺割増が加算されます。取り回しや施工の難易度が上がるため、事前に設置場所のご確認をお勧めします。
+      </div>
     </div>
   </div>
 </div>
@@ -823,14 +816,11 @@
     }
 
     const rowSurcharge = document.getElementById('rowSurcharge');
-    const notice = document.getElementById('surchargeNotice');
     if (p.surcharge > 0) {
       rowSurcharge.style.display = 'flex';
       document.getElementById('surchargeVal').textContent = fmt(p.surcharge);
-      notice.style.display = 'block';
     } else {
       rowSurcharge.style.display = 'none';
-      notice.style.display = 'none';
     }
 
     document.getElementById('totalVal').dataset.base = p.total;
