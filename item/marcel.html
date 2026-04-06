@@ -182,9 +182,51 @@
     .zakin-visual-end.left { left: 2px; }
     .zakin-visual-end.right { right: 2px; }
 
+    /* 数量セレクター */
+    .zakin-qty-row {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+      padding-bottom: 12px; border-bottom: 1px solid var(--line);
+    }
+    .zakin-qty-label { font-size: 12px; color: var(--light); letter-spacing: 0.05em; white-space: nowrap; }
+    .zakin-qty-controls { display: flex; align-items: center; gap: 0; }
+    .zakin-qty-btn {
+      width: 32px; height: 32px; background: none; border: 1px solid var(--line);
+      color: var(--accent); font-size: 16px; cursor: pointer; font-family: var(--font);
+      display: flex; align-items: center; justify-content: center; transition: all .2s;
+    }
+    .zakin-qty-btn:hover { border-color: var(--accent); background: rgba(200,169,110,0.1); }
+    .zakin-qty-btn:first-child { border-radius: 4px 0 0 4px; }
+    .zakin-qty-btn:last-child { border-radius: 0 4px 4px 0; }
+    .zakin-qty-val {
+      width: 40px; height: 32px; background: var(--dark); border: 1px solid var(--line);
+      border-left: none; border-right: none; color: var(--white);
+      font-size: 14px; font-family: var(--font); text-align: center; font-weight: 500;
+    }
+    .zakin-qty-val:focus { outline: none; }
+
+    /* 角度一括指定 */
+    .zakin-angle-row {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+      padding-bottom: 12px; border-bottom: 1px solid var(--line);
+    }
+    .zakin-angle-label { font-size: 12px; color: var(--light); letter-spacing: 0.05em; white-space: nowrap; }
+    .zakin-angle-input {
+      width: 72px; padding: 6px 8px; background: var(--dark);
+      border: 1px solid var(--line); color: var(--white);
+      font-size: 13px; font-family: var(--font); text-align: center;
+    }
+    .zakin-angle-input:focus { outline: none; border-color: var(--accent); }
+    .zakin-angle-unit { font-size: 11px; color: var(--muted); }
+    .zakin-angle-hint { font-size: 10px; color: var(--muted); margin-left: auto; }
+
+    /* 位置リスト（角度列なし） */
+    .zakin-pos-heading {
+      font-size: 10px; letter-spacing: 0.1em; color: var(--muted);
+      margin-bottom: 8px; text-transform: uppercase;
+    }
     .zakin-list { display: flex; flex-direction: column; gap: 8px; }
     .zakin-item {
-      display: grid; grid-template-columns: 28px 1fr 1fr 28px; gap: 8px; align-items: center;
+      display: grid; grid-template-columns: 28px 1fr 28px; gap: 8px; align-items: center;
     }
     .zakin-item-num {
       font-size: 11px; color: var(--accent); text-align: center; font-weight: 500;
@@ -205,15 +247,9 @@
     .zakin-add-row {
       display: flex; gap: 8px; margin-top: 10px;
     }
-    .zakin-add-btn, .zakin-reset-btn {
+    .zakin-reset-btn {
       flex: 1; padding: 8px; font-size: 11px; font-family: var(--font);
       cursor: pointer; letter-spacing: 0.05em; transition: all .2s;
-    }
-    .zakin-add-btn {
-      background: none; border: 1px solid var(--accent); color: var(--accent);
-    }
-    .zakin-add-btn:hover { background: rgba(200,169,110,0.1); }
-    .zakin-reset-btn {
       background: none; border: 1px solid var(--line); color: var(--muted);
     }
     .zakin-reset-btn:hover { border-color: var(--muted); color: var(--light); }
@@ -463,6 +499,27 @@
         </button>
         <div class="zakin-custom-panel" id="zakinPanel">
           <div class="zakin-custom-panel-title">座金 位置・角度 指定</div>
+
+          <!-- STEP1: 数量 -->
+          <div class="zakin-qty-row">
+            <span class="zakin-qty-label">① 数量</span>
+            <div class="zakin-qty-controls">
+              <button class="zakin-qty-btn" onclick="changeZakinQty(-1)">−</button>
+              <input class="zakin-qty-val" id="zakinQtyInput" type="number" min="2" max="20" value="3" onchange="onZakinQtyInput(this)">
+              <button class="zakin-qty-btn" onclick="changeZakinQty(1)">＋</button>
+            </div>
+          </div>
+
+          <!-- STEP2: 角度（一括） -->
+          <div class="zakin-angle-row">
+            <span class="zakin-angle-label">② 取付角度（全座金共通）</span>
+            <input class="zakin-angle-input" id="zakinAngleInput" type="number" min="0" max="360" step="15" value="0" oninput="onZakinGlobalAngle(this)">
+            <span class="zakin-angle-unit">°</span>
+            <span class="zakin-angle-hint">0°＝真上 / 90°＝横</span>
+          </div>
+
+          <!-- STEP3: 位置 -->
+          <div class="zakin-pos-heading">③ 各座金の位置</div>
           <div class="zakin-visual" id="zakinVisual">
             <div class="zakin-visual-bar"></div>
             <span class="zakin-visual-end left">0</span>
@@ -470,12 +527,11 @@
           </div>
           <div class="zakin-list" id="zakinList"></div>
           <div class="zakin-add-row">
-            <button class="zakin-add-btn" onclick="addZakinItem()">＋ 座金を追加</button>
             <button class="zakin-reset-btn" onclick="resetZakinCustom()">自動配置に戻す</button>
           </div>
           <div class="zakin-custom-note">
             ※ 両端から100mm以上の位置に配置してください。座金間の推奨最大間隔は850mmです。<br>
-            ※ 角度は壁面に対する取付角度です（0°＝真上、90°＝横向き）。
+            ※ 数量を変更すると位置は自動で均等配置されます。位置は個別に調整できます。
           </div>
         </div>
       </div>
@@ -664,7 +720,8 @@
 
   // ── 座金カスタム指定 ──────────────────────────────
   var zakinCustomMode = false;
-  var zakinCustomList = []; // [{pos: mm, angle: deg}, ...]
+  var zakinCustomList = []; // [{pos: mm}, ...]
+  var zakinGlobalAngle = 0;
 
   function toggleZakinCustom() {
     var panel = document.getElementById('zakinPanel');
@@ -686,6 +743,13 @@
   function initZakinCustom() {
     var L = Number(document.getElementById('lengthInput').value) || 1500;
     var count = calcZakin(L);
+    setZakinPositions(count, L);
+    document.getElementById('zakinQtyInput').value = count;
+    renderZakinCustom();
+  }
+
+  // 指定数量で均等配置を生成
+  function setZakinPositions(count, L) {
     zakinCustomList = [];
     var positions = [END_DIST_MM];
     if (count > 2) {
@@ -697,14 +761,36 @@
     }
     positions.push(L - END_DIST_MM);
     for (var j = 0; j < positions.length; j++) {
-      zakinCustomList.push({ pos: positions[j], angle: 0 });
+      zakinCustomList.push({ pos: positions[j] });
     }
+  }
+
+  // 数量 +/- ボタン
+  function changeZakinQty(delta) {
+    var input = document.getElementById('zakinQtyInput');
+    var newVal = Math.max(2, Math.min(20, parseInt(input.value) + delta));
+    input.value = newVal;
+    var L = Number(document.getElementById('lengthInput').value) || 1500;
+    setZakinPositions(newVal, L);
     renderZakinCustom();
+  }
+
+  // 数量を直接入力
+  function onZakinQtyInput(input) {
+    var val = Math.max(2, Math.min(20, parseInt(input.value) || 2));
+    input.value = val;
+    var L = Number(document.getElementById('lengthInput').value) || 1500;
+    setZakinPositions(val, L);
+    renderZakinCustom();
+  }
+
+  // 角度一括変更
+  function onZakinGlobalAngle(input) {
+    zakinGlobalAngle = Math.max(0, Math.min(360, parseInt(input.value) || 0));
   }
 
   function renderZakinCustom() {
     var L = Number(document.getElementById('lengthInput').value) || 1500;
-    // Update visual end label
     document.getElementById('zakinVisualEnd').textContent = L;
 
     // Render visual markers
@@ -714,7 +800,7 @@
     var barLeft = 16, barRight = 16;
     var barWidth = visual.offsetWidth - barLeft - barRight;
     if (barWidth <= 0) barWidth = 200;
-    zakinCustomList.forEach(function(item, idx) {
+    zakinCustomList.forEach(function(item) {
       var pct = item.pos / L;
       var marker = document.createElement('div');
       marker.className = 'zakin-visual-marker';
@@ -726,7 +812,7 @@
       visual.appendChild(marker);
     });
 
-    // Render list
+    // Render position list (no angle column)
     var list = document.getElementById('zakinList');
     list.innerHTML = '';
     zakinCustomList.forEach(function(item, idx) {
@@ -750,20 +836,6 @@
       posWrap.appendChild(posLabel);
       posWrap.appendChild(posInput);
 
-      var angWrap = document.createElement('div');
-      var angLabel = document.createElement('label');
-      angLabel.textContent = '角度 (°)';
-      var angInput = document.createElement('input');
-      angInput.type = 'number';
-      angInput.min = '0';
-      angInput.max = '360';
-      angInput.step = '15';
-      angInput.value = item.angle;
-      angInput.dataset.idx = idx;
-      angInput.oninput = function() { onZakinAngleChange(this); };
-      angWrap.appendChild(angLabel);
-      angWrap.appendChild(angInput);
-
       var removeBtn = document.createElement('button');
       removeBtn.className = 'zakin-item-remove';
       removeBtn.innerHTML = '&times;';
@@ -773,12 +845,10 @@
 
       row.appendChild(num);
       row.appendChild(posWrap);
-      row.appendChild(angWrap);
       row.appendChild(removeBtn);
       list.appendChild(row);
     });
 
-    // Update price with custom zakin count
     updateZakinPrice();
   }
 
@@ -792,29 +862,16 @@
     updateZakinPrice();
   }
 
-  function onZakinAngleChange(input) {
-    var idx = parseInt(input.dataset.idx);
-    var val = parseInt(input.value) || 0;
-    val = Math.max(0, Math.min(360, val));
-    zakinCustomList[idx].angle = val;
-  }
-
-  function addZakinItem() {
-    var L = Number(document.getElementById('lengthInput').value) || 1500;
-    var lastPos = zakinCustomList.length > 0 ? zakinCustomList[zakinCustomList.length - 1].pos : 0;
-    var newPos = Math.min(L - END_DIST_MM, Math.round((lastPos + L) / 2));
-    zakinCustomList.push({ pos: newPos, angle: 0 });
-    zakinCustomList.sort(function(a, b) { return a.pos - b.pos; });
-    renderZakinCustom();
-  }
-
   function removeZakinItem(idx) {
     if (zakinCustomList.length <= 2) return;
     zakinCustomList.splice(parseInt(idx), 1);
+    document.getElementById('zakinQtyInput').value = zakinCustomList.length;
     renderZakinCustom();
   }
 
   function resetZakinCustom() {
+    zakinGlobalAngle = 0;
+    document.getElementById('zakinAngleInput').value = 0;
     initZakinCustom();
   }
 
