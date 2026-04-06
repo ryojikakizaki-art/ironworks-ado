@@ -272,6 +272,94 @@
     .zakin-label { color: var(--muted); }
     .zakin-value { color: var(--accent); font-weight: 500; }
     .zakin-diagram { margin-top: 10px; font-size: 10px; color: var(--muted); font-family: monospace; letter-spacing: 0.05em; }
+    /* 座金位置指定 */
+    .zakin-custom-toggle {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 10px; padding: 8px 0;
+      background: none; border: 1px solid var(--line); color: var(--muted);
+      font-size: 11px; letter-spacing: 0.1em; cursor: pointer;
+      font-family: var(--font); width: 100%; transition: all .2s;
+    }
+    .zakin-custom-toggle:hover { border-color: var(--accent); color: var(--accent); }
+    .zakin-custom-toggle.active { border-color: var(--accent); color: var(--accent); background: rgba(200,169,110,0.06); }
+    .zakin-custom-toggle .toggle-icon { transition: transform .2s; font-size: 8px; }
+    .zakin-custom-toggle.active .toggle-icon { transform: rotate(180deg); }
+
+    .zakin-custom-panel {
+      display: none; margin-top: 12px;
+      border: 1px solid var(--line); padding: 16px;
+      background: rgba(0,0,0,0.2);
+    }
+    .zakin-custom-panel.open { display: block; }
+    .zakin-custom-panel-title {
+      font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 12px;
+    }
+
+    .zakin-visual {
+      position: relative; height: 48px; margin-bottom: 16px;
+      background: var(--dark); border: 1px solid var(--line); overflow: visible;
+    }
+    .zakin-visual-bar {
+      position: absolute; top: 50%; left: 16px; right: 16px;
+      height: 4px; background: var(--muted); transform: translateY(-50%);
+      border-radius: 2px;
+    }
+    .zakin-visual-marker {
+      position: absolute; top: 50%; width: 14px; height: 14px;
+      background: var(--accent); border-radius: 50%;
+      transform: translate(-50%, -50%); cursor: default;
+      font-size: 0; z-index: 1;
+    }
+    .zakin-visual-label {
+      position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+      font-size: 8px; color: var(--muted); white-space: nowrap; margin-top: 2px;
+    }
+    .zakin-visual-end {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      font-size: 9px; color: var(--muted);
+    }
+    .zakin-visual-end.left { left: 2px; }
+    .zakin-visual-end.right { right: 2px; }
+
+    .zakin-list { display: flex; flex-direction: column; gap: 8px; }
+    .zakin-item {
+      display: grid; grid-template-columns: 28px 1fr 1fr 28px; gap: 8px; align-items: center;
+    }
+    .zakin-item-num {
+      font-size: 11px; color: var(--accent); text-align: center; font-weight: 500;
+    }
+    .zakin-item label { font-size: 10px; color: var(--muted); display: block; margin-bottom: 2px; }
+    .zakin-item input {
+      width: 100%; padding: 6px 8px; background: var(--dark);
+      border: 1px solid var(--line); color: var(--white);
+      font-size: 12px; font-family: var(--font);
+    }
+    .zakin-item input:focus { outline: none; border-color: var(--accent); }
+    .zakin-item-remove {
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      font-size: 16px; padding: 0; line-height: 1; transition: color .2s;
+    }
+    .zakin-item-remove:hover { color: #e06060; }
+
+    .zakin-add-row {
+      display: flex; gap: 8px; margin-top: 10px;
+    }
+    .zakin-add-btn, .zakin-reset-btn {
+      flex: 1; padding: 8px; font-size: 11px; font-family: var(--font);
+      cursor: pointer; letter-spacing: 0.05em; transition: all .2s;
+    }
+    .zakin-add-btn {
+      background: none; border: 1px solid var(--accent); color: var(--accent);
+    }
+    .zakin-add-btn:hover { background: rgba(200,169,110,0.1); }
+    .zakin-reset-btn {
+      background: none; border: 1px solid var(--line); color: var(--muted);
+    }
+    .zakin-reset-btn:hover { border-color: var(--muted); color: var(--light); }
+    .zakin-custom-note {
+      font-size: 10px; color: var(--muted); margin-top: 10px; line-height: 1.6;
+    }
     .price-breakdown { margin-top: 20px; }
     .breakdown-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
     .breakdown-row:last-child { border-bottom: none; }
@@ -525,12 +613,33 @@
       </div>
 
       <div class="zakin-info">
-            <div class="zakin-row">
-              <span class="zakin-label">推奨座金数（自動計算）</span>
-              <span class="zakin-value" id="zakinCount">4 個</span>
-            </div>
-            <div class="zakin-diagram" id="zakinDiagram"></div>
+        <div class="zakin-row">
+          <span class="zakin-label" id="zakinLabel">推奨座金数（自動計算）</span>
+          <span class="zakin-value" id="zakinCount">4 個</span>
+        </div>
+        <div class="zakin-diagram" id="zakinDiagram"></div>
+        <button class="zakin-custom-toggle" id="zakinToggle" onclick="toggleZakinCustom()">
+          <span>座金位置を指定する</span>
+          <span class="toggle-icon">&#9660;</span>
+        </button>
+        <div class="zakin-custom-panel" id="zakinPanel">
+          <div class="zakin-custom-panel-title">座金 位置・角度 指定</div>
+          <div class="zakin-visual" id="zakinVisual">
+            <div class="zakin-visual-bar"></div>
+            <span class="zakin-visual-end left">0</span>
+            <span class="zakin-visual-end right" id="zakinVisualEnd">1500</span>
           </div>
+          <div class="zakin-list" id="zakinList"></div>
+          <div class="zakin-add-row">
+            <button class="zakin-add-btn" onclick="addZakinItem()">＋ 座金を追加</button>
+            <button class="zakin-reset-btn" onclick="resetZakinCustom()">自動配置に戻す</button>
+          </div>
+          <div class="zakin-custom-note">
+            ※ 両端から100mm以上の位置に配置してください。座金間の推奨最大間隔は850mmです。<br>
+            ※ 角度は壁面に対する取付角度です（0°＝真上、90°＝横向き）。
+          </div>
+        </div>
+      </div>
           <div class="price-breakdown">
             <div class="breakdown-row">
               <span class="breakdown-label">基本料金（〜1000mm）</span>
@@ -650,6 +759,220 @@
     return '\u914D\u7F6E\u56F3: ' + bar + '  \uFF08\u8A08 ' + zakinCount + '\u70B9\uFF09';
   }
 
+  // ── 座金カスタム指定 ──────────────────────────────
+  var zakinCustomMode = false;
+  var zakinCustomList = []; // [{pos: mm, angle: deg}, ...]
+
+  function toggleZakinCustom() {
+    var panel = document.getElementById('zakinPanel');
+    var toggle = document.getElementById('zakinToggle');
+    if (panel.classList.contains('open')) {
+      panel.classList.remove('open');
+      toggle.classList.remove('active');
+      zakinCustomMode = false;
+      var L = Number(document.getElementById('lengthInput').value) || 1500;
+      update(L);
+    } else {
+      panel.classList.add('open');
+      toggle.classList.add('active');
+      zakinCustomMode = true;
+      initZakinCustom();
+    }
+  }
+
+  function initZakinCustom() {
+    var L = Number(document.getElementById('lengthInput').value) || 1500;
+    var count = calcZakin(L);
+    zakinCustomList = [];
+    var positions = [END_DIST_MM];
+    if (count > 2) {
+      var inner = L - 2 * END_DIST_MM;
+      var gaps = count - 1;
+      for (var i = 1; i < count - 1; i++) {
+        positions.push(Math.round(END_DIST_MM + inner * i / gaps));
+      }
+    }
+    positions.push(L - END_DIST_MM);
+    for (var j = 0; j < positions.length; j++) {
+      zakinCustomList.push({ pos: positions[j], angle: 0 });
+    }
+    renderZakinCustom();
+  }
+
+  function renderZakinCustom() {
+    var L = Number(document.getElementById('lengthInput').value) || 1500;
+    // Update visual end label
+    document.getElementById('zakinVisualEnd').textContent = L;
+
+    // Render visual markers
+    var visual = document.getElementById('zakinVisual');
+    var oldMarkers = visual.querySelectorAll('.zakin-visual-marker');
+    oldMarkers.forEach(function(m) { m.remove(); });
+    var barLeft = 16, barRight = 16;
+    var barWidth = visual.offsetWidth - barLeft - barRight;
+    if (barWidth <= 0) barWidth = 200;
+    zakinCustomList.forEach(function(item, idx) {
+      var pct = item.pos / L;
+      var marker = document.createElement('div');
+      marker.className = 'zakin-visual-marker';
+      marker.style.left = (barLeft + pct * barWidth) + 'px';
+      var label = document.createElement('span');
+      label.className = 'zakin-visual-label';
+      label.textContent = item.pos + 'mm';
+      marker.appendChild(label);
+      visual.appendChild(marker);
+    });
+
+    // Render list
+    var list = document.getElementById('zakinList');
+    list.innerHTML = '';
+    zakinCustomList.forEach(function(item, idx) {
+      var row = document.createElement('div');
+      row.className = 'zakin-item';
+
+      var num = document.createElement('div');
+      num.className = 'zakin-item-num';
+      num.textContent = (idx + 1);
+
+      var posWrap = document.createElement('div');
+      var posLabel = document.createElement('label');
+      posLabel.textContent = '位置 (mm)';
+      var posInput = document.createElement('input');
+      posInput.type = 'number';
+      posInput.min = '0';
+      posInput.max = String(L);
+      posInput.value = item.pos;
+      posInput.dataset.idx = idx;
+      posInput.oninput = function() { onZakinPosChange(this); };
+      posWrap.appendChild(posLabel);
+      posWrap.appendChild(posInput);
+
+      var angWrap = document.createElement('div');
+      var angLabel = document.createElement('label');
+      angLabel.textContent = '角度 (°)';
+      var angInput = document.createElement('input');
+      angInput.type = 'number';
+      angInput.min = '0';
+      angInput.max = '360';
+      angInput.step = '15';
+      angInput.value = item.angle;
+      angInput.dataset.idx = idx;
+      angInput.oninput = function() { onZakinAngleChange(this); };
+      angWrap.appendChild(angLabel);
+      angWrap.appendChild(angInput);
+
+      var removeBtn = document.createElement('button');
+      removeBtn.className = 'zakin-item-remove';
+      removeBtn.innerHTML = '&times;';
+      removeBtn.dataset.idx = idx;
+      removeBtn.onclick = function() { removeZakinItem(this.dataset.idx); };
+      if (zakinCustomList.length <= 2) removeBtn.style.visibility = 'hidden';
+
+      row.appendChild(num);
+      row.appendChild(posWrap);
+      row.appendChild(angWrap);
+      row.appendChild(removeBtn);
+      list.appendChild(row);
+    });
+
+    // Update price with custom zakin count
+    updateZakinPrice();
+  }
+
+  function onZakinPosChange(input) {
+    var idx = parseInt(input.dataset.idx);
+    var L = Number(document.getElementById('lengthInput').value) || 1500;
+    var val = parseInt(input.value) || 0;
+    val = Math.max(0, Math.min(L, val));
+    zakinCustomList[idx].pos = val;
+    renderZakinVisualOnly();
+    updateZakinPrice();
+  }
+
+  function onZakinAngleChange(input) {
+    var idx = parseInt(input.dataset.idx);
+    var val = parseInt(input.value) || 0;
+    val = Math.max(0, Math.min(360, val));
+    zakinCustomList[idx].angle = val;
+  }
+
+  function addZakinItem() {
+    var L = Number(document.getElementById('lengthInput').value) || 1500;
+    var lastPos = zakinCustomList.length > 0 ? zakinCustomList[zakinCustomList.length - 1].pos : 0;
+    var newPos = Math.min(L - END_DIST_MM, Math.round((lastPos + L) / 2));
+    zakinCustomList.push({ pos: newPos, angle: 0 });
+    zakinCustomList.sort(function(a, b) { return a.pos - b.pos; });
+    renderZakinCustom();
+  }
+
+  function removeZakinItem(idx) {
+    if (zakinCustomList.length <= 2) return;
+    zakinCustomList.splice(parseInt(idx), 1);
+    renderZakinCustom();
+  }
+
+  function resetZakinCustom() {
+    initZakinCustom();
+  }
+
+  function renderZakinVisualOnly() {
+    var L = Number(document.getElementById('lengthInput').value) || 1500;
+    var visual = document.getElementById('zakinVisual');
+    var markers = visual.querySelectorAll('.zakin-visual-marker');
+    var barLeft = 16, barRight = 16;
+    var barWidth = visual.offsetWidth - barLeft - barRight;
+    if (barWidth <= 0) barWidth = 200;
+    markers.forEach(function(m, idx) {
+      if (idx < zakinCustomList.length) {
+        var pct = zakinCustomList[idx].pos / L;
+        m.style.left = (barLeft + pct * barWidth) + 'px';
+        m.querySelector('.zakin-visual-label').textContent = zakinCustomList[idx].pos + 'mm';
+      }
+    });
+  }
+
+  function updateZakinPrice() {
+    var count = zakinCustomList.length;
+    var addZakin = Math.max(0, count - INCLUDED_ZAKIN) * ZAKIN_PRICE;
+    document.getElementById('zakinLabel').textContent = '座金数（カスタム指定）';
+    document.getElementById('zakinCount').textContent = count + ' 個';
+
+    // Update custom diagram
+    var L = Number(document.getElementById('lengthInput').value) || 1500;
+    var sorted = zakinCustomList.slice().sort(function(a, b) { return a.pos - b.pos; });
+    var barLen = 30;
+    var bar = '|';
+    var last = 0;
+    sorted.forEach(function(item) {
+      var seg = Math.max(1, Math.round((item.pos - last) / L * barLen));
+      bar += '\u2500'.repeat(seg) + '\u25CF';
+      last = item.pos;
+    });
+    bar += '\u2500'.repeat(Math.max(1, barLen - Math.round(last / L * barLen))) + '|';
+    document.getElementById('zakinDiagram').textContent = '\u914D\u7F6E\u56F3: ' + bar + '  \uFF08\u8A08 ' + count + '\u70B9\uFF09';
+
+    // Recalculate price
+    var p = calcPrice(L);
+    // Override zakin price with custom count
+    var customAddZakin = addZakin;
+    var customTotal = BASE_PRICE + p.addon + customAddZakin + p.surcharge;
+
+    var rowZakin = document.getElementById('rowZakin');
+    if (customAddZakin > 0) {
+      rowZakin.style.display = 'flex';
+      document.getElementById('zakinVal').textContent = fmt(customAddZakin);
+    } else {
+      rowZakin.style.display = 'none';
+    }
+
+    document.getElementById('totalVal').dataset.base = customTotal;
+    if (typeof calcShipping === 'function') {
+      calcShipping();
+    } else {
+      document.getElementById('totalVal').textContent = fmt(customTotal);
+    }
+  }
+
   function fmt(n) { return '\u00A5' + Math.round(n).toLocaleString('ja-JP'); }
 
   function update(lengthMm) {
@@ -659,6 +982,22 @@
     document.getElementById('lengthSlider').value = L;
     const pct = (L - 500) / (MAX_LENGTH_MM - 500) * 100;
     document.getElementById('lengthSlider').style.background = 'linear-gradient(to right, var(--accent) ' + pct + '%, var(--line) ' + pct + '%)';
+    // カスタムモード中は座金カスタム側で価格計算
+    if (zakinCustomMode) {
+      document.getElementById('zakinVisualEnd').textContent = L;
+      renderZakinCustom();
+
+      const rowAddon = document.getElementById('rowAddon');
+      if (p.addon > 0) { rowAddon.style.display = 'flex'; document.getElementById('addonVal').textContent = fmt(p.addon); }
+      else { rowAddon.style.display = 'none'; }
+
+      const rowSurcharge = document.getElementById('rowSurcharge');
+      if (p.surcharge > 0) { rowSurcharge.style.display = 'flex'; document.getElementById('surchargeVal').textContent = fmt(p.surcharge); }
+      else { rowSurcharge.style.display = 'none'; }
+      return;
+    }
+
+    document.getElementById('zakinLabel').textContent = '推奨座金数（自動計算）';
     document.getElementById('zakinCount').textContent = p.zakin + ' \u500B';
     document.getElementById('zakinDiagram').textContent = buildDiagram(L, p.zakin);
     const rowAddon = document.getElementById('rowAddon');
