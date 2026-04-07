@@ -117,181 +117,33 @@
     .zakin-row { display: flex; justify-content: space-between; align-items: center; }
     .zakin-label { color: var(--muted); }
     .zakin-value { color: var(--accent); font-weight: 500; }
-    .zakin-diagram {
-      margin-top: 12px;
-    }
-    .zakin-diagram svg { width: 100%; height: auto; display: block; }
-    .zakin-diagram text { font-family: var(--font); }
-    .zakin-diagram .dim-line { stroke: var(--muted); stroke-width: 0.5; }
-    .zakin-diagram .dim-text { fill: var(--muted); font-size: 9px; text-anchor: middle; }
-    .zakin-diagram .bar-line { stroke: var(--light); stroke-width: 3; stroke-linecap: round; }
-    .zakin-diagram .bracket-circle { fill: var(--accent); }
-    .zakin-diagram .total-dim { stroke: var(--light); stroke-width: 0.7; }
-    .zakin-diagram .total-text { fill: var(--light); font-size: 10px; text-anchor: middle; font-weight: 500; }
-
-    /* 座金詳細図リンク */
-    .zakin-detail-toggle {
-      display: inline-block; margin-top: 8px; font-size: 10px;
-      color: var(--accent); cursor: pointer; text-decoration: none;
-      border-bottom: 1px dotted var(--accent); transition: opacity .2s;
-    }
-    .zakin-detail-toggle:hover { opacity: 0.7; }
-
-    /* 座金詳細図モーダル */
-    .zakin-detail-modal {
-      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      z-index: 200; background: rgba(0,0,0,0.85);
-      align-items: center; justify-content: center;
-    }
-    .zakin-detail-modal.open { display: flex; }
-    .zakin-detail-modal-inner {
-      position: relative; background: #fff; padding: 24px;
-      max-width: 90vw; max-height: 90vh;
-    }
-    .zakin-detail-modal-inner img {
-      display: block; max-width: 100%; max-height: 80vh; height: auto;
-    }
-    .zakin-detail-modal-caption {
-      font-size: 12px; color: #666; text-align: center; margin-top: 12px;
-    }
-    .zakin-detail-modal-close {
-      position: absolute; top: -16px; right: -16px;
-      width: 36px; height: 36px; border-radius: 50%;
-      background: var(--dark); border: 1px solid var(--line);
-      color: var(--white); font-size: 18px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all .2s;
-    }
-    .zakin-detail-modal-close:hover { background: var(--accent); border-color: var(--accent); }
-
-    /* 座金位置指定 */
-    .zakin-custom-toggle {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      margin-top: 10px; padding: 8px 0;
-      background: none; border: 1px solid var(--line); color: var(--muted);
-      font-size: 11px; letter-spacing: 0.1em; cursor: pointer;
-      font-family: var(--font); width: 100%; transition: all .2s;
-    }
-    .zakin-custom-toggle:hover { border-color: var(--accent); color: var(--accent); }
-    .zakin-custom-toggle.active { border-color: var(--accent); color: var(--accent); background: rgba(200,169,110,0.06); }
-    .zakin-custom-toggle .toggle-icon { transition: transform .2s; font-size: 8px; }
-    .zakin-custom-toggle.active .toggle-icon { transform: rotate(180deg); }
-
-    .zakin-custom-panel {
-      display: none; margin-top: 12px;
-      border: 1px solid var(--line); padding: 16px;
-      background: rgba(0,0,0,0.2);
-    }
-    .zakin-custom-panel.open { display: block; }
-    .zakin-custom-panel-title {
-      font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
-      color: var(--accent); margin-bottom: 12px;
-    }
-
-    .zakin-visual {
-      position: relative; height: 48px; margin-bottom: 16px;
-      background: var(--dark); border: 1px solid var(--line); overflow: visible;
-    }
-    .zakin-visual-bar {
-      position: absolute; top: 50%; left: 16px; right: 16px;
-      height: 4px; background: var(--muted); transform: translateY(-50%);
-      border-radius: 2px;
-    }
-    .zakin-visual-marker {
-      position: absolute; top: 50%; width: 14px; height: 14px;
-      background: var(--accent); border-radius: 50%;
-      transform: translate(-50%, -50%); cursor: default;
-      font-size: 0; z-index: 1;
-    }
-    .zakin-visual-label {
-      position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
-      font-size: 8px; color: var(--muted); white-space: nowrap; margin-top: 2px;
-    }
-    .zakin-visual-end {
-      position: absolute; top: 50%; transform: translateY(-50%);
-      font-size: 9px; color: var(--muted);
-    }
-    .zakin-visual-end.left { left: 2px; }
-    .zakin-visual-end.right { right: 2px; }
-
-    /* 数量セレクター */
-    .zakin-qty-row {
-      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
-      padding-bottom: 12px; border-bottom: 1px solid var(--line);
-    }
-    .zakin-qty-label { font-size: 12px; color: var(--light); letter-spacing: 0.05em; white-space: nowrap; }
-    .zakin-qty-controls { display: flex; align-items: center; gap: 0; }
-    .zakin-qty-btn {
-      width: 32px; height: 32px; background: none; border: 1px solid var(--line);
-      color: var(--accent); font-size: 16px; cursor: pointer; font-family: var(--font);
-      display: flex; align-items: center; justify-content: center; transition: all .2s;
-    }
-    .zakin-qty-btn:hover { border-color: var(--accent); background: rgba(200,169,110,0.1); }
-    .zakin-qty-btn:first-child { border-radius: 4px 0 0 4px; }
-    .zakin-qty-btn:last-child { border-radius: 0 4px 4px 0; }
-    .zakin-qty-val {
-      width: 40px; height: 32px; background: var(--dark); border: 1px solid var(--line);
-      border-left: none; border-right: none; color: var(--white);
-      font-size: 14px; font-family: var(--font); text-align: center; font-weight: 500;
-    }
-    .zakin-qty-val:focus { outline: none; }
-
-    /* 角度一括指定 */
-    .zakin-angle-row {
-      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
-      padding-bottom: 12px; border-bottom: 1px solid var(--line);
-    }
-    .zakin-angle-label { font-size: 12px; color: var(--light); letter-spacing: 0.05em; white-space: nowrap; }
-    .zakin-angle-input {
-      width: 72px; padding: 6px 8px; background: var(--dark);
-      border: 1px solid var(--line); color: var(--white);
-      font-size: 13px; font-family: var(--font); text-align: center;
-    }
-    .zakin-angle-input:focus { outline: none; border-color: var(--accent); }
-    .zakin-angle-unit { font-size: 11px; color: var(--muted); }
-    .zakin-angle-link {
-      font-size: 10px; color: var(--accent); margin-left: auto; text-decoration: none;
-      border-bottom: 1px dotted var(--accent); transition: opacity .2s;
-    }
-    .zakin-angle-link:hover { opacity: 0.7; }
-
-    /* 位置リスト（角度列なし） */
-    .zakin-pos-heading {
-      font-size: 10px; letter-spacing: 0.1em; color: var(--muted);
-      margin-bottom: 8px; text-transform: uppercase;
-    }
-    .zakin-list { display: flex; flex-direction: column; gap: 8px; }
-    .zakin-item {
-      display: grid; grid-template-columns: 28px 1fr 28px; gap: 8px; align-items: center;
-    }
-    .zakin-item-num {
-      font-size: 11px; color: var(--accent); text-align: center; font-weight: 500;
-    }
-    .zakin-item label { font-size: 10px; color: var(--muted); display: block; margin-bottom: 2px; }
-    .zakin-item input {
-      width: 100%; padding: 6px 8px; background: var(--dark);
-      border: 1px solid var(--line); color: var(--white);
-      font-size: 12px; font-family: var(--font);
-    }
-    .zakin-item input:focus { outline: none; border-color: var(--accent); }
-    .zakin-item-remove {
-      background: none; border: none; color: var(--muted); cursor: pointer;
-      font-size: 16px; padding: 0; line-height: 1; transition: color .2s;
-    }
-    .zakin-item-remove:hover { color: #e06060; }
-
-    .zakin-add-row {
-      display: flex; gap: 8px; margin-top: 10px;
-    }
-    .zakin-reset-btn {
-      flex: 1; padding: 8px; font-size: 11px; font-family: var(--font);
-      cursor: pointer; letter-spacing: 0.05em; transition: all .2s;
-      background: none; border: 1px solid var(--line); color: var(--muted);
-    }
-    .zakin-reset-btn:hover { border-color: var(--muted); color: var(--light); }
-    .zakin-custom-note {
-      font-size: 10px; color: var(--muted); margin-top: 10px; line-height: 1.6;
-    }
+    .zakin-open-drawing{display:block;width:100%;margin-top:12px;padding:10px 0;background:#1a1a1a;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;letter-spacing:.05em}
+    .zakin-open-drawing:hover{background:#333}
+    .dm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;display:flex;align-items:center;justify-content:center;padding:16px}
+    .dm-modal{background:#fff;border-radius:10px;max-width:640px;width:100%;max-height:90vh;overflow-y:auto;padding:24px;position:relative}
+    .dm-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:#333}
+    .dm-title{font-size:16px;font-weight:700;margin-bottom:16px;color:#1a1a1a}
+    .dm-svg-wrap{background:#fff;border:1px solid #ddd;border-radius:6px;padding:12px;margin-bottom:16px}
+    .dm-svg-wrap svg{width:100%;height:auto;display:block}
+    .dm-controls{display:flex;flex-direction:column;gap:12px}
+    .dm-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .dm-label{font-size:13px;color:#555;min-width:80px}
+    .dm-qty-btn{width:30px;height:30px;border:1px solid #ccc;background:#f5f5f5;border-radius:4px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center}
+    .dm-qty-input{width:48px;text-align:center;border:1px solid #ccc;border-radius:4px;padding:4px;font-size:14px}
+    .dm-angle-input{width:60px;text-align:center;border:1px solid #ccc;border-radius:4px;padding:4px;font-size:14px}
+    .dm-angle-unit{font-size:13px;color:#555}
+    .dm-angle-link{font-size:12px;color:#666;text-decoration:underline}
+    .dm-pos-list{display:flex;flex-direction:column;gap:6px;width:100%}
+    .dm-pos-item{display:flex;align-items:center;gap:6px}
+    .dm-pos-label{font-size:13px;color:#555;min-width:48px}
+    .dm-pos-input{width:72px;border:1px solid #ccc;border-radius:4px;padding:4px 6px;font-size:14px;text-align:right}
+    .dm-pos-unit{font-size:12px;color:#888}
+    .dm-pos-remove{background:none;border:none;color:#aaa;cursor:pointer;font-size:16px;padding:0 4px}
+    .dm-pos-remove:hover{color:#e00}
+    .dm-reset-btn{padding:6px 14px;background:#f5f5f5;border:1px solid #ccc;border-radius:4px;cursor:pointer;font-size:13px}
+    .dm-reset-btn:hover{background:#eee}
+    .dm-note{font-size:11px;color:#aaa;line-height:1.5}
+    .dm-price-note{font-size:12px;color:#888}
 
     .price-breakdown { margin-top: 20px; }
     .breakdown-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
@@ -481,51 +333,9 @@
               <span class="zakin-label" id="zakinLabel">推奨座金数（自動計算）</span>
               <span class="zakin-value" id="zakinCount">4 個</span>
             </div>
-            <div class="zakin-diagram" id="zakinDiagram">
-              <svg id="zakinSvg" viewBox="0 0 400 100"></svg>
-            </div>
-                        <a class="zakin-detail-toggle" onclick="toggleZakinDetail()">座金詳細図を見る ▸</a>
-            <button class="zakin-custom-toggle" id="zakinToggle" onclick="toggleZakinCustom()">
-              <span>座金位置を指定する</span>
-              <span class="toggle-icon">&#9660;</span>
+            <button class="zakin-open-drawing" onclick="openDrawingModal()">
+              制作図を確認・座金位置を指定
             </button>
-            <div class="zakin-custom-panel" id="zakinPanel">
-              <div class="zakin-custom-panel-title">座金 位置・手すり角度 指定</div>
-
-              <!-- STEP1: 数量 -->
-              <div class="zakin-qty-row">
-                <span class="zakin-qty-label">① 数量</span>
-                <div class="zakin-qty-controls">
-                  <button class="zakin-qty-btn" onclick="changeZakinQty(-1)">−</button>
-                  <input class="zakin-qty-val" id="zakinQtyInput" type="number" min="2" max="20" value="3" onchange="onZakinQtyInput(this)">
-                  <button class="zakin-qty-btn" onclick="changeZakinQty(1)">＋</button>
-                </div>
-              </div>
-
-              <!-- STEP2: 角度（一括） -->
-              <div class="zakin-angle-row">
-                <span class="zakin-angle-label">② 手すり角度（全座金共通）</span>
-                <input class="zakin-angle-input" id="zakinAngleInput" type="number" min="0" max="360" step="1" value="0" oninput="onZakinGlobalAngle(this)">
-                <span class="zakin-angle-unit">°</span>
-                <a href="/item/zakin-angle.html" target="_blank" class="zakin-angle-link">角度の指定方法 →</a>
-              </div>
-
-              <!-- STEP3: 位置 -->
-              <div class="zakin-pos-heading">③ 各座金の位置</div>
-              <div class="zakin-visual" id="zakinVisual">
-                <div class="zakin-visual-bar"></div>
-                <span class="zakin-visual-end left">0</span>
-                <span class="zakin-visual-end right" id="zakinVisualEnd">1500</span>
-              </div>
-              <div class="zakin-list" id="zakinList"></div>
-              <div class="zakin-add-row">
-                <button class="zakin-reset-btn" onclick="resetZakinCustom()">自動配置に戻す</button>
-              </div>
-              <div class="zakin-custom-note">
-                ※ 両端から100mm以上の位置に配置してください。座金間の推奨最大間隔は850mmです。<br>
-                ※ 数量を変更すると位置は自動で均等配置されます。位置は個別に調整できます。
-              </div>
-            </div>
           </div>
           <div class="surcharge-notice" id="surchargeNotice">
             ⚠ 2000mmを超えると長尺割増が加算されます。取り回しや施工の難易度が上がるため、事前に設置場所のご確認をお勧めします。
@@ -1001,6 +811,147 @@
 
   function fmt(n) { return '\u00A5' + Math.round(n).toLocaleString('ja-JP'); }
 
+  // ── Drawing Modal ──────────────────────────────────────────
+  var drawingModalOpen = false;
+  function openDrawingModal() {
+    drawingModalOpen = true;
+    document.getElementById('drawingOverlay').style.display = 'flex';
+    var L = parseInt(document.getElementById('lengthSlider').value) || 800;
+    if (!zakinCustomMode) {
+      var count = calcZakin(L);
+      dmSetPositions(count, L);
+      document.getElementById('dmQtyInput').value = count;
+    }
+    document.getElementById('dmAngleInput').value = zakinGlobalAngle;
+    dmRenderAll();
+  }
+  function closeDrawingModal() {
+    drawingModalOpen = false;
+    document.getElementById('drawingOverlay').style.display = 'none';
+    var L = parseInt(document.getElementById('lengthSlider').value) || 800;
+    var p = calcPrice(L);
+    document.getElementById('totalVal').textContent = '¥' + fmt(p.total);
+  }
+  function dmSetPositions(count, L) {
+    zakinCustomList = [];
+    for (var i = 0; i < count; i++) {
+      var pos = Math.round(100 + (L - 200) * i / Math.max(count - 1, 1));
+      if (count === 1) pos = Math.round(L / 2);
+      zakinCustomList.push(pos);
+    }
+  }
+  function dmChangeQty(delta) {
+    var input = document.getElementById('dmQtyInput');
+    var v = Math.max(1, Math.min(10, (parseInt(input.value) || 1) + delta));
+    input.value = v;
+    dmOnQtyInput(input);
+  }
+  function dmOnQtyInput(el) {
+    var count = Math.max(1, Math.min(10, parseInt(el.value) || 1));
+    el.value = count;
+    var L = parseInt(document.getElementById('lengthSlider').value) || 800;
+    zakinCustomMode = true;
+    dmSetPositions(count, L);
+    dmRenderAll();
+    dmUpdatePrice();
+  }
+  function dmOnAngleInput(el) {
+    zakinGlobalAngle = Math.max(0, Math.min(360, parseInt(el.value) || 0));
+    el.value = zakinGlobalAngle;
+    dmUpdatePrice();
+  }
+  function dmOnPosChange(i, val) {
+    var L = parseInt(document.getElementById('lengthSlider').value) || 800;
+    var v = Math.max(0, Math.min(L, parseInt(val) || 0));
+    zakinCustomList[i] = v;
+    dmRenderAll();
+    dmUpdatePrice();
+  }
+  function dmRemovePos(i) {
+    zakinCustomList.splice(i, 1);
+    document.getElementById('dmQtyInput').value = zakinCustomList.length;
+    dmRenderAll();
+    dmUpdatePrice();
+  }
+  function dmReset() {
+    zakinCustomMode = false;
+    var L = parseInt(document.getElementById('lengthSlider').value) || 800;
+    var count = calcZakin(L);
+    dmSetPositions(count, L);
+    document.getElementById('dmQtyInput').value = count;
+    dmRenderAll();
+    dmUpdatePrice();
+  }
+  function dmRenderAll() {
+    var L = parseInt(document.getElementById('lengthSlider').value) || 800;
+    var svgEl = document.getElementById('drawingSvg');
+    svgEl.innerHTML = buildDrawingSvg(L, zakinCustomList);
+    dmRenderPosList();
+  }
+  function dmRenderPosList() {
+    var L = parseInt(document.getElementById('lengthSlider').value) || 800;
+    var html = '';
+    for (var i = 0; i < zakinCustomList.length; i++) {
+      html += '<div class="dm-pos-item">' +
+        '<span class="dm-pos-label">座金' + (i+1) + '</span>' +
+        '<input class="dm-pos-input" type="number" value="' + zakinCustomList[i] + '" min="0" max="' + L + '" oninput="dmOnPosChange(' + i + ',this.value)" onchange="zakinCustomMode=true">' +
+        '<span class="dm-pos-unit">mm</span>' +
+        '<button class="dm-pos-remove" onclick="dmRemovePos(' + i + ')">✕</button>' +
+        '</div>';
+    }
+    document.getElementById('dmPosList').innerHTML = html;
+  }
+  function dmUpdatePrice() {
+    var L = parseInt(document.getElementById('lengthSlider').value) || 800;
+    var count = zakinCustomList.length;
+    var base = calcPrice(L);
+    var extra = Math.max(0, count - calcZakin(L));
+    var total = base.total + extra * 1000;
+    document.getElementById('totalVal').textContent = '¥' + fmt(total);
+    var noteEl = document.getElementById('dmPriceNote');
+    if (noteEl) noteEl.textContent = extra > 0 ? '追加座金 ' + extra + '個 × ¥1,000 を含む' : '';
+  }
+  function buildDrawingSvg(L_mm, positions) {
+    var W = 500, H = 130;
+    var ml = 40, mr = 40, mt = 30, mb = 40;
+    var bw = W - ml - mr;
+    var by = mt + (H - mt - mb) / 2;
+    var scale = bw / L_mm;
+    var svg = '';
+    // total dimension line (top)
+    var ty = mt - 10;
+    svg += '<line x1="'+ml+'" y1="'+(ty)+'" x2="'+(ml+bw)+'" y2="'+(ty)+'" stroke="#999" stroke-width="1" marker-start="url(#arr)" marker-end="url(#arr)"/>';
+    svg += '<text x="'+(ml+bw/2)+'" y="'+(ty-4)+'" text-anchor="middle" font-size="11" fill="#555">'+L_mm+' mm</text>';
+    // bar
+    svg += '<line x1="'+ml+'" y1="'+by+'" x2="'+(ml+bw)+'" y2="'+by+'" stroke="#333" stroke-width="6" stroke-linecap="round"/>';
+    // end caps
+    svg += '<line x1="'+ml+'" y1="'+(by-8)+'" x2="'+ml+'" y2="'+(by+8)+'" stroke="#333" stroke-width="3"/>';
+    svg += '<line x1="'+(ml+bw)+'" y1="'+(by-8)+'" x2="'+(ml+bw)+'" y2="'+(by+8)+'" stroke="#333" stroke-width="3"/>';
+    // washers
+    var sorted = positions.slice().sort(function(a,b){return a-b;});
+    sorted.forEach(function(p) {
+      var cx = ml + p * scale;
+      svg += '<circle cx="'+cx+'" cy="'+by+'" r="7" fill="#c8a84b" stroke="#8a6d1e" stroke-width="1.5"/>';
+    });
+    // segment dimension lines (bottom)
+    var pts = [0].concat(sorted).concat([L_mm]);
+    var dy = by + 28;
+    for (var i = 0; i < pts.length - 1; i++) {
+      var x1 = ml + pts[i] * scale;
+      var x2 = ml + pts[i+1] * scale;
+      var seg = pts[i+1] - pts[i];
+      svg += '<line x1="'+x1+'" y1="'+(by+6)+'" x2="'+x1+'" y2="'+(dy+4)+'" stroke="#aaa" stroke-width="1"/>';
+      if (i === pts.length - 2) svg += '<line x1="'+x2+'" y1="'+(by+6)+'" x2="'+x2+'" y2="'+(dy+4)+'" stroke="#aaa" stroke-width="1"/>';
+      svg += '<line x1="'+x1+'" y1="'+dy+'" x2="'+x2+'" y2="'+dy+'" stroke="#aaa" stroke-width="1" marker-start="url(#arr)" marker-end="url(#arr)"/>';
+      svg += '<text x="'+((x1+x2)/2)+'" y="'+(dy+12)+'" text-anchor="middle" font-size="10" fill="#777">'+seg+'</text>';
+    }
+    // note
+    svg += '<text x="'+(W/2)+'" y="'+(H-4)+'" text-anchor="middle" font-size="10" fill="#aaa">《 座金 '+positions.length+' 点 》</text>';
+    // arrowhead marker
+    var defs = '<defs><marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#999"/></marker></defs>';
+    return defs + svg;
+  }
+
   function update(lengthMm) {
     const L = Math.max(500, Math.min(MAX_LENGTH_MM, Math.round(Number(lengthMm))));
     const p = calcPrice(L);
@@ -1012,25 +963,18 @@
     document.getElementById('lengthSlider').style.background =
       'linear-gradient(to right, var(--accent) ' + pct + '%, var(--line) ' + pct + '%)';
 
-    // カスタムモード中は座金カスタム側で価格計算
-    if (zakinCustomMode) {
-      document.getElementById('zakinVisualEnd').textContent = L;
-      renderZakinCustom();
-
-      const rowAddon = document.getElementById('rowAddon');
-      if (p.addon > 0) { rowAddon.style.display = 'flex'; document.getElementById('addonVal').textContent = fmt(p.addon); }
-      else { rowAddon.style.display = 'none'; }
-
-      const rowSurcharge = document.getElementById('rowSurcharge');
-      const notice = document.getElementById('surchargeNotice');
-      if (p.surcharge > 0) { rowSurcharge.style.display = 'flex'; document.getElementById('surchargeVal').textContent = fmt(p.surcharge); notice.style.display = 'block'; }
-      else { rowSurcharge.style.display = 'none'; notice.style.display = 'none'; }
-      return;
+    if (drawingModalOpen) {
+      if (!zakinCustomMode) {
+        var count = calcZakin(L);
+        dmSetPositions(count, L);
+        document.getElementById('dmQtyInput').value = count;
+      }
+      dmRenderAll();
     }
-
-    document.getElementById('zakinLabel').textContent = '推奨座金数（自動計算）';
-    document.getElementById('zakinCount').textContent = p.zakin + ' 個';
-    buildDiagramSVG(L, getZakinPositions(L, p.zakin));
+    if (!zakinCustomMode) {
+      document.getElementById('zakinLabel').textContent = '推奨座金数（自動計算）';
+      document.getElementById('zakinCount').textContent = p.zakin + ' 個';
+    }
 
     const rowAddon = document.getElementById('rowAddon');
     if (p.addon > 0) {
@@ -1059,7 +1003,11 @@
       notice.style.display = 'none';
     }
 
-    document.getElementById('totalVal').textContent = fmt(p.total);
+    if (zakinCustomMode) {
+      dmUpdatePrice();
+    } else {
+      document.getElementById('totalVal').textContent = fmt(p.total);
+    }
   }
 
   function onLengthChange(v) { update(v); }
@@ -1083,12 +1031,34 @@
 
   update(1500);
 </script>
-<!-- 座金詳細図モーダル -->
-<div class="zakin-detail-modal" id="zakinDetailModal" onclick="if(event.target===this)toggleZakinDetail()">
-  <div class="zakin-detail-modal-inner">
-    <button class="zakin-detail-modal-close" onclick="toggleZakinDetail()">&times;</button>
-    <img src="/item/images/zakin-detail.png" alt="横型手すり座金 詳細図（側面図・正面図）">
-    <p class="zakin-detail-modal-caption">横型手すり座金 詳細図（側面図・正面図）</p>
+<div class="dm-overlay" id="drawingOverlay" style="display:none" onclick="if(event.target===this)closeDrawingModal()">
+  <div class="dm-modal">
+    <button class="dm-close" onclick="closeDrawingModal()">&times;</button>
+    <div class="dm-title">制作図プレビュー</div>
+    <div class="dm-svg-wrap"><svg id="drawingSvg" viewBox="0 0 500 130"></svg></div>
+    <div class="dm-controls">
+      <div class="dm-row">
+        <span class="dm-label">座金数</span>
+        <button class="dm-qty-btn" onclick="dmChangeQty(-1)">－</button>
+        <input class="dm-qty-input" id="dmQtyInput" type="number" min="1" max="10" value="4" oninput="dmOnQtyInput(this)">
+        <button class="dm-qty-btn" onclick="dmChangeQty(1)">＋</button>
+      </div>
+      <div class="dm-row">
+        <span class="dm-label">手すり角度</span>
+        <input class="dm-angle-input" id="dmAngleInput" type="number" min="0" max="360" step="1" value="0" oninput="dmOnAngleInput(this)">
+        <span class="dm-angle-unit">°</span>
+        <a href="/item/zakin-angle.html" target="_blank" class="dm-angle-link">角度の指定方法 →</a>
+      </div>
+      <div class="dm-row">
+        <span class="dm-label">座金位置</span>
+        <div class="dm-pos-list" id="dmPosList"></div>
+      </div>
+      <div class="dm-row">
+        <button class="dm-reset-btn" onclick="dmReset()">自動配置に戻す</button>
+        <span class="dm-price-note" id="dmPriceNote"></span>
+      </div>
+      <div class="dm-note">※ 座金位置は手すり端から何mmの位置かを指定します。<br>※ 追加座金は1個あたり¥1,000（税抜）が加算されます。</div>
+    </div>
   </div>
 </div>
 </body>
