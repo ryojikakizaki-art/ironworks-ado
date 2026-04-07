@@ -253,181 +253,67 @@
     }
     .zakin-label { color: var(--muted); }
     .zakin-value { color: var(--accent); font-weight: 500; }
-    .zakin-diagram {
-      margin-top: 12px;
+    .zakin-open-drawing {
+      display: block; width: 100%; margin-top: 10px; padding: 10px 12px;
+      background: transparent; border: 1px solid rgba(200,169,110,0.4);
+      color: var(--accent); font-size: 11px; letter-spacing: 0.15em;
+      text-transform: uppercase; font-family: var(--font); cursor: pointer;
+      transition: border-color .2s, background .2s;
     }
-    .zakin-diagram svg { width: 100%; height: auto; display: block; }
-    .zakin-diagram text { font-family: var(--font); }
-    .zakin-diagram .dim-line { stroke: var(--muted); stroke-width: 0.5; }
-    .zakin-diagram .dim-text { fill: var(--muted); font-size: 9px; text-anchor: middle; }
-    .zakin-diagram .bar-line { stroke: var(--light); stroke-width: 3; stroke-linecap: round; }
-    .zakin-diagram .bracket-circle { fill: var(--accent); }
-    .zakin-diagram .total-dim { stroke: var(--light); stroke-width: 0.7; }
-    .zakin-diagram .total-text { fill: var(--light); font-size: 10px; text-anchor: middle; font-weight: 500; }
+    .zakin-open-drawing:hover { border-color: var(--accent); background: rgba(200,169,110,0.08); }
 
-    /* 座金詳細図リンク */
-    .zakin-detail-toggle {
-      display: inline-block; margin-top: 8px; font-size: 10px;
-      color: var(--accent); cursor: pointer; text-decoration: none;
-      border-bottom: 1px dotted var(--accent); transition: opacity .2s;
+    /* 制作図モーダル */
+    .dm-overlay {
+      display: none; position: fixed; inset: 0; z-index: 2000;
+      background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; padding: 20px;
     }
-    .zakin-detail-toggle:hover { opacity: 0.7; }
-
-    /* 座金詳細図モーダル */
-    .zakin-detail-modal {
-      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      z-index: 200; background: rgba(0,0,0,0.85);
-      align-items: center; justify-content: center;
+    .dm-overlay.open { display: flex; }
+    .dm-modal {
+      background: #fff; color: #222; width: 100%; max-width: 580px;
+      border-radius: 8px; padding: 28px 24px 24px; position: relative;
+      max-height: 90vh; overflow-y: auto; font-family: var(--font);
     }
-    .zakin-detail-modal.open { display: flex; }
-    .zakin-detail-modal-inner {
-      position: relative; background: #fff; padding: 24px;
-      max-width: 90vw; max-height: 90vh;
-    }
-    .zakin-detail-modal-inner img {
-      display: block; max-width: 100%; max-height: 80vh; height: auto;
-    }
-    .zakin-detail-modal-caption {
-      font-size: 12px; color: #666; text-align: center; margin-top: 12px;
-    }
-    .zakin-detail-modal-close {
-      position: absolute; top: -16px; right: -16px;
-      width: 36px; height: 36px; border-radius: 50%;
-      background: var(--dark); border: 1px solid var(--line);
-      color: var(--white); font-size: 18px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all .2s;
-    }
-    .zakin-detail-modal-close:hover { background: var(--accent); border-color: var(--accent); }
-
-    /* 座金位置指定 */
-    .zakin-custom-toggle {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      margin-top: 10px; padding: 8px 0;
-      background: none; border: 1px solid var(--line); color: var(--muted);
-      font-size: 11px; letter-spacing: 0.1em; cursor: pointer;
-      font-family: var(--font); width: 100%; transition: all .2s;
-    }
-    .zakin-custom-toggle:hover { border-color: var(--accent); color: var(--accent); }
-    .zakin-custom-toggle.active { border-color: var(--accent); color: var(--accent); background: rgba(200,169,110,0.06); }
-    .zakin-custom-toggle .toggle-icon { transition: transform .2s; font-size: 8px; }
-    .zakin-custom-toggle.active .toggle-icon { transform: rotate(180deg); }
-
-    .zakin-custom-panel {
-      display: none; margin-top: 12px;
-      border: 1px solid var(--line); padding: 16px;
-      background: rgba(0,0,0,0.2);
-    }
-    .zakin-custom-panel.open { display: block; }
-    .zakin-custom-panel-title {
-      font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
-      color: var(--accent); margin-bottom: 12px;
-    }
-
-    .zakin-visual {
-      position: relative; height: 48px; margin-bottom: 16px;
-      background: var(--dark); border: 1px solid var(--line); overflow: visible;
-    }
-    .zakin-visual-bar {
-      position: absolute; top: 50%; left: 16px; right: 16px;
-      height: 4px; background: var(--muted); transform: translateY(-50%);
-      border-radius: 2px;
-    }
-    .zakin-visual-marker {
-      position: absolute; top: 50%; width: 14px; height: 14px;
-      background: var(--accent); border-radius: 50%;
-      transform: translate(-50%, -50%); cursor: default;
-      font-size: 0; z-index: 1;
-    }
-    .zakin-visual-label {
-      position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
-      font-size: 8px; color: var(--muted); white-space: nowrap; margin-top: 2px;
-    }
-    .zakin-visual-end {
-      position: absolute; top: 50%; transform: translateY(-50%);
-      font-size: 9px; color: var(--muted);
-    }
-    .zakin-visual-end.left { left: 2px; }
-    .zakin-visual-end.right { right: 2px; }
-
-    /* 数量セレクター */
-    .zakin-qty-row {
-      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
-      padding-bottom: 12px; border-bottom: 1px solid var(--line);
-    }
-    .zakin-qty-label { font-size: 12px; color: var(--light); letter-spacing: 0.05em; white-space: nowrap; }
-    .zakin-qty-controls { display: flex; align-items: center; gap: 0; }
-    .zakin-qty-btn {
-      width: 32px; height: 32px; background: none; border: 1px solid var(--line);
-      color: var(--accent); font-size: 16px; cursor: pointer; font-family: var(--font);
-      display: flex; align-items: center; justify-content: center; transition: all .2s;
-    }
-    .zakin-qty-btn:hover { border-color: var(--accent); background: rgba(200,169,110,0.1); }
-    .zakin-qty-btn:first-child { border-radius: 4px 0 0 4px; }
-    .zakin-qty-btn:last-child { border-radius: 0 4px 4px 0; }
-    .zakin-qty-val {
-      width: 40px; height: 32px; background: var(--dark); border: 1px solid var(--line);
-      border-left: none; border-right: none; color: var(--white);
-      font-size: 14px; font-family: var(--font); text-align: center; font-weight: 500;
-    }
-    .zakin-qty-val:focus { outline: none; }
-
-    /* 角度一括指定 */
-    .zakin-angle-row {
-      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
-      padding-bottom: 12px; border-bottom: 1px solid var(--line);
-    }
-    .zakin-angle-label { font-size: 12px; color: var(--light); letter-spacing: 0.05em; white-space: nowrap; }
-    .zakin-angle-input {
-      width: 72px; padding: 6px 8px; background: var(--dark);
-      border: 1px solid var(--line); color: var(--white);
-      font-size: 13px; font-family: var(--font); text-align: center;
-    }
-    .zakin-angle-input:focus { outline: none; border-color: var(--accent); }
-    .zakin-angle-unit { font-size: 11px; color: var(--muted); }
-    .zakin-angle-link {
-      font-size: 10px; color: var(--accent); margin-left: auto; text-decoration: none;
-      border-bottom: 1px dotted var(--accent); transition: opacity .2s;
-    }
-    .zakin-angle-link:hover { opacity: 0.7; }
-
-    /* 位置リスト（角度列なし） */
-    .zakin-pos-heading {
-      font-size: 10px; letter-spacing: 0.1em; color: var(--muted);
-      margin-bottom: 8px; text-transform: uppercase;
-    }
-    .zakin-list { display: flex; flex-direction: column; gap: 8px; }
-    .zakin-item {
-      display: grid; grid-template-columns: 28px 1fr 28px; gap: 8px; align-items: center;
-    }
-    .zakin-item-num {
-      font-size: 11px; color: var(--accent); text-align: center; font-weight: 500;
-    }
-    .zakin-item label { font-size: 10px; color: var(--muted); display: block; margin-bottom: 2px; }
-    .zakin-item input {
-      width: 100%; padding: 6px 8px; background: var(--dark);
-      border: 1px solid var(--line); color: var(--white);
-      font-size: 12px; font-family: var(--font);
-    }
-    .zakin-item input:focus { outline: none; border-color: var(--accent); }
-    .zakin-item-remove {
-      background: none; border: none; color: var(--muted); cursor: pointer;
-      font-size: 16px; padding: 0; line-height: 1; transition: color .2s;
-    }
-    .zakin-item-remove:hover { color: #e06060; }
-
-    .zakin-add-row {
-      display: flex; gap: 8px; margin-top: 10px;
-    }
-    .zakin-reset-btn {
-      flex: 1; padding: 8px; font-size: 11px; font-family: var(--font);
-      cursor: pointer; letter-spacing: 0.05em; transition: all .2s;
-      background: none; border: 1px solid var(--line); color: var(--muted);
-    }
-    .zakin-reset-btn:hover { border-color: var(--muted); color: var(--light); }
-    .zakin-custom-note {
-      font-size: 10px; color: var(--muted); margin-top: 10px; line-height: 1.6;
-    }
+    .dm-close { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 24px; color: #999; cursor: pointer; line-height: 1; transition: color .2s; }
+    .dm-close:hover { color: #333; }
+    .dm-title { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 16px; }
+    .dm-svg-wrap { margin-bottom: 20px; }
+    .dm-svg-wrap svg { width: 100%; height: auto; display: block; }
+    .dm-svg-wrap text { font-family: var(--font); }
+    .dm-svg-wrap .d-bar { stroke: #333; stroke-width: 3; stroke-linecap: round; }
+    .dm-svg-wrap .d-cap { stroke: #333; stroke-width: 1.5; }
+    .dm-svg-wrap .d-dim { stroke: #888; stroke-width: 0.7; }
+    .dm-svg-wrap .d-dim-text { fill: #555; font-size: 11px; text-anchor: middle; }
+    .dm-svg-wrap .d-total-dim { stroke: #333; stroke-width: 0.8; }
+    .dm-svg-wrap .d-total-text { fill: #222; font-size: 12px; text-anchor: middle; font-weight: 600; }
+    .dm-svg-wrap .d-bracket { fill: #c8a96e; }
+    .dm-svg-wrap .d-bracket-icon { stroke: #c8a96e; stroke-width: 1; }
+    .dm-svg-wrap .d-note { fill: #888; font-size: 10px; text-anchor: middle; }
+    .dm-controls { border-top: 1px solid #e0e0e0; padding-top: 16px; }
+    .dm-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+    .dm-label { font-size: 12px; color: #666; white-space: nowrap; min-width: 80px; }
+    .dm-qty-controls { display: flex; align-items: center; }
+    .dm-qty-btn { width: 32px; height: 32px; background: #f5f5f5; border: 1px solid #ccc; color: #c8a96e; font-size: 16px; cursor: pointer; font-family: var(--font); display: flex; align-items: center; justify-content: center; transition: all .2s; }
+    .dm-qty-btn:hover { border-color: #c8a96e; background: rgba(200,169,110,0.1); }
+    .dm-qty-btn:first-child { border-radius: 4px 0 0 4px; }
+    .dm-qty-btn:last-child { border-radius: 0 4px 4px 0; }
+    .dm-qty-val { width: 40px; height: 32px; background: #fff; border: 1px solid #ccc; border-left: none; border-right: none; color: #222; font-size: 14px; font-family: var(--font); text-align: center; font-weight: 600; }
+    .dm-qty-val:focus { outline: none; }
+    .dm-angle-input { width: 64px; padding: 6px 8px; background: #fff; border: 1px solid #ccc; color: #222; font-size: 13px; font-family: var(--font); text-align: center; }
+    .dm-angle-input:focus { outline: none; border-color: #c8a96e; }
+    .dm-angle-unit { font-size: 11px; color: #888; }
+    .dm-angle-link { font-size: 10px; color: #c8a96e; text-decoration: none; border-bottom: 1px dotted #c8a96e; margin-left: 4px; }
+    .dm-pos-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .dm-pos-item { display: flex; align-items: center; gap: 4px; }
+    .dm-pos-num { font-size: 11px; color: #c8a96e; font-weight: 600; }
+    .dm-pos-input { width: 72px; padding: 6px 8px; background: #fff; border: 1px solid #ccc; color: #222; font-size: 12px; font-family: var(--font); text-align: center; }
+    .dm-pos-input:focus { outline: none; border-color: #c8a96e; }
+    .dm-pos-unit { font-size: 10px; color: #888; }
+    .dm-pos-remove { background: none; border: none; color: #ccc; cursor: pointer; font-size: 16px; padding: 0; line-height: 1; transition: color .2s; }
+    .dm-pos-remove:hover { color: #e06060; }
+    .dm-reset { padding: 8px 16px; font-size: 11px; font-family: var(--font); cursor: pointer; letter-spacing: 0.05em; transition: all .2s; background: #f5f5f5; border: 1px solid #ccc; color: #666; border-radius: 4px; }
+    .dm-reset:hover { border-color: #999; color: #333; }
+    .dm-note { font-size: 10px; color: #aaa; margin-top: 8px; line-height: 1.6; }
 
     .price-breakdown { margin-top: 20px; }
     .breakdown-row {
@@ -783,51 +669,9 @@
           <span class="zakin-label" id="zakinLabel">推奨座金数（自動計算）</span>
           <span class="zakin-value" id="zakinCount">4 個</span>
         </div>
-        <div class="zakin-diagram" id="zakinDiagram">
-          <svg id="zakinSvg" viewBox="0 0 400 100"></svg>
-        </div>
-        <a class="zakin-detail-toggle" onclick="toggleZakinDetail()">座金詳細図を見る ▸</a>
-        <button class="zakin-custom-toggle" id="zakinToggle" onclick="toggleZakinCustom()">
-          <span>座金位置を指定する</span>
-          <span class="toggle-icon">&#9660;</span>
+        <button class="zakin-open-drawing" onclick="openDrawingModal()">
+          制作図を確認・座金位置を指定
         </button>
-        <div class="zakin-custom-panel" id="zakinPanel">
-          <div class="zakin-custom-panel-title">座金 位置・手すり角度 指定</div>
-
-          <!-- STEP1: 数量 -->
-          <div class="zakin-qty-row">
-            <span class="zakin-qty-label">① 数量</span>
-            <div class="zakin-qty-controls">
-              <button class="zakin-qty-btn" onclick="changeZakinQty(-1)">−</button>
-              <input class="zakin-qty-val" id="zakinQtyInput" type="number" min="2" max="20" value="3" onchange="onZakinQtyInput(this)">
-              <button class="zakin-qty-btn" onclick="changeZakinQty(1)">＋</button>
-            </div>
-          </div>
-
-          <!-- STEP2: 手すり角度（一括） -->
-          <div class="zakin-angle-row">
-            <span class="zakin-angle-label">② 手すり角度（全座金共通）</span>
-            <input class="zakin-angle-input" id="zakinAngleInput" type="number" min="0" max="360" step="1" value="0" oninput="onZakinGlobalAngle(this)">
-            <span class="zakin-angle-unit">°</span>
-            <a href="/item/zakin-angle.html" target="_blank" class="zakin-angle-link">角度の指定方法 →</a>
-          </div>
-
-          <!-- STEP3: 位置 -->
-          <div class="zakin-pos-heading">③ 各座金の位置</div>
-          <div class="zakin-visual" id="zakinVisual">
-            <div class="zakin-visual-bar"></div>
-            <span class="zakin-visual-end left">0</span>
-            <span class="zakin-visual-end right" id="zakinVisualEnd">1500</span>
-          </div>
-          <div class="zakin-list" id="zakinList"></div>
-          <div class="zakin-add-row">
-            <button class="zakin-reset-btn" onclick="resetZakinCustom()">自動配置に戻す</button>
-          </div>
-          <div class="zakin-custom-note">
-            ※ 両端から100mm以上の位置に配置してください。座金間の推奨最大間隔は850mmです。<br>
-            ※ 数量を変更すると位置は自動で均等配置されます。位置は個別に調整できます。
-          </div>
-        </div>
       </div>
 
       <div class="price-breakdown">
@@ -985,10 +829,221 @@
     return positions;
   }
 
-  function buildDiagramSVG(L_mm, positions) {
+  // ── 制作図モーダル ──
+  var zakinCustomMode = false;
+  var zakinCustomList = [];
+  var zakinGlobalAngle = 0;
+  var drawingModalOpen = false;
+
+  function openDrawingModal() {
+    var L = Number(document.getElementById('lengthInput').value) || 1500;
+    if (!zakinCustomMode) {
+      var count = calcZakin(L);
+      dmSetPositions(count, L);
+      document.getElementById('dmQtyInput').value = count;
+    } else {
+      document.getElementById('dmQtyInput').value = zakinCustomList.length;
+    }
+    document.getElementById('dmAngleInput').value = zakinGlobalAngle;
+    drawingModalOpen = true;
+    document.getElementById('drawingOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    dmRenderAll();
+  }
+
+  function closeDrawingModal() {
+    drawingModalOpen = false;
+    document.getElementById('drawingOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+    if (zakinCustomMode) dmUpdatePrice();
+  }
+
+  function dmSetPositions(count, L) {
+    zakinCustomList = [];
+    var positions = getZakinPositions(L, count);
+    for (var j = 0; j < positions.length; j++) {
+      zakinCustomList.push({ pos: positions[j] });
+    }
+  }
+
+  function dmChangeQty(delta) {
+    var input = document.getElementById('dmQtyInput');
+    var newVal = Math.max(2, Math.min(20, parseInt(input.value) + delta));
+    input.value = newVal;
+    zakinCustomMode = true;
+    var L = Number(document.getElementById('lengthInput').value) || 1500;
+    dmSetPositions(newVal, L);
+    dmRenderAll();
+  }
+
+  function dmOnQtyInput(el) {
+    var val = Math.max(2, Math.min(20, parseInt(el.value) || 2));
+    el.value = val;
+    zakinCustomMode = true;
+    var L = Number(document.getElementById('lengthInput').value) || 1500;
+    dmSetPositions(val, L);
+    dmRenderAll();
+  }
+
+  function dmOnAngleInput(el) {
+    zakinGlobalAngle = Math.max(0, Math.min(360, parseInt(el.value) || 0));
+    zakinCustomMode = true;
+  }
+
+  function dmOnPosChange(input) {
+    var idx = parseInt(input.dataset.idx);
+    var L = Number(document.getElementById('lengthInput').value) || 1500;
+    var val = Math.max(0, Math.min(L, parseInt(input.value) || 0));
+    zakinCustomList[idx].pos = val;
+    zakinCustomMode = true;
+    buildDrawingSvg();
+    dmUpdatePrice();
+  }
+
+  function dmRemovePos(idx) {
+    if (zakinCustomList.length <= 2) return;
+    zakinCustomList.splice(parseInt(idx), 1);
+    document.getElementById('dmQtyInput').value = zakinCustomList.length;
+    zakinCustomMode = true;
+    dmRenderAll();
+  }
+
+  function dmReset() {
+    zakinCustomMode = false;
+    zakinGlobalAngle = 0;
+    document.getElementById('dmAngleInput').value = 0;
+    var L = Number(document.getElementById('lengthInput').value) || 1500;
+    var count = calcZakin(L);
+    dmSetPositions(count, L);
+    document.getElementById('dmQtyInput').value = count;
+    dmRenderAll();
+    update(L);
+  }
+
+  function dmRenderAll() {
+    buildDrawingSvg();
+    dmRenderPosList();
+    dmUpdatePrice();
+  }
+
+  function dmRenderPosList() {
+    var L = Number(document.getElementById('lengthInput').value) || 1500;
+    var list = document.getElementById('dmPosList');
+    list.innerHTML = '';
+    zakinCustomList.forEach(function(item, idx) {
+      var wrap = document.createElement('div');
+      wrap.className = 'dm-pos-item';
+      var num = document.createElement('span');
+      num.className = 'dm-pos-num';
+      num.textContent = (idx + 1);
+      var inp = document.createElement('input');
+      inp.className = 'dm-pos-input';
+      inp.type = 'number'; inp.min = '0'; inp.max = String(L);
+      inp.value = item.pos; inp.dataset.idx = idx;
+      inp.oninput = function() { dmOnPosChange(this); };
+      var unit = document.createElement('span');
+      unit.className = 'dm-pos-unit'; unit.textContent = 'mm';
+      wrap.appendChild(num); wrap.appendChild(inp); wrap.appendChild(unit);
+      if (zakinCustomList.length > 2) {
+        var rm = document.createElement('button');
+        rm.className = 'dm-pos-remove'; rm.innerHTML = '&times;';
+        rm.dataset.idx = idx;
+        rm.onclick = function() { dmRemovePos(this.dataset.idx); };
+        wrap.appendChild(rm);
+      }
+      list.appendChild(wrap);
+    });
+  }
+
+  function dmUpdatePrice() {
+    var count = zakinCustomList.length;
+    var addZakin = Math.max(0, count - INCLUDED_ZAKIN) * ZAKIN_PRICE;
+    document.getElementById('zakinLabel').textContent = zakinCustomMode ? '座金数（カスタム指定）' : '推奨座金数（自動計算）';
+    document.getElementById('zakinCount').textContent = count + ' 個';
+
+    var L = Number(document.getElementById('lengthInput').value) || 1500;
+    var p = calcPrice(L);
+    var baseTotal = zakinCustomMode ? (BASE_PRICE + p.addon + addZakin + p.surcharge) : p.total;
+
+    var rowZakin = document.getElementById('rowZakin');
+    var showZakin = zakinCustomMode ? (addZakin > 0) : (p.addZakin > 0);
+    if (showZakin) {
+      rowZakin.style.display = 'flex';
+      document.getElementById('zakinVal').textContent = fmt(zakinCustomMode ? addZakin : p.addZakin);
+    } else { rowZakin.style.display = 'none'; }
+
+    document.getElementById('totalVal').dataset.base = baseTotal;
+    if (typeof calcShipping === 'function') { calcShipping(); }
+    else { document.getElementById('totalVal').textContent = fmt(baseTotal); }
+  }
+
+  // ── 制作図SVG描画（白背景用）──
+  function buildDrawingSvg() {
     var svgNS = 'http://www.w3.org/2000/svg';
-    var svg = document.getElementById('zakinSvg');
+    var svg = document.getElementById('drawingSvg');
+    if (!svg) return;
     svg.innerHTML = '';
+    var L_mm = Number(document.getElementById('lengthInput').value) || 1500;
+    var sorted = zakinCustomList.slice().sort(function(a, b) { return a.pos - b.pos; });
+    var positions = sorted.map(function(item) { return item.pos; });
+    var W = 500, pad = 40;
+    var barY = 55, barLeft = pad, barRight = W - pad;
+    var barLen = barRight - barLeft;
+    var addLine = function(x1, y1, x2, y2, cls) {
+      var l = document.createElementNS(svgNS, 'line');
+      l.setAttribute('x1', x1); l.setAttribute('y1', y1);
+      l.setAttribute('x2', x2); l.setAttribute('y2', y2);
+      l.setAttribute('class', cls); svg.appendChild(l);
+    };
+    var dimY = 18;
+    var totalText = document.createElementNS(svgNS, 'text');
+    totalText.setAttribute('x', (barLeft + barRight) / 2);
+    totalText.setAttribute('y', dimY - 3);
+    totalText.setAttribute('class', 'd-total-text');
+    totalText.textContent = L_mm;
+    svg.appendChild(totalText);
+    addLine(barLeft, dimY, barRight, dimY, 'd-total-dim');
+    addLine(barLeft, dimY - 4, barLeft, dimY + 4, 'd-total-dim');
+    addLine(barRight, dimY - 4, barRight, dimY + 4, 'd-total-dim');
+    addLine(barLeft, dimY + 4, barLeft, barY - 8, 'd-dim');
+    addLine(barRight, dimY + 4, barRight, barY - 8, 'd-dim');
+    addLine(barLeft, barY, barRight, barY, 'd-bar');
+    addLine(barLeft, barY - 6, barLeft, barY + 6, 'd-cap');
+    addLine(barRight, barY - 6, barRight, barY + 6, 'd-cap');
+    positions.forEach(function(pos) {
+      var x = barLeft + (pos / L_mm) * barLen;
+      var circle = document.createElementNS(svgNS, 'circle');
+      circle.setAttribute('cx', x); circle.setAttribute('cy', barY);
+      circle.setAttribute('r', 5); circle.setAttribute('class', 'd-bracket');
+      svg.appendChild(circle);
+      addLine(x, barY + 5, x, barY + 15, 'd-dim');
+      addLine(x - 5, barY + 15, x + 5, barY + 15, 'd-bracket-icon');
+    });
+    var dimBelowY = barY + 28;
+    var allPoints = [0].concat(positions).concat([L_mm]);
+    for (var i = 1; i < allPoints.length; i++) {
+      var x1 = barLeft + (allPoints[i - 1] / L_mm) * barLen;
+      var x2 = barLeft + (allPoints[i] / L_mm) * barLen;
+      var segLen = allPoints[i] - allPoints[i - 1];
+      if (segLen <= 0) continue;
+      var midX = (x1 + x2) / 2;
+      addLine(x1, dimBelowY, x2, dimBelowY, 'd-dim');
+      addLine(x1, dimBelowY - 3, x1, dimBelowY + 3, 'd-dim');
+      addLine(x2, dimBelowY - 3, x2, dimBelowY + 3, 'd-dim');
+      var segText = document.createElementNS(svgNS, 'text');
+      segText.setAttribute('x', midX); segText.setAttribute('y', dimBelowY + 14);
+      segText.setAttribute('class', 'd-dim-text'); segText.textContent = segLen;
+      svg.appendChild(segText);
+    }
+    var noteText = document.createElementNS(svgNS, 'text');
+    noteText.setAttribute('x', (barLeft + barRight) / 2);
+    noteText.setAttribute('y', dimBelowY + 32);
+    noteText.setAttribute('class', 'd-note');
+    noteText.textContent = '\u300A \u5EA7\u91D1 ' + positions.length + '\u70B9 \u300B';
+    svg.appendChild(noteText);
+  }
+
+  function _unused_buildDiagramSVG(L_mm, positions) {
 
     // Layout constants
     var pad = 30;
@@ -1335,24 +1390,28 @@
     document.getElementById('lengthSlider').style.background =
       'linear-gradient(to right, var(--accent) ' + pct + '%, var(--line) ' + pct + '%)';
 
-    // カスタムモード中は座金カスタム側で価格計算
-    if (zakinCustomMode) {
-      document.getElementById('zakinVisualEnd').textContent = L;
-      renderZakinCustom();
+    if (drawingModalOpen) {
+      if (!zakinCustomMode) {
+        var count = calcZakin(L);
+        dmSetPositions(count, L);
+        document.getElementById('dmQtyInput').value = count;
+      }
+      dmRenderAll();
+    }
 
+    if (zakinCustomMode) {
       const rowAddon = document.getElementById('rowAddon');
       if (p.addon > 0) { rowAddon.style.display = 'flex'; document.getElementById('addonVal').textContent = fmt(p.addon); }
       else { rowAddon.style.display = 'none'; }
-
       const rowSurcharge = document.getElementById('rowSurcharge');
       if (p.surcharge > 0) { rowSurcharge.style.display = 'flex'; document.getElementById('surchargeVal').textContent = fmt(p.surcharge); }
       else { rowSurcharge.style.display = 'none'; }
+      dmUpdatePrice();
       return;
     }
 
     document.getElementById('zakinLabel').textContent = '推奨座金数（自動計算）';
     document.getElementById('zakinCount').textContent = p.zakin + ' 個';
-    buildDiagramSVG(L, getZakinPositions(L, p.zakin));
 
     const rowAddon = document.getElementById('rowAddon');
     if (p.addon > 0) {
@@ -1679,12 +1738,41 @@
 
 </script>
 
-<!-- 座金詳細図モーダル -->
-<div class="zakin-detail-modal" id="zakinDetailModal" onclick="if(event.target===this)toggleZakinDetail()">
-  <div class="zakin-detail-modal-inner">
-    <button class="zakin-detail-modal-close" onclick="toggleZakinDetail()">&times;</button>
-    <img src="/item/images/zakin-detail.png" alt="横型手すり座金 詳細図（側面図・正面図）">
-    <p class="zakin-detail-modal-caption">横型手すり座金 詳細図（側面図・正面図）</p>
+<!-- 制作図モーダル -->
+<div class="dm-overlay" id="drawingOverlay" onclick="if(event.target===this)closeDrawingModal()">
+  <div class="dm-modal">
+    <button class="dm-close" onclick="closeDrawingModal()">&times;</button>
+    <div class="dm-title">制作図プレビュー</div>
+    <div class="dm-svg-wrap">
+      <svg id="drawingSvg" viewBox="0 0 500 130"></svg>
+    </div>
+    <div class="dm-controls">
+      <div class="dm-row">
+        <span class="dm-label">座金数</span>
+        <div class="dm-qty-controls">
+          <button class="dm-qty-btn" onclick="dmChangeQty(-1)">−</button>
+          <input class="dm-qty-val" id="dmQtyInput" type="number" min="2" max="20" value="4" onchange="dmOnQtyInput(this)">
+          <button class="dm-qty-btn" onclick="dmChangeQty(1)">＋</button>
+        </div>
+      </div>
+      <div class="dm-row">
+        <span class="dm-label">手すり角度</span>
+        <input class="dm-angle-input" id="dmAngleInput" type="number" min="0" max="360" step="1" value="0" oninput="dmOnAngleInput(this)">
+        <span class="dm-angle-unit">°</span>
+        <a href="/item/zakin-angle.html" target="_blank" class="dm-angle-link">角度の指定方法 →</a>
+      </div>
+      <div class="dm-row">
+        <span class="dm-label">座金位置</span>
+      </div>
+      <div class="dm-pos-list" id="dmPosList"></div>
+      <div class="dm-row">
+        <button class="dm-reset" onclick="dmReset()">自動配置に戻す</button>
+      </div>
+      <div class="dm-note">
+        ※ 両端から100mm以上の位置に配置してください。座金間の推奨最大間隔は850mmです。<br>
+        ※ 数量を変更すると位置は自動で均等配置されます。
+      </div>
+    </div>
   </div>
 </div>
 
