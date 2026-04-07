@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>座金の角度指定について ｜ IRONWORKS ado</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #0e0e0e; --dark: #1a1a1a; --mid: #2c2c2c; --line: #333333;
+      --muted: #888888; --light: #cccccc; --white: #f5f5f5; --accent: #c8a96e;
+      --font: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+      --serif: 'Noto Serif JP', serif;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--black); color: var(--white); font-family: var(--font); font-size: 14px; line-height: 1.8; }
+
+    .page { max-width: 720px; margin: 0 auto; padding: 40px 24px 80px; }
+
+    h1 {
+      font-size: 20px; font-weight: 400; letter-spacing: 0.08em;
+      border-bottom: 1px solid var(--accent); padding-bottom: 16px; margin-bottom: 32px;
+      color: var(--white);
+    }
+    h2 {
+      font-size: 16px; font-weight: 500; color: var(--accent);
+      margin: 40px 0 16px; letter-spacing: 0.05em;
+    }
+    p { color: var(--light); margin-bottom: 16px; font-size: 14px; }
+    .note { font-size: 12px; color: var(--muted); margin-bottom: 20px; line-height: 1.7; }
+    .emphasis { color: var(--accent); font-weight: 500; }
+
+    /* Diagram area */
+    .diagram-box {
+      background: var(--dark); border: 1px solid var(--line);
+      padding: 24px; margin: 24px 0; text-align: center;
+    }
+    .diagram-box svg { max-width: 100%; height: auto; }
+    .diagram-caption { font-size: 11px; color: var(--muted); margin-top: 12px; letter-spacing: 0.05em; }
+
+    /* Example cards */
+    .examples { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 24px 0; }
+    .example-card {
+      background: var(--dark); border: 1px solid var(--line); padding: 20px; text-align: center;
+    }
+    .example-card svg { max-width: 100%; height: auto; margin-bottom: 12px; }
+    .example-label { font-size: 13px; font-weight: 500; color: var(--white); margin-bottom: 4px; }
+    .example-desc { font-size: 11px; color: var(--muted); line-height: 1.6; }
+    .example-angle { font-size: 18px; color: var(--accent); font-weight: 500; margin-bottom: 8px; }
+
+    /* Summary table */
+    .summary-table { width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 13px; }
+    .summary-table th, .summary-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--line); }
+    .summary-table th { color: var(--accent); font-size: 12px; letter-spacing: 0.1em; border-bottom: 2px solid var(--accent); }
+    .summary-table td:first-child { font-weight: 500; color: var(--white); white-space: nowrap; }
+    .summary-table td:nth-child(2) { color: var(--light); }
+
+    /* Back link */
+    .back-link {
+      display: inline-block; margin-top: 40px; padding: 12px 32px;
+      border: 1px solid var(--line); color: var(--light); text-decoration: none;
+      font-size: 12px; letter-spacing: 0.1em; transition: all .2s;
+    }
+    .back-link:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* Important box */
+    .important-box {
+      border-left: 3px solid var(--accent);
+      background: rgba(200,169,110,0.06);
+      padding: 16px 20px; margin: 24px 0;
+    }
+    .important-box p { margin-bottom: 8px; }
+    .important-box p:last-child { margin-bottom: 0; }
+
+    @media (max-width: 600px) {
+      .examples { grid-template-columns: 1fr; }
+      .page { padding: 24px 16px 60px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <h1>座金の角度指定について</h1>
+
+    <p>階段手すりなど、壁面に対して斜めに取り付ける場合は座金の角度指定が必要です。<br>
+    このページでは、角度の考え方と指定方法をご説明します。</p>
+
+    <h2>基本の考え方</h2>
+
+    <p>角度は<span class="emphasis">壁面を正面から見た状態</span>で、<span class="emphasis">座金のビス穴が真上（12時方向）を向いた状態を 0°</span>とします。<br>
+    そこから<span class="emphasis">時計回り</span>に回転した角度を指定してください。</p>
+
+    <div class="diagram-box">
+      <svg viewBox="0 0 300 300" width="280" xmlns="http://www.w3.org/2000/svg">
+        <!-- Background circle (base plate) -->
+        <circle cx="150" cy="150" r="90" fill="none" stroke="#555" stroke-width="1.5"/>
+        <!-- Center mark -->
+        <circle cx="150" cy="150" r="3" fill="#888"/>
+        <!-- Screw holes at 0° position (top-center pattern) -->
+        <circle cx="150" cy="85" r="6" fill="#333" stroke="#888" stroke-width="1"/>
+        <circle cx="125" cy="110" r="6" fill="#333" stroke="#888" stroke-width="1"/>
+        <circle cx="175" cy="110" r="6" fill="#333" stroke="#888" stroke-width="1"/>
+        <!-- 0° direction arrow -->
+        <line x1="150" y1="150" x2="150" y2="30" stroke="#c8a96e" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <polygon points="145,35 150,20 155,35" fill="#c8a96e"/>
+        <!-- 90° mark -->
+        <line x1="150" y1="150" x2="270" y2="150" stroke="#666" stroke-width="0.8" stroke-dasharray="3,3"/>
+        <!-- 180° mark -->
+        <line x1="150" y1="150" x2="150" y2="270" stroke="#666" stroke-width="0.8" stroke-dasharray="3,3"/>
+        <!-- 270° mark -->
+        <line x1="150" y1="150" x2="30" y2="150" stroke="#666" stroke-width="0.8" stroke-dasharray="3,3"/>
+        <!-- Degree labels -->
+        <text x="150" y="14" text-anchor="middle" fill="#c8a96e" font-size="13" font-weight="500">0°</text>
+        <text x="282" y="154" text-anchor="start" fill="#888" font-size="12">90°</text>
+        <text x="150" y="292" text-anchor="middle" fill="#888" font-size="12">180°</text>
+        <text x="18" y="154" text-anchor="end" fill="#888" font-size="12">270°</text>
+        <!-- Clockwise arrow -->
+        <path d="M 185 50 A 75 75 0 0 1 240 110" fill="none" stroke="#c8a96e" stroke-width="1.2"/>
+        <polygon points="242,105 245,116 234,112" fill="#c8a96e"/>
+        <text x="228" y="72" fill="#c8a96e" font-size="10">時計回り</text>
+        <!-- Bracket arm indicator (top) -->
+        <line x1="150" y1="60" x2="150" y2="75" stroke="#888" stroke-width="3" stroke-linecap="round"/>
+        <text x="150" y="78" text-anchor="middle" fill="#666" font-size="8">手すり方向</text>
+      </svg>
+      <p class="diagram-caption">壁面を正面から見た図（座金のビス穴配置）</p>
+    </div>
+
+    <h2>よくある指定例</h2>
+
+    <div class="examples">
+      <div class="example-card">
+        <svg viewBox="0 0 140 100" width="140" xmlns="http://www.w3.org/2000/svg">
+          <!-- Wall -->
+          <rect x="10" y="10" width="120" height="6" fill="none" stroke="#555" stroke-width="1"/>
+          <!-- Handrail (horizontal) -->
+          <line x1="30" y1="50" x2="120" y2="50" stroke="#ccc" stroke-width="3" stroke-linecap="round"/>
+          <!-- Bracket -->
+          <line x1="70" y1="16" x2="70" y2="50" stroke="#888" stroke-width="1.5"/>
+          <circle cx="70" cy="16" r="5" fill="none" stroke="#888" stroke-width="1"/>
+        </svg>
+        <div class="example-angle">0°</div>
+        <div class="example-label">水平な手すり</div>
+        <div class="example-desc">廊下・水平部分に設置する場合。ビス穴が真上を向きます。</div>
+      </div>
+
+      <div class="example-card">
+        <svg viewBox="0 0 140 100" width="140" xmlns="http://www.w3.org/2000/svg">
+          <!-- Wall -->
+          <rect x="10" y="10" width="120" height="6" fill="none" stroke="#555" stroke-width="1"/>
+          <!-- Handrail (angled right-up) -->
+          <line x1="20" y1="80" x2="120" y2="35" stroke="#ccc" stroke-width="3" stroke-linecap="round"/>
+          <!-- Bracket (perpendicular to wall) -->
+          <line x1="70" y1="16" x2="70" y2="57" stroke="#888" stroke-width="1.5"/>
+          <circle cx="70" cy="16" r="5" fill="none" stroke="#888" stroke-width="1"/>
+          <!-- Angle indicator -->
+          <text x="80" y="90" fill="#c8a96e" font-size="10">登り→</text>
+        </svg>
+        <div class="example-angle">右回り 35°前後</div>
+        <div class="example-label">階段（右側・登り方向）</div>
+        <div class="example-desc">階段の右側に取り付ける場合。階段の勾配に合わせた角度を指定。</div>
+      </div>
+
+      <div class="example-card">
+        <svg viewBox="0 0 140 100" width="140" xmlns="http://www.w3.org/2000/svg">
+          <!-- Wall -->
+          <rect x="10" y="10" width="120" height="6" fill="none" stroke="#555" stroke-width="1"/>
+          <!-- Handrail (angled left-up) -->
+          <line x1="20" y1="35" x2="120" y2="80" stroke="#ccc" stroke-width="3" stroke-linecap="round"/>
+          <!-- Bracket -->
+          <line x1="70" y1="16" x2="70" y2="57" stroke="#888" stroke-width="1.5"/>
+          <circle cx="70" cy="16" r="5" fill="none" stroke="#888" stroke-width="1"/>
+          <text x="12" y="90" fill="#c8a96e" font-size="10">←登り</text>
+        </svg>
+        <div class="example-angle">左回り 325°前後</div>
+        <div class="example-label">階段（左側・登り方向）</div>
+        <div class="example-desc">階段の左側に取り付ける場合。反時計回りに相当するため 360° - 勾配角度。</div>
+      </div>
+
+      <div class="example-card">
+        <svg viewBox="0 0 140 100" width="140" xmlns="http://www.w3.org/2000/svg">
+          <!-- Wall -->
+          <rect x="10" y="10" width="120" height="6" fill="none" stroke="#555" stroke-width="1"/>
+          <!-- Handrail (vertical) -->
+          <line x1="70" y1="30" x2="70" y2="95" stroke="#ccc" stroke-width="3" stroke-linecap="round"/>
+          <!-- Bracket -->
+          <line x1="70" y1="16" x2="70" y2="30" stroke="#888" stroke-width="1.5"/>
+          <circle cx="70" cy="16" r="5" fill="none" stroke="#888" stroke-width="1"/>
+        </svg>
+        <div class="example-angle">0°</div>
+        <div class="example-label">縦型手すり</div>
+        <div class="example-desc">縦に取り付ける場合も0°が基本です。</div>
+      </div>
+    </div>
+
+    <h2>角度の計測方法</h2>
+
+    <div class="important-box">
+      <p><span class="emphasis">階段の勾配角度</span>がわかれば、そのまま座金角度として指定できます。</p>
+      <p>一般的な住宅階段の勾配は <span class="emphasis">30°〜 45°</span> 程度です。</p>
+      <p>正確な角度がわからない場合は、おおよその角度でご指定いただければ、当工房で調整のご提案をいたします。</p>
+    </div>
+
+    <table class="summary-table">
+      <thead>
+        <tr><th>設置場所</th><th>登り方向</th><th>角度の目安</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>廊下・水平面</td><td>-</td><td>0°</td></tr>
+        <tr><td>階段（右壁）</td><td>右側を登る</td><td>勾配角度（例: 35°）</td></tr>
+        <tr><td>階段（左壁）</td><td>左側を登る</td><td>360° - 勾配角度（例: 325°）</td></tr>
+        <tr><td>急勾配の階段</td><td>-</td><td>40°〜45° / 315°〜320°</td></tr>
+      </tbody>
+    </table>
+
+    <p class="note">※ 角度がわからない場合は「0°」のままご注文いただき、備考欄に設置場所の状況（階段の登り方向、左右どちらの壁か等）をご記入ください。当工房よりご連絡いたします。</p>
+
+    <a href="javascript:window.close()" class="back-link" onclick="if(!window.close()){history.back()}">閉じる</a>
+  </div>
+</body>
+</html>
