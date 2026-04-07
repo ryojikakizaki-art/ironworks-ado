@@ -284,7 +284,21 @@
     .zakin-row { display: flex; justify-content: space-between; align-items: center; }
     .zakin-label { color: var(--muted); }
     .zakin-value { color: var(--accent); font-weight: 500; }
-    .zakin-diagram { margin-top: 10px; font-size: 10px; color: var(--muted); font-family: monospace; letter-spacing: 0.05em; }
+    .zakin-diagram {
+      margin-top: 12px;
+    }
+    .zakin-diagram svg { width: 100%; height: auto; display: block; }
+    .zakin-diagram text { font-family: var(--font); }
+    .zakin-diagram .dim-line { stroke: var(--muted); stroke-width: 0.5; }
+    .zakin-diagram .dim-text { fill: var(--muted); font-size: 9px; text-anchor: middle; }
+    .zakin-diagram .bar-line { stroke: var(--light); stroke-width: 3; stroke-linecap: round; }
+    .zakin-diagram .bracket-circle { fill: var(--accent); }
+    .zakin-diagram .bracket-label { fill: var(--light); font-size: 8px; text-anchor: middle; }
+    .zakin-diagram .end-label { fill: var(--muted); font-size: 8px; text-anchor: middle; }
+    .zakin-diagram .total-dim { stroke: var(--light); stroke-width: 0.7; }
+    .zakin-diagram .total-text { fill: var(--light); font-size: 10px; text-anchor: middle; font-weight: 500; }
+    .zakin-diagram .side-view { stroke: var(--muted); stroke-width: 0.8; fill: none; }
+    .zakin-diagram .side-dim { fill: var(--muted); font-size: 7px; text-anchor: middle; }
 
     /* 座金位置指定 */
     .zakin-custom-toggle {
@@ -684,7 +698,7 @@
           <span class="zakin-label" id="zakinLabel">推奨座金数（自動計算）</span>
           <span class="zakin-value" id="zakinCount">4 個</span>
         </div>
-        <div class="zakin-diagram" id="zakinDiagram"></div>
+        <div class="zakin-diagram" id="zakinDiagram"><svg id="zakinSvg" viewBox="0 0 400 100"></svg></div>
         <button class="zakin-custom-toggle" id="zakinToggle" onclick="toggleZakinCustom()">
           <span>座金位置を指定する</span>
           <span class="toggle-icon">&#9660;</span>
@@ -900,26 +914,246 @@
     return { addon, surcharge, addZakin, zakin, total };
   }
 
-  function buildDiagram(L_mm, zakinCount) {
-    const positions = [100];
+  // 座金配置図（SVG技術図面）
+  function getZakinPositions(L_mm, zakinCount) {
+    var positions = [END_DIST_MM];
     if (zakinCount > 2) {
-      const inner = L_mm - 200;
-      const gaps = zakinCount - 1;
-      for (let i = 1; i < zakinCount - 1; i++) {
-        positions.push(Math.round(100 + inner * i / gaps));
+      var inner = L_mm - 2 * END_DIST_MM;
+      var gaps = zakinCount - 1;
+      for (var i = 1; i < zakinCount - 1; i++) {
+        positions.push(Math.round(END_DIST_MM + inner * i / gaps));
       }
     }
-    positions.push(L_mm - 100);
-    const barLen = 30;
-    var bar = '|';
-    var last = 0;
-    positions.forEach(function(p) {
-      var seg = Math.max(1, Math.round((p - last) / L_mm * barLen));
-      bar += '\u2500'.repeat(seg) + '\u25CF';
-      last = p;
+    positions.push(L_mm - END_DIST_MM);
+    return positions;
+  }
+
+  function buildDiagramSVG(L_mm, positions) {
+    var svgNS = 'http://www.w3.org/2000/svg';
+    var svg = document.getElementById('zakinSvg');
+    svg.innerHTML = '';
+
+    // Layout constants
+    var pad = 30;       // left/right padding
+    var sideW = 55;     // side view width
+    var barY = 50;      // Y of main bar
+    var W = 400;        // viewBox width
+    var barLeft = pad;
+    var barRight = W - pad - sideW;
+    var barLen = barRight - barLeft;
+
+    // Total dimension line (W) above the bar
+    var dimY = 18;
+    // W label
+    var wText = document.createElementNS(svgNS, 'text');
+    wText.setAttribute('x', (barLeft + barRight) / 2);
+    wText.setAttribute('y', dimY - 6);
+    wText.setAttribute('class', 'total-text');
+    wText.textContent = 'W = ' + L_mm + 'mm';
+    svg.appendChild(wText);
+
+    // total dim line
+    var addDimLine = function(x1, x2, y) {
+      var line = document.createElementNS(svgNS, 'line');
+      line.setAttribute('x1', x1); line.setAttribute('y1', y);
+      line.setAttribute('x2', x2); line.setAttribute('y2', y);
+      line.setAttribute('class', 'total-dim');
+      svg.appendChild(line);
+      // end ticks
+      [x1, x2].forEach(function(x) {
+        var tick = document.createElementNS(svgNS, 'line');
+        tick.setAttribute('x1', x); tick.setAttribute('y1', y - 3);
+        tick.setAttribute('x2', x); tick.setAttribute('y2', y + 3);
+        tick.setAttribute('class', 'total-dim');
+        svg.appendChild(tick);
+      });
+    };
+    addDimLine(barLeft, barRight, dimY);
+
+    // Main horizontal bar
+    var barLine = document.createElementNS(svgNS, 'line');
+    barLine.setAttribute('x1', barLeft); barLine.setAttribute('y1', barY);
+    barLine.setAttribute('x2', barRight); barLine.setAttribute('y2', barY);
+    barLine.setAttribute('class', 'bar-line');
+    svg.appendChild(barLine);
+
+    // Bar end caps (small vertical lines)
+    [barLeft, barRight].forEach(function(x) {
+      var cap = document.createElementNS(svgNS, 'line');
+      cap.setAttribute('x1', x); cap.setAttribute('y1', barY - 5);
+      cap.setAttribute('x2', x); cap.setAttribute('y2', barY + 5);
+      cap.setAttribute('stroke', 'var(--light)');
+      cap.setAttribute('stroke-width', '1.5');
+      svg.appendChild(cap);
     });
-    bar += '\u2500'.repeat(Math.max(1, barLen - Math.round(last / L_mm * barLen))) + '|';
-    return '\u914D\u7F6E\u56F3: ' + bar + '  \uFF08\u8A08 ' + zakinCount + '\u70B9\uFF09';
+
+    // Bracket markers and dimension annotations
+    var bracketR = 4;
+    var dimBelowY = barY + 22;
+    var dimAboveY = barY - 16;
+
+    positions.forEach(function(pos, idx) {
+      var x = barLeft + (pos / L_mm) * barLen;
+
+      // Bracket circle
+      var circle = document.createElementNS(svgNS, 'circle');
+      circle.setAttribute('cx', x); circle.setAttribute('cy', barY);
+      circle.setAttribute('r', bracketR);
+      circle.setAttribute('class', 'bracket-circle');
+      svg.appendChild(circle);
+
+      // Vertical drop line from bracket
+      var drop = document.createElementNS(svgNS, 'line');
+      drop.setAttribute('x1', x); drop.setAttribute('y1', barY + bracketR);
+      drop.setAttribute('x2', x); drop.setAttribute('y2', barY + 14);
+      drop.setAttribute('class', 'dim-line');
+      svg.appendChild(drop);
+
+      // Bracket icon (small T shape below)
+      var iconTop = document.createElementNS(svgNS, 'line');
+      iconTop.setAttribute('x1', x - 4); iconTop.setAttribute('y1', barY + 14);
+      iconTop.setAttribute('x2', x + 4); iconTop.setAttribute('y2', barY + 14);
+      iconTop.setAttribute('stroke', 'var(--accent)');
+      iconTop.setAttribute('stroke-width', '1');
+      svg.appendChild(iconTop);
+    });
+
+    // Dimension annotations between brackets (below)
+    for (var i = 0; i < positions.length; i++) {
+      var x1, x2, label;
+
+      if (i === 0) {
+        // First segment: 0 to first bracket
+        x1 = barLeft;
+        x2 = barLeft + (positions[0] / L_mm) * barLen;
+        label = positions[0];
+      } else {
+        // Between brackets
+        x1 = barLeft + (positions[i - 1] / L_mm) * barLen;
+        x2 = barLeft + (positions[i] / L_mm) * barLen;
+        label = positions[i] - positions[i - 1];
+      }
+
+      var midX = (x1 + x2) / 2;
+
+      // Dimension line
+      var dLine = document.createElementNS(svgNS, 'line');
+      dLine.setAttribute('x1', x1); dLine.setAttribute('y1', dimBelowY);
+      dLine.setAttribute('x2', x2); dLine.setAttribute('y2', dimBelowY);
+      dLine.setAttribute('class', 'dim-line');
+      svg.appendChild(dLine);
+
+      // Ticks
+      [x1, x2].forEach(function(tx) {
+        var t = document.createElementNS(svgNS, 'line');
+        t.setAttribute('x1', tx); t.setAttribute('y1', dimBelowY - 2);
+        t.setAttribute('x2', tx); t.setAttribute('y2', dimBelowY + 2);
+        t.setAttribute('class', 'dim-line');
+        svg.appendChild(t);
+      });
+
+      // Label
+      var dText = document.createElementNS(svgNS, 'text');
+      dText.setAttribute('x', midX);
+      dText.setAttribute('y', dimBelowY + 11);
+      dText.setAttribute('class', 'dim-text');
+      dText.textContent = label;
+      svg.appendChild(dText);
+    }
+
+    // Last segment: last bracket to end
+    var lastBracketX = barLeft + (positions[positions.length - 1] / L_mm) * barLen;
+    var lastLabel = L_mm - positions[positions.length - 1];
+    var dLine2 = document.createElementNS(svgNS, 'line');
+    dLine2.setAttribute('x1', lastBracketX); dLine2.setAttribute('y1', dimBelowY);
+    dLine2.setAttribute('x2', barRight); dLine2.setAttribute('y2', dimBelowY);
+    dLine2.setAttribute('class', 'dim-line');
+    svg.appendChild(dLine2);
+    [lastBracketX, barRight].forEach(function(tx) {
+      var t = document.createElementNS(svgNS, 'line');
+      t.setAttribute('x1', tx); t.setAttribute('y1', dimBelowY - 2);
+      t.setAttribute('x2', tx); t.setAttribute('y2', dimBelowY + 2);
+      t.setAttribute('class', 'dim-line');
+      svg.appendChild(t);
+    });
+    var dText2 = document.createElementNS(svgNS, 'text');
+    dText2.setAttribute('x', (lastBracketX + barRight) / 2);
+    dText2.setAttribute('y', dimBelowY + 11);
+    dText2.setAttribute('class', 'dim-text');
+    dText2.textContent = lastLabel;
+    svg.appendChild(dText2);
+
+    // Side view (bracket profile) - right side
+    var sideX = barRight + 18;
+    var sideTopY = barY - 8;
+    var sideH = 28;
+    var sideBarW = 18;
+
+    // Wall (hatched area)
+    var wallX = sideX + sideBarW + 8;
+    var wallRect = document.createElementNS(svgNS, 'rect');
+    wallRect.setAttribute('x', wallX); wallRect.setAttribute('y', sideTopY - 4);
+    wallRect.setAttribute('width', 8); wallRect.setAttribute('height', sideH + 12);
+    wallRect.setAttribute('fill', 'none');
+    wallRect.setAttribute('stroke', 'var(--muted)');
+    wallRect.setAttribute('stroke-width', '0.5');
+    svg.appendChild(wallRect);
+
+    // Hatch lines
+    for (var h = 0; h < 5; h++) {
+      var hLine = document.createElementNS(svgNS, 'line');
+      hLine.setAttribute('x1', wallX); hLine.setAttribute('y1', sideTopY - 4 + h * 8);
+      hLine.setAttribute('x2', wallX + 8); hLine.setAttribute('y2', sideTopY + 4 + h * 8);
+      hLine.setAttribute('stroke', 'var(--muted)');
+      hLine.setAttribute('stroke-width', '0.3');
+      svg.appendChild(hLine);
+    }
+
+    // Bracket arm (horizontal)
+    var armY = sideTopY + 2;
+    var armLine = document.createElementNS(svgNS, 'line');
+    armLine.setAttribute('x1', sideX - 2); armLine.setAttribute('y1', armY);
+    armLine.setAttribute('x2', wallX); armLine.setAttribute('y2', armY);
+    armLine.setAttribute('class', 'side-view');
+    svg.appendChild(armLine);
+
+    // Bracket curve (down)
+    var curvePath = document.createElementNS(svgNS, 'path');
+    var curveEndY = armY + sideH;
+    curvePath.setAttribute('d', 'M ' + sideX + ' ' + armY + ' Q ' + (sideX - 2) + ' ' + (armY + 10) + ' ' + (sideX + 2) + ' ' + curveEndY);
+    curvePath.setAttribute('class', 'side-view');
+    svg.appendChild(curvePath);
+
+    // Handrail circle (top)
+    var railCircle = document.createElementNS(svgNS, 'circle');
+    railCircle.setAttribute('cx', sideX - 2); railCircle.setAttribute('cy', armY - 5);
+    railCircle.setAttribute('r', 5);
+    railCircle.setAttribute('class', 'side-view');
+    svg.appendChild(railCircle);
+
+    // Side view dimension (40)
+    var sdText1 = document.createElementNS(svgNS, 'text');
+    sdText1.setAttribute('x', sideX + sideBarW / 2 + 4);
+    sdText1.setAttribute('y', armY - 10);
+    sdText1.setAttribute('class', 'side-dim');
+    sdText1.textContent = '40';
+    svg.appendChild(sdText1);
+
+    // Side view dimension (60)
+    var sdText2 = document.createElementNS(svgNS, 'text');
+    sdText2.setAttribute('x', wallX + 16);
+    sdText2.setAttribute('y', armY + sideH / 2 + 2);
+    sdText2.setAttribute('class', 'side-dim');
+    sdText2.textContent = '60';
+    svg.appendChild(sdText2);
+
+    // Count label
+    var countText = document.createElementNS(svgNS, 'text');
+    countText.setAttribute('x', (barLeft + barRight) / 2);
+    countText.setAttribute('y', 95);
+    countText.setAttribute('class', 'dim-text');
+    countText.textContent = '\u300A \u5EA7\u91D1 ' + positions.length + '\u70B9 \u300B';
+    svg.appendChild(countText);
   }
 
   // ── 座金カスタム指定 ──────────────────────────────
@@ -1101,19 +1335,11 @@
     document.getElementById('zakinLabel').textContent = '座金数（カスタム指定）';
     document.getElementById('zakinCount').textContent = count + ' 個';
 
-    // Update custom diagram
+    // Update custom diagram (SVG)
     var L = Number(document.getElementById('lengthInput').value) || 1500;
     var sorted = zakinCustomList.slice().sort(function(a, b) { return a.pos - b.pos; });
-    var barLen = 30;
-    var bar = '|';
-    var last = 0;
-    sorted.forEach(function(item) {
-      var seg = Math.max(1, Math.round((item.pos - last) / L * barLen));
-      bar += '\u2500'.repeat(seg) + '\u25CF';
-      last = item.pos;
-    });
-    bar += '\u2500'.repeat(Math.max(1, barLen - Math.round(last / L * barLen))) + '|';
-    document.getElementById('zakinDiagram').textContent = '\u914D\u7F6E\u56F3: ' + bar + '  \uFF08\u8A08 ' + count + '\u70B9\uFF09';
+    var posArray = sorted.map(function(item) { return item.pos; });
+    buildDiagramSVG(L, posArray);
 
     // Recalculate price
     var p = calcPrice(L);
@@ -1164,7 +1390,7 @@
 
     document.getElementById('zakinLabel').textContent = '推奨座金数（自動計算）';
     document.getElementById('zakinCount').textContent = p.zakin + ' \u500B';
-    document.getElementById('zakinDiagram').textContent = buildDiagram(L, p.zakin);
+    buildDiagramSVG(L, getZakinPositions(L, p.zakin));
     const rowAddon = document.getElementById('rowAddon');
     if (p.addon > 0) { rowAddon.style.display = 'flex'; document.getElementById('addonVal').textContent = fmt(p.addon); } else { rowAddon.style.display = 'none'; }
     const rowZakin = document.getElementById('rowZakin');

@@ -23,7 +23,7 @@
 
     header .logo { font-size: 14px; font-weight: bold; letter-spacing: 0.15em; text-decoration: none; color: var(--white); text-transform: uppercase; }
     header .logo span { color: var(--accent); }
-    header nav { display: flex; gap: 40px; align-items: center; }
+    header nav { display: flex; gap: 40px; }
     header nav a { font-size: 12px; letter-spacing: 0.1em; text-decoration: none; color: var(--light); text-transform: uppercase; transition: color 0.3s ease; }
     header nav a:hover { color: var(--accent); }
 
@@ -87,131 +87,19 @@
     .zakin-row { display: flex; justify-content: space-between; align-items: center; }
     .zakin-label { color: var(--muted); }
     .zakin-value { color: var(--accent); font-weight: 500; }
-    .zakin-diagram { margin-top: 10px; font-size: 10px; color: var(--muted); font-family: monospace; letter-spacing: 0.05em; }
-    /* 座金位置指定 */
-    .zakin-custom-toggle {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      margin-top: 10px; padding: 8px 0;
-      background: none; border: 1px solid var(--line); color: var(--muted);
-      font-size: 11px; letter-spacing: 0.1em; cursor: pointer;
-      font-family: var(--font); width: 100%; transition: all .2s;
-    }
-    .zakin-custom-toggle:hover { border-color: var(--accent); color: var(--accent); }
-    .zakin-custom-toggle.active { border-color: var(--accent); color: var(--accent); background: rgba(200,169,110,0.06); }
-    .zakin-custom-toggle .toggle-icon { transition: transform .2s; font-size: 8px; }
-    .zakin-custom-toggle.active .toggle-icon { transform: rotate(180deg); }
-
-    .zakin-custom-panel {
-      display: none; margin-top: 12px;
-      border: 1px solid var(--line); padding: 16px;
-      background: rgba(0,0,0,0.2);
-    }
-    .zakin-custom-panel.open { display: block; }
-    .zakin-custom-panel-title {
-      font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
-      color: var(--accent); margin-bottom: 12px;
-    }
-
-    .zakin-visual {
-      position: relative; height: 48px; margin-bottom: 16px;
-      background: var(--dark); border: 1px solid var(--line); overflow: visible;
-    }
-    .zakin-visual-bar {
-      position: absolute; top: 50%; left: 16px; right: 16px;
-      height: 4px; background: var(--muted); transform: translateY(-50%);
-      border-radius: 2px;
-    }
-    .zakin-visual-marker {
-      position: absolute; top: 50%; width: 14px; height: 14px;
-      background: var(--accent); border-radius: 50%;
-      transform: translate(-50%, -50%); cursor: default;
-      font-size: 0; z-index: 1;
-    }
-    .zakin-visual-label {
-      position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
-      font-size: 8px; color: var(--muted); white-space: nowrap; margin-top: 2px;
-    }
-    .zakin-visual-end {
-      position: absolute; top: 50%; transform: translateY(-50%);
-      font-size: 9px; color: var(--muted);
-    }
-    .zakin-visual-end.left { left: 2px; }
-    .zakin-visual-end.right { right: 2px; }
-
-    /* 数量セレクター */
-    .zakin-qty-row {
-      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
-      padding-bottom: 12px; border-bottom: 1px solid var(--line);
-    }
-    .zakin-qty-label { font-size: 12px; color: var(--light); letter-spacing: 0.05em; white-space: nowrap; }
-    .zakin-qty-controls { display: flex; align-items: center; gap: 0; }
-    .zakin-qty-btn {
-      width: 32px; height: 32px; background: none; border: 1px solid var(--line);
-      color: var(--accent); font-size: 16px; cursor: pointer; font-family: var(--font);
-      display: flex; align-items: center; justify-content: center; transition: all .2s;
-    }
-    .zakin-qty-btn:hover { border-color: var(--accent); background: rgba(200,169,110,0.1); }
-    .zakin-qty-btn:first-child { border-radius: 4px 0 0 4px; }
-    .zakin-qty-btn:last-child { border-radius: 0 4px 4px 0; }
-    .zakin-qty-val {
-      width: 40px; height: 32px; background: var(--dark); border: 1px solid var(--line);
-      border-left: none; border-right: none; color: var(--white);
-      font-size: 14px; font-family: var(--font); text-align: center; font-weight: 500;
-    }
-    .zakin-qty-val:focus { outline: none; }
-
-    /* 角度一括指定 */
-    .zakin-angle-row {
-      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
-      padding-bottom: 12px; border-bottom: 1px solid var(--line);
-    }
-    .zakin-angle-label { font-size: 12px; color: var(--light); letter-spacing: 0.05em; white-space: nowrap; }
-    .zakin-angle-input {
-      width: 72px; padding: 6px 8px; background: var(--dark);
-      border: 1px solid var(--line); color: var(--white);
-      font-size: 13px; font-family: var(--font); text-align: center;
-    }
-    .zakin-angle-input:focus { outline: none; border-color: var(--accent); }
-    .zakin-angle-unit { font-size: 11px; color: var(--muted); }
-    .zakin-angle-hint { font-size: 10px; color: var(--muted); margin-left: auto; }
-
-    /* 位置リスト（角度列なし） */
-    .zakin-pos-heading {
-      font-size: 10px; letter-spacing: 0.1em; color: var(--muted);
-      margin-bottom: 8px; text-transform: uppercase;
-    }
-    .zakin-list { display: flex; flex-direction: column; gap: 8px; }
-    .zakin-item {
-      display: grid; grid-template-columns: 28px 1fr 28px; gap: 8px; align-items: center;
-    }
-    .zakin-item-num {
-      font-size: 11px; color: var(--accent); text-align: center; font-weight: 500;
-    }
-    .zakin-item label { font-size: 10px; color: var(--muted); display: block; margin-bottom: 2px; }
-    .zakin-item input {
-      width: 100%; padding: 6px 8px; background: var(--dark);
-      border: 1px solid var(--line); color: var(--white);
-      font-size: 12px; font-family: var(--font);
-    }
-    .zakin-item input:focus { outline: none; border-color: var(--accent); }
-    .zakin-item-remove {
-      background: none; border: none; color: var(--muted); cursor: pointer;
-      font-size: 16px; padding: 0; line-height: 1; transition: color .2s;
-    }
-    .zakin-item-remove:hover { color: #e06060; }
-
-    .zakin-add-row {
-      display: flex; gap: 8px; margin-top: 10px;
-    }
-    .zakin-reset-btn {
-      flex: 1; padding: 8px; font-size: 11px; font-family: var(--font);
-      cursor: pointer; letter-spacing: 0.05em; transition: all .2s;
-      background: none; border: 1px solid var(--line); color: var(--muted);
-    }
-    .zakin-reset-btn:hover { border-color: var(--muted); color: var(--light); }
-    .zakin-custom-note {
-      font-size: 10px; color: var(--muted); margin-top: 10px; line-height: 1.6;
-    }
+    .zakin-diagram { margin-top: 12px; }
+    .zakin-diagram svg { width: 100%; height: auto; display: block; }
+    .zakin-diagram text { font-family: var(--font); }
+    .zakin-diagram .dim-line { stroke: var(--muted); stroke-width: 0.5; }
+    .zakin-diagram .dim-text { fill: var(--muted); font-size: 9px; text-anchor: middle; }
+    .zakin-diagram .bar-line { stroke: var(--light); stroke-width: 3; stroke-linecap: round; }
+    .zakin-diagram .bracket-circle { fill: var(--accent); }
+    .zakin-diagram .bracket-label { fill: var(--light); font-size: 8px; text-anchor: middle; }
+    .zakin-diagram .end-label { fill: var(--muted); font-size: 8px; text-anchor: middle; }
+    .zakin-diagram .total-dim { stroke: var(--light); stroke-width: 0.7; }
+    .zakin-diagram .total-text { fill: var(--light); font-size: 10px; text-anchor: middle; font-weight: 500; }
+    .zakin-diagram .side-view { stroke: var(--muted); stroke-width: 0.8; fill: none; }
+    .zakin-diagram .side-dim { fill: var(--muted); font-size: 7px; text-anchor: middle; }
     .price-breakdown { margin-top: 20px; }
     .breakdown-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
     .breakdown-row:last-child { border-bottom: none; }
@@ -223,9 +111,7 @@
     .total-label { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--accent); }
     .total-amount { font-size: 32px; font-weight: 300; letter-spacing: 0.03em; color: var(--white); }
     .total-tax { font-size: 11px; color: var(--muted); margin-left: 8px; }
-    .surcharge-notice {
-      font-size: 11px; color: var(--muted); line-height: 1.6;
-    }
+    .surcharge-notice { display: none; margin-top: 12px; padding: 10px 14px; background: rgba(200,80,80,0.1); border: 1px solid rgba(200,80,80,0.3); font-size: 11px; color: #e0a0a0; }
     .cta-wrap { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
     .btn-primary { display: block; width: 100%; padding: 18px; background: var(--accent); border: none; cursor: pointer; color: var(--black); font-size: 12px; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; font-family: var(--font); transition: background .2s, transform .1s, opacity .2s; }
     .btn-primary:hover:not(:disabled) { background: #d4b87a; }
@@ -247,7 +133,7 @@
     .main-image:hover .gallery-nav button { opacity: 1; }
     .gallery-nav button:hover { background: rgba(0,0,0,0.7); }
     .gallery-counter { position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.5); color: #f5f5f5; font-size: 11px; padding: 4px 10px; letter-spacing: 0.1em; }
-    .thumbs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; max-height: none; scrollbar-width: thin; }
+    .thumbs { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; max-height: 124px; overflow-y: auto; scrollbar-width: thin; }
     .thumb { width: 56px; height: 56px; flex-shrink: 0; background: var(--dark); border: 2px solid transparent; cursor: pointer; overflow: hidden; transition: border-color .2s; }
     .thumb.active { border-color: var(--accent); }
     .thumb img { width: 100%; height: 100%; object-fit: cover; }
@@ -256,7 +142,7 @@
       header { padding: 0 20px; } header nav { gap: 20px; } .product-hero { grid-template-columns: 1fr; gap: 30px; padding: 30px 20px; } .product-details h1 { font-size: 24px; } .spec-item { grid-template-columns: 1fr; gap: 8px; } .description-section { padding: 30px 20px; margin: 40px auto; } .breadcrumb { padding: 15px 20px; } footer { flex-direction: column; gap: 20px; text-align: center; }
     }
   /* CATEGORY DROPDOWN */
-.nav-dropdown { position: relative; display: inline-flex; align-items: center; }
+.nav-dropdown { position: relative; }
 .nav-dropdown > a {
   color: var(--light); text-decoration: none; font-size: 12px;
   letter-spacing: 0.1em; text-transform: uppercase;
@@ -289,27 +175,13 @@
 .nav-dropdown-menu .dd-divider {
   height: 1px; background: var(--line); margin: 8px 24px;
 }
-  
-    /* Lightbox */
-    .shipping-inquiry { background: rgba(200,169,110,0.12); border: 1px solid var(--accent); padding: 16px; margin-top: 12px; font-size: 13px; color: var(--accent); line-height: 1.6; display: none; }
-    .shipping-inquiry a { color: var(--accent); text-decoration: underline; }
-    .shipping-note { font-size: 11px; color: var(--muted); margin-top: 6px; }
-    .main-image img { cursor: zoom-in; }
-  
-    .qty-pref-group { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 16px; }
-    .qty-pref-group label { font-size: 12px; color: var(--muted); letter-spacing: 0.08em; display: block; margin-bottom: 6px; }
-    .qty-pref-group input, .qty-pref-group select { width: 100%; padding: 10px 12px; background: var(--dark); border: 1px solid var(--line); color: var(--white); font-size: 14px; font-family: var(--font); border-radius: 0; appearance: none; -webkit-appearance: none; }
-    .qty-pref-group select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
-    .qty-pref-group input:focus, .qty-pref-group select:focus { outline: none; border-color: var(--accent); }
-    .breakdown-row.shipping-row { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; }
   </style>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/js/glightbox.min.js"></script>
 </head>
 <body>
   <header>
     <a href="/" class="logo">IRONWORKS <span>ADO</span></a>
     <nav>
+      <a href="/item/">ITEM</a>
       <div class="nav-dropdown">
       <a href="/#yokogata">CATEGORY</a>
       <div class="nav-dropdown-menu">
@@ -345,7 +217,7 @@
     <div class="product-hero">
       <div class="gallery">
         <div class="main-image">
-          <img id="mainImg" src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/8775cfcb40298257834a.jpg/fit=cover,w=1200,h=1200" alt="Catherine カトリーヌ">
+          <img id="mainImg" src="https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/8775cfcb40298257834a.jpg/public" alt="Catherine カトリーヌ">
           <div class="gallery-nav">
             <button onclick="galleryPrev()">&#8249;</button>
             <button onclick="galleryNext()">&#8250;</button>
@@ -403,101 +275,17 @@
             <div class="slider-labels">
               <span>500</span><span>1000（標準）</span><span>2000（長尺）</span><span>3000mm</span>
             </div>
-
-      <div class="qty-pref-group">
-        <div>
-          <label for="qtyInput">数量</label>
-          <input type="number" id="qtyInput" value="1" min="1" max="99" oninput="onQtyChange()">
-        </div>
-        <div>
-          <label for="prefSelect">配送先（都道府県）</label>
-          <select id="prefSelect" onchange="onPrefChange()">
-            <option value="">選択してください</option>
-            <option>北海道</option>
-            <optgroup label="東北">
-              <option>青森県</option><option>岩手県</option><option>秋田県</option>
-              <option>宮城県</option><option>山形県</option><option>福島県</option>
-            </optgroup>
-            <optgroup label="関東">
-              <option>茨城県</option><option>栃木県</option><option>群馬県</option><option>埼玉県</option>
-              <option>千葉県</option><option>東京都</option><option>神奈川県</option><option>山梨県</option>
-            </optgroup>
-            <optgroup label="信越・北陸">
-              <option>新潟県</option><option>長野県</option>
-              <option>富山県</option><option>石川県</option><option>福井県</option>
-            </optgroup>
-            <optgroup label="東海">
-              <option>岐阜県</option><option>静岡県</option><option>愛知県</option><option>三重県</option>
-            </optgroup>
-            <optgroup label="関西">
-              <option>滋賀県</option><option>京都府</option><option>大阪府</option>
-              <option>兵庫県</option><option>奈良県</option><option>和歌山県</option>
-            </optgroup>
-            <optgroup label="中国">
-              <option>鳥取県</option><option>島根県</option><option>岡山県</option>
-              <option>広島県</option><option>山口県</option>
-            </optgroup>
-            <optgroup label="四国">
-              <option>徳島県</option><option>香川県</option><option>愛媛県</option><option>高知県</option>
-            </optgroup>
-            <optgroup label="九州">
-              <option>福岡県</option><option>佐賀県</option><option>長崎県</option><option>熊本県</option>
-              <option>大分県</option><option>宮崎県</option><option>鹿児島県</option>
-            </optgroup>
-            <option>沖縄県</option>
-          </select>
-        </div>
-      </div>
-      </div>
-
-      <div class="zakin-info">
-        <div class="zakin-row">
-          <span class="zakin-label" id="zakinLabel">推奨座金数（自動計算）</span>
-          <span class="zakin-value" id="zakinCount">4 個</span>
-        </div>
-        <div class="zakin-diagram" id="zakinDiagram"></div>
-        <button class="zakin-custom-toggle" id="zakinToggle" onclick="toggleZakinCustom()">
-          <span>座金位置を指定する</span>
-          <span class="toggle-icon">&#9660;</span>
-        </button>
-        <div class="zakin-custom-panel" id="zakinPanel">
-          <div class="zakin-custom-panel-title">座金 位置・角度 指定</div>
-
-          <!-- STEP1: 数量 -->
-          <div class="zakin-qty-row">
-            <span class="zakin-qty-label">① 数量</span>
-            <div class="zakin-qty-controls">
-              <button class="zakin-qty-btn" onclick="changeZakinQty(-1)">−</button>
-              <input class="zakin-qty-val" id="zakinQtyInput" type="number" min="2" max="20" value="3" onchange="onZakinQtyInput(this)">
-              <button class="zakin-qty-btn" onclick="changeZakinQty(1)">＋</button>
+          </div>
+          <div class="zakin-info">
+            <div class="zakin-row">
+              <span class="zakin-label">推奨座金数（自動計算）</span>
+              <span class="zakin-value" id="zakinCount">4 個</span>
             </div>
+            <div class="zakin-diagram" id="zakinDiagram"><svg id="zakinSvg" viewBox="0 0 400 100"></svg></div>
           </div>
-
-          <!-- STEP2: 角度（一括） -->
-          <div class="zakin-angle-row">
-            <span class="zakin-angle-label">② 取付角度（全座金共通）</span>
-            <input class="zakin-angle-input" id="zakinAngleInput" type="number" min="0" max="360" step="15" value="0" oninput="onZakinGlobalAngle(this)">
-            <span class="zakin-angle-unit">°</span>
-            <span class="zakin-angle-hint">0°＝真上 / 90°＝横</span>
+          <div class="surcharge-notice" id="surchargeNotice">
+            ⚠ 2000mmを超えると長尺割増が加算されます。取り回しや施工の難易度が上がるため、事前に設置場所のご確認をお勧めします。
           </div>
-
-          <!-- STEP3: 位置 -->
-          <div class="zakin-pos-heading">③ 各座金の位置</div>
-          <div class="zakin-visual" id="zakinVisual">
-            <div class="zakin-visual-bar"></div>
-            <span class="zakin-visual-end left">0</span>
-            <span class="zakin-visual-end right" id="zakinVisualEnd">1500</span>
-          </div>
-          <div class="zakin-list" id="zakinList"></div>
-          <div class="zakin-add-row">
-            <button class="zakin-reset-btn" onclick="resetZakinCustom()">自動配置に戻す</button>
-          </div>
-          <div class="zakin-custom-note">
-            ※ 両端から100mm以上の位置に配置してください。座金間の推奨最大間隔は850mmです。<br>
-            ※ 数量を変更すると位置は自動で均等配置されます。位置は個別に調整できます。
-          </div>
-        </div>
-      </div>
           <div class="price-breakdown">
             <div class="breakdown-row">
               <span class="breakdown-label">基本料金（〜1000mm）</span>
@@ -516,12 +304,7 @@
               <span class="breakdown-value" id="surchargeVal">—</span>
             </div>
           </div>
-          <div class="breakdown-row shipping-row" id="rowShipping" style="display:none">
-          <span class="breakdown-label">送料</span>
-          <span class="breakdown-value" id="shippingVal">—</span>
-        </div>
-        <div class="shipping-note" id="shippingNote" style="display:none"></div>
-        <div class="total-price">
+          <div class="total-price">
             <span class="total-label">合計（税込）</span>
             <div>
               <span class="total-amount" id="totalVal">¥34,500</span>
@@ -532,7 +315,6 @@
             <button class="btn-primary" id="btnCheckout" onclick="addToCart()">カートに追加 — 購入手続きへ</button>
             <a class="btn-secondary" href="mailto:info@tantetuzest.com">お問い合わせ・カスタム相談</a>
           </div>
-          <div class="shipping-inquiry" id="shippingInquiry"></div>
           <div class="checkout-error" id="checkoutError">⚠ エラーが発生しました。しばらく後にもう一度お試しください。</div>
           <ul class="notes">
             <li>受注生産のため、お届けまで約3〜4週間かかります</li>
@@ -540,30 +322,67 @@
             <li>サイズは指定寸法±5mm以内の精度でお届けします</li>
             <li>クレジットカード決済（Stripe）対応</li>
           </ul>
-      <div class="surcharge-notice" id="surchargeNotice">
-        ※ 2,000mmを超える長さには長尺割増が加算されます。取り回しや施工の難易度が上がるため、事前に設置場所のご確認をお勧めします。
-      </div>
         </div>
       </div>
     </div>
 
     <div class="description-section">
       <h2>Catherine について</h2>
-      <p>セミマットホワイトで仕上げた（黒も可能です）明るく柔らかな印象の壁付け手すり。デザイナー住宅のようなコンクリート住宅から和風建築にもよく合います。</p>
-      <p>仕上がりの美しさ、使いやすさにこだわり、目立たない細かな部分も手をぬかず長く愛用していただけるように丁寧に制作しております。<br>IRONWORKS adoは、傷や錆が鉄の味わいと謳った不誠実なものづくりはいたしません。</p>
-      <p>手すりは毎日手に触れ、安全のために付けるもの。握りやすく安心して掴める強度を考え、25φ（単2電池より少し細いくらい）のしっかりした太さで作っています（16φや19φでは、手すりとしては不安を感じる細さです。一般的な大人の人差し指16φ、親指19φを握ってみてください）。</p>
-      <p>2色展開：セミマットホワイト・マットブラック</p>
-      <p>住まいづくりの中で、手すりはこだわる優先度が低いものかもしれませんが『丁寧に作られた』アイアン手すりのある空間は全体を引き締め毎日を上質で豊かにしてくれます。</p>
-      <p>角やひっかかる危ない箇所がないよう丁寧に仕上げておりますので小さなお子様がいるご家庭でも安心してお使いできます。</p>
-      <p>これから毎日お使いいただく方の心豊かな暮らしを思い制作しております。</p>
-      <p>※写真の手すりは長さ60cmのものとなります</p>
+      <p>Catherine カトリーヌは、上品で落ち着いたマットホワイトの縦型手すりです。光を柔らかく反射する色合いが、モダンな空間に優雅さをもたらします。</p>
+      <p>Claude と同じ径で、洗練されたマットホワイト仕上げが特徴です。玄関ポーチ、廊下、階段など、様々なシーンにマッチします。100cmまでのセミオーダーで、お客様のニーズに合わせて製作いたします。</p>
+      <p>白を基調とした空間やナチュラルなインテリアにぴったりな、上質な手すりです。毎日のご使用を快適にサポートします。</p>
     </div>
-    </main>
+  </main>
 
   <footer>
     <p class="logo-f">IRONWORKS <span>ADO</span></p>
     <p class="copy">&copy; 2025 IRONWORKS ado</p>
   </footer>
+<script>
+  var GALLERY_BASE = 'https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/';
+  var GALLERY_IDS = [
+    '8775cfcb40298257834a.jpg','5e4377eb8cce3ba15572.jpg','8e9f10b474c179961a81.jpg',
+    'f4a030f56d5784dc460c.jpg','dfc095e36e07842b1e1a.jpg','be8ace3369f4527a90ce.jpg',
+    '340d022f48e0aee6e96b.jpg','0867afe603e501db8ede.jpg','8f88e87c208e9273ed2a.jpg',
+    '99fc87f58c4321ab6a5f.jpg','dd16c6f3769ef886a8eb.jpg','82e1cc3d3168d6f46cd8.jpg',
+    '156414dbec3475dec9ae.jpg','b086a4aa3dae8339d586.jpg','c176c6746b8db4bf6b8f.jpg',
+    'd706b98edf0298cb0fde.jpg','e52b2cf97144be5b3ad9.jpg','bdac7a64dc3c49e65541.jpg',
+    '4d8beb3b89354bf181bf.jpg','b8fd8dbbe2b28beff3f1.jpg','33d99fc7e30df4dc8983.jpg',
+    '0c87b33aaf166d4e805e.jpg'
+  ];
+  var galleryIdx = 0;
+  function galleryUrl(id) { return GALLERY_BASE + id + '/public'; }
+  function galleryGo(i) {
+    galleryIdx = (i + GALLERY_IDS.length) % GALLERY_IDS.length;
+    document.getElementById('mainImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
+    document.getElementById('galleryCounter').textContent = (galleryIdx + 1) + ' / ' + GALLERY_IDS.length;
+    document.querySelectorAll('.thumb').forEach(function(t, j) { t.classList.toggle('active', j === galleryIdx); });
+    var active = document.querySelector('.thumb.active');
+    if (active) active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+  }
+  function galleryPrev() { galleryGo(galleryIdx - 1); }
+  function galleryNext() { galleryGo(galleryIdx + 1); }
+  (function() {
+    var strip = document.getElementById('thumbStrip');
+    GALLERY_IDS.forEach(function(id, i) {
+      var div = document.createElement('div');
+      div.className = 'thumb' + (i === 0 ? ' active' : '');
+      div.onclick = function() { galleryGo(i); };
+      div.onmouseenter = function() {
+        document.getElementById('mainImg').src = galleryUrl(id);
+      };
+      div.onmouseleave = function() {
+        document.getElementById('mainImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
+      };
+      var img = document.createElement('img');
+      img.src = galleryUrl(id);
+      img.alt = '';
+      img.loading = 'lazy';
+      div.appendChild(img);
+      strip.appendChild(div);
+    });
+  })();
+</script>
 <script>
   const BASE_PRICE    = 34500;
   const STD_LENGTH_MM = 1000;
@@ -594,241 +413,245 @@
     return { addon, surcharge, addZakin, zakin, total };
   }
 
-  function buildDiagram(L_mm, zakinCount) {
-    const positions = [100];
-    if (zakinCount > 2) {
-      const inner = L_mm - 200;
-      const gaps = zakinCount - 1;
-      for (let i = 1; i < zakinCount - 1; i++) {
-        positions.push(Math.round(100 + inner * i / gaps));
-      }
-    }
-    positions.push(L_mm - 100);
-    const barLen = 30;
-    var bar = '|';
-    var last = 0;
-    positions.forEach(function(p) {
-      var seg = Math.max(1, Math.round((p - last) / L_mm * barLen));
-      bar += '\u2500'.repeat(seg) + '\u25CF';
-      last = p;
-    });
-    bar += '\u2500'.repeat(Math.max(1, barLen - Math.round(last / L_mm * barLen))) + '|';
-    return '\u914D\u7F6E\u56F3: ' + bar + '  \uFF08\u8A08 ' + zakinCount + '\u70B9\uFF09';
-  }
-
-  // ── 座金カスタム指定 ──────────────────────────────
-  var zakinCustomMode = false;
-  var zakinCustomList = []; // [{pos: mm}, ...]
-  var zakinGlobalAngle = 0;
-
-  function toggleZakinCustom() {
-    var panel = document.getElementById('zakinPanel');
-    var toggle = document.getElementById('zakinToggle');
-    if (panel.classList.contains('open')) {
-      panel.classList.remove('open');
-      toggle.classList.remove('active');
-      zakinCustomMode = false;
-      var L = Number(document.getElementById('lengthInput').value) || 1500;
-      update(L);
-    } else {
-      panel.classList.add('open');
-      toggle.classList.add('active');
-      zakinCustomMode = true;
-      initZakinCustom();
-    }
-  }
-
-  function initZakinCustom() {
-    var L = Number(document.getElementById('lengthInput').value) || 1500;
-    var count = calcZakin(L);
-    setZakinPositions(count, L);
-    document.getElementById('zakinQtyInput').value = count;
-    renderZakinCustom();
-  }
-
-  // 指定数量で均等配置を生成
-  function setZakinPositions(count, L) {
-    zakinCustomList = [];
+  function getZakinPositions(L_mm, zakinCount) {
     var positions = [END_DIST_MM];
-    if (count > 2) {
-      var inner = L - 2 * END_DIST_MM;
-      var gaps = count - 1;
-      for (var i = 1; i < count - 1; i++) {
+    if (zakinCount > 2) {
+      var inner = L_mm - 2 * END_DIST_MM;
+      var gaps = zakinCount - 1;
+      for (var i = 1; i < zakinCount - 1; i++) {
         positions.push(Math.round(END_DIST_MM + inner * i / gaps));
       }
     }
-    positions.push(L - END_DIST_MM);
-    for (var j = 0; j < positions.length; j++) {
-      zakinCustomList.push({ pos: positions[j] });
-    }
+    positions.push(L_mm - END_DIST_MM);
+    return positions;
   }
 
-  // 数量 +/- ボタン
-  function changeZakinQty(delta) {
-    var input = document.getElementById('zakinQtyInput');
-    var newVal = Math.max(2, Math.min(20, parseInt(input.value) + delta));
-    input.value = newVal;
-    var L = Number(document.getElementById('lengthInput').value) || 1500;
-    setZakinPositions(newVal, L);
-    renderZakinCustom();
-  }
+  function buildDiagramSVG(L_mm, positions) {
+    var svgNS = 'http://www.w3.org/2000/svg';
+    var svg = document.getElementById('zakinSvg');
+    svg.innerHTML = '';
 
-  // 数量を直接入力
-  function onZakinQtyInput(input) {
-    var val = Math.max(2, Math.min(20, parseInt(input.value) || 2));
-    input.value = val;
-    var L = Number(document.getElementById('lengthInput').value) || 1500;
-    setZakinPositions(val, L);
-    renderZakinCustom();
-  }
+    // Layout constants
+    var pad = 30;       // left/right padding
+    var sideW = 55;     // side view width
+    var barY = 50;      // Y of main bar
+    var W = 400;        // viewBox width
+    var barLeft = pad;
+    var barRight = W - pad - sideW;
+    var barLen = barRight - barLeft;
 
-  // 角度一括変更
-  function onZakinGlobalAngle(input) {
-    zakinGlobalAngle = Math.max(0, Math.min(360, parseInt(input.value) || 0));
-  }
+    // Total dimension line (W) above the bar
+    var dimY = 18;
+    // W label
+    var wText = document.createElementNS(svgNS, 'text');
+    wText.setAttribute('x', (barLeft + barRight) / 2);
+    wText.setAttribute('y', dimY - 6);
+    wText.setAttribute('class', 'total-text');
+    wText.textContent = 'W = ' + L_mm + 'mm';
+    svg.appendChild(wText);
 
-  function renderZakinCustom() {
-    var L = Number(document.getElementById('lengthInput').value) || 1500;
-    document.getElementById('zakinVisualEnd').textContent = L;
+    // total dim line
+    var addDimLine = function(x1, x2, y) {
+      var line = document.createElementNS(svgNS, 'line');
+      line.setAttribute('x1', x1); line.setAttribute('y1', y);
+      line.setAttribute('x2', x2); line.setAttribute('y2', y);
+      line.setAttribute('class', 'total-dim');
+      svg.appendChild(line);
+      // end ticks
+      [x1, x2].forEach(function(x) {
+        var tick = document.createElementNS(svgNS, 'line');
+        tick.setAttribute('x1', x); tick.setAttribute('y1', y - 3);
+        tick.setAttribute('x2', x); tick.setAttribute('y2', y + 3);
+        tick.setAttribute('class', 'total-dim');
+        svg.appendChild(tick);
+      });
+    };
+    addDimLine(barLeft, barRight, dimY);
 
-    // Render visual markers
-    var visual = document.getElementById('zakinVisual');
-    var oldMarkers = visual.querySelectorAll('.zakin-visual-marker');
-    oldMarkers.forEach(function(m) { m.remove(); });
-    var barLeft = 16, barRight = 16;
-    var barWidth = visual.offsetWidth - barLeft - barRight;
-    if (barWidth <= 0) barWidth = 200;
-    zakinCustomList.forEach(function(item) {
-      var pct = item.pos / L;
-      var marker = document.createElement('div');
-      marker.className = 'zakin-visual-marker';
-      marker.style.left = (barLeft + pct * barWidth) + 'px';
-      var label = document.createElement('span');
-      label.className = 'zakin-visual-label';
-      label.textContent = item.pos + 'mm';
-      marker.appendChild(label);
-      visual.appendChild(marker);
+    // Main horizontal bar
+    var barLine = document.createElementNS(svgNS, 'line');
+    barLine.setAttribute('x1', barLeft); barLine.setAttribute('y1', barY);
+    barLine.setAttribute('x2', barRight); barLine.setAttribute('y2', barY);
+    barLine.setAttribute('class', 'bar-line');
+    svg.appendChild(barLine);
+
+    // Bar end caps (small vertical lines)
+    [barLeft, barRight].forEach(function(x) {
+      var cap = document.createElementNS(svgNS, 'line');
+      cap.setAttribute('x1', x); cap.setAttribute('y1', barY - 5);
+      cap.setAttribute('x2', x); cap.setAttribute('y2', barY + 5);
+      cap.setAttribute('stroke', 'var(--light)');
+      cap.setAttribute('stroke-width', '1.5');
+      svg.appendChild(cap);
     });
 
-    // Render position list (no angle column)
-    var list = document.getElementById('zakinList');
-    list.innerHTML = '';
-    zakinCustomList.forEach(function(item, idx) {
-      var row = document.createElement('div');
-      row.className = 'zakin-item';
+    // Bracket markers and dimension annotations
+    var bracketR = 4;
+    var dimBelowY = barY + 22;
+    var dimAboveY = barY - 16;
 
-      var num = document.createElement('div');
-      num.className = 'zakin-item-num';
-      num.textContent = (idx + 1);
+    positions.forEach(function(pos, idx) {
+      var x = barLeft + (pos / L_mm) * barLen;
 
-      var posWrap = document.createElement('div');
-      var posLabel = document.createElement('label');
-      posLabel.textContent = '位置 (mm)';
-      var posInput = document.createElement('input');
-      posInput.type = 'number';
-      posInput.min = '0';
-      posInput.max = String(L);
-      posInput.value = item.pos;
-      posInput.dataset.idx = idx;
-      posInput.oninput = function() { onZakinPosChange(this); };
-      posWrap.appendChild(posLabel);
-      posWrap.appendChild(posInput);
+      // Bracket circle
+      var circle = document.createElementNS(svgNS, 'circle');
+      circle.setAttribute('cx', x); circle.setAttribute('cy', barY);
+      circle.setAttribute('r', bracketR);
+      circle.setAttribute('class', 'bracket-circle');
+      svg.appendChild(circle);
 
-      var removeBtn = document.createElement('button');
-      removeBtn.className = 'zakin-item-remove';
-      removeBtn.innerHTML = '&times;';
-      removeBtn.dataset.idx = idx;
-      removeBtn.onclick = function() { removeZakinItem(this.dataset.idx); };
-      if (zakinCustomList.length <= 2) removeBtn.style.visibility = 'hidden';
+      // Vertical drop line from bracket
+      var drop = document.createElementNS(svgNS, 'line');
+      drop.setAttribute('x1', x); drop.setAttribute('y1', barY + bracketR);
+      drop.setAttribute('x2', x); drop.setAttribute('y2', barY + 14);
+      drop.setAttribute('class', 'dim-line');
+      svg.appendChild(drop);
 
-      row.appendChild(num);
-      row.appendChild(posWrap);
-      row.appendChild(removeBtn);
-      list.appendChild(row);
+      // Bracket icon (small T shape below)
+      var iconTop = document.createElementNS(svgNS, 'line');
+      iconTop.setAttribute('x1', x - 4); iconTop.setAttribute('y1', barY + 14);
+      iconTop.setAttribute('x2', x + 4); iconTop.setAttribute('y2', barY + 14);
+      iconTop.setAttribute('stroke', 'var(--accent)');
+      iconTop.setAttribute('stroke-width', '1');
+      svg.appendChild(iconTop);
     });
 
-    updateZakinPrice();
-  }
+    // Dimension annotations between brackets (below)
+    for (var i = 0; i < positions.length; i++) {
+      var x1, x2, label;
 
-  function onZakinPosChange(input) {
-    var idx = parseInt(input.dataset.idx);
-    var L = Number(document.getElementById('lengthInput').value) || 1500;
-    var val = parseInt(input.value) || 0;
-    val = Math.max(0, Math.min(L, val));
-    zakinCustomList[idx].pos = val;
-    renderZakinVisualOnly();
-    updateZakinPrice();
-  }
-
-  function removeZakinItem(idx) {
-    if (zakinCustomList.length <= 2) return;
-    zakinCustomList.splice(parseInt(idx), 1);
-    document.getElementById('zakinQtyInput').value = zakinCustomList.length;
-    renderZakinCustom();
-  }
-
-  function resetZakinCustom() {
-    zakinGlobalAngle = 0;
-    document.getElementById('zakinAngleInput').value = 0;
-    initZakinCustom();
-  }
-
-  function renderZakinVisualOnly() {
-    var L = Number(document.getElementById('lengthInput').value) || 1500;
-    var visual = document.getElementById('zakinVisual');
-    var markers = visual.querySelectorAll('.zakin-visual-marker');
-    var barLeft = 16, barRight = 16;
-    var barWidth = visual.offsetWidth - barLeft - barRight;
-    if (barWidth <= 0) barWidth = 200;
-    markers.forEach(function(m, idx) {
-      if (idx < zakinCustomList.length) {
-        var pct = zakinCustomList[idx].pos / L;
-        m.style.left = (barLeft + pct * barWidth) + 'px';
-        m.querySelector('.zakin-visual-label').textContent = zakinCustomList[idx].pos + 'mm';
+      if (i === 0) {
+        // First segment: 0 to first bracket
+        x1 = barLeft;
+        x2 = barLeft + (positions[0] / L_mm) * barLen;
+        label = positions[0];
+      } else {
+        // Between brackets
+        x1 = barLeft + (positions[i - 1] / L_mm) * barLen;
+        x2 = barLeft + (positions[i] / L_mm) * barLen;
+        label = positions[i] - positions[i - 1];
       }
-    });
-  }
 
-  function updateZakinPrice() {
-    var count = zakinCustomList.length;
-    var addZakin = Math.max(0, count - INCLUDED_ZAKIN) * ZAKIN_PRICE;
-    document.getElementById('zakinLabel').textContent = '座金数（カスタム指定）';
-    document.getElementById('zakinCount').textContent = count + ' 個';
+      var midX = (x1 + x2) / 2;
 
-    // Update custom diagram
-    var L = Number(document.getElementById('lengthInput').value) || 1500;
-    var sorted = zakinCustomList.slice().sort(function(a, b) { return a.pos - b.pos; });
-    var barLen = 30;
-    var bar = '|';
-    var last = 0;
-    sorted.forEach(function(item) {
-      var seg = Math.max(1, Math.round((item.pos - last) / L * barLen));
-      bar += '\u2500'.repeat(seg) + '\u25CF';
-      last = item.pos;
-    });
-    bar += '\u2500'.repeat(Math.max(1, barLen - Math.round(last / L * barLen))) + '|';
-    document.getElementById('zakinDiagram').textContent = '\u914D\u7F6E\u56F3: ' + bar + '  \uFF08\u8A08 ' + count + '\u70B9\uFF09';
+      // Dimension line
+      var dLine = document.createElementNS(svgNS, 'line');
+      dLine.setAttribute('x1', x1); dLine.setAttribute('y1', dimBelowY);
+      dLine.setAttribute('x2', x2); dLine.setAttribute('y2', dimBelowY);
+      dLine.setAttribute('class', 'dim-line');
+      svg.appendChild(dLine);
 
-    // Recalculate price
-    var p = calcPrice(L);
-    // Override zakin price with custom count
-    var customAddZakin = addZakin;
-    var customTotal = BASE_PRICE + p.addon + customAddZakin + p.surcharge;
+      // Ticks
+      [x1, x2].forEach(function(tx) {
+        var t = document.createElementNS(svgNS, 'line');
+        t.setAttribute('x1', tx); t.setAttribute('y1', dimBelowY - 2);
+        t.setAttribute('x2', tx); t.setAttribute('y2', dimBelowY + 2);
+        t.setAttribute('class', 'dim-line');
+        svg.appendChild(t);
+      });
 
-    var rowZakin = document.getElementById('rowZakin');
-    if (customAddZakin > 0) {
-      rowZakin.style.display = 'flex';
-      document.getElementById('zakinVal').textContent = fmt(customAddZakin);
-    } else {
-      rowZakin.style.display = 'none';
+      // Label
+      var dText = document.createElementNS(svgNS, 'text');
+      dText.setAttribute('x', midX);
+      dText.setAttribute('y', dimBelowY + 11);
+      dText.setAttribute('class', 'dim-text');
+      dText.textContent = label;
+      svg.appendChild(dText);
     }
 
-    document.getElementById('totalVal').dataset.base = customTotal;
-    if (typeof calcShipping === 'function') {
-      calcShipping();
-    } else {
-      document.getElementById('totalVal').textContent = fmt(customTotal);
+    // Last segment: last bracket to end
+    var lastBracketX = barLeft + (positions[positions.length - 1] / L_mm) * barLen;
+    var lastLabel = L_mm - positions[positions.length - 1];
+    var dLine2 = document.createElementNS(svgNS, 'line');
+    dLine2.setAttribute('x1', lastBracketX); dLine2.setAttribute('y1', dimBelowY);
+    dLine2.setAttribute('x2', barRight); dLine2.setAttribute('y2', dimBelowY);
+    dLine2.setAttribute('class', 'dim-line');
+    svg.appendChild(dLine2);
+    [lastBracketX, barRight].forEach(function(tx) {
+      var t = document.createElementNS(svgNS, 'line');
+      t.setAttribute('x1', tx); t.setAttribute('y1', dimBelowY - 2);
+      t.setAttribute('x2', tx); t.setAttribute('y2', dimBelowY + 2);
+      t.setAttribute('class', 'dim-line');
+      svg.appendChild(t);
+    });
+    var dText2 = document.createElementNS(svgNS, 'text');
+    dText2.setAttribute('x', (lastBracketX + barRight) / 2);
+    dText2.setAttribute('y', dimBelowY + 11);
+    dText2.setAttribute('class', 'dim-text');
+    dText2.textContent = lastLabel;
+    svg.appendChild(dText2);
+
+    // Side view (bracket profile) - right side
+    var sideX = barRight + 18;
+    var sideTopY = barY - 8;
+    var sideH = 28;
+    var sideBarW = 18;
+
+    // Wall (hatched area)
+    var wallX = sideX + sideBarW + 8;
+    var wallRect = document.createElementNS(svgNS, 'rect');
+    wallRect.setAttribute('x', wallX); wallRect.setAttribute('y', sideTopY - 4);
+    wallRect.setAttribute('width', 8); wallRect.setAttribute('height', sideH + 12);
+    wallRect.setAttribute('fill', 'none');
+    wallRect.setAttribute('stroke', 'var(--muted)');
+    wallRect.setAttribute('stroke-width', '0.5');
+    svg.appendChild(wallRect);
+
+    // Hatch lines
+    for (var h = 0; h < 5; h++) {
+      var hLine = document.createElementNS(svgNS, 'line');
+      hLine.setAttribute('x1', wallX); hLine.setAttribute('y1', sideTopY - 4 + h * 8);
+      hLine.setAttribute('x2', wallX + 8); hLine.setAttribute('y2', sideTopY + 4 + h * 8);
+      hLine.setAttribute('stroke', 'var(--muted)');
+      hLine.setAttribute('stroke-width', '0.3');
+      svg.appendChild(hLine);
     }
+
+    // Bracket arm (horizontal)
+    var armY = sideTopY + 2;
+    var armLine = document.createElementNS(svgNS, 'line');
+    armLine.setAttribute('x1', sideX - 2); armLine.setAttribute('y1', armY);
+    armLine.setAttribute('x2', wallX); armLine.setAttribute('y2', armY);
+    armLine.setAttribute('class', 'side-view');
+    svg.appendChild(armLine);
+
+    // Bracket curve (down)
+    var curvePath = document.createElementNS(svgNS, 'path');
+    var curveEndY = armY + sideH;
+    curvePath.setAttribute('d', 'M ' + sideX + ' ' + armY + ' Q ' + (sideX - 2) + ' ' + (armY + 10) + ' ' + (sideX + 2) + ' ' + curveEndY);
+    curvePath.setAttribute('class', 'side-view');
+    svg.appendChild(curvePath);
+
+    // Handrail circle (top)
+    var railCircle = document.createElementNS(svgNS, 'circle');
+    railCircle.setAttribute('cx', sideX - 2); railCircle.setAttribute('cy', armY - 5);
+    railCircle.setAttribute('r', 5);
+    railCircle.setAttribute('class', 'side-view');
+    svg.appendChild(railCircle);
+
+    // Side view dimension (40)
+    var sdText1 = document.createElementNS(svgNS, 'text');
+    sdText1.setAttribute('x', sideX + sideBarW / 2 + 4);
+    sdText1.setAttribute('y', armY - 10);
+    sdText1.setAttribute('class', 'side-dim');
+    sdText1.textContent = '40';
+    svg.appendChild(sdText1);
+
+    // Side view dimension (60)
+    var sdText2 = document.createElementNS(svgNS, 'text');
+    sdText2.setAttribute('x', wallX + 16);
+    sdText2.setAttribute('y', armY + sideH / 2 + 2);
+    sdText2.setAttribute('class', 'side-dim');
+    sdText2.textContent = '60';
+    svg.appendChild(sdText2);
+
+    // Count label
+    var countText = document.createElementNS(svgNS, 'text');
+    countText.setAttribute('x', (barLeft + barRight) / 2);
+    countText.setAttribute('y', 95);
+    countText.setAttribute('class', 'dim-text');
+    countText.textContent = '\u300A \u5EA7\u91D1 ' + positions.length + '\u70B9 \u300B';
+    svg.appendChild(countText);
   }
 
   function fmt(n) { return '\u00A5' + Math.round(n).toLocaleString('ja-JP'); }
@@ -840,131 +663,29 @@
     document.getElementById('lengthSlider').value = L;
     const pct = (L - 500) / (MAX_LENGTH_MM - 500) * 100;
     document.getElementById('lengthSlider').style.background = 'linear-gradient(to right, var(--accent) ' + pct + '%, var(--line) ' + pct + '%)';
-    // カスタムモード中は座金カスタム側で価格計算
-    if (zakinCustomMode) {
-      document.getElementById('zakinVisualEnd').textContent = L;
-      renderZakinCustom();
-
-      const rowAddon = document.getElementById('rowAddon');
-      if (p.addon > 0) { rowAddon.style.display = 'flex'; document.getElementById('addonVal').textContent = fmt(p.addon); }
-      else { rowAddon.style.display = 'none'; }
-
-      const rowSurcharge = document.getElementById('rowSurcharge');
-      if (p.surcharge > 0) { rowSurcharge.style.display = 'flex'; document.getElementById('surchargeVal').textContent = fmt(p.surcharge); }
-      else { rowSurcharge.style.display = 'none'; }
-      return;
-    }
-
-    document.getElementById('zakinLabel').textContent = '推奨座金数（自動計算）';
     document.getElementById('zakinCount').textContent = p.zakin + ' \u500B';
-    document.getElementById('zakinDiagram').textContent = buildDiagram(L, p.zakin);
+    buildDiagramSVG(L, getZakinPositions(L, p.zakin));
     const rowAddon = document.getElementById('rowAddon');
     if (p.addon > 0) { rowAddon.style.display = 'flex'; document.getElementById('addonVal').textContent = fmt(p.addon); } else { rowAddon.style.display = 'none'; }
     const rowZakin = document.getElementById('rowZakin');
     if (p.addZakin > 0) { rowZakin.style.display = 'flex'; document.getElementById('zakinVal').textContent = fmt(p.addZakin); } else { rowZakin.style.display = 'none'; }
     const rowSurcharge = document.getElementById('rowSurcharge');
-    document.getElementById('totalVal').dataset.base = p.total;
-    if (typeof calcShipping === 'function') {
-      calcShipping();
-    } else {
-      document.getElementById('totalVal').textContent = fmt(p.total);
-    }
+    const notice = document.getElementById('surchargeNotice');
+    if (p.surcharge > 0) { rowSurcharge.style.display = 'flex'; document.getElementById('surchargeVal').textContent = fmt(p.surcharge); notice.style.display = 'block'; } else { rowSurcharge.style.display = 'none'; notice.style.display = 'none'; }
+    document.getElementById('totalVal').textContent = fmt(p.total);
   }
 
   function onLengthChange(v) { update(v); }
   function onSliderChange(v) { update(v); }
 
-  // Gallery
-  var GALLERY_BASE = 'https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7/';
-  var GALLERY_IDS = [
-    '8775cfcb40298257834a.jpg','5e4377eb8cce3ba15572.jpg','8e9f10b474c179961a81.jpg',
-    'f4a030f56d5784dc460c.jpg','dfc095e36e07842b1e1a.jpg','be8ace3369f4527a90ce.jpg',
-    '340d022f48e0aee6e96b.jpg','0867afe603e501db8ede.jpg','8f88e87c208e9273ed2a.jpg',
-    '99fc87f58c4321ab6a5f.jpg','dd16c6f3769ef886a8eb.jpg','82e1cc3d3168d6f46cd8.jpg',
-    '156414dbec3475dec9ae.jpg','b086a4aa3dae8339d586.jpg','c176c6746b8db4bf6b8f.jpg',
-    'd706b98edf0298cb0fde.jpg','e52b2cf97144be5b3ad9.jpg','bdac7a64dc3c49e65541.jpg',
-    '4d8beb3b89354bf181bf.jpg','b8fd8dbbe2b28beff3f1.jpg','33d99fc7e30df4dc8983.jpg',
-    '0c87b33aaf166d4e805e.jpg'
-  ];
-  var galleryIdx = 0;
-
-  function galleryUrl(id, w) { return GALLERY_BASE + id + '/' + (w ? 'fit=cover,w=' + w + ',h=' + w : 'fit=cover,w=1200,h=1200'); }
-
-  function galleryGo(i) {
-    galleryIdx = (i + GALLERY_IDS.length) % GALLERY_IDS.length;
-    document.getElementById('mainImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
-    document.getElementById('galleryCounter').textContent = (galleryIdx + 1) + ' / ' + GALLERY_IDS.length;
-    document.querySelectorAll('.thumb').forEach(function(t, j) {
-      t.classList.toggle('active', j === galleryIdx);
-    });
-    var active = document.querySelector('.thumb.active');
-    if (active) active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
-  }
-  function galleryPrev() { galleryGo(galleryIdx - 1); }
-  function galleryNext() { galleryGo(galleryIdx + 1); }
-
-  (function() {
-    var strip = document.getElementById('thumbStrip');
-    GALLERY_IDS.forEach(function(id, i) {
-      var div = document.createElement('div');
-      div.className = 'thumb' + (i === 0 ? ' active' : '');
-      div.onclick = function() { galleryGo(i); openGLightbox(i); };
-      div.onmouseenter = function() {
-        document.getElementById('mainImg').src = galleryUrl(id);
-      };
-      var img = document.createElement('img');
-      img.src = galleryUrl(id, 200);
-      img.alt = '';
-      img.loading = 'lazy';
-      div.appendChild(img);
-      strip.appendChild(div);
-    });
-    strip.onmouseleave = function() {
-      document.getElementById('mainImg').src = galleryUrl(GALLERY_IDS[galleryIdx]);
-    };
-  })();
-
-  // GLightbox gallery
-  var glightboxInstance = null;
-  function buildGLightbox() {
-    var elements = GALLERY_IDS.map(function(id) {
-      return { href: galleryUrl(id, 1880), type: 'image' };
-    });
-    if (glightboxInstance) glightboxInstance.destroy();
-    glightboxInstance = GLightbox({
-      elements: elements,
-      touchNavigation: true,
-      loop: true,
-      closeOnOutsideClick: true,
-      openEffect: 'fade',
-      closeEffect: 'fade',
-      skin: 'clean',
-      svg: {
-        close: '<svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" fill="none"/></svg>',
-        next: '<svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" fill="none"/></svg>',
-        prev: '<svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" fill="none"/></svg>'
-      }
-    });
-    glightboxInstance.on('slide_changed', function(data) {
-      galleryGo(data.current.index);
-    });
-  }
-  function openGLightbox(idx) {
-    if (!glightboxInstance) buildGLightbox();
-    glightboxInstance.openAt(idx);
-  }
-  buildGLightbox();
-  document.getElementById('mainImg').onclick = function() { openGLightbox(galleryIdx); };
-
-  // Stripe Checkout
   async function addToCart() {
     const L = Number(document.getElementById('lengthInput').value);
     const btn = document.getElementById('btnCheckout');
     const errEl = document.getElementById('checkoutError');
     btn.disabled = true; btn.textContent = '\u51E6\u7406\u4E2D...'; errEl.style.display = 'none';
     try {
-      const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product: PRODUCT_KEY, lengthMm: L, qty: currentQty }) });
-      if (!res.ok) { const data = await res.json().catch(function() { return {}; }); throw new Error(data.error || 'HTTP ' + res.status); }
+      const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product: PRODUCT_KEY, lengthMm: L }) });
+      if (!res.ok) { const data = await res.json().catch(() => ({})); throw new Error(data.error || 'HTTP ' + res.status); }
       const { url } = await res.json();
       window.location.href = url;
     } catch (err) {
@@ -973,170 +694,7 @@
     }
   }
 
-  // ── 送料計算 ──────────────────────────────
-  var PRODUCT_TYPE = 'tategata';
-  var currentQty = 1;
-  var currentShipping = 0;
-  var currentRegion = '';
-  var isInquiryMode = false;
-
-  var PREF_TO_REGION = {
-    '北海道':'hokkaido',
-    '青森県':'kita_tohoku','岩手県':'kita_tohoku','秋田県':'kita_tohoku',
-    '宮城県':'minami_tohoku','山形県':'minami_tohoku','福島県':'minami_tohoku',
-    '茨城県':'kanto','栃木県':'kanto','群馬県':'kanto','埼玉県':'kanto',
-    '千葉県':'kanto','東京都':'kanto','神奈川県':'kanto','山梨県':'kanto',
-    '新潟県':'shinetsu','長野県':'shinetsu',
-    '富山県':'hokuriku','石川県':'hokuriku','福井県':'hokuriku',
-    '岐阜県':'tokai','静岡県':'tokai','愛知県':'tokai','三重県':'tokai',
-    '滋賀県':'kansai','京都府':'kansai','大阪府':'kansai','兵庫県':'kansai','奈良県':'kansai','和歌山県':'kansai',
-    '鳥取県':'chugoku','島根県':'chugoku','岡山県':'chugoku','広島県':'chugoku','山口県':'chugoku',
-    '徳島県':'shikoku','香川県':'shikoku','愛媛県':'shikoku','高知県':'shikoku',
-    '福岡県':'kita_kyushu','佐賀県':'kita_kyushu','長崎県':'kita_kyushu','大分県':'kita_kyushu',
-    '熊本県':'minami_kyushu','宮崎県':'minami_kyushu','鹿児島県':'minami_kyushu',
-    '沖縄県':'okinawa'
-  };
-
-  var SHIPPING_RATES = {
-    140:{minami_kyushu:1550,kita_kyushu:1500,shikoku:1400,chugoku:1500,kansai:1300,hokuriku:1200,tokai:1300,shinetsu:1100,kanto:1400,minami_tohoku:1400,kita_tohoku:1400,hokkaido:1550},
-    160:{minami_kyushu:2650,kita_kyushu:2650,shikoku:2550,chugoku:2400,kansai:2400,hokuriku:2200,tokai:2200,shinetsu:2200,kanto:2200,minami_tohoku:2200,kita_tohoku:2350,hokkaido:2650},
-    170:{minami_kyushu:4100,kita_kyushu:3800,shikoku:3550,chugoku:3550,kansai:3300,hokuriku:3300,tokai:3300,shinetsu:2600,kanto:3350,minami_tohoku:3550,kita_tohoku:3550,hokkaido:4100},
-    180:{minami_kyushu:4600,kita_kyushu:4150,shikoku:3900,chugoku:3900,kansai:3550,hokuriku:3550,tokai:3550,shinetsu:2850,kanto:3700,minami_tohoku:3900,kita_tohoku:3900,hokkaido:4600},
-    200:{minami_kyushu:5650,kita_kyushu:5150,shikoku:4700,chugoku:4700,kansai:4300,hokuriku:4300,tokai:4300,shinetsu:3400,kanto:4450,minami_tohoku:4700,kita_tohoku:4700,hokkaido:5600},
-    220:{minami_kyushu:6700,kita_kyushu:6100,shikoku:5600,chugoku:5600,kansai:5000,hokuriku:5000,tokai:5000,shinetsu:4000,kanto:5200,minami_tohoku:5550,kita_tohoku:5550,hokkaido:7150},
-    240:{minami_kyushu:8000,kita_kyushu:8000,shikoku:7200,chugoku:7200,kansai:6500,hokuriku:6500,tokai:6500,shinetsu:5000,kanto:6700,minami_tohoku:7200,kita_tohoku:7200,hokkaido:8900},
-    260:{minami_kyushu:11000,kita_kyushu:9900,shikoku:9000,chugoku:9000,kansai:8000,hokuriku:8000,tokai:8000,shinetsu:6200,kanto:8300,minami_tohoku:9000,kita_tohoku:9000,hokkaido:11100}
-  };
-
-  var SIZE_BRACKETS = [[1400,140],[1600,160],[1700,170],[1800,180],[2000,200],[2200,220],[2400,240],[3700,260]];
-  function getSizeBracket(shipMm) {
-    for (var i = 0; i < SIZE_BRACKETS.length; i++) {
-      if (shipMm <= SIZE_BRACKETS[i][0]) return SIZE_BRACKETS[i][1];
-    }
-    return null;
-  }
-
-  function calcShipping() {
-    var L = Number(document.getElementById('lengthInput').value) || 1000;
-    var pref = document.getElementById('prefSelect').value;
-    var region = PREF_TO_REGION[pref] || '';
-    var qty = currentQty;
-
-    var inquiry = document.getElementById('shippingInquiry');
-    var rowShipping = document.getElementById('rowShipping');
-    var shippingNote = document.getElementById('shippingNote');
-    var btn = document.getElementById('btnCheckout');
-
-    inquiry.style.display = 'none';
-    inquiry.textContent = '';
-    shippingNote.style.display = 'none';
-    isInquiryMode = false;
-
-    if (L > 3500) {
-      inquiry.innerHTML = '⚠ 3,501mm以上のご注文は別途お見積もりとなります。<br><a href="mailto:info@tantetuzest.com">お問い合わせ</a>よりご相談ください。';
-      inquiry.style.display = 'block';
-      rowShipping.style.display = 'none';
-      btn.disabled = true;
-      btn.textContent = '要問い合わせ（別途見積もり）';
-      isInquiryMode = true;
-      currentShipping = 0;
-      updateTotal();
-      return;
-    }
-    if (qty > 6) {
-      inquiry.innerHTML = '⚠ 7本以上のご注文は別途お見積もりとなります。<br><a href="mailto:info@tantetuzest.com">お問い合わせ</a>よりご相談ください。';
-      inquiry.style.display = 'block';
-      rowShipping.style.display = 'none';
-      btn.disabled = true;
-      btn.textContent = '要問い合わせ（別途見積もり）';
-      isInquiryMode = true;
-      currentShipping = 0;
-      updateTotal();
-      return;
-    }
-    if (region === 'okinawa') {
-      inquiry.innerHTML = '⚠ 沖縄県への配送は別途お見積もりとなります。<br><a href="mailto:info@tantetuzest.com">お問い合わせ</a>よりご相談ください。';
-      inquiry.style.display = 'block';
-      rowShipping.style.display = 'none';
-      btn.disabled = true;
-      btn.textContent = '要問い合わせ（別途見積もり）';
-      isInquiryMode = true;
-      currentShipping = 0;
-      updateTotal();
-      return;
-    }
-
-    btn.disabled = false;
-    btn.textContent = 'カートに追加 — 購入手続きへ';
-
-    if (!region) {
-      currentShipping = 0;
-      rowShipping.style.display = 'none';
-      updateTotal();
-      return;
-    }
-
-    var rate = 0;
-    var noteText = '';
-    if (L <= 1000) {
-      rate = 1000;
-      noteText = '1,000mm以下: 全国一律 ¥1,000';
-    } else if (PRODUCT_TYPE === 'tategata') {
-      rate = SHIPPING_RATES[260][region];
-      noteText = '縦型手すり: 260サイズ';
-    } else {
-      var shipSize = L + 200;
-      var bracket = getSizeBracket(shipSize);
-      if (!bracket) {
-        inquiry.innerHTML = '⚠ このサイズは通常配送できません。<br><a href="mailto:info@tantetuzest.com">お問い合わせ</a>よりご相談ください。';
-        inquiry.style.display = 'block';
-        rowShipping.style.display = 'none';
-        btn.disabled = true;
-        btn.textContent = '要問い合わせ（別途見積もり）';
-        isInquiryMode = true;
-        currentShipping = 0;
-        updateTotal();
-        return;
-      }
-      rate = SHIPPING_RATES[bracket][region];
-      noteText = '発送サイズ ' + shipSize + 'mm → ' + bracket + 'サイズ';
-    }
-
-    var bundles = qty <= 3 ? 1 : 2;
-    currentShipping = rate * bundles;
-
-    rowShipping.style.display = 'flex';
-    if (bundles > 1) {
-      document.getElementById('shippingVal').textContent = '¥' + rate.toLocaleString() + ' × ' + bundles + '梱包 = ¥' + currentShipping.toLocaleString();
-    } else {
-      document.getElementById('shippingVal').textContent = '¥' + currentShipping.toLocaleString();
-    }
-    if (noteText) {
-      shippingNote.textContent = noteText + (bundles > 1 ? '（3本まで同一梱包）' : '');
-      shippingNote.style.display = 'block';
-    }
-    updateTotal();
-  }
-
-  function onQtyChange() {
-    var q = parseInt(document.getElementById('qtyInput').value) || 1;
-    if (q < 1) q = 1;
-    if (q > 99) q = 99;
-    currentQty = q;
-    calcShipping();
-  }
-  function onPrefChange() {
-    calcShipping();
-  }
-  function updateTotal() {
-    var baseTotal = parseInt(document.getElementById('totalVal').dataset.base) || 0;
-    var grandTotal = baseTotal * currentQty + currentShipping;
-    document.getElementById('totalVal').textContent = fmt(grandTotal);
-  }
-
-  // 初期描画
   update(1000);
-
 </script>
 </body>
 </html>
