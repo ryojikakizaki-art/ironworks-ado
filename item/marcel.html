@@ -506,7 +506,7 @@
           <span class="zakin-label" id="zakinLabel">推奨座金数（自動計算）</span>
           <span class="zakin-value" id="zakinCount">4 個</span>
         </div>
-        <div class="zakin-diagram" id="zakinDiagram"><svg id="zakinSvg" viewBox="0 0 400 100"></svg></div>
+        <div class="zakin-diagram" id="zakinDiagram"><svg id="zakinSvg" viewBox="0 0 400 210"></svg></div>
         <button class="zakin-custom-toggle" id="zakinToggle" onclick="toggleZakinCustom()">
           <span>座金位置を指定する</span>
           <span class="toggle-icon">&#9660;</span>
@@ -879,70 +879,6 @@
     dText2.textContent = lastLabel;
     svg.appendChild(dText2);
 
-    // Side view (bracket profile) - right side
-    var sideX = barRight + 18;
-    var sideTopY = barY - 8;
-    var sideH = 28;
-    var sideBarW = 18;
-
-    // Wall (hatched area)
-    var wallX = sideX + sideBarW + 8;
-    var wallRect = document.createElementNS(svgNS, 'rect');
-    wallRect.setAttribute('x', wallX); wallRect.setAttribute('y', sideTopY - 4);
-    wallRect.setAttribute('width', 8); wallRect.setAttribute('height', sideH + 12);
-    wallRect.setAttribute('fill', 'none');
-    wallRect.setAttribute('stroke', 'var(--muted)');
-    wallRect.setAttribute('stroke-width', '0.5');
-    svg.appendChild(wallRect);
-
-    // Hatch lines
-    for (var h = 0; h < 5; h++) {
-      var hLine = document.createElementNS(svgNS, 'line');
-      hLine.setAttribute('x1', wallX); hLine.setAttribute('y1', sideTopY - 4 + h * 8);
-      hLine.setAttribute('x2', wallX + 8); hLine.setAttribute('y2', sideTopY + 4 + h * 8);
-      hLine.setAttribute('stroke', 'var(--muted)');
-      hLine.setAttribute('stroke-width', '0.3');
-      svg.appendChild(hLine);
-    }
-
-    // Bracket arm (horizontal)
-    var armY = sideTopY + 2;
-    var armLine = document.createElementNS(svgNS, 'line');
-    armLine.setAttribute('x1', sideX - 2); armLine.setAttribute('y1', armY);
-    armLine.setAttribute('x2', wallX); armLine.setAttribute('y2', armY);
-    armLine.setAttribute('class', 'side-view');
-    svg.appendChild(armLine);
-
-    // Bracket curve (down)
-    var curvePath = document.createElementNS(svgNS, 'path');
-    var curveEndY = armY + sideH;
-    curvePath.setAttribute('d', 'M ' + sideX + ' ' + armY + ' Q ' + (sideX - 2) + ' ' + (armY + 10) + ' ' + (sideX + 2) + ' ' + curveEndY);
-    curvePath.setAttribute('class', 'side-view');
-    svg.appendChild(curvePath);
-
-    // Handrail circle (top)
-    var railCircle = document.createElementNS(svgNS, 'circle');
-    railCircle.setAttribute('cx', sideX - 2); railCircle.setAttribute('cy', armY - 5);
-    railCircle.setAttribute('r', 5);
-    railCircle.setAttribute('class', 'side-view');
-    svg.appendChild(railCircle);
-
-    // Side view dimension (40)
-    var sdText1 = document.createElementNS(svgNS, 'text');
-    sdText1.setAttribute('x', sideX + sideBarW / 2 + 4);
-    sdText1.setAttribute('y', armY - 10);
-    sdText1.setAttribute('class', 'side-dim');
-    sdText1.textContent = '40';
-    svg.appendChild(sdText1);
-
-    // Side view dimension (60)
-    var sdText2 = document.createElementNS(svgNS, 'text');
-    sdText2.setAttribute('x', wallX + 16);
-    sdText2.setAttribute('y', armY + sideH / 2 + 2);
-    sdText2.setAttribute('class', 'side-dim');
-    sdText2.textContent = '60';
-    svg.appendChild(sdText2);
-
     // Count label
     var countText = document.createElementNS(svgNS, 'text');
     countText.setAttribute('x', (barLeft + barRight) / 2);
@@ -950,6 +886,145 @@
     countText.setAttribute('class', 'dim-text');
     countText.textContent = '\u300A \u5EA7\u91D1 ' + positions.length + '\u70B9 \u300B';
     svg.appendChild(countText);
+
+    // ── Side view (below main diagram) ──
+    var svY0 = 108;  // top of side view area
+    // Helper functions
+    function svLine(x1,y1,x2,y2,cls) {
+      var l = document.createElementNS(svgNS, 'line');
+      l.setAttribute('x1',x1); l.setAttribute('y1',y1);
+      l.setAttribute('x2',x2); l.setAttribute('y2',y2);
+      l.setAttribute('class', cls || 'side-view');
+      svg.appendChild(l);
+    }
+    function svText(x,y,txt,cls) {
+      var t = document.createElementNS(svgNS, 'text');
+      t.setAttribute('x',x); t.setAttribute('y',y);
+      t.setAttribute('class', cls || 'side-dim');
+      t.textContent = txt;
+      svg.appendChild(t);
+    }
+
+    // Scale & position: side view centered in left half
+    var sc = 1.15;  // px per mm
+    var wallX = 175; // wall surface X
+    // Dimensions
+    var rR = 12.5 * sc;    // rail radius
+    var armL = 40 * sc;     // arm length
+    var depthV = 52.5 * sc; // total depth (vertical)
+    var plateH = 45 * sc;   // base plate height
+
+    var railCX = wallX - armL - rR;
+    var railCY = svY0 + 16;
+
+    // Label
+    svText(wallX + 20, svY0 + 2, '\u300A \u6A2A\u304B\u3089\u898B\u305F\u56F3 \u300B', 'dim-text');
+
+    // Handrail bar (two horizontal lines)
+    svLine(railCX - rR - 14, railCY - rR, railCX + rR + 2, railCY - rR, 'side-view');
+    svLine(railCX - rR - 14, railCY + rR, railCX + rR + 2, railCY + rR, 'side-view');
+
+    // Handrail circle (cross-section)
+    var rc = document.createElementNS(svgNS, 'circle');
+    rc.setAttribute('cx', railCX); rc.setAttribute('cy', railCY);
+    rc.setAttribute('r', rR); rc.setAttribute('class', 'side-view');
+    svg.appendChild(rc);
+
+    // Center line (dash-dot)
+    var cLine = document.createElementNS(svgNS, 'line');
+    cLine.setAttribute('x1', railCX); cLine.setAttribute('y1', railCY - rR - 8);
+    cLine.setAttribute('x2', railCX); cLine.setAttribute('y2', railCY + depthV + 8);
+    cLine.setAttribute('stroke', 'var(--muted)'); cLine.setAttribute('stroke-width', '0.4');
+    cLine.setAttribute('stroke-dasharray', '6,2,1.5,2');
+    svg.appendChild(cLine);
+
+    // Bracket arm (horizontal from rail to wall) - two lines for thickness
+    var armTopY = railCY - 3;
+    var armBotY = railCY + 3;
+    svLine(railCX + rR, armTopY, wallX, armTopY, 'side-view');
+    svLine(railCX + rR, armBotY, wallX, armBotY, 'side-view');
+
+    // Bracket curve (from bottom of rail down)
+    var stemW = 4;
+    var stemTopY = railCY + rR + 16;
+    var stemBotY = railCY + depthV;
+    var cp = document.createElementNS(svgNS, 'path');
+    cp.setAttribute('d',
+      'M ' + (railCX - rR) + ' ' + (railCY + rR) +
+      ' C ' + (railCX - rR) + ' ' + (railCY + rR + 20) +
+      ' ' + (railCX - stemW) + ' ' + (stemTopY - 6) +
+      ' ' + (railCX - stemW) + ' ' + stemTopY +
+      ' L ' + (railCX - stemW) + ' ' + stemBotY
+    );
+    cp.setAttribute('class', 'side-view');
+    svg.appendChild(cp);
+    var cp2 = document.createElementNS(svgNS, 'path');
+    cp2.setAttribute('d',
+      'M ' + (railCX + rR) + ' ' + armBotY +
+      ' C ' + (railCX + rR + 4) + ' ' + (armBotY + 18) +
+      ' ' + (railCX + stemW) + ' ' + (stemTopY - 6) +
+      ' ' + (railCX + stemW) + ' ' + stemTopY +
+      ' L ' + (railCX + stemW) + ' ' + stemBotY
+    );
+    cp2.setAttribute('class', 'side-view');
+    svg.appendChild(cp2);
+
+    // Base plate (wall mount bracket plate)
+    var pTop = stemBotY - plateH;
+    var pBot = stemBotY;
+    var pLeft = wallX - 7;
+    var pRight = wallX;
+    var pp = document.createElementNS(svgNS, 'rect');
+    pp.setAttribute('x', pLeft); pp.setAttribute('y', pTop);
+    pp.setAttribute('width', pRight - pLeft); pp.setAttribute('height', plateH);
+    pp.setAttribute('class', 'side-view');
+    svg.appendChild(pp);
+    // Plate hatching
+    for (var ph = 0; ph < Math.floor(plateH / 4); ph++) {
+      svLine(pLeft, pTop + ph * 4, pRight, pTop + ph * 4 + 4, 'dim-line');
+    }
+
+    // Wall surface line
+    svLine(wallX, svY0 + 6, wallX, pBot + 10, 'side-view');
+    // Wall hatching
+    var wHatchW = 10;
+    for (var wh = 0; wh < Math.ceil((pBot + 10 - svY0 - 6) / 5); wh++) {
+      var wy = svY0 + 6 + wh * 5;
+      svLine(wallX, wy, wallX + wHatchW, wy + 5, 'dim-line');
+    }
+
+    // ── Dimension lines ──
+
+    // 65mm (top, full width from rail edge to wall)
+    var d1Y = svY0 + 8;
+    svLine(railCX - rR, d1Y, wallX, d1Y, 'dim-line');
+    svLine(railCX - rR, d1Y - 4, railCX - rR, d1Y + 4, 'dim-line');
+    svLine(wallX, d1Y - 4, wallX, d1Y + 4, 'dim-line');
+    svText((railCX - rR + wallX) / 2, d1Y - 4, '65mm', 'side-dim');
+
+    // 25mm + 40mm (second row)
+    var d2Y = railCY - rR - 3;
+    svLine(railCX - rR, d2Y, railCX + rR, d2Y, 'dim-line');
+    svLine(railCX - rR, d2Y - 3, railCX - rR, d2Y + 3, 'dim-line');
+    svLine(railCX + rR, d2Y - 3, railCX + rR, d2Y + 3, 'dim-line');
+    svText(railCX, d2Y - 3, '25', 'side-dim');
+
+    svLine(railCX + rR, d2Y, wallX, d2Y, 'dim-line');
+    svText((railCX + rR + wallX) / 2, d2Y - 3, '40', 'side-dim');
+
+    // 45mm (right, plate height)
+    var dRX = wallX + wHatchW + 6;
+    svLine(dRX, pTop, dRX, pBot, 'dim-line');
+    svLine(dRX - 3, pTop, dRX + 3, pTop, 'dim-line');
+    svLine(dRX - 3, pBot, dRX + 3, pBot, 'dim-line');
+    svText(dRX + 12, (pTop + pBot) / 2 + 3, '45mm', 'side-dim');
+
+    // 52.5mm (bottom, total depth)
+    var dBY = pBot + 12;
+    svLine(railCX, dBY, wallX, dBY, 'dim-line');
+    svLine(railCX, dBY - 3, railCX, dBY + 3, 'dim-line');
+    svLine(wallX, dBY - 3, wallX, dBY + 3, 'dim-line');
+    svText((railCX + wallX) / 2, dBY + 9, '52.5mm', 'side-dim');
   }
 
   // ── 座金カスタム指定 ──────────────────────────────
