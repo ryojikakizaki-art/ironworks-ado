@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>座金の角度指定について ｜ IRONWORKS ado</title>
+  <title>手すり角度の指定方法 ｜ IRONWORKS ado</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
@@ -81,49 +81,52 @@
 <body>
   <div class="page">
 
-    <h1>座金の角度指定について</h1>
+    <h1>手すり角度の指定方法</h1>
 
-    <p>階段手すりなど、壁面に対して斜めに取り付ける場合は座金の角度指定が必要です。<br>
-    このページでは、角度の考え方と指定方法をご説明します。</p>
+    <p>階段手すりなど、水平でない場所に取り付ける場合は<span class="emphasis">手すりの傾斜角度</span>の指定が必要です。<br>
+    座金（ブラケット）自体は壁面に対して水平に固定されますが、手すりパイプの角度に合わせて座金の支柱角度を調整して制作します。</p>
 
     <h2>基本の考え方</h2>
 
-    <p>角度は<span class="emphasis">壁面を正面から見た状態</span>で、<span class="emphasis">座金のビス穴が真上（12時方向）を向いた状態を 0°</span>とします。<br>
+    <p>角度は<span class="emphasis">壁面を正面から見た状態</span>で、<span class="emphasis">手すりが水平の状態を 0°</span>とします。<br>
     そこから<span class="emphasis">時計回り</span>に回転した角度を指定してください。</p>
+
+    <div class="important-box">
+      <p><span class="emphasis">座金自体は壁面に対して水平に固定</span>されます。指定いただく角度は「手すりパイプが水平面に対してどれだけ傾いているか」を表します。</p>
+      <p>この角度に基づき、座金の支柱（9φ）の角度を調整して制作します。</p>
+    </div>
 
     <div class="diagram-box">
       <svg viewBox="0 0 300 300" width="280" xmlns="http://www.w3.org/2000/svg">
-        <!-- Background circle (base plate) -->
+        <!-- Background circle (reference) -->
         <circle cx="150" cy="150" r="90" fill="none" stroke="#555" stroke-width="1.5"/>
         <!-- Center mark -->
         <circle cx="150" cy="150" r="3" fill="#888"/>
-        <!-- Screw holes at 0° position (top-center pattern) -->
-        <circle cx="150" cy="85" r="6" fill="#333" stroke="#888" stroke-width="1"/>
-        <circle cx="125" cy="110" r="6" fill="#333" stroke="#888" stroke-width="1"/>
-        <circle cx="175" cy="110" r="6" fill="#333" stroke="#888" stroke-width="1"/>
-        <!-- 0° direction arrow -->
-        <line x1="150" y1="150" x2="150" y2="30" stroke="#c8a96e" stroke-width="1.5" stroke-dasharray="4,3"/>
-        <polygon points="145,35 150,20 155,35" fill="#c8a96e"/>
-        <!-- 90° mark -->
-        <line x1="150" y1="150" x2="270" y2="150" stroke="#666" stroke-width="0.8" stroke-dasharray="3,3"/>
-        <!-- 180° mark -->
+        <!-- 0° direction (right = horizontal handrail) -->
+        <line x1="150" y1="150" x2="270" y2="150" stroke="#c8a96e" stroke-width="1.5" stroke-dasharray="4,3"/>
+        <polygon points="265,145 278,150 265,155" fill="#c8a96e"/>
+        <!-- 90° mark (down) -->
         <line x1="150" y1="150" x2="150" y2="270" stroke="#666" stroke-width="0.8" stroke-dasharray="3,3"/>
-        <!-- 270° mark -->
+        <!-- 180° mark (left) -->
         <line x1="150" y1="150" x2="30" y2="150" stroke="#666" stroke-width="0.8" stroke-dasharray="3,3"/>
+        <!-- 270° mark (up) -->
+        <line x1="150" y1="150" x2="150" y2="30" stroke="#666" stroke-width="0.8" stroke-dasharray="3,3"/>
         <!-- Degree labels -->
-        <text x="150" y="14" text-anchor="middle" fill="#c8a96e" font-size="13" font-weight="500">0°</text>
-        <text x="282" y="154" text-anchor="start" fill="#888" font-size="12">90°</text>
-        <text x="150" y="292" text-anchor="middle" fill="#888" font-size="12">180°</text>
-        <text x="18" y="154" text-anchor="end" fill="#888" font-size="12">270°</text>
+        <text x="282" y="154" text-anchor="start" fill="#c8a96e" font-size="13" font-weight="500">0°（水平）</text>
+        <text x="150" y="292" text-anchor="middle" fill="#888" font-size="12">90°</text>
+        <text x="18" y="154" text-anchor="end" fill="#888" font-size="12">180°</text>
+        <text x="150" y="22" text-anchor="middle" fill="#888" font-size="12">270°</text>
         <!-- Clockwise arrow -->
-        <path d="M 185 50 A 75 75 0 0 1 240 110" fill="none" stroke="#c8a96e" stroke-width="1.2"/>
-        <polygon points="242,105 245,116 234,112" fill="#c8a96e"/>
-        <text x="228" y="72" fill="#c8a96e" font-size="10">時計回り</text>
-        <!-- Bracket arm indicator (top) -->
-        <line x1="150" y1="60" x2="150" y2="75" stroke="#888" stroke-width="3" stroke-linecap="round"/>
-        <text x="150" y="78" text-anchor="middle" fill="#666" font-size="8">手すり方向</text>
+        <path d="M 240 115 A 75 75 0 0 1 240 185" fill="none" stroke="#c8a96e" stroke-width="1.2"/>
+        <polygon points="237,180 245,190 233,188" fill="#c8a96e"/>
+        <text x="252" y="155" fill="#c8a96e" font-size="10">時計回り</text>
+        <!-- Handrail direction indicator -->
+        <line x1="150" y1="150" x2="218" y2="105" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
+        <text x="225" y="100" fill="#ccc" font-size="10">≈35°</text>
+        <!-- Arc showing angle -->
+        <path d="M 200 150 A 50 50 0 0 0 210 118" fill="none" stroke="#ccc" stroke-width="0.8"/>
       </svg>
-      <p class="diagram-caption">壁面を正面から見た図（座金のビス穴配置）</p>
+      <p class="diagram-caption">壁面を正面から見た図 ─ 手すりの傾斜角度を時計回りで指定</p>
     </div>
 
     <h2>よくある指定例</h2>
@@ -141,7 +144,7 @@
         </svg>
         <div class="example-angle">0°</div>
         <div class="example-label">水平な手すり</div>
-        <div class="example-desc">廊下・水平部分に設置する場合。ビス穴が真上を向きます。</div>
+        <div class="example-desc">廊下・水平部分に設置する場合。手すりは水平＝0°です。</div>
       </div>
 
       <div class="example-card">
@@ -158,7 +161,7 @@
         </svg>
         <div class="example-angle">右回り 35°前後</div>
         <div class="example-label">階段（右側・登り方向）</div>
-        <div class="example-desc">階段の右側に取り付ける場合。階段の勾配に合わせた角度を指定。</div>
+        <div class="example-desc">階段の右側に取り付ける場合。階段の勾配角度がそのまま手すり角度になります。</div>
       </div>
 
       <div class="example-card">
@@ -174,7 +177,7 @@
         </svg>
         <div class="example-angle">左回り 325°前後</div>
         <div class="example-label">階段（左側・登り方向）</div>
-        <div class="example-desc">階段の左側に取り付ける場合。反時計回りに相当するため 360° - 勾配角度。</div>
+        <div class="example-desc">階段の左側に取り付ける場合。360° − 勾配角度 で指定します。</div>
       </div>
 
       <div class="example-card">
@@ -196,19 +199,19 @@
     <h2>角度の計測方法</h2>
 
     <div class="important-box">
-      <p><span class="emphasis">階段の勾配角度</span>がわかれば、そのまま座金角度として指定できます。</p>
+      <p><span class="emphasis">階段の勾配角度</span>がわかれば、そのまま手すり角度として指定できます。</p>
       <p>一般的な住宅階段の勾配は <span class="emphasis">30°〜 45°</span> 程度です。</p>
       <p>正確な角度がわからない場合は、おおよその角度でご指定いただければ、当工房で調整のご提案をいたします。</p>
     </div>
 
     <table class="summary-table">
       <thead>
-        <tr><th>設置場所</th><th>登り方向</th><th>角度の目安</th></tr>
+        <tr><th>設置場所</th><th>登り方向</th><th>手すり角度の目安</th></tr>
       </thead>
       <tbody>
         <tr><td>廊下・水平面</td><td>-</td><td>0°</td></tr>
         <tr><td>階段（右壁）</td><td>右側を登る</td><td>勾配角度（例: 35°）</td></tr>
-        <tr><td>階段（左壁）</td><td>左側を登る</td><td>360° - 勾配角度（例: 325°）</td></tr>
+        <tr><td>階段（左壁）</td><td>左側を登る</td><td>360° − 勾配角度（例: 325°）</td></tr>
         <tr><td>急勾配の階段</td><td>-</td><td>40°〜45° / 315°〜320°</td></tr>
       </tbody>
     </table>
