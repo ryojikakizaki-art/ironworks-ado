@@ -87,23 +87,17 @@
     .zakin-row { display: flex; justify-content: space-between; align-items: center; }
     .zakin-label { color: var(--muted); }
     .zakin-value { color: var(--accent); font-weight: 500; }
-    .zakin-diagram { margin-top: 12px; }
+    .zakin-diagram {
+      margin-top: 12px;
+    }
     .zakin-diagram svg { width: 100%; height: auto; display: block; }
     .zakin-diagram text { font-family: var(--font); }
     .zakin-diagram .dim-line { stroke: var(--muted); stroke-width: 0.5; }
-    .zakin-diagram .dim-text { fill: var(--muted); font-size: 8px; text-anchor: middle; }
-    .zakin-diagram .bar-line { stroke: var(--light); stroke-width: 2.5; stroke-linecap: round; }
+    .zakin-diagram .dim-text { fill: var(--muted); font-size: 9px; text-anchor: middle; }
+    .zakin-diagram .bar-line { stroke: var(--light); stroke-width: 3; stroke-linecap: round; }
     .zakin-diagram .bracket-circle { fill: var(--accent); }
-    .zakin-diagram .bracket-label { fill: var(--light); font-size: 7px; text-anchor: middle; }
-    .zakin-diagram .end-label { fill: var(--muted); font-size: 7px; text-anchor: middle; }
     .zakin-diagram .total-dim { stroke: var(--light); stroke-width: 0.7; }
-    .zakin-diagram .total-text { fill: var(--light); font-size: 9px; text-anchor: middle; font-weight: 500; }
-    .zakin-diagram .side-view { stroke: var(--muted); stroke-width: 0.8; fill: none; }
-    .zakin-diagram .side-dim { fill: var(--muted); font-size: 6px; text-anchor: middle; }
-    .zakin-diagram .info-text { fill: var(--muted); font-size: 7px; }
-    .zakin-diagram .info-label { fill: var(--light); font-size: 7px; }
-    .zakin-diagram .brand-text { fill: var(--light); font-size: 14px; letter-spacing: 0.1em; }
-    .zakin-diagram .product-text { fill: var(--white); font-size: 20px; font-weight: 300; letter-spacing: 0.05em; }
+    .zakin-diagram .total-text { fill: var(--light); font-size: 10px; text-anchor: middle; font-weight: 500; }
 
     /* 座金詳細図リンク */
     .zakin-detail-toggle {
@@ -112,13 +106,33 @@
       border-bottom: 1px dotted var(--accent); transition: opacity .2s;
     }
     .zakin-detail-toggle:hover { opacity: 0.7; }
-    .zakin-detail-box {
-      display: none; margin-top: 12px; padding: 16px;
-      background: var(--dark); border: 1px solid var(--line);
+
+    /* 座金詳細図モーダル */
+    .zakin-detail-modal {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 200; background: rgba(0,0,0,0.85);
+      align-items: center; justify-content: center;
     }
-    .zakin-detail-box.open { display: block; }
-    .zakin-detail-box svg { width: 100%; max-width: 480px; height: auto; display: block; margin: 0 auto; }
-    .zakin-detail-caption { font-size: 10px; color: var(--muted); text-align: center; margin-top: 8px; letter-spacing: 0.05em; }
+    .zakin-detail-modal.open { display: flex; }
+    .zakin-detail-modal-inner {
+      position: relative; background: #fff; padding: 24px;
+      max-width: 90vw; max-height: 90vh;
+    }
+    .zakin-detail-modal-inner img {
+      display: block; max-width: 100%; max-height: 80vh; height: auto;
+    }
+    .zakin-detail-modal-caption {
+      font-size: 12px; color: #666; text-align: center; margin-top: 12px;
+    }
+    .zakin-detail-modal-close {
+      position: absolute; top: -16px; right: -16px;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--dark); border: 1px solid var(--line);
+      color: var(--white); font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .zakin-detail-modal-close:hover { background: var(--accent); border-color: var(--accent); }
     .price-breakdown { margin-top: 20px; }
     .breakdown-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
     .breakdown-row:last-child { border-bottom: none; }
@@ -300,109 +314,10 @@
               <span class="zakin-label">推奨座金数（自動計算）</span>
               <span class="zakin-value" id="zakinCount">4 個</span>
             </div>
-            <div class="zakin-diagram" id="zakinDiagram"><svg id="zakinSvg" viewBox="0 0 600 300"></svg></div>
+            <div class="zakin-diagram" id="zakinDiagram">
+              <svg id="zakinSvg" viewBox="0 0 400 100"></svg>
+            </div>
         <a class="zakin-detail-toggle" onclick="toggleZakinDetail()">座金詳細図を見る ▸</a>
-        <div class="zakin-detail-box" id="zakinDetailBox">
-          <svg viewBox="0 0 520 220" xmlns="http://www.w3.org/2000/svg">
-            <!-- 横型手すり座金詳細図（横断面図） -->
-            <!-- 壁面 -->
-            <line x1="40" y1="20" x2="40" y2="180" stroke="#888" stroke-width="1.5"/>
-            <!-- 壁面ハッチング -->
-            <line x1="40" y1="25" x2="33" y2="32" stroke="#666" stroke-width="0.5"/>
-            <line x1="40" y1="35" x2="33" y2="42" stroke="#666" stroke-width="0.5"/>
-            <line x1="40" y1="45" x2="33" y2="52" stroke="#666" stroke-width="0.5"/>
-            <line x1="40" y1="55" x2="33" y2="62" stroke="#666" stroke-width="0.5"/>
-            <line x1="40" y1="65" x2="33" y2="72" stroke="#666" stroke-width="0.5"/>
-            <line x1="40" y1="75" x2="33" y2="82" stroke="#666" stroke-width="0.5"/>
-            <line x1="40" y1="85" x2="33" y2="92" stroke="#666" stroke-width="0.5"/>
-            <line x1="40" y1="95" x2="33" y2="102" stroke="#666" stroke-width="0.5"/>
-            <line x1="40" y1="105" x2="33" y2="112" stroke="#666" stroke-width="0.5"/>
-            <line x1="40" y1="115" x2="33" y2="122" stroke="#666" stroke-width="0.5"/>
-            <line x1="40" y1="125" x2="33" y2="132" stroke="#666" stroke-width="0.5"/>
-            <line x1="40" y1="135" x2="33" y2="142" stroke="#666" stroke-width="0.5"/>
-            <line x1="40" y1="145" x2="33" y2="152" stroke="#666" stroke-width="0.5"/>
-            <line x1="40" y1="155" x2="33" y2="162" stroke="#666" stroke-width="0.5"/>
-            <line x1="40" y1="165" x2="33" y2="172" stroke="#666" stroke-width="0.5"/>
-            <!-- ベースプレート（壁面に取り付け） -->
-            <rect x="40" y="62" width="8" height="56" fill="none" stroke="#ccc" stroke-width="1"/>
-            <!-- ハッチング -->
-            <line x1="40" y1="66" x2="48" y2="70" stroke="#666" stroke-width="0.4"/>
-            <line x1="40" y1="72" x2="48" y2="76" stroke="#666" stroke-width="0.4"/>
-            <line x1="40" y1="78" x2="48" y2="82" stroke="#666" stroke-width="0.4"/>
-            <line x1="40" y1="84" x2="48" y2="88" stroke="#666" stroke-width="0.4"/>
-            <line x1="40" y1="90" x2="48" y2="94" stroke="#666" stroke-width="0.4"/>
-            <line x1="40" y1="96" x2="48" y2="100" stroke="#666" stroke-width="0.4"/>
-            <line x1="40" y1="102" x2="48" y2="106" stroke="#666" stroke-width="0.4"/>
-            <line x1="40" y1="108" x2="48" y2="112" stroke="#666" stroke-width="0.4"/>
-            <!-- アーム（水平部） 上面 -->
-            <line x1="48" y1="78" x2="145" y2="78" stroke="#ccc" stroke-width="1"/>
-            <!-- アーム（水平部） 下面 -->
-            <line x1="48" y1="100" x2="145" y2="100" stroke="#ccc" stroke-width="1"/>
-            <!-- アームからパイプへのU字カーブ（上側） -->
-            <path d="M 145 78 C 155 78, 162 72, 162 62" fill="none" stroke="#ccc" stroke-width="1"/>
-            <!-- アームからパイプへのU字カーブ（下側） -->
-            <path d="M 145 100 C 160 100, 172 90, 172 62" fill="none" stroke="#ccc" stroke-width="1"/>
-            <!-- パイプ（円形断面 25.4φ） -->
-            <circle cx="167" cy="47" r="18" fill="none" stroke="#ccc" stroke-width="1"/>
-            <!-- パイプ中心 -->
-            <circle cx="167" cy="47" r="1.5" fill="#888"/>
-            <!-- 中心線（一点鎖線） -->
-            <line x1="167" y1="15" x2="167" y2="180" stroke="#666" stroke-width="0.4" stroke-dasharray="6,2,1,2"/>
-            <!-- 支柱（9φ） -->
-            <line x1="163" y1="100" x2="163" y2="168" stroke="#ccc" stroke-width="1"/>
-            <line x1="171" y1="100" x2="171" y2="168" stroke="#ccc" stroke-width="1"/>
-            <!-- 支柱底 -->
-            <line x1="163" y1="168" x2="171" y2="168" stroke="#ccc" stroke-width="1"/>
-
-            <!-- 寸法線: 65.4（壁面からパイプ外端まで） -->
-            <line x1="40" y1="15" x2="185" y2="15" stroke="#888" stroke-width="0.5"/>
-            <line x1="40" y1="12" x2="40" y2="18" stroke="#888" stroke-width="0.5"/>
-            <line x1="185" y1="12" x2="185" y2="18" stroke="#888" stroke-width="0.5"/>
-            <text x="112" y="12" text-anchor="middle" fill="#ccc" font-size="9" font-family="Helvetica,sans-serif">65.4</text>
-            <!-- 寸法線: 40（壁面からパイプ中心まで） -->
-            <line x1="48" y1="26" x2="167" y2="26" stroke="#888" stroke-width="0.5"/>
-            <line x1="48" y1="23" x2="48" y2="29" stroke="#888" stroke-width="0.5"/>
-            <line x1="167" y1="23" x2="167" y2="29" stroke="#888" stroke-width="0.5"/>
-            <text x="107" y="25" text-anchor="middle" fill="#ccc" font-size="8" font-family="Helvetica,sans-serif">40</text>
-            <!-- 寸法線: 25.4（パイプ径） -->
-            <line x1="149" y1="36" x2="185" y2="36" stroke="#888" stroke-width="0.5"/>
-            <line x1="149" y1="33" x2="149" y2="39" stroke="#888" stroke-width="0.5"/>
-            <line x1="185" y1="33" x2="185" y2="39" stroke="#888" stroke-width="0.5"/>
-            <text x="167" y="34" text-anchor="middle" fill="#ccc" font-size="8" font-family="Helvetica,sans-serif">25.4</text>
-            <!-- 寸法線: 4.5（底部クリアランス） -->
-            <line x1="22" y1="168" x2="22" y2="180" stroke="#888" stroke-width="0.5"/>
-            <line x1="19" y1="168" x2="25" y2="168" stroke="#888" stroke-width="0.5"/>
-            <line x1="19" y1="180" x2="25" y2="180" stroke="#888" stroke-width="0.5"/>
-            <text x="18" y="176" text-anchor="end" fill="#ccc" font-size="7" font-family="Helvetica,sans-serif">4.5</text>
-            <!-- ラベル: 支柱9φ -->
-            <text x="167" y="195" text-anchor="middle" fill="#888" font-size="8" font-family="Helvetica,sans-serif">支柱9φ</text>
-
-            <!-- === 正面図（右側） === -->
-            <!-- 壁面上部（横線） -->
-            <line x1="300" y1="25" x2="470" y2="25" stroke="#888" stroke-width="1"/>
-            <line x1="300" y1="30" x2="470" y2="30" stroke="#888" stroke-width="1"/>
-            <!-- ベースプレート（円形 45φ） -->
-            <circle cx="385" cy="100" r="40" fill="none" stroke="#ccc" stroke-width="1"/>
-            <!-- U字スロット（上部） -->
-            <path d="M 373 60 L 373 80 C 373 90, 397 90, 397 80 L 397 60" fill="none" stroke="#ccc" stroke-width="1"/>
-            <!-- ビス穴 3箇所 (4.5-7φ段付き穴) -->
-            <circle cx="385" cy="72" r="5" fill="none" stroke="#888" stroke-width="0.8"/>
-            <circle cx="385" cy="72" r="3" fill="none" stroke="#888" stroke-width="0.5"/>
-            <circle cx="365" cy="118" r="5" fill="none" stroke="#888" stroke-width="0.8"/>
-            <circle cx="365" cy="118" r="3" fill="none" stroke="#888" stroke-width="0.5"/>
-            <circle cx="405" cy="118" r="5" fill="none" stroke="#888" stroke-width="0.8"/>
-            <circle cx="405" cy="118" r="3" fill="none" stroke="#888" stroke-width="0.5"/>
-            <!-- ラベル: 4.5-7φ段付き穴×3 -->
-            <line x1="410" y1="118" x2="440" y2="150" stroke="#888" stroke-width="0.4"/>
-            <text x="442" y="153" fill="#888" font-size="8" font-family="Helvetica,sans-serif">4.5-7φ段付き穴×3</text>
-            <!-- 寸法線: 45（プレート径） -->
-            <line x1="345" y1="155" x2="425" y2="155" stroke="#888" stroke-width="0.5"/>
-            <line x1="345" y1="152" x2="345" y2="158" stroke="#888" stroke-width="0.5"/>
-            <line x1="425" y1="152" x2="425" y2="158" stroke="#888" stroke-width="0.5"/>
-            <text x="385" y="167" text-anchor="middle" fill="#ccc" font-size="9" font-family="Helvetica,sans-serif">45</text>
-          </svg>
-          <p class="zakin-detail-caption">横型手すり座金 詳細図（側面図・正面図）</p>
-        </div>
           </div>
           <div class="surcharge-notice" id="surchargeNotice">
             ⚠ 2000mmを超えると長尺割増が加算されます。取り回しや施工の難易度が上がるため、事前に設置場所のご確認をお勧めします。
@@ -547,186 +462,40 @@
     return positions;
   }
 
-  // 製品名（制作予定図に表示）
-  var PRODUCT_NAME = 'alexandre';
-  var PRODUCT_MATERIAL = 'ss400 stkm25.4 t2.3';
-  var PRODUCT_COLOR = 'マットブラック';
-
   function buildDiagramSVG(L_mm, positions) {
     var svgNS = 'http://www.w3.org/2000/svg';
     var svg = document.getElementById('zakinSvg');
     svg.innerHTML = '';
 
     // Layout constants
-    var sideW = 65;      // side view area width
-    var padL = 10;       // left padding
-    var padR = 20;       // right padding
-    var barY = 55;       // Y of main bar center
-    var barLeft = padL + sideW + 10;  // bar starts after side view
-    var barRight = 580;  // bar ends
+    var pad = 30;
+    var barY = 40;
+    var W = 400;
+    var barLeft = pad;
+    var barRight = W - pad;
     var barLen = barRight - barLeft;
 
-    // ── Side view (left, compact bracket profile) ──
-    var svWallX = padL + 3;   // wall surface X (left edge)
-    var svPipeCX = padL + sideW - 10; // pipe center X
-    var svPipeCY = barY;      // aligned with bar
-
-    // Pipe circle (25.4φ → r≈8 in SVG scale)
-    var pipeR = 7;
-    var rc = document.createElementNS(svgNS, 'circle');
-    rc.setAttribute('cx', svPipeCX); rc.setAttribute('cy', svPipeCY);
-    rc.setAttribute('r', pipeR); rc.setAttribute('class', 'side-view');
-    svg.appendChild(rc);
-    // Pipe center dot
-    var cd = document.createElementNS(svgNS, 'circle');
-    cd.setAttribute('cx', svPipeCX); cd.setAttribute('cy', svPipeCY);
-    cd.setAttribute('r', 1); cd.setAttribute('fill', 'var(--muted)');
-    svg.appendChild(cd);
-
-    // Arm (horizontal from wall to pipe) - upper line
-    var armTop = svPipeCY - 3;
-    var armBot = svPipeCY + 3;
-    var armRight = svPipeCX - pipeR;
-    var armLeft = svWallX + 5;
-
-    var armU = document.createElementNS(svgNS, 'line');
-    armU.setAttribute('x1', armLeft); armU.setAttribute('y1', armTop);
-    armU.setAttribute('x2', armRight); armU.setAttribute('y2', armTop);
-    armU.setAttribute('class', 'side-view');
-    svg.appendChild(armU);
-    // Arm lower line
-    var armL = document.createElementNS(svgNS, 'line');
-    armL.setAttribute('x1', armLeft); armL.setAttribute('y1', armBot);
-    armL.setAttribute('x2', armRight); armL.setAttribute('y2', armBot);
-    armL.setAttribute('class', 'side-view');
-    svg.appendChild(armL);
-
-    // U-curve connecting arm to pipe
-    var ucTop = document.createElementNS(svgNS, 'path');
-    ucTop.setAttribute('d', 'M ' + armRight + ' ' + armTop + ' C ' + (armRight + 4) + ' ' + armTop + ' ' + (svPipeCX - pipeR) + ' ' + (svPipeCY - pipeR - 2) + ' ' + (svPipeCX - pipeR) + ' ' + (svPipeCY - pipeR + 2));
-    ucTop.setAttribute('class', 'side-view');
-    svg.appendChild(ucTop);
-    var ucBot = document.createElementNS(svgNS, 'path');
-    ucBot.setAttribute('d', 'M ' + armRight + ' ' + armBot + ' C ' + (armRight + 8) + ' ' + armBot + ' ' + (svPipeCX + pipeR) + ' ' + (svPipeCY + pipeR + 4) + ' ' + (svPipeCX + pipeR) + ' ' + (svPipeCY + pipeR - 4));
-    ucBot.setAttribute('class', 'side-view');
-    svg.appendChild(ucBot);
-
-    // Wall & base plate
-    var wallTop = svPipeCY - 25;
-    var wallBot = svPipeCY + 35;
-    var wl = document.createElementNS(svgNS, 'line');
-    wl.setAttribute('x1', svWallX); wl.setAttribute('y1', wallTop);
-    wl.setAttribute('x2', svWallX); wl.setAttribute('y2', wallBot);
-    wl.setAttribute('class', 'side-view');
-    svg.appendChild(wl);
-    // Wall hatching
-    for (var wh = 0; wh < Math.ceil((wallBot - wallTop) / 4); wh++) {
-      var wy = wallTop + wh * 4;
-      var whl = document.createElementNS(svgNS, 'line');
-      whl.setAttribute('x1', svWallX); whl.setAttribute('y1', wy);
-      whl.setAttribute('x2', svWallX - 4); whl.setAttribute('y2', wy + 4);
-      whl.setAttribute('class', 'dim-line');
-      svg.appendChild(whl);
-    }
-    // Base plate
-    var bpTop = armTop - 5;
-    var bpBot = armBot + 5;
-    var bp = document.createElementNS(svgNS, 'rect');
-    bp.setAttribute('x', svWallX); bp.setAttribute('y', bpTop);
-    bp.setAttribute('width', 5); bp.setAttribute('height', bpBot - bpTop);
-    bp.setAttribute('class', 'side-view');
-    svg.appendChild(bp);
-
-    // Support post (below arm, going down)
-    var postTop = armBot;
-    var postBot = svPipeCY + 28;
-    var postCX = svPipeCX;
-    var postW = 3;
-    var pl = document.createElementNS(svgNS, 'line');
-    pl.setAttribute('x1', postCX - postW/2); pl.setAttribute('y1', postTop);
-    pl.setAttribute('x2', postCX - postW/2); pl.setAttribute('y2', postBot);
-    pl.setAttribute('class', 'side-view');
-    svg.appendChild(pl);
-    var pr = document.createElementNS(svgNS, 'line');
-    pr.setAttribute('x1', postCX + postW/2); pr.setAttribute('y1', postTop);
-    pr.setAttribute('x2', postCX + postW/2); pr.setAttribute('y2', postBot);
-    pr.setAttribute('class', 'side-view');
-    svg.appendChild(pr);
-    var pb = document.createElementNS(svgNS, 'line');
-    pb.setAttribute('x1', postCX - postW/2); pb.setAttribute('y1', postBot);
-    pb.setAttribute('x2', postCX + postW/2); pb.setAttribute('y2', postBot);
-    pb.setAttribute('class', 'side-view');
-    svg.appendChild(pb);
-
-    // Side view dimension: 40 (horizontal)
-    var dimSvY = svPipeCY - 22;
-    var dimSvLine = document.createElementNS(svgNS, 'line');
-    dimSvLine.setAttribute('x1', svWallX + 5); dimSvLine.setAttribute('y1', dimSvY);
-    dimSvLine.setAttribute('x2', svPipeCX); dimSvLine.setAttribute('y2', dimSvY);
-    dimSvLine.setAttribute('class', 'dim-line');
-    svg.appendChild(dimSvLine);
-    [svWallX + 5, svPipeCX].forEach(function(tx) {
-      var t = document.createElementNS(svgNS, 'line');
-      t.setAttribute('x1', tx); t.setAttribute('y1', dimSvY - 2);
-      t.setAttribute('x2', tx); t.setAttribute('y2', dimSvY + 2);
-      t.setAttribute('class', 'dim-line'); svg.appendChild(t);
-    });
-    var dim40 = document.createElementNS(svgNS, 'text');
-    dim40.setAttribute('x', (svWallX + 5 + svPipeCX) / 2);
-    dim40.setAttribute('y', dimSvY - 3);
-    dim40.setAttribute('class', 'side-dim');
-    dim40.textContent = '40';
-    svg.appendChild(dim40);
-
-    // Side view dimension: 45 (vertical, post height)
-    var dimSvX2 = svPipeCX + pipeR + 8;
-    var dimPostLine = document.createElementNS(svgNS, 'line');
-    dimPostLine.setAttribute('x1', dimSvX2); dimPostLine.setAttribute('y1', armTop);
-    dimPostLine.setAttribute('x2', dimSvX2); dimPostLine.setAttribute('y2', postBot);
-    dimPostLine.setAttribute('class', 'dim-line');
-    svg.appendChild(dimPostLine);
-    [armTop, postBot].forEach(function(ty) {
-      var t = document.createElementNS(svgNS, 'line');
-      t.setAttribute('x1', dimSvX2 - 2); t.setAttribute('y1', ty);
-      t.setAttribute('x2', dimSvX2 + 2); t.setAttribute('y2', ty);
-      t.setAttribute('class', 'dim-line'); svg.appendChild(t);
-    });
-    var dim45 = document.createElementNS(svgNS, 'text');
-    dim45.setAttribute('x', dimSvX2 + 2);
-    dim45.setAttribute('y', (armTop + postBot) / 2 + 2);
-    dim45.setAttribute('class', 'side-dim');
-    dim45.setAttribute('text-anchor', 'start');
-    dim45.textContent = '45';
-    svg.appendChild(dim45);
-
-    // Pipe material label
-    var pipeLabel = document.createElementNS(svgNS, 'text');
-    pipeLabel.setAttribute('x', svPipeCX);
-    pipeLabel.setAttribute('y', postBot + 12);
-    pipeLabel.setAttribute('class', 'dim-text');
-    pipeLabel.textContent = '25.4\u03C6\u30D1\u30A4\u30D7\u6750';
-    svg.appendChild(pipeLabel);
-
     // ── Total dimension line (above bar) ──
-    var dimY = 18;
+    var dimY = 16;
     var wText = document.createElementNS(svgNS, 'text');
     wText.setAttribute('x', (barLeft + barRight) / 2);
-    wText.setAttribute('y', dimY - 6);
+    wText.setAttribute('y', dimY - 5);
     wText.setAttribute('class', 'total-text');
     wText.textContent = L_mm;
     svg.appendChild(wText);
 
-    var addDimLine = function(x1, x2, y, cls) {
+    // Dimension line with ticks
+    var addDimLine = function(x1, x2, y) {
       var line = document.createElementNS(svgNS, 'line');
       line.setAttribute('x1', x1); line.setAttribute('y1', y);
       line.setAttribute('x2', x2); line.setAttribute('y2', y);
-      line.setAttribute('class', cls || 'total-dim');
+      line.setAttribute('class', 'total-dim');
       svg.appendChild(line);
       [x1, x2].forEach(function(x) {
         var tick = document.createElementNS(svgNS, 'line');
         tick.setAttribute('x1', x); tick.setAttribute('y1', y - 3);
         tick.setAttribute('x2', x); tick.setAttribute('y2', y + 3);
-        tick.setAttribute('class', cls || 'total-dim');
+        tick.setAttribute('class', 'total-dim');
         svg.appendChild(tick);
       });
     };
@@ -742,42 +511,34 @@
     // Bar end caps
     [barLeft, barRight].forEach(function(x) {
       var cap = document.createElementNS(svgNS, 'line');
-      cap.setAttribute('x1', x); cap.setAttribute('y1', barY - 4);
-      cap.setAttribute('x2', x); cap.setAttribute('y2', barY + 4);
+      cap.setAttribute('x1', x); cap.setAttribute('y1', barY - 5);
+      cap.setAttribute('x2', x); cap.setAttribute('y2', barY + 5);
       cap.setAttribute('stroke', 'var(--light)'); cap.setAttribute('stroke-width', '1.5');
       svg.appendChild(cap);
     });
 
-    // ── Bracket markers (small bracket icons on bar) ──
-    var dimBelowY = barY + 25;
+    // ── Bracket markers ──
+    var dimBelowY = barY + 22;
 
-    positions.forEach(function(pos, idx) {
+    positions.forEach(function(pos) {
       var x = barLeft + (pos / L_mm) * barLen;
 
-      // Small bracket icon: circle on bar + vertical post below
+      // Bracket circle on bar
       var bCircle = document.createElementNS(svgNS, 'circle');
       bCircle.setAttribute('cx', x); bCircle.setAttribute('cy', barY);
-      bCircle.setAttribute('r', 3);
+      bCircle.setAttribute('r', 4);
       bCircle.setAttribute('class', 'bracket-circle');
       svg.appendChild(bCircle);
 
-      // Post line down from bracket
+      // Short line below bracket
       var drop = document.createElementNS(svgNS, 'line');
-      drop.setAttribute('x1', x); drop.setAttribute('y1', barY + 3);
-      drop.setAttribute('x2', x); drop.setAttribute('y2', barY + 15);
+      drop.setAttribute('x1', x); drop.setAttribute('y1', barY + 4);
+      drop.setAttribute('x2', x); drop.setAttribute('y2', barY + 12);
       drop.setAttribute('stroke', 'var(--accent)'); drop.setAttribute('stroke-width', '0.8');
       svg.appendChild(drop);
-
-      // Small base plate
-      var bpIcon = document.createElementNS(svgNS, 'line');
-      bpIcon.setAttribute('x1', x - 4); bpIcon.setAttribute('y1', barY + 15);
-      bpIcon.setAttribute('x2', x + 4); bpIcon.setAttribute('y2', barY + 15);
-      bpIcon.setAttribute('stroke', 'var(--accent)'); bpIcon.setAttribute('stroke-width', '1');
-      svg.appendChild(bpIcon);
     });
 
-    // ── Segment dimension annotations (below brackets) ──
-    // Build full segment list: [0, pos0, pos1, ..., posN, L_mm]
+    // ── Segment dimensions (below bar) ──
     var segments = [0].concat(positions).concat([L_mm]);
 
     for (var i = 0; i < segments.length - 1; i++) {
@@ -786,14 +547,12 @@
       var segLen = segments[i + 1] - segments[i];
       var midX = (x1 + x2) / 2;
 
-      // Dimension line
       var dLine = document.createElementNS(svgNS, 'line');
       dLine.setAttribute('x1', x1); dLine.setAttribute('y1', dimBelowY);
       dLine.setAttribute('x2', x2); dLine.setAttribute('y2', dimBelowY);
       dLine.setAttribute('class', 'dim-line');
       svg.appendChild(dLine);
 
-      // Ticks
       [x1, x2].forEach(function(tx) {
         var t = document.createElementNS(svgNS, 'line');
         t.setAttribute('x1', tx); t.setAttribute('y1', dimBelowY - 2);
@@ -802,114 +561,34 @@
         svg.appendChild(t);
       });
 
-      // Label
       var dText = document.createElementNS(svgNS, 'text');
       dText.setAttribute('x', midX);
-      dText.setAttribute('y', dimBelowY + 10);
+      dText.setAttribute('y', dimBelowY + 12);
       dText.setAttribute('class', 'dim-text');
       dText.textContent = segLen;
       svg.appendChild(dText);
     }
 
-    // ── Info block (bottom area) ──
-    var infoY = 130;
-    var infoX = barLeft;
-    var angle = zakinGlobalAngle || 0;
-
-    // Info table
-    var infoRows = [
-      ['\u5EA7\u91D1\u652F\u67F1\u89D2\u5EA6', angle + '\u5EA6'],
-      ['\u7D0D\u54C1\u5834\u6240', ''],
-      ['\u53D7\u6CE8\u65E5', ''],
-      ['\u767A\u9001\u4E88\u5B9A\u65E5', ''],
-      ['color', PRODUCT_COLOR],
-      ['\u6750\u8CEA', PRODUCT_MATERIAL]
-    ];
-
-    // Table border
-    var tblW = 200;
-    var tblH = infoRows.length * 18 + 4;
-    var tblRect = document.createElementNS(svgNS, 'rect');
-    tblRect.setAttribute('x', infoX); tblRect.setAttribute('y', infoY);
-    tblRect.setAttribute('width', tblW); tblRect.setAttribute('height', tblH);
-    tblRect.setAttribute('fill', 'none'); tblRect.setAttribute('stroke', 'var(--line)');
-    tblRect.setAttribute('stroke-width', '0.5');
-    svg.appendChild(tblRect);
-
-    infoRows.forEach(function(row, ri) {
-      var ry = infoY + 13 + ri * 18;
-      // Divider line
-      if (ri > 0) {
-        var divLine = document.createElementNS(svgNS, 'line');
-        divLine.setAttribute('x1', infoX); divLine.setAttribute('y1', ry - 11);
-        divLine.setAttribute('x2', infoX + tblW); divLine.setAttribute('y2', ry - 11);
-        divLine.setAttribute('stroke', 'var(--line)'); divLine.setAttribute('stroke-width', '0.3');
-        svg.appendChild(divLine);
-      }
-      // Column divider
-      var colDiv = document.createElementNS(svgNS, 'line');
-      colDiv.setAttribute('x1', infoX + 80); colDiv.setAttribute('y1', infoY + (ri * 18));
-      colDiv.setAttribute('x2', infoX + 80); colDiv.setAttribute('y2', infoY + ((ri + 1) * 18) + (ri === infoRows.length - 1 ? 4 : 0));
-      colDiv.setAttribute('stroke', 'var(--line)'); colDiv.setAttribute('stroke-width', '0.3');
-      svg.appendChild(colDiv);
-
-      // Label
-      var lbl = document.createElementNS(svgNS, 'text');
-      lbl.setAttribute('x', infoX + 6);
-      lbl.setAttribute('y', ry);
-      lbl.setAttribute('class', 'info-label');
-      lbl.textContent = row[0];
-      svg.appendChild(lbl);
-      // Value
-      var val = document.createElementNS(svgNS, 'text');
-      val.setAttribute('x', infoX + 86);
-      val.setAttribute('y', ry);
-      val.setAttribute('class', 'info-text');
-      val.textContent = row[1];
-      svg.appendChild(val);
-    });
-
-    // Product name (right side, large)
-    var productText = document.createElementNS(svgNS, 'text');
-    productText.setAttribute('x', barRight - 10);
-    productText.setAttribute('y', infoY + 40);
-    productText.setAttribute('text-anchor', 'end');
-    productText.setAttribute('class', 'product-text');
-    productText.textContent = PRODUCT_NAME;
-    svg.appendChild(productText);
-
-    // Brand name
-    var brandText = document.createElementNS(svgNS, 'text');
-    brandText.setAttribute('x', barRight - 10);
-    brandText.setAttribute('y', infoY + 65);
-    brandText.setAttribute('text-anchor', 'end');
-    brandText.setAttribute('class', 'brand-text');
-    brandText.textContent = 'IRONWORKS ado';
-    svg.appendChild(brandText);
-
-    // Bracket count note
+    // Count label
     var countText = document.createElementNS(svgNS, 'text');
     countText.setAttribute('x', (barLeft + barRight) / 2);
-    countText.setAttribute('y', dimBelowY + 24);
+    countText.setAttribute('y', 92);
     countText.setAttribute('class', 'dim-text');
     countText.textContent = '\u300A \u5EA7\u91D1 ' + positions.length + '\u70B9 \u300B';
     svg.appendChild(countText);
   }
 
-  // ── 座金詳細図トグル ──────────────────────────────
+  // ── 座金詳細図モーダル ──────────────────────────────
   function toggleZakinDetail() {
-    var box = document.getElementById('zakinDetailBox');
-    var toggle = document.querySelector('.zakin-detail-toggle');
-    if (box.classList.contains('open')) {
-      box.classList.remove('open');
-      toggle.textContent = '座金詳細図を見る ▸';
+    var modal = document.getElementById('zakinDetailModal');
+    if (modal.classList.contains('open')) {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
     } else {
-      box.classList.add('open');
-      toggle.textContent = '座金詳細図を閉じる ▾';
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
     }
   }
-
-  var zakinGlobalAngle = 0;
 
   function fmt(n) { return '\u00A5' + Math.round(n).toLocaleString('ja-JP'); }
 
@@ -953,5 +632,15 @@
 
   update(1000);
 </script>
+
+<!-- 座金詳細図モーダル -->
+<div class="zakin-detail-modal" id="zakinDetailModal" onclick="if(event.target===this)toggleZakinDetail()">
+  <div class="zakin-detail-modal-inner">
+    <button class="zakin-detail-modal-close" onclick="toggleZakinDetail()">&times;</button>
+    <img src="/item/images/zakin-detail.png" alt="横型手すり座金 詳細図（側面図・正面図）">
+    <p class="zakin-detail-modal-caption">横型手すり座金 詳細図（側面図・正面図）</p>
+  </div>
+</div>
+
 </body>
 </html>
