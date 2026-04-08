@@ -28,9 +28,7 @@
     }
 
     header .logo {
-      font-size: 14px; font-weight: bold; letter-spacing: 0.15em;
-      text-decoration: none; color: var(--white); text-transform: uppercase;
-      white-space: nowrap;
+      text-decoration: none; display: flex; align-items: center;
     }
 
     header .logo span { color: var(--accent); }
@@ -118,8 +116,6 @@
     .zakin-row { display: flex; justify-content: space-between; align-items: center; }
     .zakin-label { color: var(--muted); }
     .zakin-value { color: var(--accent); font-weight: 500; }
-    .zakin-open-drawing{display:block;width:100%;margin-top:12px;padding:10px 0;background:#1a1a1a;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;letter-spacing:.05em}
-    .zakin-open-drawing:hover{background:#333}
     .dm-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:2000;display:flex;align-items:center;justify-content:center;padding:16px}
     .dm-modal{background:#fff;border-radius:10px;max-width:640px;width:100%;max-height:90vh;overflow-y:auto;padding:24px;position:relative}
     .dm-close{position:absolute;top:12px;right:16px;background:none;border:none;font-size:24px;cursor:pointer;color:#333}
@@ -156,6 +152,14 @@
     .zakin-diagram .bracket-circle { fill: var(--accent); }
     .zakin-diagram .total-dim { stroke: var(--light); stroke-width: 0.7; }
     .zakin-diagram .total-text { fill: var(--light); font-size: 10px; text-anchor: middle; font-weight: 500; }
+
+    /* Simulator SVG styles (dark background) */
+    #zakinSvg .bar-line { stroke: var(--light); stroke-width: 3; stroke-linecap: round; }
+    #zakinSvg .bracket-circle { fill: var(--accent); }
+    #zakinSvg .dim-line { stroke: var(--muted); stroke-width: 0.5; }
+    #zakinSvg .dim-text { fill: var(--muted); font-size: 9px; text-anchor: middle; }
+    #zakinSvg .total-dim { stroke: var(--light); stroke-width: 0.7; }
+    #zakinSvg .total-text { fill: var(--light); font-size: 10px; text-anchor: middle; font-weight: 500; }
 
     /* 座金詳細図リンク */
     .zakin-detail-toggle {
@@ -417,7 +421,7 @@
 </head>
 <body>
   <header>
-    <a href="/" class="logo">IRONWORKS <span>ADO</span></a>
+    <a href="/" class="logo"><img src="/images/ado_logo_W.png" alt="IRONWORKS ado" style="height:36px;"></a>
     <nav>
       <a href="/item/">ITEM</a>
       <div class="nav-dropdown">
@@ -519,13 +523,11 @@
               <span class="zakin-label" id="zakinLabel">推奨座金数（自動計算）</span>
               <span class="zakin-value" id="zakinCount">4 個</span>
             </div>
-            <button class="zakin-open-drawing" onclick="openDrawingModal()">
-              制作図を確認・座金位置を指定
-            </button>
             <div class="zakin-diagram" id="zakinDiagram">
               <svg id="zakinSvg" viewBox="0 0 400 120"></svg>
             </div>
-                        <a class="zakin-detail-toggle" onclick="toggleZakinDetail()">座金詳細図を見る ▸</a>
+            <a class="zakin-detail-toggle" onclick="openDrawingModal()" style="display:inline-block;margin-top:8px;font-size:11px;color:var(--accent);cursor:pointer;">制作図プレビュー ▸</a>
+            <a class="zakin-detail-toggle" onclick="toggleZakinDetail()" style="display:inline-block;margin-top:4px;margin-left:16px;font-size:11px;color:var(--muted);cursor:pointer;">座金詳細図を見る ▸</a>
             <button class="zakin-custom-toggle" id="zakinToggle" onclick="toggleZakinCustom()">
               <span>座金位置を指定する</span>
               <span class="toggle-icon">&#9660;</span>
@@ -1283,6 +1285,8 @@
       dmRenderAll();
     }
     if (!zakinCustomMode) {
+      // Update inline simulator SVG diagram
+      buildDiagramSVG(L, getZakinPositions(L, p.zakin));
       document.getElementById('zakinLabel').textContent = '推奨座金数（自動計算）';
       document.getElementById('zakinCount').textContent = p.zakin + ' 個';
     }
@@ -1342,33 +1346,15 @@
 
   update(1500);
 </script>
-<div class="dm-overlay" id="drawingOverlay" style="display:none" onclick="if(event.target===this)closeDrawingModal()">
+<div class="dm-overlay" id="drawingOverlay" onclick="if(event.target===this)closeDrawingModal()">
   <div class="dm-modal">
     <button class="dm-close" onclick="closeDrawingModal()">&times;</button>
     <div class="dm-title">制作図プレビュー</div>
-    <div class="dm-svg-wrap"><svg id="drawingSvg" viewBox="0 0 500 130"></svg></div>
-    <div class="dm-controls">
-      <div class="dm-row">
-        <span class="dm-label">座金数</span>
-        <button class="dm-qty-btn" onclick="dmChangeQty(-1)">－</button>
-        <input class="dm-qty-input" id="dmQtyInput" type="number" min="1" max="10" value="4" oninput="dmOnQtyInput(this)">
-        <button class="dm-qty-btn" onclick="dmChangeQty(1)">＋</button>
-      </div>
-      <div class="dm-row">
-        <span class="dm-label">手すり角度</span>
-        <input class="dm-angle-input" id="dmAngleInput" type="number" min="0" max="360" step="1" value="0" oninput="dmOnAngleInput(this)">
-        <span class="dm-angle-unit">°</span>
-        <a href="/item/zakin-angle.html" target="_blank" class="dm-angle-link">角度の指定方法 →</a>
-      </div>
-      <div class="dm-row">
-        <span class="dm-label">座金位置</span>
-        <div class="dm-pos-list" id="dmPosList"></div>
-      </div>
-      <div class="dm-row">
-        <button class="dm-reset-btn" onclick="dmReset()">自動配置に戻す</button>
-        <span class="dm-price-note" id="dmPriceNote"></span>
-      </div>
-      <div class="dm-note">※ 座金位置は手すり端から何mmの位置かを指定します。<br>※ 追加座金は1個あたり¥1,000（税抜）が加算されます。</div>
+    <div class="dm-svg-wrap">
+      <svg id="drawingSvg" viewBox="0 0 500 130"></svg>
+    </div>
+    <div class="dm-note" style="margin-top: 12px;">
+      ※ 座金の数量・位置・角度はシミュレーター内の「座金位置を指定する」パネルで変更できます。
     </div>
   </div>
 </div>
