@@ -40,9 +40,7 @@
       border-bottom: 1px solid var(--line);
     }
     .logo {
-      font-size: 11px; letter-spacing: 0.35em;
-      text-transform: uppercase; color: var(--white);
-      text-decoration: none;
+      text-decoration: none; display: flex; align-items: center;
     }
     .logo span { color: var(--accent); }
     nav { display: flex; align-items: center; }
@@ -253,14 +251,14 @@
     }
     .zakin-label { color: var(--muted); }
     .zakin-value { color: var(--accent); font-weight: 500; }
-    .zakin-open-drawing {
-      display: block; width: 100%; margin-top: 10px; padding: 10px 12px;
-      background: transparent; border: 1px solid rgba(200,169,110,0.4);
-      color: var(--accent); font-size: 11px; letter-spacing: 0.15em;
-      text-transform: uppercase; font-family: var(--font); cursor: pointer;
-      transition: border-color .2s, background .2s;
-    }
-    .zakin-open-drawing:hover { border-color: var(--accent); background: rgba(200,169,110,0.08); }
+    /* Simulator SVG styles (dark background) */
+    #zakinSvg { width: 100%; height: auto; display: block; margin: 10px 0; }
+    #zakinSvg .bar-line { stroke: var(--light); stroke-width: 3; stroke-linecap: round; }
+    #zakinSvg .bracket-circle { fill: var(--accent); }
+    #zakinSvg .dim-line { stroke: var(--muted); stroke-width: 0.7; }
+    #zakinSvg .dim-text { fill: var(--muted); font-size: 10px; text-anchor: middle; font-family: var(--font); }
+    #zakinSvg .total-dim { stroke: var(--light); stroke-width: 0.8; }
+    #zakinSvg .total-text { fill: var(--white); font-size: 12px; text-anchor: middle; font-weight: 600; font-family: var(--font); }
 
     /* 制作図モーダル */
     .dm-overlay {
@@ -676,7 +674,7 @@
 
 <!-- HEADER -->
 <header>
-  <a class="logo" href="/index.html">IRONWORKS <span>ado</span></a>
+  <a class="logo" href="/index.html"><img src="/images/ado_logo_W.png" alt="IRONWORKS ado" style="height:36px;"></a>
   <nav>
     <div class="nav-dropdown">
       <a href="/#yokogata">CATEGORY</a>
@@ -836,13 +834,11 @@
           <span class="zakin-label" id="zakinLabel">推奨座金数（自動計算）</span>
           <span class="zakin-value" id="zakinCount">4 個</span>
         </div>
-        <button class="zakin-open-drawing" onclick="openDrawingModal()">
-          制作図を確認・座金位置を指定
-        </button>
         <div class="zakin-diagram" id="zakinDiagram">
           <svg id="zakinSvg" viewBox="0 0 400 120"></svg>
         </div>
-        <a class="zakin-detail-toggle" onclick="toggleZakinDetail()">座金詳細図を見る ▸</a>
+        <a class="zakin-detail-toggle" onclick="openDrawingModal()" style="display:inline-block;margin-top:8px;font-size:11px;color:var(--accent);cursor:pointer;">制作図プレビュー ▸</a>
+        <a class="zakin-detail-toggle" onclick="toggleZakinDetail()" style="display:inline-block;margin-top:4px;margin-left:16px;font-size:11px;color:var(--muted);cursor:pointer;">座金詳細図を見る ▸</a>
         <button class="zakin-custom-toggle" id="zakinToggle" onclick="toggleZakinCustom()">
           <span>座金位置を指定する</span>
           <span class="toggle-icon">&#9660;</span>
@@ -1046,9 +1042,6 @@
   }
 
   // ── 制作図モーダル ──
-  var zakinCustomMode = false;
-  var zakinCustomList = [];
-  var zakinGlobalAngle = 0;
   var drawingModalOpen = false;
 
   function openDrawingModal() {
@@ -1056,15 +1049,11 @@
     if (!zakinCustomMode) {
       var count = calcZakin(L);
       dmSetPositions(count, L);
-      document.getElementById('dmQtyInput').value = count;
-    } else {
-      document.getElementById('dmQtyInput').value = zakinCustomList.length;
     }
-    document.getElementById('dmAngleInput').value = zakinGlobalAngle;
     drawingModalOpen = true;
     document.getElementById('drawingOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
-    dmRenderAll();
+    buildDrawingSvg();
   }
 
   function closeDrawingModal() {
@@ -1084,6 +1073,7 @@
 
   function dmChangeQty(delta) {
     var input = document.getElementById('dmQtyInput');
+    if (!input) return;
     var newVal = Math.max(2, Math.min(20, parseInt(input.value) + delta));
     input.value = newVal;
     zakinCustomMode = true;
@@ -1119,7 +1109,8 @@
   function dmRemovePos(idx) {
     if (zakinCustomList.length <= 2) return;
     zakinCustomList.splice(parseInt(idx), 1);
-    document.getElementById('dmQtyInput').value = zakinCustomList.length;
+    var dmQty = document.getElementById('dmQtyInput');
+    if (dmQty) dmQty.value = zakinCustomList.length;
     zakinCustomMode = true;
     dmRenderAll();
   }
@@ -1127,24 +1118,26 @@
   function dmReset() {
     zakinCustomMode = false;
     zakinGlobalAngle = 0;
-    document.getElementById('dmAngleInput').value = 0;
+    var dmAngle = document.getElementById('dmAngleInput');
+    if (dmAngle) dmAngle.value = 0;
     var L = Number(document.getElementById('lengthInput').value) || 1500;
     var count = calcZakin(L);
     dmSetPositions(count, L);
-    document.getElementById('dmQtyInput').value = count;
+    var dmQty = document.getElementById('dmQtyInput');
+    if (dmQty) dmQty.value = count;
     dmRenderAll();
     update(L);
   }
 
   function dmRenderAll() {
     buildDrawingSvg();
-    dmRenderPosList();
     dmUpdatePrice();
   }
 
   function dmRenderPosList() {
     var L = Number(document.getElementById('lengthInput').value) || 1500;
     var list = document.getElementById('dmPosList');
+    if (!list) return;
     list.innerHTML = '';
     zakinCustomList.forEach(function(item, idx) {
       var wrap = document.createElement('div');
@@ -1259,7 +1252,11 @@
     svg.appendChild(noteText);
   }
 
-  function _unused_buildDiagramSVG(L_mm, positions) {
+  function buildDiagramSVG(L_mm, positions) {
+    var svgNS = 'http://www.w3.org/2000/svg';
+    var svg = document.getElementById('zakinSvg');
+    if (!svg) return;
+    svg.innerHTML = '';
 
     // Get angle for tilt
     var angleDeg = zakinGlobalAngle || 0;
@@ -1691,9 +1688,8 @@
       if (!zakinCustomMode) {
         var count = calcZakin(L);
         dmSetPositions(count, L);
-        document.getElementById('dmQtyInput').value = count;
       }
-      dmRenderAll();
+      buildDrawingSvg();
     }
 
     if (zakinCustomMode) {
@@ -1706,6 +1702,9 @@
       dmUpdatePrice();
       return;
     }
+
+    // Update inline simulator SVG diagram
+    buildDiagramSVG(L, getZakinPositions(L, p.zakin));
 
     document.getElementById('zakinLabel').textContent = '推奨座金数（自動計算）';
     document.getElementById('zakinCount').textContent = p.zakin + ' 個';
@@ -2043,32 +2042,8 @@
     <div class="dm-svg-wrap">
       <svg id="drawingSvg" viewBox="0 0 500 130"></svg>
     </div>
-    <div class="dm-controls">
-      <div class="dm-row">
-        <span class="dm-label">座金数</span>
-        <div class="dm-qty-controls">
-          <button class="dm-qty-btn" onclick="dmChangeQty(-1)">−</button>
-          <input class="dm-qty-val" id="dmQtyInput" type="number" min="2" max="20" value="4" onchange="dmOnQtyInput(this)">
-          <button class="dm-qty-btn" onclick="dmChangeQty(1)">＋</button>
-        </div>
-      </div>
-      <div class="dm-row">
-        <span class="dm-label">手すり角度</span>
-        <input class="dm-angle-input" id="dmAngleInput" type="number" min="0" max="360" step="1" value="0" oninput="dmOnAngleInput(this)">
-        <span class="dm-angle-unit">°</span>
-        <a href="/item/zakin-angle.html" target="_blank" class="dm-angle-link">角度の指定方法 →</a>
-      </div>
-      <div class="dm-row">
-        <span class="dm-label">座金位置</span>
-      </div>
-      <div class="dm-pos-list" id="dmPosList"></div>
-      <div class="dm-row">
-        <button class="dm-reset" onclick="dmReset()">自動配置に戻す</button>
-      </div>
-      <div class="dm-note">
-        ※ 両端から100mm以上の位置に配置してください。座金間の推奨最大間隔は850mmです。<br>
-        ※ 数量を変更すると位置は自動で均等配置されます。
-      </div>
+    <div class="dm-note" style="margin-top: 12px;">
+      ※ 座金の数量・位置・角度はシミュレーター内の「座金位置を指定する」パネルで変更できます。
     </div>
   </div>
 </div>
