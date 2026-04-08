@@ -666,6 +666,11 @@
     .qty-pref-group select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
     .qty-pref-group input:focus, .qty-pref-group select:focus { outline: none; border-color: var(--accent); }
     .breakdown-row.shipping-row { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; }
+
+    /* GLightbox 閉じるボタンを白に */
+    .gclose.gbtn svg { fill: #fff; }
+    .gclose.gbtn { color: #fff; }
+    .gclose.gbtn:hover svg { fill: var(--accent); }
   </style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
   <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/js/glightbox.min.js"></script>
@@ -984,7 +989,7 @@
   const ANGLE_PRICE    = 2000;  // 角度加工 座金1箇所あたり
   const INCLUDED_ZAKIN = 3;
   const END_DIST_MM    = 100;
-  const MAX_SPAN_MM    = 850;
+  const MAX_SPAN_MM    = 900;
   const SURGE_START_MM = 2000;
   const SURGE_BASE     = 1.2;
   const SURGE_INTERVAL_MM = 500;
@@ -1639,8 +1644,13 @@
     }
 
     if (zakinCustomMode) {
-      // 座金数に応じて自動配置を更新
-      var customCount = parseInt(document.getElementById('zakinQtyInput').value) || calcZakin(L);
+      // 長さに応じて座金数を自動再計算（最大間隔ルール）
+      var autoCount = calcZakin(L);
+      var qtyInput = document.getElementById('zakinQtyInput');
+      var currentQty = parseInt(qtyInput.value) || autoCount;
+      // 自動計算の最低数未満なら自動数に引き上げ
+      var customCount = Math.max(currentQty, autoCount);
+      qtyInput.value = customCount;
       setZakinPositions(customCount, L);
 
       const rowAddon = document.getElementById('rowAddon');

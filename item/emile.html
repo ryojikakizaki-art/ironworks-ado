@@ -417,6 +417,10 @@
 .nav-dropdown-menu .dd-divider {
   height: 1px; background: var(--line); margin: 8px 24px;
 }
+    /* GLightbox 閉じるボタンを白に */
+    .gclose.gbtn svg { fill: #fff; }
+    .gclose.gbtn { color: #fff; }
+    .gclose.gbtn:hover svg { fill: var(--accent); }
   </style>
 </head>
 <body>
@@ -662,7 +666,7 @@
   const ANGLE_PRICE    = 2000;  // 角度加工 座金1箇所あたり
   const INCLUDED_ZAKIN= 3;
   const END_DIST_MM   = 100;
-  const MAX_SPAN_MM   = 850;
+  const MAX_SPAN_MM   = 900;
   const SURGE_START_MM= 2000;
   const SURGE_BASE    = 1.2;
   const SURGE_INTERVAL_MM= 500;
@@ -1232,7 +1236,11 @@
     }
 
     if (zakinCustomMode) {
-      var customCount = parseInt(document.getElementById('zakinQtyInput').value) || calcZakin(L);
+      var autoCount = calcZakin(L);
+      var qtyInput = document.getElementById('zakinQtyInput');
+      var currentQty = parseInt(qtyInput.value) || autoCount;
+      var customCount = Math.max(currentQty, autoCount);
+      qtyInput.value = customCount;
       setZakinPositions(customCount, L);
 
       const rowAddon = document.getElementById('rowAddon');
