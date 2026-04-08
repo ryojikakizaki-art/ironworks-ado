@@ -304,6 +304,172 @@
       background: #fff; color: #222; width: 100%; max-width: 580px;
       border-radius: 8px; padding: 28px 24px 24px; position: relative;
       max-height: 90vh; overflow-y: auto; font-family: var(--font);
+    .zakin-detail-toggle:hover { opacity: 0.7; }
+
+    /* 座金詳細図モーダル */
+    .zakin-detail-modal {
+      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 200; background: rgba(0,0,0,0.85);
+      align-items: center; justify-content: center;
+    }
+    .zakin-detail-modal.open { display: flex; }
+    .zakin-detail-modal-inner {
+      position: relative; background: #fff; padding: 24px;
+      max-width: 90vw; max-height: 90vh;
+    }
+    .zakin-detail-modal-inner img {
+      display: block; max-width: 100%; max-height: 80vh; height: auto;
+    }
+    .zakin-detail-modal-caption {
+      font-size: 12px; color: #666; text-align: center; margin-top: 12px;
+    }
+    .zakin-detail-modal-close {
+      position: absolute; top: -16px; right: -16px;
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--dark); border: 1px solid var(--line);
+      color: var(--white); font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s;
+    }
+    .zakin-detail-modal-close:hover { background: var(--accent); border-color: var(--accent); }
+
+    /* 座金位置指定 */
+    .zakin-custom-toggle {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 10px; padding: 8px 0;
+      background: none; border: 1px solid var(--line); color: var(--muted);
+      font-size: 11px; letter-spacing: 0.1em; cursor: pointer;
+      font-family: var(--font); width: 100%; transition: all .2s;
+    }
+    .zakin-custom-toggle:hover { border-color: var(--accent); color: var(--accent); }
+    .zakin-custom-toggle.active { border-color: var(--accent); color: var(--accent); background: rgba(200,169,110,0.06); }
+    .zakin-custom-toggle .toggle-icon { transition: transform .2s; font-size: 8px; }
+    .zakin-custom-toggle.active .toggle-icon { transform: rotate(180deg); }
+
+    .zakin-custom-panel {
+      display: none; margin-top: 12px;
+      border: 1px solid var(--line); padding: 16px;
+      background: rgba(0,0,0,0.2);
+    }
+    .zakin-custom-panel.open { display: block; }
+    .zakin-custom-panel-title {
+      font-size: 10px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 12px;
+    }
+
+    .zakin-visual {
+      position: relative; height: 48px; margin-bottom: 16px;
+      background: var(--dark); border: 1px solid var(--line); overflow: visible;
+    }
+    .zakin-visual-bar {
+      position: absolute; top: 50%; left: 16px; right: 16px;
+      height: 4px; background: var(--muted); transform: translateY(-50%);
+      border-radius: 2px;
+    }
+    .zakin-visual-marker {
+      position: absolute; top: 50%; width: 14px; height: 14px;
+      background: var(--accent); border-radius: 50%;
+      transform: translate(-50%, -50%); cursor: default;
+      font-size: 0; z-index: 1;
+    }
+    .zakin-visual-label {
+      position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+      font-size: 8px; color: var(--muted); white-space: nowrap; margin-top: 2px;
+    }
+    .zakin-visual-end {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      font-size: 9px; color: var(--muted);
+    }
+    .zakin-visual-end.left { left: 2px; }
+    .zakin-visual-end.right { right: 2px; }
+
+    /* 数量セレクター */
+    .zakin-qty-row {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+      padding-bottom: 12px; border-bottom: 1px solid var(--line);
+    }
+    .zakin-qty-label { font-size: 12px; color: var(--light); letter-spacing: 0.05em; white-space: nowrap; }
+    .zakin-qty-controls { display: flex; align-items: center; gap: 0; }
+    .zakin-qty-btn {
+      width: 32px; height: 32px; background: none; border: 1px solid var(--line);
+      color: var(--accent); font-size: 16px; cursor: pointer; font-family: var(--font);
+      display: flex; align-items: center; justify-content: center; transition: all .2s;
+    }
+    .zakin-qty-btn:hover { border-color: var(--accent); background: rgba(200,169,110,0.1); }
+    .zakin-qty-btn:first-child { border-radius: 4px 0 0 4px; }
+    .zakin-qty-btn:last-child { border-radius: 0 4px 4px 0; }
+    .zakin-qty-val {
+      width: 40px; height: 32px; background: var(--dark); border: 1px solid var(--line);
+      border-left: none; border-right: none; color: var(--white);
+      font-size: 14px; font-family: var(--font); text-align: center; font-weight: 500;
+    }
+    .zakin-qty-val:focus { outline: none; }
+
+    /* 角度一括指定 */
+    .zakin-angle-row {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 16px;
+      padding-bottom: 12px; border-bottom: 1px solid var(--line); flex-wrap: wrap;
+    }
+    .zakin-angle-label { font-size: 12px; color: var(--light); letter-spacing: 0.05em; white-space: nowrap; }
+    .zakin-angle-dir-group { display: flex; gap: 0; }
+    .zakin-angle-dir-btn {
+      padding: 5px 14px; font-size: 12px; font-family: var(--font);
+      background: var(--dark); border: 1px solid var(--line); color: var(--muted);
+      cursor: pointer; transition: all .2s; letter-spacing: 0.05em;
+    }
+    .zakin-angle-dir-btn:first-child { border-radius: 3px 0 0 3px; }
+    .zakin-angle-dir-btn:last-child { border-radius: 0 3px 3px 0; border-left: none; }
+    .zakin-angle-dir-btn.active { background: var(--accent); color: var(--black); border-color: var(--accent); font-weight: 600; }
+    .zakin-angle-dir-btn:not(.active):hover { border-color: var(--accent); color: var(--light); }
+    .zakin-angle-input {
+      width: 64px; padding: 5px 8px; background: var(--dark);
+      border: 1px solid var(--line); color: var(--white);
+      font-size: 13px; font-family: var(--font); text-align: center;
+    }
+    .zakin-angle-input:focus { outline: none; border-color: var(--accent); }
+    .zakin-angle-unit { font-size: 11px; color: var(--muted); }
+    .zakin-angle-link {
+      font-size: 10px; color: var(--accent); margin-left: auto; text-decoration: none;
+      border-bottom: 1px dotted var(--accent); transition: opacity .2s;
+    }
+    .zakin-angle-link:hover { opacity: 0.7; }
+
+    /* 位置リスト（角度列なし） */
+    .zakin-pos-heading {
+      font-size: 10px; letter-spacing: 0.1em; color: var(--muted);
+      margin-bottom: 8px; text-transform: uppercase;
+    }
+    .zakin-list { display: flex; flex-direction: column; gap: 8px; }
+    .zakin-item {
+      display: grid; grid-template-columns: 28px 1fr 28px; gap: 8px; align-items: center;
+    }
+    .zakin-item-num {
+      font-size: 11px; color: var(--accent); text-align: center; font-weight: 500;
+    }
+    .zakin-item label { font-size: 10px; color: var(--muted); display: block; margin-bottom: 2px; }
+    .zakin-item input {
+      width: 100%; padding: 6px 8px; background: var(--dark);
+      border: 1px solid var(--line); color: var(--white);
+      font-size: 12px; font-family: var(--font);
+    }
+    .zakin-item input:focus { outline: none; border-color: var(--accent); }
+    .zakin-item-remove {
+      background: none; border: none; color: var(--muted); cursor: pointer;
+      font-size: 16px; padding: 0; line-height: 1; transition: color .2s;
+    }
+    .zakin-item-remove:hover { color: #e06060; }
+
+    .zakin-add-row {
+      display: flex; gap: 8px; margin-top: 10px;
+    }
+    .zakin-reset-btn {
+      flex: 1; padding: 8px; font-size: 11px; font-family: var(--font);
+      cursor: pointer; letter-spacing: 0.05em; transition: all .2s;
+      background: none; border: 1px solid var(--line); color: var(--muted);
+    }
+    .zakin-reset-btn:hover { border-color: var(--muted); color: var(--light); }
+    .zakin-custom-note {
+      font-size: 10px; color: var(--muted); margin-top: 10px; line-height: 1.6;
     }
     .dm-close { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 24px; color: #999; cursor: pointer; line-height: 1; transition: color .2s; }
     .dm-close:hover { color: #333; }
@@ -622,6 +788,55 @@
         <button class="zakin-open-drawing" onclick="openDrawingModal()">
           制作図を確認・座金位置を指定
         </button>
+        <div class="zakin-diagram" id="zakinDiagram">
+          <svg id="zakinSvg" viewBox="0 0 400 120"></svg>
+        </div>
+                <a class="zakin-detail-toggle" onclick="toggleZakinDetail()">座金詳細図を見る ▸</a>
+        <button class="zakin-custom-toggle" id="zakinToggle" onclick="toggleZakinCustom()">
+          <span>座金位置を指定する</span>
+          <span class="toggle-icon">&#9660;</span>
+        </button>
+        <div class="zakin-custom-panel" id="zakinPanel">
+          <div class="zakin-custom-panel-title">座金 位置・手すり角度 指定</div>
+
+          <!-- STEP1: 数量 -->
+          <div class="zakin-qty-row">
+            <span class="zakin-qty-label">① 数量</span>
+            <div class="zakin-qty-controls">
+              <button class="zakin-qty-btn" onclick="changeZakinQty(-1)">−</button>
+              <input class="zakin-qty-val" id="zakinQtyInput" type="number" min="2" max="20" value="3" onchange="onZakinQtyInput(this)">
+              <button class="zakin-qty-btn" onclick="changeZakinQty(1)">＋</button>
+            </div>
+          </div>
+
+          <!-- STEP2: 手すり角度（左/右方式） -->
+          <div class="zakin-angle-row">
+            <span class="zakin-angle-label">② 手すり角度</span>
+            <div class="zakin-angle-dir-group">
+              <button type="button" class="zakin-angle-dir-btn active" id="angleDirLeft" onclick="setAngleDir('left')">左</button>
+              <button type="button" class="zakin-angle-dir-btn" id="angleDirRight" onclick="setAngleDir('right')">右</button>
+            </div>
+            <input class="zakin-angle-input" id="zakinAngleInput" type="number" min="0" max="60" step="1" value="0" oninput="onZakinGlobalAngle(this)">
+            <span class="zakin-angle-unit">°</span>
+            <a href="/item/zakin-angle.html" target="_blank" class="zakin-angle-link">角度の指定方法 →</a>
+          </div>
+
+          <!-- STEP3: 位置 -->
+          <div class="zakin-pos-heading">③ 各座金の位置</div>
+          <div class="zakin-visual" id="zakinVisual">
+            <div class="zakin-visual-bar"></div>
+            <span class="zakin-visual-end left">0</span>
+            <span class="zakin-visual-end right" id="zakinVisualEnd">1500</span>
+          </div>
+          <div class="zakin-list" id="zakinList"></div>
+          <div class="zakin-add-row">
+            <button class="zakin-reset-btn" onclick="resetZakinCustom()">自動配置に戻す</button>
+          </div>
+          <div class="zakin-custom-note">
+            ※ 両端から100mm以上の位置に配置してください。座金間の推奨最大間隔は850mmです。<br>
+            ※ 数量を変更すると位置は自動で均等配置されます。位置は個別に調整できます。
+          </div>
+        </div>
       </div>
           <div class="price-breakdown">
             <div class="breakdown-row">
@@ -816,78 +1031,127 @@
     var svg = document.getElementById('zakinSvg');
     svg.innerHTML = '';
 
+    // Get angle for tilt
+    var angleDeg = zakinGlobalAngle || 0;
+    var hasAngle = angleDeg > 0;
+
     // Layout constants
     var pad = 30;
-    var barY = 40;
     var W = 400;
     var barLeft = pad;
     var barRight = W - pad;
     var barLen = barRight - barLeft;
+    var barCX = (barLeft + barRight) / 2;
 
-    // ── Total dimension line (above bar) ──
-    var dimY = 16;
+    // Calculate bar Y positions with angle (cap visual rise to 30px max)
+    var angleRad = angleDeg * Math.PI / 180;
+    var maxVisualRise = 30;
+    var halfRise = Math.min((barLen / 2) * Math.sin(angleRad), maxVisualRise);
+    var barBaseY = hasAngle ? 48 : 35;
+    var H = hasAngle ? 130 + halfRise : 120;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+
+    // Left/right Y based on angle direction
+    var barY1, barY2;
+    if (zakinAngleDir === 'left') {
+      barY1 = barBaseY - halfRise;
+      barY2 = barBaseY + halfRise;
+    } else {
+      barY1 = barBaseY + halfRise;
+      barY2 = barBaseY - halfRise;
+    }
+
+    function barYAtX(x) {
+      var t = (x - barLeft) / barLen;
+      return barY1 + t * (barY2 - barY1);
+    }
+
+    // Actual visual angle of the rendered bar (differs from input angleRad when rise is capped)
+    var actualAngle = Math.atan2(barY2 - barY1, barRight - barLeft);
+
+    // ── Total dimension line (parallel to bar, offset perpendicular above) ──
+    var dimDist = 18;
+    var dimLx = barLeft + dimDist * Math.sin(actualAngle);
+    var dimRx = barRight + dimDist * Math.sin(actualAngle);
+    var dimLy = barY1 - dimDist * Math.cos(actualAngle);
+    var dimRy = barY2 - dimDist * Math.cos(actualAngle);
+    var dimMx = (dimLx + dimRx) / 2;
+    var dimMy = (dimLy + dimRy) / 2;
+
+    var dimLine = document.createElementNS(svgNS, 'line');
+    dimLine.setAttribute('x1', dimLx); dimLine.setAttribute('y1', dimLy);
+    dimLine.setAttribute('x2', dimRx); dimLine.setAttribute('y2', dimRy);
+    dimLine.setAttribute('class', 'total-dim');
+    svg.appendChild(dimLine);
+
+    var tickLen = 3;
+    var tickDx = tickLen * Math.sin(actualAngle);
+    var tickDy = -tickLen * Math.cos(actualAngle);
+    [{x: dimLx, y: dimLy}, {x: dimRx, y: dimRy}].forEach(function(pt) {
+      var tick = document.createElementNS(svgNS, 'line');
+      tick.setAttribute('x1', pt.x - tickDx); tick.setAttribute('y1', pt.y - tickDy);
+      tick.setAttribute('x2', pt.x + tickDx); tick.setAttribute('y2', pt.y + tickDy);
+      tick.setAttribute('class', 'total-dim');
+      svg.appendChild(tick);
+    });
+
+    var textAngle = actualAngle * 180 / Math.PI;
     var wText = document.createElementNS(svgNS, 'text');
-    wText.setAttribute('x', (barLeft + barRight) / 2);
-    wText.setAttribute('y', dimY - 5);
+    wText.setAttribute('x', dimMx);
+    wText.setAttribute('y', dimMy - 5);
     wText.setAttribute('class', 'total-text');
+    if (hasAngle) {
+      wText.setAttribute('transform', 'rotate(' + textAngle + ' ' + dimMx + ' ' + (dimMy - 5) + ')');
+    }
     wText.textContent = L_mm;
     svg.appendChild(wText);
 
-    // Dimension line with ticks
-    var addDimLine = function(x1, x2, y) {
-      var line = document.createElementNS(svgNS, 'line');
-      line.setAttribute('x1', x1); line.setAttribute('y1', y);
-      line.setAttribute('x2', x2); line.setAttribute('y2', y);
-      line.setAttribute('class', 'total-dim');
-      svg.appendChild(line);
-      [x1, x2].forEach(function(x) {
-        var tick = document.createElementNS(svgNS, 'line');
-        tick.setAttribute('x1', x); tick.setAttribute('y1', y - 3);
-        tick.setAttribute('x2', x); tick.setAttribute('y2', y + 3);
-        tick.setAttribute('class', 'total-dim');
-        svg.appendChild(tick);
-      });
-    };
-    addDimLine(barLeft, barRight, dimY);
-
-    // ── Main horizontal bar (handrail) ──
+    // ── Main handrail bar (angled) ──
     var barLine = document.createElementNS(svgNS, 'line');
-    barLine.setAttribute('x1', barLeft); barLine.setAttribute('y1', barY);
-    barLine.setAttribute('x2', barRight); barLine.setAttribute('y2', barY);
+    barLine.setAttribute('x1', barLeft); barLine.setAttribute('y1', barY1);
+    barLine.setAttribute('x2', barRight); barLine.setAttribute('y2', barY2);
     barLine.setAttribute('class', 'bar-line');
     svg.appendChild(barLine);
 
-    // Bar end caps
-    [barLeft, barRight].forEach(function(x) {
+    // Bar end caps (perpendicular to bar)
+    var capLen = 5;
+    var perpDx = capLen * Math.sin(actualAngle);
+    var perpDy = -capLen * Math.cos(actualAngle);
+    [{ x: barLeft, y: barY1 }, { x: barRight, y: barY2 }].forEach(function(pt) {
       var cap = document.createElementNS(svgNS, 'line');
-      cap.setAttribute('x1', x); cap.setAttribute('y1', barY - 5);
-      cap.setAttribute('x2', x); cap.setAttribute('y2', barY + 5);
+      cap.setAttribute('x1', pt.x - perpDx); cap.setAttribute('y1', pt.y - perpDy);
+      cap.setAttribute('x2', pt.x + perpDx); cap.setAttribute('y2', pt.y + perpDy);
       cap.setAttribute('stroke', 'var(--light)'); cap.setAttribute('stroke-width', '1.5');
       svg.appendChild(cap);
     });
 
-    // ── Bracket markers ──
-    var dimBelowY = barY + 22;
+    // ── Bracket markers (below bar) ──
+    var bracketDropLen = 5;
+    var bracketCircleR = 4;
 
     positions.forEach(function(pos) {
       var x = barLeft + (pos / L_mm) * barLen;
+      var yOnBar = barYAtX(x);
 
-      // Bracket circle on bar
+      // Support line (drop from bar downward)
+      var drop = document.createElementNS(svgNS, 'line');
+      drop.setAttribute('x1', x); drop.setAttribute('y1', yOnBar + 2);
+      drop.setAttribute('x2', x); drop.setAttribute('y2', yOnBar + bracketDropLen);
+      drop.setAttribute('stroke', 'var(--accent)'); drop.setAttribute('stroke-width', '1');
+      svg.appendChild(drop);
+
+      // Bracket circle below bar
       var bCircle = document.createElementNS(svgNS, 'circle');
-      bCircle.setAttribute('cx', x); bCircle.setAttribute('cy', barY);
-      bCircle.setAttribute('r', 4);
+      bCircle.setAttribute('cx', x);
+      bCircle.setAttribute('cy', yOnBar + bracketDropLen + bracketCircleR + 1);
+      bCircle.setAttribute('r', bracketCircleR);
       bCircle.setAttribute('class', 'bracket-circle');
       svg.appendChild(bCircle);
-
-      // Short line below bracket
-      var drop = document.createElementNS(svgNS, 'line');
-      drop.setAttribute('x1', x); drop.setAttribute('y1', barY + 4);
-      drop.setAttribute('x2', x); drop.setAttribute('y2', barY + 12);
-      drop.setAttribute('stroke', 'var(--accent)'); drop.setAttribute('stroke-width', '0.8');
-      svg.appendChild(drop);
     });
 
-    // ── Segment dimensions (below bar) ──
+    // ── Segment dimensions (below brackets) ──
+    var maxBarY = Math.max(barY1, barY2);
+    var dimBelowY = maxBarY + bracketDropLen + bracketCircleR * 2 + 14;
     var segments = [0].concat(positions).concat([L_mm]);
 
     for (var i = 0; i < segments.length - 1; i++) {
@@ -918,12 +1182,14 @@
       svg.appendChild(dText);
     }
 
-    // Count label
+    // Count label + angle label
+    var labelY = dimBelowY + 26;
     var countText = document.createElementNS(svgNS, 'text');
-    countText.setAttribute('x', (barLeft + barRight) / 2);
-    countText.setAttribute('y', 92);
+    countText.setAttribute('x', barCX);
+    countText.setAttribute('y', labelY);
     countText.setAttribute('class', 'dim-text');
-    countText.textContent = '《 座金 ' + positions.length + '点 》';
+    var angleLabel = hasAngle ? '  ' + zakinAngleDir.replace('left', '左').replace('right', '右') + angleDeg + '°' : '';
+    countText.textContent = '\u300A \u5EA7\u91D1 ' + positions.length + '\u70B9' + angleLabel + ' \u300B';
     svg.appendChild(countText);
   }
 
@@ -986,6 +1252,31 @@
   function dmOnAngleInput(el) {
     zakinGlobalAngle = Math.max(0, Math.min(360, parseInt(el.value) || 0));
     zakinCustomMode = true;
+  // 角度方向・角度値
+  var zakinAngleDir = 'left'; // 'left' or 'right'
+
+  function setAngleDir(dir) {
+    zakinAngleDir = dir;
+    document.getElementById('angleDirLeft').classList.toggle('active', dir === 'left');
+    document.getElementById('angleDirRight').classList.toggle('active', dir === 'right');
+    onAngleChanged();
+  }
+
+  function onZakinGlobalAngle(input) {
+    zakinGlobalAngle = Math.max(0, Math.min(60, parseInt(input.value) || 0));
+    onAngleChanged();
+  }
+
+  function onAngleChanged() {
+    var L = Number(document.getElementById('lengthInput').value) || 1500;
+    if (zakinCustomMode) {
+      var sorted = zakinCustomList.slice().sort(function(a, b) { return a.pos - b.pos; });
+      var posArray = sorted.map(function(item) { return item.pos; });
+      buildDiagramSVG(L, posArray);
+    } else {
+      var z = calcZakin(L);
+      buildDiagramSVG(L, getZakinPositions(L, z));
+    }
   }
 
   function dmOnPosChange(input) {
@@ -1016,6 +1307,11 @@
     document.getElementById('dmQtyInput').value = count;
     dmRenderAll();
     update(L);
+    zakinAngleDir = 'left';
+    document.getElementById('zakinAngleInput').value = 0;
+    document.getElementById('angleDirLeft').classList.add('active');
+    document.getElementById('angleDirRight').classList.remove('active');
+    initZakinCustom();
   }
 
   function dmRenderAll() {

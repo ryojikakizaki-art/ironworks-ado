@@ -88,8 +88,10 @@
 
     <h2>基本の考え方</h2>
 
-    <p>角度は<span class="emphasis">壁面を正面から見た状態</span>で、<span class="emphasis">手すりが水平の状態を 0°</span>とします。<br>
-    そこから<span class="emphasis">時計回り</span>に回転した角度を指定してください。</p>
+    <p>角度は<span class="emphasis">取り付ける壁を正面から見た状態</span>で、<span class="emphasis">手すりが水平の状態を 0°</span>とします。</p>
+
+    <p>手すりが<span class="emphasis">左上がり</span>の場合（登り右側取り付け）は<span class="emphasis">「左 ○°」</span>、<br>
+    手すりが<span class="emphasis">右上がり</span>の場合（登り左側取り付け）は<span class="emphasis">「右 ○°」</span>と指定してください。</p>
 
     <div class="important-box">
       <p><span class="emphasis">座金自体は壁面に対して水平に固定</span>されます。指定いただく角度は「手すりパイプが水平面に対してどれだけ傾いているか」を表します。</p>
@@ -97,36 +99,35 @@
     </div>
 
     <div class="diagram-box">
-      <svg viewBox="0 0 300 300" width="280" xmlns="http://www.w3.org/2000/svg">
-        <!-- Background circle (reference) -->
-        <circle cx="150" cy="150" r="90" fill="none" stroke="#555" stroke-width="1.5"/>
-        <!-- Center mark -->
-        <circle cx="150" cy="150" r="3" fill="#888"/>
-        <!-- 0° direction (right = horizontal handrail) -->
-        <line x1="150" y1="150" x2="270" y2="150" stroke="#c8a96e" stroke-width="1.5" stroke-dasharray="4,3"/>
-        <polygon points="265,145 278,150 265,155" fill="#c8a96e"/>
-        <!-- 90° mark (down) -->
-        <line x1="150" y1="150" x2="150" y2="270" stroke="#666" stroke-width="0.8" stroke-dasharray="3,3"/>
-        <!-- 180° mark (left) -->
-        <line x1="150" y1="150" x2="30" y2="150" stroke="#666" stroke-width="0.8" stroke-dasharray="3,3"/>
-        <!-- 270° mark (up) -->
-        <line x1="150" y1="150" x2="150" y2="30" stroke="#666" stroke-width="0.8" stroke-dasharray="3,3"/>
-        <!-- Degree labels -->
-        <text x="282" y="154" text-anchor="start" fill="#c8a96e" font-size="13" font-weight="500">0°（水平）</text>
-        <text x="150" y="292" text-anchor="middle" fill="#888" font-size="12">90°</text>
-        <text x="18" y="154" text-anchor="end" fill="#888" font-size="12">180°</text>
-        <text x="150" y="22" text-anchor="middle" fill="#888" font-size="12">270°</text>
-        <!-- Clockwise arrow -->
-        <path d="M 240 115 A 75 75 0 0 1 240 185" fill="none" stroke="#c8a96e" stroke-width="1.2"/>
-        <polygon points="237,180 245,190 233,188" fill="#c8a96e"/>
-        <text x="252" y="155" fill="#c8a96e" font-size="10">時計回り</text>
-        <!-- Handrail direction indicator -->
-        <line x1="150" y1="150" x2="218" y2="105" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
-        <text x="225" y="100" fill="#ccc" font-size="10">≈35°</text>
-        <!-- Arc showing angle -->
-        <path d="M 200 150 A 50 50 0 0 0 210 118" fill="none" stroke="#ccc" stroke-width="0.8"/>
+      <svg viewBox="0 0 360 180" width="340" xmlns="http://www.w3.org/2000/svg">
+        <!-- Wall surface (top) -->
+        <rect x="20" y="10" width="320" height="8" fill="none" stroke="#555" stroke-width="1" rx="1"/>
+        <text x="180" y="8" text-anchor="middle" fill="#666" font-size="9">壁面</text>
+
+        <!-- 0° horizontal handrail (center reference) -->
+        <line x1="60" y1="90" x2="300" y2="90" stroke="#666" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="310" y="94" fill="#888" font-size="10">0°（水平）</text>
+
+        <!-- Left upward handrail -->
+        <line x1="60" y1="130" x2="300" y2="55" stroke="#c8a96e" stroke-width="2.5" stroke-linecap="round"/>
+        <text x="42" y="138" fill="#c8a96e" font-size="11" text-anchor="end">左○°</text>
+        <!-- Bracket from wall to handrail -->
+        <line x1="180" y1="18" x2="180" y2="92" stroke="#888" stroke-width="1.2"/>
+        <circle cx="180" cy="18" r="4" fill="none" stroke="#888" stroke-width="1"/>
+
+        <!-- Angle arc -->
+        <path d="M 250 90 A 40 40 0 0 0 260 72" fill="none" stroke="#c8a96e" stroke-width="1"/>
+        <text x="272" y="78" fill="#c8a96e" font-size="10">角度</text>
+
+        <!-- Arrow showing "left upward" direction -->
+        <polygon points="65,128 58,138 72,135" fill="#c8a96e"/>
+
+        <!-- Right upward reference (subtle) -->
+        <line x1="60" y1="55" x2="300" y2="130" stroke="#aaa" stroke-width="1.5" stroke-dasharray="6,4" stroke-linecap="round"/>
+        <text x="310" y="138" fill="#aaa" font-size="11">右○°</text>
+        <polygon points="295,127 305,134 293,133" fill="#aaa"/>
       </svg>
-      <p class="diagram-caption">壁面を正面から見た図 ─ 手すりの傾斜角度を時計回りで指定</p>
+      <p class="diagram-caption">壁面を正面から見た図 ─ 左上がり＝「左○°」、右上がり＝「右○°」</p>
     </div>
 
     <h2>よくある指定例</h2>
@@ -144,40 +145,39 @@
         </svg>
         <div class="example-angle">0°</div>
         <div class="example-label">水平な手すり</div>
-        <div class="example-desc">廊下・水平部分に設置する場合。手すりは水平＝0°です。</div>
+        <div class="example-desc">廊下・水平部分に設置する場合。角度指定なし（0°）です。</div>
       </div>
 
       <div class="example-card">
         <svg viewBox="0 0 140 100" width="140" xmlns="http://www.w3.org/2000/svg">
           <!-- Wall -->
           <rect x="10" y="10" width="120" height="6" fill="none" stroke="#555" stroke-width="1"/>
-          <!-- Handrail (angled right-up) -->
-          <line x1="20" y1="80" x2="120" y2="35" stroke="#ccc" stroke-width="3" stroke-linecap="round"/>
-          <!-- Bracket (perpendicular to wall) -->
-          <line x1="70" y1="16" x2="70" y2="57" stroke="#888" stroke-width="1.5"/>
+          <!-- Handrail (left upward = 登り右側) -->
+          <line x1="20" y1="75" x2="120" y2="35" stroke="#ccc" stroke-width="3" stroke-linecap="round"/>
+          <!-- Bracket -->
+          <line x1="70" y1="16" x2="70" y2="55" stroke="#888" stroke-width="1.5"/>
           <circle cx="70" cy="16" r="5" fill="none" stroke="#888" stroke-width="1"/>
-          <!-- Angle indicator -->
           <text x="80" y="90" fill="#c8a96e" font-size="10">登り→</text>
         </svg>
-        <div class="example-angle">右回り 35°前後</div>
-        <div class="example-label">階段（右側・登り方向）</div>
-        <div class="example-desc">階段の右側に取り付ける場合。階段の勾配角度がそのまま手すり角度になります。</div>
+        <div class="example-angle">左 35°</div>
+        <div class="example-label">階段（登り右側取り付け）</div>
+        <div class="example-desc">壁を正面から見て左上がり。階段勾配がそのまま角度になります。</div>
       </div>
 
       <div class="example-card">
         <svg viewBox="0 0 140 100" width="140" xmlns="http://www.w3.org/2000/svg">
           <!-- Wall -->
           <rect x="10" y="10" width="120" height="6" fill="none" stroke="#555" stroke-width="1"/>
-          <!-- Handrail (angled left-up) -->
-          <line x1="20" y1="35" x2="120" y2="80" stroke="#ccc" stroke-width="3" stroke-linecap="round"/>
+          <!-- Handrail (right upward = 登り左側) -->
+          <line x1="20" y1="35" x2="120" y2="75" stroke="#ccc" stroke-width="3" stroke-linecap="round"/>
           <!-- Bracket -->
-          <line x1="70" y1="16" x2="70" y2="57" stroke="#888" stroke-width="1.5"/>
+          <line x1="70" y1="16" x2="70" y2="55" stroke="#888" stroke-width="1.5"/>
           <circle cx="70" cy="16" r="5" fill="none" stroke="#888" stroke-width="1"/>
           <text x="12" y="90" fill="#c8a96e" font-size="10">←登り</text>
         </svg>
-        <div class="example-angle">左回り 325°前後</div>
-        <div class="example-label">階段（左側・登り方向）</div>
-        <div class="example-desc">階段の左側に取り付ける場合。360° − 勾配角度 で指定します。</div>
+        <div class="example-angle">右 35°</div>
+        <div class="example-label">階段（登り左側取り付け）</div>
+        <div class="example-desc">壁を正面から見て右上がり。階段勾配がそのまま角度になります。</div>
       </div>
 
       <div class="example-card">
@@ -192,7 +192,7 @@
         </svg>
         <div class="example-angle">0°</div>
         <div class="example-label">縦型手すり</div>
-        <div class="example-desc">縦に取り付ける場合も0°が基本です。</div>
+        <div class="example-desc">縦に取り付ける場合も角度指定は不要（0°）です。</div>
       </div>
     </div>
 
@@ -206,13 +206,13 @@
 
     <table class="summary-table">
       <thead>
-        <tr><th>設置場所</th><th>登り方向</th><th>手すり角度の目安</th></tr>
+        <tr><th>設置場所</th><th>見え方</th><th>指定方法</th></tr>
       </thead>
       <tbody>
-        <tr><td>廊下・水平面</td><td>-</td><td>0°</td></tr>
-        <tr><td>階段（右壁）</td><td>右側を登る</td><td>勾配角度（例: 35°）</td></tr>
-        <tr><td>階段（左壁）</td><td>左側を登る</td><td>360° − 勾配角度（例: 325°）</td></tr>
-        <tr><td>急勾配の階段</td><td>-</td><td>40°〜45° / 315°〜320°</td></tr>
+        <tr><td>廊下・水平面</td><td>水平</td><td>0°（指定不要）</td></tr>
+        <tr><td>階段（登り右側）</td><td>左上がり</td><td>左 ○°（例: 左 35°）</td></tr>
+        <tr><td>階段（登り左側）</td><td>右上がり</td><td>右 ○°（例: 右 35°）</td></tr>
+        <tr><td>急勾配の階段</td><td>-</td><td>左 or 右 40°〜45°</td></tr>
       </tbody>
     </table>
 
