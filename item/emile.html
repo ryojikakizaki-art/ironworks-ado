@@ -526,52 +526,30 @@
             <div class="zakin-diagram" id="zakinDiagram">
               <svg id="zakinSvg" viewBox="0 0 400 120"></svg>
             </div>
-            <a class="zakin-detail-toggle" onclick="openDrawingModal()" style="display:inline-block;margin-top:8px;font-size:11px;color:var(--accent);cursor:pointer;">制作図プレビュー ▸</a>
-            <a class="zakin-detail-toggle" onclick="toggleZakinDetail()" style="display:inline-block;margin-top:4px;margin-left:16px;font-size:11px;color:var(--muted);cursor:pointer;">座金詳細図を見る ▸</a>
-            <button class="zakin-custom-toggle" id="zakinToggle" onclick="toggleZakinCustom()">
-              <span>座金位置を指定する</span>
-              <span class="toggle-icon">&#9660;</span>
-            </button>
-            <div class="zakin-custom-panel" id="zakinPanel">
-              <div class="zakin-custom-panel-title">座金 位置・手すり角度 指定</div>
+            <div style="display:flex;gap:16px;margin-top:8px;">
+              <a class="zakin-detail-toggle" onclick="openDrawingModal()" style="font-size:11px;color:var(--accent);cursor:pointer;">制作図プレビュー ▸</a>
+              <a class="zakin-detail-toggle" onclick="toggleZakinDetail()" style="font-size:11px;color:var(--muted);cursor:pointer;">座金詳細図を見る ▸</a>
+            </div>
 
-              <!-- STEP1: 数量 -->
-              <div class="zakin-qty-row">
-                <span class="zakin-qty-label">① 数量</span>
-                <div class="zakin-qty-controls">
-                  <button class="zakin-qty-btn" onclick="changeZakinQty(-1)">−</button>
-                  <input class="zakin-qty-val" id="zakinQtyInput" type="number" min="2" max="20" value="3" onchange="onZakinQtyInput(this)">
-                  <button class="zakin-qty-btn" onclick="changeZakinQty(1)">＋</button>
-                </div>
+            <!-- 座金数量 -->
+            <div class="zakin-qty-row" style="margin-top:16px;">
+              <span class="zakin-qty-label">座金数</span>
+              <div class="zakin-qty-controls">
+                <button class="zakin-qty-btn" onclick="changeZakinQty(-1)">−</button>
+                <input class="zakin-qty-val" id="zakinQtyInput" type="number" min="2" max="20" value="3" onchange="onZakinQtyInput(this)">
+                <button class="zakin-qty-btn" onclick="changeZakinQty(1)">＋</button>
               </div>
+            </div>
 
-              <!-- STEP2: 手すり角度（左/右方式） -->
-              <div class="zakin-angle-row">
-                <span class="zakin-angle-label">② 手すり角度</span>
-                <div class="zakin-angle-dir-group">
-                  <button type="button" class="zakin-angle-dir-btn active" id="angleDirLeft" onclick="setAngleDir('left')">左</button>
-                  <button type="button" class="zakin-angle-dir-btn" id="angleDirRight" onclick="setAngleDir('right')">右</button>
-                </div>
-                <input class="zakin-angle-input" id="zakinAngleInput" type="number" min="0" max="60" step="1" value="0" oninput="onZakinGlobalAngle(this)">
-                <span class="zakin-angle-unit">°</span>
-                <a href="/item/zakin-angle.html" target="_blank" class="zakin-angle-link">角度の指定方法 →</a>
+            <!-- 手すり角度（左/右方式） -->
+            <div class="zakin-angle-row">
+              <span class="zakin-angle-label">手すり角度</span>
+              <div class="zakin-angle-dir-group">
+                <button type="button" class="zakin-angle-dir-btn active" id="angleDirLeft" onclick="setAngleDir('left')">左</button>
+                <button type="button" class="zakin-angle-dir-btn" id="angleDirRight" onclick="setAngleDir('right')">右</button>
               </div>
-
-              <!-- STEP3: 位置 -->
-              <div class="zakin-pos-heading">③ 各座金の位置</div>
-              <div class="zakin-visual" id="zakinVisual">
-                <div class="zakin-visual-bar"></div>
-                <span class="zakin-visual-end left">0</span>
-                <span class="zakin-visual-end right" id="zakinVisualEnd">1500</span>
-              </div>
-              <div class="zakin-list" id="zakinList"></div>
-              <div class="zakin-add-row">
-                <button class="zakin-reset-btn" onclick="resetZakinCustom()">自動配置に戻す</button>
-              </div>
-              <div class="zakin-custom-note">
-                ※ 両端から100mm以上の位置に配置してください。座金間の推奨最大間隔は850mmです。<br>
-                ※ 数量を変更すると位置は自動で均等配置されます。位置は個別に調整できます。
-              </div>
+              <input class="zakin-angle-input" id="zakinAngleInput" type="number" min="0" max="60" step="1" value="0" oninput="onZakinGlobalAngle(this)">
+              <span class="zakin-angle-unit">°</span>
             </div>
           </div>
           <div class="surcharge-notice" id="surchargeNotice">
@@ -593,6 +571,10 @@
             <div class="breakdown-row" id="rowSurcharge" style="display:none">
               <span class="breakdown-label">長尺割増</span>
               <span class="breakdown-value" id="surchargeVal">—</span>
+            </div>
+            <div class="breakdown-row" id="rowAngle" style="display:none">
+              <span class="breakdown-label">角度加工料金</span>
+              <span class="breakdown-value" id="angleVal">—</span>
             </div>
           </div>
           <div class="total-price">
@@ -677,6 +659,7 @@
   const STD_LENGTH_MM = 1500;
   const PRICE_PER_MM  = 25;
   const ZAKIN_PRICE   = 3500;
+  const ANGLE_PRICE    = 2000;  // 角度加工 座金1箇所あたり
   const INCLUDED_ZAKIN= 3;
   const END_DIST_MM   = 100;
   const MAX_SPAN_MM   = 850;
@@ -839,41 +822,53 @@
       svg.appendChild(bCircle);
     });
 
-    // ── Segment dimensions (below brackets) ──
-    var maxBarY = Math.max(barY1, barY2);
-    var dimBelowY = maxBarY + bracketDropLen + bracketCircleR * 2 + 14;
+    // ── Segment dimensions (below brackets, parallel to bar) ──
+    var segOffsetDist = bracketDropLen + bracketCircleR * 2 + 14;
     var segments = [0].concat(positions).concat([L_mm]);
+    // Perpendicular offset below bar (opposite direction from dim line above)
+    var segNx = -Math.sin(actualAngle);
+    var segNy = Math.cos(actualAngle);
 
     for (var i = 0; i < segments.length - 1; i++) {
-      var x1 = barLeft + (segments[i] / L_mm) * barLen;
-      var x2 = barLeft + (segments[i + 1] / L_mm) * barLen;
+      var sx1 = barLeft + (segments[i] / L_mm) * barLen;
+      var sx2 = barLeft + (segments[i + 1] / L_mm) * barLen;
+      var sy1at = barYAtX(sx1) + segOffsetDist * segNy;
+      var sy2at = barYAtX(sx2) + segOffsetDist * segNy;
+      var sx1off = sx1 + segOffsetDist * segNx;
+      var sx2off = sx2 + segOffsetDist * segNx;
       var segLen = segments[i + 1] - segments[i];
-      var midX = (x1 + x2) / 2;
+      var sMidX = (sx1off + sx2off) / 2;
+      var sMidY = (sy1at + sy2at) / 2;
 
       var dLine = document.createElementNS(svgNS, 'line');
-      dLine.setAttribute('x1', x1); dLine.setAttribute('y1', dimBelowY);
-      dLine.setAttribute('x2', x2); dLine.setAttribute('y2', dimBelowY);
+      dLine.setAttribute('x1', sx1off); dLine.setAttribute('y1', sy1at);
+      dLine.setAttribute('x2', sx2off); dLine.setAttribute('y2', sy2at);
       dLine.setAttribute('class', 'dim-line');
       svg.appendChild(dLine);
 
-      [x1, x2].forEach(function(tx) {
+      // Ticks perpendicular to bar
+      [{x: sx1off, y: sy1at}, {x: sx2off, y: sy2at}].forEach(function(pt) {
         var t = document.createElementNS(svgNS, 'line');
-        t.setAttribute('x1', tx); t.setAttribute('y1', dimBelowY - 2);
-        t.setAttribute('x2', tx); t.setAttribute('y2', dimBelowY + 2);
+        t.setAttribute('x1', pt.x - tickDx); t.setAttribute('y1', pt.y - tickDy);
+        t.setAttribute('x2', pt.x + tickDx); t.setAttribute('y2', pt.y + tickDy);
         t.setAttribute('class', 'dim-line');
         svg.appendChild(t);
       });
 
       var dText = document.createElementNS(svgNS, 'text');
-      dText.setAttribute('x', midX);
-      dText.setAttribute('y', dimBelowY + 12);
+      dText.setAttribute('x', sMidX);
+      dText.setAttribute('y', sMidY + 12);
       dText.setAttribute('class', 'dim-text');
+      if (hasAngle) {
+        dText.setAttribute('transform', 'rotate(' + textAngle + ' ' + sMidX + ' ' + (sMidY + 12) + ')');
+      }
       dText.textContent = segLen;
       svg.appendChild(dText);
     }
 
     // Count label + angle label
-    var labelY = dimBelowY + 26;
+    var maxSegY = Math.max(barY1, barY2) + segOffsetDist + 12;
+    var labelY = maxSegY + 20;
     var countText = document.createElementNS(svgNS, 'text');
     countText.setAttribute('x', barCX);
     countText.setAttribute('y', labelY);
@@ -896,7 +891,7 @@
   }
 
   // ── 座金カスタム指定 ──────────────────────────────
-  var zakinCustomMode = false;
+  var zakinCustomMode = true;
   var zakinCustomList = []; // [{pos: mm}, ...]
   var zakinGlobalAngle = 0;
 
@@ -986,68 +981,10 @@
       var z = calcZakin(L);
       buildDiagramSVG(L, getZakinPositions(L, z));
     }
+    dmUpdatePrice();
   }
 
   function renderZakinCustom() {
-    var L = Number(document.getElementById('lengthInput').value) || 1500;
-    document.getElementById('zakinVisualEnd').textContent = L;
-
-    // Render visual markers
-    var visual = document.getElementById('zakinVisual');
-    var oldMarkers = visual.querySelectorAll('.zakin-visual-marker');
-    oldMarkers.forEach(function(m) { m.remove(); });
-    var barLeft = 16, barRight = 16;
-    var barWidth = visual.offsetWidth - barLeft - barRight;
-    if (barWidth <= 0) barWidth = 200;
-    zakinCustomList.forEach(function(item) {
-      var pct = item.pos / L;
-      var marker = document.createElement('div');
-      marker.className = 'zakin-visual-marker';
-      marker.style.left = (barLeft + pct * barWidth) + 'px';
-      var label = document.createElement('span');
-      label.className = 'zakin-visual-label';
-      label.textContent = item.pos + 'mm';
-      marker.appendChild(label);
-      visual.appendChild(marker);
-    });
-
-    // Render position list (no angle column)
-    var list = document.getElementById('zakinList');
-    list.innerHTML = '';
-    zakinCustomList.forEach(function(item, idx) {
-      var row = document.createElement('div');
-      row.className = 'zakin-item';
-
-      var num = document.createElement('div');
-      num.className = 'zakin-item-num';
-      num.textContent = (idx + 1);
-
-      var posWrap = document.createElement('div');
-      var posLabel = document.createElement('label');
-      posLabel.textContent = '位置 (mm)';
-      var posInput = document.createElement('input');
-      posInput.type = 'number';
-      posInput.min = '0';
-      posInput.max = String(L);
-      posInput.value = item.pos;
-      posInput.dataset.idx = idx;
-      posInput.oninput = function() { onZakinPosChange(this); };
-      posWrap.appendChild(posLabel);
-      posWrap.appendChild(posInput);
-
-      var removeBtn = document.createElement('button');
-      removeBtn.className = 'zakin-item-remove';
-      removeBtn.innerHTML = '&times;';
-      removeBtn.dataset.idx = idx;
-      removeBtn.onclick = function() { removeZakinItem(this.dataset.idx); };
-      if (zakinCustomList.length <= 2) removeBtn.style.visibility = 'hidden';
-
-      row.appendChild(num);
-      row.appendChild(posWrap);
-      row.appendChild(removeBtn);
-      list.appendChild(row);
-    });
-
     updateZakinPrice();
   }
 
@@ -1118,6 +1055,15 @@
     } else {
       rowZakin.style.display = 'none';
     }
+
+    // 角度加工料金（角度>0の場合、座金数×¥2,000）
+    var angleCost = (zakinGlobalAngle > 0) ? count * ANGLE_PRICE : 0;
+    var rowAngle = document.getElementById('rowAngle');
+    if (angleCost > 0) {
+      rowAngle.style.display = 'flex';
+      document.getElementById('angleVal').textContent = fmt(angleCost);
+    } else { rowAngle.style.display = 'none'; }
+    customTotal += angleCost;
 
     document.getElementById('totalVal').textContent = fmt(customTotal);
   }
@@ -1284,12 +1230,31 @@
       }
       dmRenderAll();
     }
-    if (!zakinCustomMode) {
-      // Update inline simulator SVG diagram
-      buildDiagramSVG(L, getZakinPositions(L, p.zakin));
-      document.getElementById('zakinLabel').textContent = '推奨座金数（自動計算）';
-      document.getElementById('zakinCount').textContent = p.zakin + ' 個';
+
+    if (zakinCustomMode) {
+      var customCount = parseInt(document.getElementById('zakinQtyInput').value) || calcZakin(L);
+      setZakinPositions(customCount, L);
+
+      const rowAddon = document.getElementById('rowAddon');
+      if (p.addon > 0) { rowAddon.style.display = 'flex'; document.getElementById('addonVal').textContent = fmt(p.addon); }
+      else { rowAddon.style.display = 'none'; }
+      const rowSurcharge = document.getElementById('rowSurcharge');
+      const notice = document.getElementById('surchargeNotice');
+      if (p.surcharge > 0) { rowSurcharge.style.display = 'flex'; document.getElementById('surchargeVal').textContent = fmt(p.surcharge); notice.style.display = 'block'; }
+      else { rowSurcharge.style.display = 'none'; notice.style.display = 'none'; }
+      dmUpdatePrice();
+      // SVG図を描画（カスタムモードでも常に表示）
+      var sorted = zakinCustomList.slice().sort(function(a, b) { return a.pos - b.pos; });
+      var posArray = sorted.map(function(item) { return item.pos; });
+      buildDiagramSVG(L, posArray);
+      return;
     }
+
+    // Update inline simulator SVG diagram
+    buildDiagramSVG(L, getZakinPositions(L, p.zakin));
+
+    document.getElementById('zakinLabel').textContent = '推奨座金数（自動計算）';
+    document.getElementById('zakinCount').textContent = p.zakin + ' 個';
 
     const rowAddon = document.getElementById('rowAddon');
     if (p.addon > 0) {
@@ -1318,11 +1283,7 @@
       notice.style.display = 'none';
     }
 
-    if (zakinCustomMode) {
-      dmUpdatePrice();
-    } else {
-      document.getElementById('totalVal').textContent = fmt(p.total);
-    }
+    document.getElementById('totalVal').textContent = fmt(p.total);
   }
 
   function onLengthChange(v) { update(v); }
@@ -1344,8 +1305,18 @@
     }
   }
 
+  initZakinCustom();
   update(1500);
 </script>
+<!-- 座金詳細図モーダル -->
+<div class="zakin-detail-modal" id="zakinDetailModal" onclick="if(event.target===this)toggleZakinDetail()">
+  <div class="zakin-detail-modal-inner">
+    <button class="zakin-detail-modal-close" onclick="toggleZakinDetail()">&times;</button>
+    <img src="/item/images/zakin-detail.png" alt="横型手すり座金 詳細図（側面図・正面図）">
+    <p class="zakin-detail-modal-caption">横型手すり座金 詳細図（側面図・正面図）</p>
+  </div>
+</div>
+
 <div class="dm-overlay" id="drawingOverlay" onclick="if(event.target===this)closeDrawingModal()">
   <div class="dm-modal">
     <button class="dm-close" onclick="closeDrawingModal()">&times;</button>
