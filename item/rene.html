@@ -1644,14 +1644,10 @@
     }
 
     if (zakinCustomMode) {
-      // 長さに応じて座金数を自動再計算（最大間隔ルール）
+      // 長さに応じて座金数を常に推奨数に自動更新
       var autoCount = calcZakin(L);
-      var qtyInput = document.getElementById('zakinQtyInput');
-      var currentQty = parseInt(qtyInput.value) || autoCount;
-      // 自動計算の最低数未満なら自動数に引き上げ
-      var customCount = Math.max(currentQty, autoCount);
-      qtyInput.value = customCount;
-      setZakinPositions(customCount, L);
+      document.getElementById('zakinQtyInput').value = autoCount;
+      setZakinPositions(autoCount, L);
 
       const rowAddon = document.getElementById('rowAddon');
       if (p.addon > 0) { rowAddon.style.display = 'flex'; document.getElementById('addonVal').textContent = fmt(p.addon); }
