@@ -30,6 +30,7 @@
     header .logo {
       font-size: 14px; font-weight: bold; letter-spacing: 0.15em;
       text-decoration: none; color: var(--white); text-transform: uppercase;
+      white-space: nowrap;
     }
 
     header .logo span { color: var(--accent); }
@@ -379,7 +380,7 @@
       footer { flex-direction: column; gap: 20px; text-align: center; }
     }
   /* CATEGORY DROPDOWN */
-.nav-dropdown { position: relative; }
+.nav-dropdown { position: relative; display: inline-flex; align-items: center; }
 .nav-dropdown > a {
   color: var(--light); text-decoration: none; font-size: 12px;
   letter-spacing: 0.1em; text-transform: uppercase;
