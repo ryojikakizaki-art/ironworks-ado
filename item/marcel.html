@@ -449,6 +449,66 @@
     .qty-pref-group select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
     .qty-pref-group input:focus, .qty-pref-group select:focus { outline: none; border-color: var(--accent); }
     .breakdown-row.shipping-row { border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; }
+
+    /* STEP LABELS */
+    .step-label {
+      font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 12px; margin-top: 24px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .step-label:first-child { margin-top: 0; }
+    .step-label::after {
+      content: ''; flex: 1; height: 1px;
+      background: linear-gradient(to right, rgba(200,169,110,0.3), transparent);
+    }
+    .step-divider { border: none; border-top: 1px solid var(--line); margin: 20px 0; }
+
+    /* ADVANCED TOGGLE */
+    .advanced-toggle-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: none; border: 1px solid var(--line); color: var(--muted);
+      font-size: 11px; letter-spacing: 0.05em; cursor: pointer;
+      padding: 8px 14px; font-family: var(--font); transition: all .2s; margin-top: 8px;
+    }
+    .advanced-toggle-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .advanced-toggle-btn .arrow { transition: transform .2s; font-size: 9px; }
+    .advanced-toggle-btn.open .arrow { transform: rotate(90deg); }
+    .advanced-panel { display: none; margin-top: 12px; }
+    .advanced-panel.open { display: block; }
+
+    /* DELIVERY SECTION */
+    .delivery-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-bottom: 16px; }
+    .delivery-btn {
+      padding: 12px 8px; font-size: 12px; font-family: var(--font);
+      cursor: pointer; letter-spacing: 0.05em; transition: all .2s;
+      background: var(--dark); border: 1px solid var(--line); color: var(--muted); text-align: center;
+    }
+    .delivery-btn:first-child { border-right: none; }
+    .delivery-btn.active { background: rgba(200,169,110,0.1); border-color: var(--accent); color: var(--accent); }
+    .delivery-btn:hover:not(.active) { border-color: var(--muted); color: var(--light); }
+    .delivery-estimate {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 16px; margin-bottom: 16px;
+      background: rgba(200,169,110,0.06); border: 1px solid rgba(200,169,110,0.2);
+    }
+    .delivery-estimate-label { font-size: 12px; color: var(--muted); }
+    .delivery-estimate-date { font-size: 14px; color: var(--accent); font-weight: 500; }
+    .arrival-row {
+      display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; margin-bottom: 12px;
+    }
+    .arrival-label { font-size: 12px; color: var(--muted); white-space: nowrap; }
+    .arrival-row input[type="date"], .arrival-row select {
+      width: 100%; padding: 10px 12px; background: var(--dark);
+      border: 1px solid var(--line); color: var(--white);
+      font-size: 14px; font-family: var(--font); appearance: none; -webkit-appearance: none;
+    }
+    .arrival-row select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px;
+    }
+    .arrival-row input:focus, .arrival-row select:focus { outline: none; border-color: var(--accent); }
+    .arrival-note { font-size: 10px; color: var(--muted); margin-top: -4px; margin-bottom: 8px; }
+
     /* GLightbox 閉じるボタンを白に */
     .gclose.gbtn svg { fill: #fff; }
     .gclose.gbtn { color: #fff; }
@@ -456,6 +516,7 @@
   </style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
   <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/js/glightbox.min.js"></script>
+  <script src="/js/business-days.js"></script>
 </head>
 <body>
   <header>
@@ -541,6 +602,8 @@
 
         <div class="calc-section">
           <div class="calc-title">サイズ・価格シミュレーター</div>
+
+          <div class="step-label">Step 1 — 長さを選ぶ</div>
           <div class="input-group">
             <div class="input-label">
               <span>ご希望の長さ</span>
@@ -555,86 +618,139 @@
               <span>500</span><span>1500（標準）</span><span>2000（長尺）</span><span>5000mm</span>
             </div>
 
-      <div class="qty-pref-group">
-        <div>
-          <label for="qtyInput">数量</label>
-          <input type="number" id="qtyInput" value="1" min="1" max="99" oninput="onQtyChange()">
-        </div>
-        <div>
-          <label for="prefSelect">配送先（都道府県）</label>
-          <select id="prefSelect" onchange="onPrefChange()">
-            <option value="">選択してください</option>
-            <option>北海道</option>
-            <optgroup label="東北">
-              <option>青森県</option><option>岩手県</option><option>秋田県</option>
-              <option>宮城県</option><option>山形県</option><option>福島県</option>
-            </optgroup>
-            <optgroup label="関東">
-              <option>茨城県</option><option>栃木県</option><option>群馬県</option><option>埼玉県</option>
-              <option>千葉県</option><option>東京都</option><option>神奈川県</option><option>山梨県</option>
-            </optgroup>
-            <optgroup label="信越・北陸">
-              <option>新潟県</option><option>長野県</option>
-              <option>富山県</option><option>石川県</option><option>福井県</option>
-            </optgroup>
-            <optgroup label="東海">
-              <option>岐阜県</option><option>静岡県</option><option>愛知県</option><option>三重県</option>
-            </optgroup>
-            <optgroup label="関西">
-              <option>滋賀県</option><option>京都府</option><option>大阪府</option>
-              <option>兵庫県</option><option>奈良県</option><option>和歌山県</option>
-            </optgroup>
-            <optgroup label="中国">
-              <option>鳥取県</option><option>島根県</option><option>岡山県</option>
-              <option>広島県</option><option>山口県</option>
-            </optgroup>
-            <optgroup label="四国">
-              <option>徳島県</option><option>香川県</option><option>愛媛県</option><option>高知県</option>
-            </optgroup>
-            <optgroup label="九州">
-              <option>福岡県</option><option>佐賀県</option><option>長崎県</option><option>熊本県</option>
-              <option>大分県</option><option>宮崎県</option><option>鹿児島県</option>
-            </optgroup>
-            <option>沖縄県</option>
-          </select>
-        </div>
-      </div>
-      </div>
-
-      <div class="zakin-info">
-        <div class="zakin-row">
-          <span class="zakin-label" id="zakinLabel">推奨座金数（自動計算）</span>
-          <span class="zakin-value" id="zakinCount">4 個</span>
-        </div>
-        <div class="zakin-diagram" id="zakinDiagram">
-          <svg id="zakinSvg" viewBox="0 0 400 120"></svg>
-        </div>
-        <div style="display:flex;gap:16px;margin-top:8px;">
-          <a class="zakin-detail-toggle" onclick="openDrawingModal()" style="font-size:11px;color:var(--accent);cursor:pointer;">制作図プレビュー ▸</a>
-          <a class="zakin-detail-toggle" onclick="toggleZakinDetail()" style="font-size:11px;color:var(--muted);cursor:pointer;">座金詳細図を見る ▸</a>
-        </div>
-
-        <!-- 座金数量 -->
-        <div class="zakin-qty-row" style="margin-top:16px;">
-          <span class="zakin-qty-label">座金数</span>
-          <div class="zakin-qty-controls">
-            <button class="zakin-qty-btn" onclick="changeZakinQty(-1)">−</button>
-            <input class="zakin-qty-val" id="zakinQtyInput" type="number" min="2" max="20" value="3" onchange="onZakinQtyInput(this)">
-            <button class="zakin-qty-btn" onclick="changeZakinQty(1)">＋</button>
+          <hr class="step-divider">
+          <div class="step-label">Step 2 — 数量・配送先</div>
+          <div class="qty-pref-group">
+            <div>
+              <label for="qtyInput">数量</label>
+              <input type="number" id="qtyInput" value="1" min="1" max="99" oninput="onQtyChange()">
+            </div>
+            <div>
+              <label for="prefSelect">配送先（都道府県）</label>
+              <select id="prefSelect" onchange="onPrefChange()">
+                <option value="">選択してください</option>
+                <option>北海道</option>
+                <optgroup label="東北">
+                  <option>青森県</option><option>岩手県</option><option>秋田県</option>
+                  <option>宮城県</option><option>山形県</option><option>福島県</option>
+                </optgroup>
+                <optgroup label="関東">
+                  <option>茨城県</option><option>栃木県</option><option>群馬県</option><option>埼玉県</option>
+                  <option>千葉県</option><option>東京都</option><option>神奈川県</option><option>山梨県</option>
+                </optgroup>
+                <optgroup label="信越・北陸">
+                  <option>新潟県</option><option>長野県</option>
+                  <option>富山県</option><option>石川県</option><option>福井県</option>
+                </optgroup>
+                <optgroup label="東海">
+                  <option>岐阜県</option><option>静岡県</option><option>愛知県</option><option>三重県</option>
+                </optgroup>
+                <optgroup label="関西">
+                  <option>滋賀県</option><option>京都府</option><option>大阪府</option>
+                  <option>兵庫県</option><option>奈良県</option><option>和歌山県</option>
+                </optgroup>
+                <optgroup label="中国">
+                  <option>鳥取県</option><option>島根県</option><option>岡山県</option>
+                  <option>広島県</option><option>山口県</option>
+                </optgroup>
+                <optgroup label="四国">
+                  <option>徳島県</option><option>香川県</option><option>愛媛県</option><option>高知県</option>
+                </optgroup>
+                <optgroup label="九州">
+                  <option>福岡県</option><option>佐賀県</option><option>長崎県</option><option>熊本県</option>
+                  <option>大分県</option><option>宮崎県</option><option>鹿児島県</option>
+                </optgroup>
+                <option>沖縄県</option>
+              </select>
+            </div>
           </div>
-        </div>
-
-        <!-- 手すり角度（左/右方式） -->
-        <div class="zakin-angle-row">
-          <span class="zakin-angle-label">手すり角度</span>
-          <div class="zakin-angle-dir-group">
-            <button type="button" class="zakin-angle-dir-btn active" id="angleDirLeft" onclick="setAngleDir('left')">左</button>
-            <button type="button" class="zakin-angle-dir-btn" id="angleDirRight" onclick="setAngleDir('right')">右</button>
           </div>
-          <input class="zakin-angle-input" id="zakinAngleInput" type="number" min="0" max="60" step="1" value="0" oninput="onZakinGlobalAngle(this)">
-          <span class="zakin-angle-unit">°</span>
-        </div>
-      </div>
+
+          <div class="zakin-info">
+            <div class="zakin-row">
+              <span class="zakin-label" id="zakinLabel">推奨座金数（自動計算）</span>
+              <span class="zakin-value" id="zakinCount">4 個</span>
+            </div>
+            <div class="zakin-diagram" id="zakinDiagram">
+              <svg id="zakinSvg" viewBox="0 0 400 120"></svg>
+            </div>
+            <!-- 詳細設定（折りたたみ） -->
+            <button class="advanced-toggle-btn" id="advancedToggle" onclick="toggleAdvanced()">
+              <span class="arrow">▸</span> 詳細設定（座金数・角度のカスタマイズ）
+            </button>
+            <div class="advanced-panel" id="advancedPanel">
+              <div style="display:flex;gap:16px;margin-top:8px;margin-bottom:12px;">
+                <a class="zakin-detail-toggle" onclick="openDrawingModal()" style="font-size:11px;color:var(--accent);cursor:pointer;">制作図プレビュー ▸</a>
+                <a class="zakin-detail-toggle" onclick="toggleZakinDetail()" style="font-size:11px;color:var(--muted);cursor:pointer;">座金詳細図を見る ▸</a>
+              </div>
+
+              <!-- 座金数量 -->
+              <div class="zakin-qty-row" style="margin-top:8px;">
+                <span class="zakin-qty-label">座金数</span>
+                <div class="zakin-qty-controls">
+                  <button class="zakin-qty-btn" onclick="changeZakinQty(-1)">−</button>
+                  <input class="zakin-qty-val" id="zakinQtyInput" type="number" min="2" max="20" value="3" onchange="onZakinQtyInput(this)">
+                  <button class="zakin-qty-btn" onclick="changeZakinQty(1)">＋</button>
+                </div>
+                <span style="font-size:10px;color:var(--muted);margin-left:8px;">※推奨最大座金間隔 900mm</span>
+              </div>
+              <div id="zakinSpanWarning" style="display:none;margin-top:-10px;margin-bottom:8px;padding:6px 12px;font-size:11px;color:#f5c542;background:rgba(245,197,66,0.1);border:1px solid rgba(245,197,66,0.3);">⚠ 座金間隔が900mmを超えています。強度にご注意ください。</div>
+
+              <!-- 手すり角度（左/右方式） -->
+              <div class="zakin-angle-row">
+                <span class="zakin-angle-label">手すり角度</span>
+                <div class="zakin-angle-dir-group">
+                  <button type="button" class="zakin-angle-dir-btn active" id="angleDirLeft" onclick="setAngleDir('left')">左</button>
+                  <button type="button" class="zakin-angle-dir-btn" id="angleDirRight" onclick="setAngleDir('right')">右</button>
+                </div>
+                <input class="zakin-angle-input" id="zakinAngleInput" type="number" min="0" max="60" step="1" value="0" oninput="onZakinGlobalAngle(this)">
+                <span class="zakin-angle-unit">°</span>
+                <span style="font-size:10px;color:var(--muted);margin-left:auto;">※角度加工 座金1点あたり +¥2,000</span>
+              </div>
+            </div>
+          </div>
+
+          <hr class="step-divider">
+          <div class="step-label">Step 3 — 納品日・配送を選ぶ</div>
+
+          <div class="delivery-toggle">
+            <button type="button" class="delivery-btn active" id="btnStandard" onclick="setDeliveryType('standard')">
+              通常（10営業日発送）
+            </button>
+            <button type="button" class="delivery-btn" id="btnRush" onclick="setDeliveryType('rush')">
+              特急（最短5営業日発送）+20%
+            </button>
+          </div>
+          <div class="delivery-estimate">
+            <span class="delivery-estimate-label">発送予定日</span>
+            <span class="delivery-estimate-date" id="shippingDateDisplay">—</span>
+          </div>
+          <div class="delivery-estimate" id="arrivalEstimateRow" style="display:none;margin-top:-1px;">
+            <span class="delivery-estimate-label">到着予定日</span>
+            <span class="delivery-estimate-date" id="deliveryDate">—</span>
+          </div>
+          <div class="arrival-row">
+            <span class="arrival-label">到着希望日</span>
+            <input type="date" id="arrivalDatePicker" onchange="onArrivalDateChange()">
+          </div>
+          <div class="arrival-note" id="arrivalNote">※ 配送先を選択すると到着予定日が表示されます</div>
+          <div id="arrivalError" style="display:none;padding:8px 12px;font-size:11px;color:#e06060;background:rgba(224,96,96,0.1);border:1px solid rgba(224,96,96,0.3);margin-bottom:8px;">⚠ この日付では受注できません。最短到着予定日以降の日付を指定してください。</div>
+          <div class="arrival-row">
+            <span class="arrival-label">時間帯（佐川急便）</span>
+            <select id="timeSlotSelect">
+              <option value="">指定なし</option>
+              <option value="午前中">午前中</option>
+              <option value="12:00-14:00">12:00-14:00</option>
+              <option value="14:00-16:00">14:00-16:00</option>
+              <option value="16:00-18:00">16:00-18:00</option>
+              <option value="18:00-20:00">18:00-20:00</option>
+              <option value="19:00-21:00">19:00-21:00</option>
+            </select>
+          </div>
+
+          <hr class="step-divider">
+          <div class="step-label">Step 4 — 確認して購入</div>
+
           <div class="price-breakdown">
             <div class="breakdown-row">
               <span class="breakdown-label">基本料金（〜1500mm）</span>
@@ -656,34 +772,42 @@
               <span class="breakdown-label">角度加工料金</span>
               <span class="breakdown-value" id="angleVal">—</span>
             </div>
+            <div class="breakdown-row" id="rowRush" style="display:none">
+              <span class="breakdown-label">特急割増（+20%）</span>
+              <span class="breakdown-value" id="rushVal">—</span>
+            </div>
           </div>
+
           <div class="breakdown-row shipping-row" id="rowShipping" style="display:none">
-          <span class="breakdown-label">送料</span>
-          <span class="breakdown-value" id="shippingVal">—</span>
-        </div>
-        <div class="shipping-note" id="shippingNote" style="display:none"></div>
-        <div class="total-price">
+            <span class="breakdown-label">送料</span>
+            <span class="breakdown-value" id="shippingVal">—</span>
+          </div>
+          <div class="shipping-note" id="shippingNote" style="display:none"></div>
+          <div class="total-price">
             <span class="total-label">合計（税込）</span>
             <div>
               <span class="total-amount" id="totalVal">¥36,000</span>
               <span class="total-tax">税込</span>
             </div>
           </div>
+
           <div class="cta-wrap">
             <button class="btn-primary" id="btnCheckout" onclick="addToCart()">カートに追加 — 購入手続きへ</button>
             <a class="btn-secondary" href="mailto:info@tantetuzest.com">お問い合わせ・カスタム相談</a>
           </div>
-      <div class="shipping-inquiry" id="shippingInquiry"></div>
+
+          <div class="shipping-inquiry" id="shippingInquiry"></div>
+
           <div class="checkout-error" id="checkoutError">⚠ エラーが発生しました。しばらく後にもう一度お試しください。</div>
           <ul class="notes">
-            <li>受注生産のため、お届けまで約3〜4週間かかります</li>
+            <li>受注生産 — 通常10営業日、特急5営業日でお届け</li>
             <li>施工・取り付けは含まれません（別途ご相談可）</li>
             <li>サイズは指定寸法±5mm以内の精度でお届けします</li>
             <li>クレジットカード決済（Stripe）対応</li>
           </ul>
-      <div class="surcharge-notice" id="surchargeNotice">
-        ※ 2,000mmを超える長さには長尺割増が加算されます。取り回しや施工の難易度が上がるため、事前に設置場所のご確認をお勧めします。
-      </div>
+          <div class="surcharge-notice" id="surchargeNotice">
+            ※ 2,000mmを超える長さには長尺割増が加算されます。取り回しや施工の難易度が上がるため、事前に設置場所のご確認をお勧めします。
+          </div>
         </div>
       </div>
     </div>
@@ -784,6 +908,107 @@
   const SURGE_INTERVAL_MM= 500;
   const MAX_LENGTH_MM = 5000;
   const PRODUCT_KEY   = 'marcel';
+  const RUSH_RATE      = 0.2;  // 特急割増率
+
+  // ── 詳細設定の折りたたみ ──
+  function toggleAdvanced() {
+    var btn = document.getElementById('advancedToggle');
+    var panel = document.getElementById('advancedPanel');
+    btn.classList.toggle('open');
+    panel.classList.toggle('open');
+  }
+
+  // ── 納品日・特急配送 ──
+  var currentDeliveryType = 'standard';
+  var currentRushSurcharge = 0;
+
+  function setDeliveryType(type) {
+    currentDeliveryType = type;
+    document.getElementById('btnStandard').classList.toggle('active', type === 'standard');
+    document.getElementById('btnRush').classList.toggle('active', type === 'rush');
+    updateDeliveryDate();
+    recalcRushSurcharge();
+  }
+
+  function updateDeliveryDate() {
+    var isRush = currentDeliveryType === 'rush';
+    var schedule = BusinessDays.getScheduleDates(new Date(), isRush);
+
+    // 発送予定日を常に表示
+    document.getElementById('shippingDateDisplay').textContent = BusinessDays.formatDateJa(schedule.shippingDate);
+
+    // 配送先が選択されていれば到着予定日も表示
+    var pref = document.getElementById('prefSelect').value;
+    var region = PREF_TO_REGION[pref] || '';
+    var arrivalRow = document.getElementById('arrivalEstimateRow');
+    var picker = document.getElementById('arrivalDatePicker');
+    var noteEl = document.getElementById('arrivalNote');
+
+    if (region && region !== 'okinawa') {
+      var arrivalDate = BusinessDays.getArrivalDate(schedule.shippingDate, region);
+      document.getElementById('deliveryDate').textContent = BusinessDays.formatDateJa(arrivalDate);
+      arrivalRow.style.display = 'flex';
+      picker.min = BusinessDays.formatDateISO(arrivalDate);
+      // 到着希望日のデフォルト値を到着予定日に設定
+      if (!picker.value) {
+        picker.value = BusinessDays.formatDateISO(arrivalDate);
+      }
+      noteEl.textContent = '\u203B \u5230\u7740\u4E88\u5B9A\u65E5\u4EE5\u964D\u306E\u65E5\u4ED8\u3092\u6307\u5B9A\u3067\u304D\u307E\u3059';
+    } else {
+      arrivalRow.style.display = 'none';
+      document.getElementById('deliveryDate').textContent = '\u2014';
+      picker.min = BusinessDays.formatDateISO(schedule.arrivalDate);
+      noteEl.textContent = '\u203B \u914D\u9001\u5148\u3092\u9078\u629E\u3059\u308B\u3068\u5230\u7740\u4E88\u5B9A\u65E5\u304C\u8868\u793A\u3055\u308C\u307E\u3059';
+    }
+
+    // 既に選択済みの日付がmin以前なら空にしてバリデーション
+    if (picker.value && picker.value < picker.min) {
+      picker.value = '';
+    }
+    validateArrivalDate();
+  }
+
+  function onArrivalDateChange() {
+    validateArrivalDate();
+  }
+
+  function validateArrivalDate() {
+    var picker = document.getElementById('arrivalDatePicker');
+    var errorEl = document.getElementById('arrivalError');
+    var btn = document.getElementById('btnCheckout');
+
+    if (picker.value && picker.value < picker.min) {
+      errorEl.style.display = 'block';
+      picker.value = '';
+      return;
+    }
+    errorEl.style.display = 'none';
+  }
+
+  function recalcRushSurcharge() {
+    var L = Number(document.getElementById('lengthInput').value) || 1500;
+    var p = calcPrice(L);
+    var count = zakinCustomList.length || p.zakin;
+    var angleCost = (zakinGlobalAngle > 0) ? count * ANGLE_PRICE : 0;
+    var addZakin = zakinCustomMode
+      ? Math.max(0, count - INCLUDED_ZAKIN) * ZAKIN_PRICE
+      : p.addZakin;
+    var handrailTotal = BASE_PRICE + p.addon + addZakin + p.surcharge + angleCost;
+
+    if (currentDeliveryType === 'rush') {
+      currentRushSurcharge = Math.round(handrailTotal * RUSH_RATE);
+      document.getElementById('rowRush').style.display = 'flex';
+      document.getElementById('rushVal').textContent = fmt(currentRushSurcharge);
+    } else {
+      currentRushSurcharge = 0;
+      document.getElementById('rowRush').style.display = 'none';
+    }
+
+    var baseTotal = handrailTotal + currentRushSurcharge;
+    document.getElementById('totalVal').dataset.base = baseTotal;
+    if (typeof calcShipping === 'function') calcShipping();
+    else document.getElementById('totalVal').textContent = fmt(baseTotal);
+  }
 
   function calcZakin(L_mm) {
     if (L_mm <= 1050) return 2;
@@ -1242,6 +1467,17 @@
     } else { rowAngle.style.display = 'none'; }
     baseTotal += angleCost;
 
+    // 特急割増（手すり本体価格の20%、送料除く）
+    if (currentDeliveryType === 'rush') {
+      currentRushSurcharge = Math.round(baseTotal * RUSH_RATE);
+      document.getElementById('rowRush').style.display = 'flex';
+      document.getElementById('rushVal').textContent = fmt(currentRushSurcharge);
+    } else {
+      currentRushSurcharge = 0;
+      document.getElementById('rowRush').style.display = 'none';
+    }
+    baseTotal += currentRushSurcharge;
+
     document.getElementById('totalVal').dataset.base = baseTotal;
     if (typeof calcShipping === 'function') { calcShipping(); }
     else { document.getElementById('totalVal').textContent = fmt(baseTotal); }
@@ -1361,11 +1597,23 @@
     const rowZakin = document.getElementById('rowZakin');
     if (p.addZakin > 0) { rowZakin.style.display = 'flex'; document.getElementById('zakinVal').textContent = fmt(p.addZakin); } else { rowZakin.style.display = 'none'; }
     const rowSurcharge = document.getElementById('rowSurcharge');
-    document.getElementById('totalVal').dataset.base = p.total;
+    // 特急割増（非カスタムモード時）
+    var nonCustomBase = p.total;
+    if (currentDeliveryType === 'rush') {
+      currentRushSurcharge = Math.round(nonCustomBase * RUSH_RATE);
+      document.getElementById('rowRush').style.display = 'flex';
+      document.getElementById('rushVal').textContent = fmt(currentRushSurcharge);
+      nonCustomBase += currentRushSurcharge;
+    } else {
+      currentRushSurcharge = 0;
+      document.getElementById('rowRush').style.display = 'none';
+    }
+
+    document.getElementById('totalVal').dataset.base = nonCustomBase;
     if (typeof calcShipping === 'function') {
       calcShipping();
     } else {
-      document.getElementById('totalVal').textContent = fmt(p.total);
+      document.getElementById('totalVal').textContent = fmt(nonCustomBase);
     }
   }
 
@@ -1378,7 +1626,18 @@
     const errEl = document.getElementById('checkoutError');
     btn.disabled = true; btn.textContent = '\u51E6\u7406\u4E2D...'; errEl.style.display = 'none';
     try {
-      const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product: PRODUCT_KEY, lengthMm: L }) });
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          product: PRODUCT_KEY,
+          lengthMm: L,
+          qty: currentQty,
+          rushDelivery: currentDeliveryType === 'rush',
+          preferredArrivalDate: document.getElementById('arrivalDatePicker').value || null,
+          preferredTimeSlot: document.getElementById('timeSlotSelect').value || null,
+        }),
+      });
       if (!res.ok) { const data = await res.json().catch(() => ({})); throw new Error(data.error || 'HTTP ' + res.status); }
       const { url } = await res.json();
       window.location.href = url;
@@ -1459,12 +1718,13 @@
   }
 
   function onQtyChange() { var q = parseInt(document.getElementById('qtyInput').value) || 1; if (q < 1) q = 1; if (q > 99) q = 99; currentQty = q; calcShipping(); }
-  function onPrefChange() { calcShipping(); }
+  function onPrefChange() { calcShipping(); updateDeliveryDate(); }
   function updateTotal() { var baseTotal = parseInt(document.getElementById('totalVal').dataset.base) || 0; var grandTotal = baseTotal * currentQty + currentShipping; document.getElementById('totalVal').textContent = fmt(grandTotal); }
 
   // 初期描画
   initZakinCustom();
   update(1500);
+  updateDeliveryDate();
 </script>
 <!-- 座金詳細図モーダル -->
 <div class="zakin-detail-modal" id="zakinDetailModal" onclick="if(event.target===this)toggleZakinDetail()">

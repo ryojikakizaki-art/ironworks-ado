@@ -1,4 +1,5 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+const BusinessDays = require('../js/business-days.js');
 
 // ── 商品マスター（stdLengthMm: 基本料金に含まれる長さ, maxMm: 最大長さ）──
 const PRODUCTS = {
@@ -19,6 +20,7 @@ const MAX_SPAN_MM     = 850;
 const SURGE_START_MM  = 2000;
 const SURGE_BASE      = 1.2;
 const SURGE_INTERVAL_MM = 500;
+const RUSH_RATE       = 0.2;
 
 function calcZakin(L_mm) {
   if (L_mm <= 1050) return 2;
@@ -55,7 +57,24 @@ module.exports = async (req, res) => {
     const raw = req.body?.lengthMm || req.body?.lengthCm && req.body.lengthCm * 10;
     const L   = Math.max(500, Math.min(prod.maxMm, Math.round(Number(raw) || prod.stdLengthMm)));
     const p   = calcPrice(L, prod);
-    const totalYen = Math.round(p.total);
+
+    // 特急配送
+    const rushDelivery = !!req.body?.rushDelivery;
+    const rushSurcharge = rushDelivery ? Math.round(p.total * RUSH_RATE) : 0;
+    const totalYen = Math.round(p.total + rushSurcharge);
+
+    // 配送希望
+    const preferredArrivalDate = req.body?.preferredArrivalDate || '';
+    const preferredTimeSlot = req.body?.preferredTimeSlot || '';
+
+    // スケジュール計算
+    const now = new Date();
+    const schedule = BusinessDays.getScheduleDates(now, rushDelivery);
+    const deliveryDays = rushDelivery ? 5 : 10;
+
+    const deliveryDesc = rushDelivery
+      ? `${prod.finish} / 座金${p.zakin}個 / 特急配送 ${deliveryDays}営業日`
+      : `${prod.finish} / 座金${p.zakin}個 / 通常配送 ${deliveryDays}営業日`;
 
     const host    = req.headers.host || 'ironworks-ado.vercel.app';
     const baseUrl = `https://${host}`;
@@ -67,26 +86,35 @@ module.exports = async (req, res) => {
           currency: 'jpy',
           product_data: {
             name: `${prod.name} 壁付け手すり ${L}mm`,
-            description: `${prod.finish} / 座金${p.zakin}個 / 受注生産 約3〜4週間`,
+            description: deliveryDesc,
           },
           unit_amount: totalYen,
         },
         quantity: 1,
       }],
       mode: 'payment',
-      success_url: `${baseUrl}/success.html?session_id={CHECKOUT_SESSION_ID}&product=${productKey}&length=${L}`,
+      success_url: `${baseUrl}/success.html?session_id={CHECKOUT_SESSION_ID}&product=${productKey}&length=${L}&rush=${rushDelivery ? '1' : '0'}`,
       cancel_url:  `${baseUrl}/item/${productKey}.html`,
       metadata: {
-        product:      productKey,
-        product_name: prod.name,
-        type:         prod.type,
-        length_mm:    String(L),
-        zakin_count:  String(p.zakin),
-        total_yen:    String(Math.round(p.total)),
+        product:                productKey,
+        product_name:           prod.name,
+        type:                   prod.type,
+        length_mm:              String(L),
+        zakin_count:            String(p.zakin),
+        base_total_yen:         String(Math.round(p.total)),
+        rush_delivery:          rushDelivery ? 'true' : 'false',
+        rush_surcharge_yen:     String(rushSurcharge),
+        total_yen:              String(totalYen),
+        preferred_arrival_date: preferredArrivalDate,
+        preferred_time_slot:    preferredTimeSlot,
+        production_start:       BusinessDays.formatDateISO(schedule.productionStart),
+        production_complete:    BusinessDays.formatDateISO(schedule.productionComplete),
+        shipping_date:          BusinessDays.formatDateISO(schedule.shippingDate),
+        arrival_estimate:       BusinessDays.formatDateISO(schedule.arrivalDate),
       },
       locale: 'ja',
       payment_intent_data: {
-        description: `IRONWORKS ado — ${prod.name} ${L}mm`,
+        description: `IRONWORKS ado — ${prod.name} ${L}mm${rushDelivery ? '（特急）' : ''}`,
       },
     });
 
