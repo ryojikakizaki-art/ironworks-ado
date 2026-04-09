@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "api/webhook.js": {
+      "includeFiles": "js/**"
+    },
+    "api/checkout.js": {
+      "includeFiles": "js/**"
+    }
+  }
+}
