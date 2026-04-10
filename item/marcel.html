@@ -1597,7 +1597,7 @@
   }
 
   // ── 座金カスタム指定 ──────────────────────────────
-  var zakinCustomMode = true;
+  var zakinCustomMode = false;
   var zakinCustomList = [];
   var zakinGlobalAngle = 0;
   var drawingModalOpen = false;
@@ -1662,8 +1662,10 @@
 
   function setAngleDir(dir) {
     zakinAngleDir = dir;
-    document.getElementById('angleDirLeft').classList.toggle('active', dir === 'left');
-    document.getElementById('angleDirRight').classList.toggle('active', dir === 'right');
+    var leftBtn = document.getElementById('angleDirLeft');
+    var rightBtn = document.getElementById('angleDirRight');
+    if (leftBtn) leftBtn.classList.toggle('active', dir === 'left');
+    if (rightBtn) rightBtn.classList.toggle('active', dir === 'right');
     onAngleChanged();
   }
 
@@ -1693,7 +1695,8 @@
     var L = Number(document.getElementById('lengthInput').value) || 1500;
     var count = calcZakin(L);
     setZakinPositions(count, L);
-    document.getElementById('zakinQtyInput').value = count;
+    var qtyEl = document.getElementById('zakinQtyInput');
+    if (qtyEl) qtyEl.value = count;
     renderZakinCustom();
   }
 
@@ -1717,6 +1720,7 @@
   // 数量 +/- ボタン
   function changeZakinQty(delta) {
     var input = document.getElementById('zakinQtyInput');
+    if (!input) return;
     var newVal = Math.max(2, Math.min(20, parseInt(input.value) + delta));
     input.value = newVal;
     var L = Number(document.getElementById('lengthInput').value) || 1500;
@@ -1762,9 +1766,12 @@
     dmRenderAll();
     update(L);
     zakinAngleDir = 'left';
-    document.getElementById('zakinAngleInput').value = 0;
-    document.getElementById('angleDirLeft').classList.add('active');
-    document.getElementById('angleDirRight').classList.remove('active');
+    var angInput = document.getElementById('zakinAngleInput');
+    if (angInput) angInput.value = 0;
+    var leftBtn = document.getElementById('angleDirLeft');
+    var rightBtn = document.getElementById('angleDirRight');
+    if (leftBtn) leftBtn.classList.add('active');
+    if (rightBtn) rightBtn.classList.remove('active');
     initZakinCustom();
   }
 
@@ -1932,7 +1939,8 @@
 
     if (zakinCustomMode) {
       var autoCount = calcZakin(L);
-      document.getElementById('zakinQtyInput').value = autoCount;
+      var qtyEl = document.getElementById('zakinQtyInput');
+      if (qtyEl) qtyEl.value = autoCount;
       setZakinPositions(autoCount, L);
 
       const rowAddon = document.getElementById('rowAddon');
@@ -1946,6 +1954,9 @@
       var sorted = zakinCustomList.slice().sort(function(a, b) { return a.pos - b.pos; });
       var posArray = sorted.map(function(item) { return item.pos; });
       buildDiagramSVG(L, posArray);
+      // 座金ラベル更新
+      document.getElementById('zakinLabel').textContent = '座金数（カスタム指定）';
+      document.getElementById('zakinCount').textContent = zakinCustomList.length + ' 個';
       return;
     }
 
