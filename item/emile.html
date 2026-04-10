@@ -1730,7 +1730,7 @@
     var L = Number(document.getElementById('lengthInput').value) || 1500;
     var count = calcZakin(L);
     setZakinPositions(count, L);
-    document.getElementById('zakinQtyInput').value = count;
+    var _qtyEl = document.getElementById('zakinQtyInput'); if (_qtyEl) _qtyEl.value = count;
     renderZakinCustom();
   }
 
@@ -1754,6 +1754,7 @@
   // 数量 +/- ボタン
   function changeZakinQty(delta) {
     var input = document.getElementById('zakinQtyInput');
+    if (!input) return;
     var newVal = Math.max(2, Math.min(20, parseInt(input.value) + delta));
     input.value = newVal;
     var L = Number(document.getElementById('lengthInput').value) || 1500;
@@ -1775,8 +1776,8 @@
 
   function setAngleDir(dir) {
     zakinAngleDir = dir;
-    document.getElementById('angleDirLeft').classList.toggle('active', dir === 'left');
-    document.getElementById('angleDirRight').classList.toggle('active', dir === 'right');
+    var _el = document.getElementById('angleDirLeft'); if (_el) _el.classList.toggle('active', dir === 'left');
+    var _el = document.getElementById('angleDirRight'); if (_el) _el.classList.toggle('active', dir === 'right');
     onAngleChanged();
   }
 
@@ -1815,16 +1816,16 @@
   function removeZakinItem(idx) {
     if (zakinCustomList.length <= 2) return;
     zakinCustomList.splice(parseInt(idx), 1);
-    document.getElementById('zakinQtyInput').value = zakinCustomList.length;
+    var _qtyEl = document.getElementById('zakinQtyInput'); if (_qtyEl) _qtyEl.value = zakinCustomList.length;
     renderZakinCustom();
   }
 
   function resetZakinCustom() {
     zakinGlobalAngle = 0;
     zakinAngleDir = 'left';
-    document.getElementById('zakinAngleInput').value = 0;
-    document.getElementById('angleDirLeft').classList.add('active');
-    document.getElementById('angleDirRight').classList.remove('active');
+    var _el = document.getElementById('zakinAngleInput'); if (_el) _el.value = 0;
+    var _el = document.getElementById('angleDirLeft'); if (_el) _el.classList.add('active');
+    var _el = document.getElementById('angleDirRight'); if (_el) _el.classList.remove('active');
     initZakinCustom();
   }
 
@@ -2303,7 +2304,7 @@
 
     if (zakinCustomMode) {
       var autoCount = calcZakin(L);
-      document.getElementById('zakinQtyInput').value = autoCount;
+      var _qtyEl = document.getElementById('zakinQtyInput'); if (_qtyEl) _qtyEl.value = autoCount;
       setZakinPositions(autoCount, L);
 
       const rowAddon = document.getElementById('rowAddon');
