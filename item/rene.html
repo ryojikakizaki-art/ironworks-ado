@@ -1241,7 +1241,7 @@
     if (origIdx < 0) return;
     var newPos = zakinCustomList[origIdx].pos + delta;
     // 範囲制限
-    newPos = Math.max(50, Math.min(L_mm - 50, newPos));
+    newPos = Math.max(10, Math.min(L_mm - 10, newPos));
     // 隣の座金との距離制限
     var si = zeSelectedIdx;
     if (si > 0) newPos = Math.max(newPos, sorted[si - 1].pos + 10);
@@ -1578,6 +1578,7 @@
   function zeStartDrag(evt, idx) {
     evt.preventDefault();
     zeDragIdx = idx;
+    zeSelectedIdx = idx;
     var svg = document.getElementById('zeEditorSvg');
     svg.addEventListener('mousemove', zeDrag);
     svg.addEventListener('touchmove', zeDrag, { passive: false });
@@ -1606,7 +1607,7 @@
     pos = Math.round(pos / 10) * 10;
 
     // 範囲制限（両端50mm）
-    pos = Math.max(50, Math.min(L_mm - 50, pos));
+    pos = Math.max(10, Math.min(L_mm - 10, pos));
 
     // ソート済みインデックスを取得
     var sorted = zakinCustomList.slice().sort(function(a, b) { return a.pos - b.pos; });
@@ -1629,12 +1630,14 @@
   }
 
   function zeEndDrag(evt) {
+    var draggedIdx = zeDragIdx;
     zeDragIdx = -1;
     var svg = document.getElementById('zeEditorSvg');
     svg.removeEventListener('mousemove', zeDrag);
     svg.removeEventListener('touchmove', zeDrag);
     document.removeEventListener('mouseup', zeEndDrag);
     document.removeEventListener('touchend', zeEndDrag);
+    buildEditorSvg();
     zeUpdatePriceSummary();
   }
 
@@ -3026,7 +3029,8 @@
       </div>
       <div class="ze-note">
         ※ 座金をドラッグして位置を調整できます<br>
-        ※ 両端から100mm以上の位置に配置してください
+        ※ 座金を選択後、←→キーで1mm単位の微調整が可能です<br>
+        ※ 両端から10mm以上の位置に配置してください
       </div>
       <div class="ze-price-summary" id="zePriceSummary"></div>
       <div class="ze-links">
