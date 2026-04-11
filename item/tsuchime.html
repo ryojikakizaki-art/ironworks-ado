@@ -56,6 +56,12 @@
     }
 
     .cta-button:hover { background: #dbb875; transform: translateY(-2px); }
+    .btn-primary { display: block; width: 100%; padding: 18px; background: var(--accent); border: none; cursor: pointer; color: var(--black); font-size: 12px; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; font-family: var(--font); transition: background .2s, transform .1s, opacity .2s; margin-bottom: 10px; }
+    .btn-primary:hover:not(:disabled) { background: #d4b87a; }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-secondary { display: block; width: 100%; padding: 16px; background: transparent; border: 1px solid var(--line); color: var(--muted); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-family: var(--font); transition: border-color .2s, color .2s; text-decoration: none; text-align: center; }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .checkout-error { display: none; margin-top: 10px; padding: 10px 14px; background: rgba(200,80,80,0.1); border: 1px solid rgba(200,80,80,0.3); font-size: 11px; color: #e0a0a0; }
 
     .description-section {
       max-width: 1400px; margin: 60px auto; padding: 0 40px;
@@ -112,9 +118,12 @@
 </head>
 <body>
   <header>
-    <a href="/" class="logo">IRONWORKS <span>ADO</span></a>
+    <a href="/" class="logo"><img src="/images/ado_logo_W.png" alt="IRONWORKS ado" style="height:36px;"></a>
     <nav>
+          <a href="/">HOME</a>
+    
       <div class="nav-dropdown">
+    
       <a href="/#yokogata">CATEGORY</a>
       <div class="nav-dropdown-menu">
         <div class="dd-heading">■ 壁付け手すり</div>
@@ -182,7 +191,11 @@
           </div>
         </div>
 
-        <a href="/contact.html" class="cta-button">お問い合わせ・ご注文</a>
+        <div style="margin-top: 20px;">
+          <button class="btn-primary" id="btnCheckout" onclick="addToCart()">カートに追加 — 購入手続きへ</button>
+          <a class="btn-secondary" href="/contact.html">お問い合わせ・カスタム相談</a>
+          <div class="checkout-error" id="checkoutError">⚠ エラーが発生しました。しばらく後にもう一度お試しください。</div>
+        </div>
       </div>
     </div>
 
@@ -198,6 +211,24 @@
     <p class="logo-f">IRONWORKS <span>ADO</span></p>
     <p class="copy">&copy; 2025 IRONWORKS ado</p>
   </footer>
+
+<script>
+  const PRODUCT_KEY = 'tsuchime';
+  async function addToCart() {
+    const btn = document.getElementById('btnCheckout');
+    const errEl = document.getElementById('checkoutError');
+    btn.disabled = true; btn.textContent = '処理中...'; errEl.style.display = 'none';
+    try {
+      const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product: PRODUCT_KEY }) });
+      if (!res.ok) { const data = await res.json().catch(() => ({})); throw new Error(data.error || 'HTTP ' + res.status); }
+      const { url } = await res.json();
+      window.location.href = url;
+    } catch (err) {
+      console.error('[checkout]', err);
+      errEl.style.display = 'block'; btn.disabled = false; btn.textContent = 'カートに追加 — 購入手続きへ';
+    }
+  }
+</script>
 <script src="/back-button.js"></script>
 </body>
 </html>

@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ご注文ありがとうございます ｜ IRONWORKS ado</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:      #0e0d0b;
+      --card:    #1c1a13;
+      --line:    #3a3420;
+      --mid:     #2a2618;
+      --muted:   #9e9070;
+      --light:   #c8bfa0;
+      --white:   #f0ead8;
+      --gold:    #c9a84c;
+      --gold2:   #6b5826;
+      --font-s:  'Shippori Mincho', 'Noto Serif JP', serif;
+      --font-g:  Georgia, 'Times New Roman', serif;
+      --font-ss: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      background-image: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(201,168,76,0.10), transparent);
+      min-height: 100vh;
+      font-family: var(--font-s);
+      color: var(--white);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+    .site-header {
+      text-align: center;
+      padding: 48px 16px 32px;
+    }
+    .store-name {
+      font-size: 11px; letter-spacing: 0.45em;
+      color: var(--gold); text-transform: uppercase;
+      font-family: var(--font-g); margin-bottom: 12px;
+    }
+    .ornament-row {
+      display: flex; align-items: center;
+      justify-content: center; gap: 14px;
+    }
+    .ornament-line-l {
+      flex: 1; max-width: 80px; height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold2));
+    }
+    .ornament-line-r {
+      flex: 1; max-width: 80px; height: 1px;
+      background: linear-gradient(to left, transparent, var(--gold2));
+    }
+    .ornament-diamond {
+      width: 6px; height: 6px;
+      background: var(--gold); transform: rotate(45deg);
+    }
+    .site-logo {
+      font-size: 18px; letter-spacing: 0.15em;
+      color: var(--white); font-family: var(--font-g);
+    }
+    .site-logo span { color: var(--gold); }
+
+    /* MAIN */
+    main {
+      flex: 1;
+      display: flex; justify-content: center;
+      padding: 0 16px 64px;
+    }
+    .wrap { width: 100%; max-width: 700px; }
+
+    /* CARD */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      position: relative; overflow: hidden;
+      padding: 48px 36px;
+    }
+    .card-top-line {
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+
+    /* THANK YOU SECTION */
+    .thanks-section {
+      text-align: center;
+      margin-bottom: 36px;
+      padding-bottom: 36px;
+      border-bottom: 1px solid var(--line);
+    }
+    .seal {
+      width: 60px; height: 60px;
+      border: 1.5px solid var(--gold);
+      border-radius: 50%;
+      display: inline-flex; align-items: center;
+      justify-content: center; margin-bottom: 20px;
+      position: relative;
+    }
+    .seal-inner {
+      position: absolute; inset: 6px;
+      border: 0.5px solid var(--gold2); border-radius: 50%;
+    }
+    .seal-check { font-size: 22px; color: var(--gold); position: relative; }
+    .small-label {
+      font-size: 10px; letter-spacing: 0.45em;
+      color: var(--gold); text-transform: uppercase;
+      font-family: var(--font-g); margin-bottom: 10px;
+    }
+    .big-title {
+      font-size: 20px; font-weight: 600;
+      letter-spacing: 0.06em; color: var(--white);
+      margin-bottom: 8px; line-height: 1.7;
+    }
+    .sub-text {
+      font-size: 12px; color: var(--muted);
+      letter-spacing: 0.06em; line-height: 2;
+    }
+
+    /* META ROW */
+    .meta-row {
+      display: flex; gap: 0;
+      margin-bottom: 32px;
+      border-bottom: 1px solid var(--line);
+    }
+    .meta-item {
+      flex: 1; padding: 16px 20px;
+      border-right: 1px solid var(--line);
+    }
+    .meta-item:last-child { border-right: none; }
+    .meta-label {
+      font-size: 9px; letter-spacing: 0.4em;
+      color: var(--gold); text-transform: uppercase;
+      font-family: var(--font-g); margin-bottom: 6px;
+    }
+    .meta-value { font-size: 13px; color: var(--white); letter-spacing: 0.04em; }
+
+    /* SECTION TITLE */
+    .section-title {
+      font-size: 9px; letter-spacing: 0.45em;
+      color: var(--gold); text-transform: uppercase;
+      font-family: var(--font-g);
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 18px; margin-top: 32px;
+    }
+    .section-title:first-child { margin-top: 0; }
+
+    /* PRODUCT TABLE */
+    .item-table { width: 100%; border-collapse: collapse; }
+    .item-table th {
+      font-size: 9px; letter-spacing: 0.3em;
+      color: var(--gold); text-transform: uppercase;
+      font-family: var(--font-g); font-weight: normal;
+      text-align: left; padding: 0 0 10px;
+      border-bottom: 1px solid var(--line);
+    }
+    .item-table th:last-child { text-align: right; }
+    .item-table td {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px; vertical-align: top;
+    }
+    .item-table td:last-child { text-align: right; white-space: nowrap; }
+    .item-table tr:last-child td { border-bottom: none; }
+    .item-name { color: var(--white); letter-spacing: 0.04em; }
+    .item-sub { font-size: 11px; color: var(--muted); margin-top: 3px; line-height: 1.7; }
+    .item-qty { color: var(--muted); font-size: 12px; }
+    .item-price { color: var(--white); }
+
+    /* PRICE BREAKDOWN */
+    .price-rows { margin-top: 16px; }
+    .price-row {
+      display: flex; justify-content: space-between;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 12px;
+    }
+    .price-row:last-child { border-bottom: none; }
+    .price-row-label { color: var(--muted); letter-spacing: 0.04em; }
+    .price-row-value { color: var(--light); }
+    .price-row.rush .price-row-label,
+    .price-row.rush .price-row-value { color: var(--gold); }
+
+    .total-box {
+      margin-top: 16px; padding: 16px 20px;
+      border: 1px solid var(--gold2);
+      display: flex; align-items: baseline;
+      justify-content: space-between;
+    }
+    .total-label {
+      font-size: 9px; letter-spacing: 0.4em;
+      color: var(--gold); text-transform: uppercase;
+      font-family: var(--font-g);
+    }
+    .total-amount { font-size: 24px; font-weight: 600; color: var(--white); }
+    .total-tax { font-size: 10px; color: var(--muted); margin-left: 6px; }
+
+    /* SCHEDULE STEPS */
+    .steps { }
+    .step {
+      display: flex; gap: 16px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      width: 22px; height: 22px;
+      border: 1px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; color: var(--gold); flex-shrink: 0;
+      font-family: var(--font-g); margin-top: 1px;
+    }
+    .step-text { color: var(--light); line-height: 1.6; }
+    .step-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .step-date { color: var(--gold); }
+
+    /* CUSTOMER INFO */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .info-block { }
+    .info-label {
+      font-size: 9px; letter-spacing: 0.4em;
+      color: var(--gold); text-transform: uppercase;
+      font-family: var(--font-g); margin-bottom: 8px;
+    }
+    .info-value { font-size: 12px; color: var(--light); line-height: 1.9; }
+
+    /* ISSUER */
+    .issuer-box {
+      margin-top: 32px; padding: 20px 24px;
+      background: var(--mid);
+      border: 1px solid var(--line);
+    }
+    .issuer-title {
+      font-size: 9px; letter-spacing: 0.4em;
+      color: var(--gold); text-transform: uppercase;
+      font-family: var(--font-g); margin-bottom: 12px;
+    }
+    .issuer-name { font-size: 14px; color: var(--white); margin-bottom: 8px; letter-spacing: 0.04em; }
+    .issuer-detail { font-size: 11px; color: var(--muted); line-height: 2; letter-spacing: 0.04em; }
+    .issuer-detail strong { color: var(--light); }
+
+    /* RECEIPT NOTE */
+    .receipt-note {
+      margin-top: 20px;
+      font-size: 11px; color: var(--muted);
+      letter-spacing: 0.04em; line-height: 1.9;
+      text-align: center;
+    }
+
+    /* ACTIONS */
+    .actions {
+      display: flex; gap: 12px;
+      margin-top: 28px;
+    }
+    .btn-print {
+      flex: 1; padding: 14px;
+      background: var(--gold); border: none;
+      color: var(--bg); font-size: 11px;
+      font-weight: 600; letter-spacing: 0.25em;
+      text-transform: uppercase; cursor: pointer;
+      font-family: var(--font-ss);
+      transition: background .2s;
+    }
+    .btn-print:hover { background: #d4b060; }
+    .btn-back {
+      flex: 1; padding: 14px;
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--muted); font-size: 11px;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      text-decoration: none; text-align: center;
+      font-family: var(--font-ss);
+      transition: border-color .2s, color .2s;
+    }
+    .btn-back:hover { border-color: var(--gold); color: var(--gold); }
+
+    /* STATUS BADGE */
+    .status-paid {
+      display: inline-block; padding: 2px 10px;
+      background: rgba(80,200,120,0.15);
+      border: 1px solid rgba(80,200,120,0.4);
+      color: #80e0a0; font-size: 10px;
+      letter-spacing: 0.1em;
+    }
+
+    /* RUSH BADGE */
+    .rush-badge {
+      display: inline-block; padding: 2px 8px;
+      background: rgba(201,168,76,0.15);
+      border: 1px solid var(--gold2);
+      color: var(--gold); font-size: 10px;
+      letter-spacing: 0.1em; margin-left: 6px;
+    }
+
+    /* LOADING / ERROR */
+    .loading-wrap {
+      text-align: center; padding: 60px 20px;
+      color: var(--muted); font-size: 13px;
+      letter-spacing: 0.06em;
+    }
+    .spinner {
+      width: 28px; height: 28px;
+      border: 2px solid var(--line);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 20px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .error-wrap {
+      text-align: center; padding: 48px 20px;
+      color: var(--muted);
+    }
+    .error-wrap a {
+      color: var(--gold); text-decoration: none;
+      font-size: 12px; letter-spacing: 0.1em;
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 28px 16px;
+      text-align: center;
+      font-family: var(--font-ss);
+      font-size: 10px; color: var(--muted);
+      letter-spacing: 0.15em;
+    }
+
+    /* PRINT STYLES */
+    @media print {
+      body {
+        background: #fff !important;
+        color: #000 !important;
+        background-image: none !important;
+      }
+      .site-header, footer, .actions { display: none !important; }
+      .card {
+        background: #fff !important;
+        border: 1px solid #ccc !important;
+        padding: 24px !important;
+      }
+      .card-top-line { display: none; }
+      :root {
+        --bg: #fff; --card: #fff; --line: #ddd;
+        --muted: #666; --light: #333; --white: #000;
+        --gold: #8a6820; --gold2: #c8a96e; --mid: #f8f8f8;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .card { padding: 32px 20px; }
+      .meta-row { flex-direction: column; }
+      .meta-item { border-right: none; border-bottom: 1px solid var(--line); padding: 12px 0; }
+      .meta-item:last-child { border-bottom: none; }
+      .info-grid { grid-template-columns: 1fr; }
+      .actions { flex-direction: column; }
+      .big-title { font-size: 17px; }
+    }
+  </style>
+  <script src="/js/business-days.js"></script>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="site-header">
+  <div class="store-name">IRONWORKS ado</div>
+  <div class="ornament-row">
+    <div class="ornament-line-l"></div>
+    <div class="ornament-diamond"></div>
+    <div class="site-logo">IRONWORKS <span>ado</span></div>
+    <div class="ornament-diamond"></div>
+    <div class="ornament-line-r"></div>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+
+    <!-- LOADING STATE -->
+    <div class="loading-wrap" id="loadingWrap">
+      <div class="spinner"></div>
+      注文情報を読み込んでいます...
+    </div>
+
+    <!-- ERROR STATE -->
+    <div class="error-wrap" id="errorWrap" style="display:none">
+      <p style="margin-bottom:16px">注文情報の取得に失敗しました。</p>
+      <a href="/">トップページへ</a>
+    </div>
+
+    <!-- MAIN CARD (hidden until loaded) -->
+    <div class="card" id="mainCard" style="display:none">
+      <div class="card-top-line"></div>
+
+      <!-- THANK YOU -->
+      <div class="thanks-section">
+        <div class="seal">
+          <div class="seal-inner"></div>
+          <span class="seal-check">✓</span>
+        </div>
+        <div class="small-label">Order Confirmed</div>
+        <div class="big-title">ご注文ありがとうございます</div>
+        <div class="sub-text" id="subText">ご注文を受け付けました。</div>
+      </div>
+
+      <!-- META -->
+      <div class="meta-row">
+        <div class="meta-item">
+          <div class="meta-label">Order No.</div>
+          <div class="meta-value" id="metaOrderNo">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Date</div>
+          <div class="meta-value" id="metaDate">—</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Status</div>
+          <div class="meta-value" id="metaStatus">—</div>
+        </div>
+      </div>
+
+      <!-- ORDER ITEMS -->
+      <div class="section-title">Order Items</div>
+      <table class="item-table">
+        <thead>
+          <tr>
+            <th>商品</th>
+            <th style="text-align:right">金額</th>
+          </tr>
+        </thead>
+        <tbody id="itemTableBody">
+          <tr>
+            <td colspan="2" style="color:var(--muted);font-size:12px">読み込み中...</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- PRICE BREAKDOWN -->
+      <div class="price-rows" id="priceBreakdown" style="display:none">
+        <div class="price-row" id="rowBasePrice" style="display:none">
+          <span class="price-row-label" id="basePriceLabel">基本料金</span>
+          <span class="price-row-value" id="basePriceVal">—</span>
+        </div>
+        <div class="price-row" id="rowAddon" style="display:none">
+          <span class="price-row-label">長さ追加料金</span>
+          <span class="price-row-value" id="addonVal">—</span>
+        </div>
+        <div class="price-row" id="rowSurcharge" style="display:none">
+          <span class="price-row-label">長尺割増</span>
+          <span class="price-row-value" id="surchargeVal">—</span>
+        </div>
+        <div class="price-row" id="rowZakinExtra" style="display:none">
+          <span class="price-row-label">追加座金料金</span>
+          <span class="price-row-value" id="zakinExtraVal">—</span>
+        </div>
+        <div class="price-row rush" id="rowRush" style="display:none">
+          <span class="price-row-label">特急割増（+20%）</span>
+          <span class="price-row-value" id="rushVal">—</span>
+        </div>
+        <div class="price-row">
+          <span class="price-row-label">送料</span>
+          <span class="price-row-value">別途実費（佐川急便）</span>
+        </div>
+      </div>
+
+      <div class="total-box">
+        <span class="total-label">合計（税込）</span>
+        <div>
+          <span class="total-amount" id="totalAmount">—</span>
+          <span class="total-tax">税込</span>
+        </div>
+      </div>
+
+      <!-- PRODUCTION SCHEDULE -->
+      <div class="section-title">制作・配送スケジュール</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            制作開始
+            <div class="step-sub"><span class="step-date" id="schedStart">—</span> より制作を開始いたします</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            制作完了予定
+            <div class="step-sub"><span class="step-date" id="schedComplete">—</span></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            発送（佐川急便）
+            <div class="step-sub"><span class="step-date" id="schedShip">—</span> 追跡番号をメールでお知らせします</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-text">
+            お届け予定
+            <div class="step-sub"><span class="step-date" id="schedArrival">—</span>〜</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CUSTOMER INFO -->
+      <div class="section-title" id="customerSection" style="display:none">Customer Info</div>
+      <div class="info-grid" id="customerInfo" style="display:none">
+        <div class="info-block">
+          <div class="info-label">お届け先</div>
+          <div class="info-value" id="infoAddress">—</div>
+        </div>
+        <div class="info-block">
+          <div class="info-label">お支払い</div>
+          <div class="info-value" id="infoPayment">クレジットカード（Stripe）</div>
+        </div>
+      </div>
+
+      <!-- ISSUER -->
+      <div class="issuer-box">
+        <div class="issuer-title">発行元</div>
+        <div class="issuer-name">鍛鉄工房ZEST</div>
+        <div class="issuer-detail">
+          〒265-0052 千葉県千葉市若葉区和泉町239-2<br>
+          TEL：<strong>080-5424-2221</strong>　E-mail：<strong>ado@tantetuzest.com</strong><br>
+          適格請求書発行事業者登録番号　<strong>T7810771171765</strong>
+        </div>
+      </div>
+
+      <p class="receipt-note">
+        本ページは領収書としてご利用いただけます。<br>
+        印刷またはPDF保存してお手元にお控えください。
+      </p>
+
+      <div class="actions">
+        <button class="btn-print" onclick="window.print()">印刷 / PDF保存</button>
+        <a class="btn-back" href="/">トップページへ</a>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  © IRONWORKS ado ｜ 鍛鉄工房ZEST ｜ All rights reserved
+</footer>
+
+<script>
+  var PRODUCTS = {
+    rene:      { name: 'René ルネ',               basePrice: 36500,  stdLengthMm: 1500, finish: 'マットブラック',     includedZakin: 3 },
+    claire:    { name: 'Claire クレール',          basePrice: 42000,  stdLengthMm: 1500, finish: 'マットホワイト',     includedZakin: 3 },
+    emile:     { name: 'Emile エミール',           basePrice: 45800,  stdLengthMm: 1500, finish: '鎚目仕上げ 銀古美', includedZakin: 3 },
+    marcel:    { name: 'Marcel マルセル',          basePrice: 36000,  stdLengthMm: 1500, finish: 'マットブラック',     includedZakin: 3 },
+    alexandre: { name: 'Alexandre アレクサンドル', basePrice: 32000,  stdLengthMm: 1000, finish: 'マットブラック',     includedZakin: 3 },
+    catherine: { name: 'Catherine カトリーヌ',     basePrice: 34500,  stdLengthMm: 1000, finish: 'マットホワイト',     includedZakin: 3 },
+    claude:    { name: 'Claude クロード',          basePrice: 30000,  stdLengthMm: 1000, finish: 'マットブラック',     includedZakin: 3 },
+    antoine:   { name: 'Antoine アントワーヌ',     basePrice: 56000,  stdLengthMm: 2500, finish: 'マットブラック',     includedZakin: 4 },
+    scroll16:  { name: 'Scroll スクロール 16φ',   basePrice: 18000,  stdLengthMm: 700,  finish: 'ミツロウ仕上げ',     includedZakin: 2 },
+    scroll19:  { name: 'Scroll スクロール 19φ',   basePrice: 32000,  stdLengthMm: 700,  finish: 'ミツロウ仕上げ',     includedZakin: 2 },
+    scroll22:  { name: 'Scroll スクロール 22φ',   basePrice: 60000,  stdLengthMm: 800,  finish: 'ミツロウ仕上げ',     includedZakin: 2 },
+    fabrice:   { name: 'Fabrice ファブリス',       basePrice: 100000, stdLengthMm: 800,  finish: '無垢鉄 火造り鍛造', includedZakin: 2 },
+    tsuchime:  { name: '鎚目 TSUCHIME',           basePrice: 70000,  stdLengthMm: 800,  finish: '手打ち鎚目仕上げ', includedZakin: 2 },
+  };
+
+  var ZAKIN_PRICE = 3500;
+  var SURGE_START_MM = 2000;
+  var SURGE_BASE = 1.2;
+  var SURGE_INTERVAL_MM = 500;
+  var RUSH_RATE = 0.2;
+
+  function fmt(n) { return '¥' + Math.round(n).toLocaleString(); }
+
+  function formatDateJa(dateStr) {
+    var d = new Date(dateStr + 'T00:00:00');
+    var days = ['日','月','火','水','木','金','土'];
+    return d.getFullYear() + '年' + (d.getMonth()+1) + '月' + d.getDate() + '日（' + days[d.getDay()] + '）';
+  }
+
+  function formatOrderId(sessionId) {
+    // cs_live_xxx... -> show last 8 chars of the unique part
+    var parts = sessionId.split('_');
+    var key = parts[parts.length - 1] || sessionId;
+    return 'ADO-' + key.slice(-8).toUpperCase();
+  }
+
+  function formatTimestamp(ts) {
+    var d = new Date(ts * 1000);
+    return d.getFullYear() + '/' +
+      String(d.getMonth()+1).padStart(2,'0') + '/' +
+      String(d.getDate()).padStart(2,'0');
+  }
+
+  // URL params
+  var params = new URLSearchParams(window.location.search);
+  var sessionId = params.get('session_id') || '';
+
+  // URLパラメータからフォールバック（Stripeが渡すもの）
+  var paramProduct = (params.get('product') || '').toLowerCase();
+  var paramLength  = parseInt(params.get('length')) || 0;
+  var paramRush    = params.get('rush') === '1';
+
+  async function loadSession() {
+    if (!sessionId) {
+      showFallback();
+      return;
+    }
+
+    try {
+      var res = await fetch('/api/session?id=' + encodeURIComponent(sessionId));
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      var data = await res.json();
+      renderSession(data);
+    } catch (err) {
+      console.error('[thanks] session fetch error:', err);
+      // Stripe API取得失敗時はURLパラメータでフォールバック
+      showFallback();
+    }
+  }
+
+  function renderSession(data) {
+    var meta = data.metadata || {};
+    var isRush = meta.rush_delivery === 'true' || paramRush;
+    var productKey = meta.product || paramProduct;
+    var prod = PRODUCTS[productKey];
+    var lengthMm = parseInt(meta.length_mm) || paramLength;
+    var zakinCount = parseInt(meta.zakin_count) || 0;
+    var totalYen = data.amount_total || parseInt(meta.total_yen) || 0;
+    var rushSurcharge = parseInt(meta.rush_surcharge_yen) || 0;
+    var baseTotalYen = parseInt(meta.base_total_yen) || (totalYen - rushSurcharge);
+
+    // Order meta
+    document.getElementById('metaOrderNo').textContent = formatOrderId(data.id);
+    document.getElementById('metaDate').textContent = formatTimestamp(data.created);
+    if (data.payment_status === 'paid') {
+      document.getElementById('metaStatus').innerHTML = '<span class="status-paid">お支払い完了</span>';
+    } else {
+      document.getElementById('metaStatus').textContent = data.payment_status || '—';
+    }
+
+    // Sub text
+    var prodDisplayName = prod ? prod.name : (meta.product_name || productKey);
+    var subHtml = prodDisplayName + (lengthMm ? ' ' + lengthMm + 'mm' : '') + ' のご注文を受け付けました。';
+    if (isRush) subHtml += '<br><span class="rush-badge">特急配送</span>';
+    document.getElementById('subText').innerHTML = subHtml;
+
+    // Line items
+    var tbody = document.getElementById('itemTableBody');
+    tbody.innerHTML = '';
+    if (data.line_items && data.line_items.length > 0) {
+      data.line_items.forEach(function(item) {
+        var tr = document.createElement('tr');
+        var subText = item.description || '';
+        if (prod) subText = prod.finish + ' / 座金' + zakinCount + '個 / ' + (isRush ? '特急配送（5営業日）' : '通常配送（10営業日）');
+        tr.innerHTML =
+          '<td>' +
+            '<div class="item-name">' + (item.description ? item.price.product_data?.name || item.description : (prod ? prod.name + ' 壁付け手すり ' + lengthMm + 'mm' : '—')) + '</div>' +
+            '<div class="item-sub">' + subText + ' × ' + (item.quantity || 1) + '</div>' +
+          '</td>' +
+          '<td class="item-price">' + fmt(item.amount_total || totalYen) + '</td>';
+        tbody.appendChild(tr);
+      });
+    } else {
+      // フォールバック
+      var tr = document.createElement('tr');
+      var name = prod ? prod.name + ' 壁付け手すり ' + lengthMm + 'mm' : '—';
+      var sub = prod ? (prod.finish + ' / 座金' + zakinCount + '個 / ' + (isRush ? '特急配送（5営業日）' : '通常配送（10営業日）')) : '';
+      tr.innerHTML =
+        '<td><div class="item-name">' + name + '</div><div class="item-sub">' + sub + ' × 1</div></td>' +
+        '<td class="item-price">' + fmt(totalYen) + '</td>';
+      tbody.appendChild(tr);
+    }
+
+    // Price breakdown (from metadata)
+    if (prod && lengthMm) {
+      document.getElementById('priceBreakdown').style.display = 'block';
+      document.getElementById('rowBasePrice').style.display = 'flex';
+      document.getElementById('basePriceLabel').textContent = '基本料金（〜' + prod.stdLengthMm + 'mm）';
+      document.getElementById('basePriceVal').textContent = fmt(prod.basePrice);
+
+      var addon = Math.max(0, lengthMm - prod.stdLengthMm) * 25;
+      var longM = lengthMm > SURGE_START_MM ? Math.pow(SURGE_BASE, (lengthMm - SURGE_START_MM) / SURGE_INTERVAL_MM) : 1;
+      var surcharge = lengthMm > SURGE_START_MM ? Math.round(addon * (longM - 1)) : 0;
+      var addZakin = Math.max(0, zakinCount - prod.includedZakin) * ZAKIN_PRICE;
+
+      if (addon > 0) {
+        document.getElementById('rowAddon').style.display = 'flex';
+        document.getElementById('addonVal').textContent = '+' + fmt(addon);
+      }
+      if (surcharge > 0) {
+        document.getElementById('rowSurcharge').style.display = 'flex';
+        document.getElementById('surchargeVal').textContent = '+' + fmt(surcharge);
+      }
+      if (addZakin > 0) {
+        document.getElementById('rowZakinExtra').style.display = 'flex';
+        document.getElementById('zakinExtraVal').textContent = '+' + fmt(addZakin);
+      }
+      if (isRush && rushSurcharge > 0) {
+        document.getElementById('rowRush').style.display = 'flex';
+        document.getElementById('rushVal').textContent = '+' + fmt(rushSurcharge);
+      }
+    }
+
+    document.getElementById('totalAmount').textContent = fmt(totalYen);
+
+    // Schedule (from metadata or recalculate)
+    if (meta.production_start && meta.production_complete && meta.shipping_date && meta.arrival_estimate) {
+      document.getElementById('schedStart').textContent = formatDateJa(meta.production_start);
+      document.getElementById('schedComplete').textContent = formatDateJa(meta.production_complete);
+      document.getElementById('schedShip').textContent = formatDateJa(meta.shipping_date);
+      document.getElementById('schedArrival').textContent = formatDateJa(meta.arrival_estimate);
+    } else {
+      var schedule = BusinessDays.getScheduleDates(new Date(), isRush);
+      document.getElementById('schedStart').textContent = BusinessDays.formatDateJa(schedule.productionStart);
+      document.getElementById('schedComplete').textContent = BusinessDays.formatDateJa(schedule.productionComplete);
+      document.getElementById('schedShip').textContent = BusinessDays.formatDateJa(schedule.shippingDate);
+      document.getElementById('schedArrival').textContent = BusinessDays.formatDateJa(schedule.arrivalDate);
+    }
+
+    // Customer info
+    var cd = data.customer_details;
+    if (cd) {
+      document.getElementById('customerSection').style.display = 'block';
+      document.getElementById('customerInfo').style.display = 'grid';
+      var addr = cd.address;
+      var addrLines = [];
+      if (cd.name) addrLines.push(cd.name + ' 様');
+      if (addr) {
+        if (addr.postal_code) addrLines.push('〒' + addr.postal_code);
+        var line = [addr.state, addr.city, addr.line1, addr.line2].filter(Boolean).join(' ');
+        if (line) addrLines.push(line);
+      }
+      if (cd.email) addrLines.push(cd.email);
+      if (cd.phone) addrLines.push(cd.phone);
+      document.getElementById('infoAddress').innerHTML = addrLines.join('<br>') || '—';
+    }
+
+    showCard();
+  }
+
+  function showFallback() {
+    // Stripe APIなしでURLパラメータだけで表示
+    var prod = PRODUCTS[paramProduct];
+    var isRush = paramRush;
+
+    document.getElementById('metaOrderNo').textContent = sessionId ? formatOrderId(sessionId) : '—';
+    document.getElementById('metaDate').textContent = new Date().toLocaleDateString('ja-JP');
+    document.getElementById('metaStatus').innerHTML = '<span class="status-paid">お支払い完了</span>';
+
+    var prodName = prod ? prod.name : paramProduct;
+    var subHtml = prodName + (paramLength ? ' ' + paramLength + 'mm' : '') + ' のご注文を受け付けました。';
+    if (isRush) subHtml += '<br><span class="rush-badge">特急配送</span>';
+    document.getElementById('subText').innerHTML = subHtml;
+
+    // Line item (フォールバック)
+    var tbody = document.getElementById('itemTableBody');
+    tbody.innerHTML = '';
+    var tr = document.createElement('tr');
+    if (prod && paramLength) {
+      var sub = prod.finish + ' / ' + (isRush ? '特急配送（5営業日）' : '通常配送（10営業日）');
+      tr.innerHTML =
+        '<td><div class="item-name">' + prod.name + ' 壁付け手すり ' + paramLength + 'mm</div>' +
+        '<div class="item-sub">' + sub + ' × 1</div></td>' +
+        '<td class="item-price">—</td>';
+    } else {
+      tr.innerHTML = '<td colspan="2" style="color:var(--muted);font-size:12px">商品情報を取得できませんでした</td>';
+    }
+    tbody.appendChild(tr);
+
+    // Schedule
+    var schedule = BusinessDays.getScheduleDates(new Date(), isRush);
+    document.getElementById('schedStart').textContent = BusinessDays.formatDateJa(schedule.productionStart);
+    document.getElementById('schedComplete').textContent = BusinessDays.formatDateJa(schedule.productionComplete);
+    document.getElementById('schedShip').textContent = BusinessDays.formatDateJa(schedule.shippingDate);
+    document.getElementById('schedArrival').textContent = BusinessDays.formatDateJa(schedule.arrivalDate);
+
+    showCard();
+  }
+
+  function showCard() {
+    document.getElementById('loadingWrap').style.display = 'none';
+    document.getElementById('errorWrap').style.display = 'none';
+    document.getElementById('mainCard').style.display = 'block';
+  }
+
+  loadSession();
+</script>
+</body>
+</html>

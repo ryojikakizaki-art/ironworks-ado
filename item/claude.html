@@ -442,8 +442,9 @@
 </head>
 <body>
   <header>
-    <a href="/" class="logo">IRONWORKS <span>ADO</span></a>
+    <a href="/" class="logo"><img src="/images/ado_logo_W.png" alt="IRONWORKS ado" style="height:36px;"></a>
     <nav>
+            <a href="/">HOME</a>
       <a href="/item/">ITEM</a>
       <div class="nav-dropdown">
       <a href="/#yokogata">CATEGORY</a>
@@ -935,20 +936,10 @@
   function onLengthChange(v) { update(v); }
   function onSliderChange(v) { update(v); }
 
-  async function addToCart() {
+  function addToCart() {
     const L = Number(document.getElementById('lengthInput').value);
-    const btn = document.getElementById('btnCheckout');
-    const errEl = document.getElementById('checkoutError');
-    btn.disabled = true; btn.textContent = '\u51E6\u7406\u4E2D...'; errEl.style.display = 'none';
-    try {
-      const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product: PRODUCT_KEY, lengthMm: L }) });
-      if (!res.ok) { const data = await res.json().catch(() => ({})); throw new Error(data.error || 'HTTP ' + res.status); }
-      const { url } = await res.json();
-      window.location.href = url;
-    } catch (err) {
-      console.error('[checkout]', err);
-      errEl.style.display = 'block'; btn.disabled = false; btn.textContent = '\u30AB\u30FC\u30C8\u306B\u8FFD\u52A0 \u2014 \u8CFC\u5165\u624B\u7D9A\u304D\u3078';
-    }
+    const p = new URLSearchParams({ product: PRODUCT_KEY, lengthMm: L });
+    window.location.href = '/checkout.html?' + p.toString();
   }
 
   update(1000);

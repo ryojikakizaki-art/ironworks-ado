@@ -268,9 +268,9 @@
     }
     .dm-overlay.open { display: flex; }
     .dm-modal {
-      background: #fff; color: #222; width: 100%; max-width: 580px;
+      background: #fff; color: #222; width: 100%; max-width: 1100px;
       border-radius: 8px; padding: 28px 24px 24px; position: relative;
-      max-height: 90vh; overflow-y: auto; font-family: var(--font);
+      max-height: 95vh; overflow-y: auto; font-family: var(--font);
     }
     .zakin-detail-toggle:hover { opacity: 0.7; }
 
@@ -442,18 +442,16 @@
     .dm-close { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 24px; color: #999; cursor: pointer; line-height: 1; transition: color .2s; }
     .dm-close:hover { color: #333; }
     .dm-title { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 16px; }
-    .dm-svg-wrap { margin-bottom: 20px; }
+    .dm-svg-wrap { margin-bottom: 20px; border: 1px solid #e0e0e0; background: #fff; }
     .dm-svg-wrap svg { width: 100%; height: auto; display: block; }
+    .dm-print-btn {
+      padding: 10px 24px; background: #333; color: #fff; border: none;
+      cursor: pointer; font-size: 12px; font-family: var(--font);
+      letter-spacing: 0.08em; transition: background .2s;
+    }
+    .dm-print-btn:hover { background: #555; }
     .dm-svg-wrap text { font-family: var(--font); }
-    .dm-svg-wrap .d-bar { stroke: #333; stroke-width: 3; stroke-linecap: round; }
-    .dm-svg-wrap .d-cap { stroke: #333; stroke-width: 1.5; }
-    .dm-svg-wrap .d-dim { stroke: #888; stroke-width: 0.7; }
-    .dm-svg-wrap .d-dim-text { fill: #555; font-size: 11px; text-anchor: middle; }
-    .dm-svg-wrap .d-total-dim { stroke: #333; stroke-width: 0.8; }
-    .dm-svg-wrap .d-total-text { fill: #222; font-size: 12px; text-anchor: middle; font-weight: 600; }
-    .dm-svg-wrap .d-bracket { fill: #c8a96e; }
-    .dm-svg-wrap .d-bracket-icon { stroke: #c8a96e; stroke-width: 1; }
-    .dm-svg-wrap .d-note { fill: #888; font-size: 10px; text-anchor: middle; }
+    .dm-svg-wrap text { font-family: var(--font), sans-serif; }
     .dm-controls { border-top: 1px solid #e0e0e0; padding-top: 16px; }
     .dm-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
     .dm-label { font-size: 12px; color: #666; white-space: nowrap; min-width: 80px; }
@@ -830,6 +828,36 @@
     .gclose.gbtn svg { fill: #fff; }
     .gclose.gbtn { color: #fff; }
     .gclose.gbtn:hover svg { fill: var(--accent); }
+
+    /* 印刷用（A4横、図面部分のみ） */
+    @media print {
+      @page { size: A4 landscape; margin: 10mm; }
+      body * { visibility: hidden !important; }
+      .dm-overlay.open,
+      .dm-overlay.open .dm-modal,
+      .dm-overlay.open .dm-svg-wrap,
+      .dm-overlay.open .dm-svg-wrap * {
+        visibility: visible !important;
+      }
+      .dm-overlay.open {
+        position: static !important; background: none !important;
+        backdrop-filter: none !important; padding: 0 !important;
+      }
+      .dm-overlay.open .dm-modal {
+        position: static !important; max-width: 100% !important;
+        max-height: none !important; overflow: visible !important;
+        padding: 0 !important; box-shadow: none !important;
+        border-radius: 0 !important;
+      }
+      .dm-overlay.open .dm-svg-wrap {
+        border: none !important; margin: 0 !important;
+      }
+      .dm-overlay.open .dm-svg-wrap svg {
+        width: 100% !important; height: auto !important;
+      }
+      .dm-close, .dm-title, .dm-print-btn, .dm-note,
+      .ze-overlay, .zakin-detail-modal { display: none !important; }
+    }
   </style>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/css/glightbox.min.css">
   <script src="https://cdn.jsdelivr.net/npm/glightbox@3.3.0/dist/js/glightbox.min.js"></script>
@@ -841,7 +869,10 @@
 <header>
   <a class="logo" href="/index.html"><img src="/images/ado_logo_W.png" alt="IRONWORKS ado" style="height:36px;"></a>
   <nav>
-    <div class="nav-dropdown">
+    <a href="/">HOME</a>
+    
+      <div class="nav-dropdown">
+    
       <a href="/#yokogata">CATEGORY</a>
       <div class="nav-dropdown-menu">
         <div class="dd-heading">■ 壁付け手すり</div>
@@ -1187,6 +1218,47 @@
   // ── 座金エディターモーダル ──
   var zeDragIdx = -1;
   var zeSvgEl = null;
+  var zeSelectedIdx = -1;
+
+  // 座金をクリックして選択
+  function zeSelectBracket(idx) {
+    zeSelectedIdx = (zeSelectedIdx === idx) ? -1 : idx;
+    buildEditorSvg();
+  }
+
+  // 矢印キーで選択中の座金を1mm単位で移動
+  document.addEventListener('keydown', function(e) {
+    if (zeSelectedIdx < 0) return;
+    var overlay = document.getElementById('zakinEditorOverlay');
+    if (!overlay || !overlay.classList.contains('open')) return;
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    var delta = e.key === 'ArrowRight' ? 1 : -1;
+    var L_mm = Number(document.getElementById('lengthInput').value) || 1500;
+    var sorted = zakinCustomList.slice().sort(function(a, b) { return a.pos - b.pos; });
+    // sortedインデックスから元のインデックスを取得
+    var origIdx = -1;
+    for (var i = 0; i < sorted.length; i++) {
+      if (i === zeSelectedIdx) {
+        for (var j = 0; j < zakinCustomList.length; j++) {
+          if (zakinCustomList[j] === sorted[i]) { origIdx = j; break; }
+        }
+        break;
+      }
+    }
+    if (origIdx < 0) return;
+    var newPos = zakinCustomList[origIdx].pos + delta;
+    // 範囲制限
+    newPos = Math.max(10, Math.min(L_mm - 10, newPos));
+    // 隣の座金との距離制限
+    var si = zeSelectedIdx;
+    if (si > 0) newPos = Math.max(newPos, sorted[si - 1].pos + 10);
+    if (si < sorted.length - 1) newPos = Math.min(newPos, sorted[si + 1].pos - 10);
+    zakinCustomList[origIdx].pos = newPos;
+    zakinCustomMode = true;
+    buildEditorSvg();
+    zeUpdatePriceSummary();
+  });
 
   function openZakinEditor() {
     var L = Number(document.getElementById('lengthInput').value) || 1500;
@@ -1252,11 +1324,13 @@
     zakinAngleDir = dir;
     document.getElementById('zeAngleDirLeft').classList.toggle('active', dir === 'left');
     document.getElementById('zeAngleDirRight').classList.toggle('active', dir === 'right');
+    buildEditorSvg();
     zeUpdatePriceSummary();
   }
 
   function zeOnAngleInput(el) {
     zakinGlobalAngle = Math.max(0, Math.min(60, parseInt(el.value) || 0));
+    buildEditorSvg();
     zeUpdatePriceSummary();
   }
 
@@ -1290,7 +1364,7 @@
     document.getElementById('zePriceSummary').innerHTML = html;
   }
 
-  // ── エディターSVG描画（白背景、ドラッグハンドル付き）──
+  // ── エディターSVG描画（リアル座金描画＋角度反映＋ドラッグ対応）──
   function buildEditorSvg() {
     var svgNS = 'http://www.w3.org/2000/svg';
     var svg = document.getElementById('zeEditorSvg');
@@ -1302,8 +1376,42 @@
     var positions = sorted.map(function(item) { return item.pos; });
 
     var W = 560, pad = 50;
-    var barY = 60, barLeft = pad, barRight = W - pad;
+    var barLeft = pad, barRight = W - pad;
     var barLen = barRight - barLeft;
+    var barCX = (barLeft + barRight) / 2;
+
+    // ── 角度計算（シミュレーターと同様） ──
+    var angleDeg = zakinGlobalAngle || 0;
+    var hasAngle = angleDeg > 0;
+    var angleRad = angleDeg * Math.PI / 180;
+    var maxVisualRise = 30;
+    var halfRise = Math.min((barLen / 2) * Math.sin(angleRad), maxVisualRise);
+    var barBaseY = hasAngle ? 55 : 50;
+
+    var barY1, barY2;
+    if (zakinAngleDir === 'left') {
+      barY1 = barBaseY - halfRise;
+      barY2 = barBaseY + halfRise;
+    } else {
+      barY1 = barBaseY + halfRise;
+      barY2 = barBaseY - halfRise;
+    }
+
+    function barYAtX(x) {
+      var t = (x - barLeft) / barLen;
+      return barY1 + t * (barY2 - barY1);
+    }
+
+    var actualAngle = Math.atan2(barY2 - barY1, barRight - barLeft);
+    var textAngle = actualAngle * 180 / Math.PI;
+
+    // 座金パラメータ
+    var bracketR = 8;
+    var bracketBottomY = Math.max(barY1, barY2) + bracketR * 2 + 4;
+
+    // viewBox高さ調整
+    var H = bracketBottomY + 60;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
 
     var addLine = function(x1, y1, x2, y2, stroke, sw) {
       var l = document.createElementNS(svgNS, 'line');
@@ -1313,89 +1421,140 @@
       svg.appendChild(l); return l;
     };
 
-    // 全長寸法（上部）
-    var dimY = 22;
+    // ── 全長寸法（上部、バーに平行） ──
+    var dimDist = 18;
+    var dimLx = barLeft + dimDist * Math.sin(actualAngle);
+    var dimRx = barRight + dimDist * Math.sin(actualAngle);
+    var dimLy = barY1 - dimDist * Math.cos(actualAngle);
+    var dimRy = barY2 - dimDist * Math.cos(actualAngle);
+    var dimMx = (dimLx + dimRx) / 2;
+    var dimMy = (dimLy + dimRy) / 2;
+
+    addLine(dimLx, dimLy, dimRx, dimRy, '#333', 0.8);
+    // ティック
+    var tickLen = 4;
+    var tickDx = tickLen * Math.sin(actualAngle);
+    var tickDy = -tickLen * Math.cos(actualAngle);
+    [{x: dimLx, y: dimLy}, {x: dimRx, y: dimRy}].forEach(function(pt) {
+      addLine(pt.x - tickDx, pt.y - tickDy, pt.x + tickDx, pt.y + tickDy, '#333', 0.8);
+    });
+    // 寸法補助線
+    addLine(barLeft, barY1, dimLx, dimLy, '#888', 0.3);
+    addLine(barRight, barY2, dimRx, dimRy, '#888', 0.3);
+
     var totalText = document.createElementNS(svgNS, 'text');
-    totalText.setAttribute('x', (barLeft + barRight) / 2);
-    totalText.setAttribute('y', dimY - 4);
+    totalText.setAttribute('x', dimMx); totalText.setAttribute('y', dimMy - 5);
     totalText.setAttribute('text-anchor', 'middle');
     totalText.setAttribute('font-size', '12'); totalText.setAttribute('fill', '#222');
     totalText.setAttribute('font-weight', '600');
+    if (hasAngle) totalText.setAttribute('transform', 'rotate(' + textAngle + ' ' + dimMx + ' ' + (dimMy - 5) + ')');
     totalText.textContent = L_mm;
     svg.appendChild(totalText);
-    addLine(barLeft, dimY, barRight, dimY, '#333', 0.8);
-    addLine(barLeft, dimY - 4, barLeft, dimY + 4, '#333', 0.8);
-    addLine(barRight, dimY - 4, barRight, dimY + 4, '#333', 0.8);
-    addLine(barLeft, dimY + 4, barLeft, barY - 10, '#888', 0.4);
-    addLine(barRight, dimY + 4, barRight, barY - 10, '#888', 0.4);
 
-    // メインバー
-    addLine(barLeft, barY, barRight, barY, '#333', 3);
-    addLine(barLeft, barY - 7, barLeft, barY + 7, '#333', 1.5);
-    addLine(barRight, barY - 7, barRight, barY + 7, '#333', 1.5);
+    // ── メインバー（角度付き） ──
+    addLine(barLeft, barY1, barRight, barY2, '#333', 3);
+    // 端キャップ（バーに垂直）
+    var capLen = 6;
+    var perpDx = capLen * Math.sin(actualAngle);
+    var perpDy = -capLen * Math.cos(actualAngle);
+    [{x: barLeft, y: barY1}, {x: barRight, y: barY2}].forEach(function(pt) {
+      addLine(pt.x - perpDx, pt.y - perpDy, pt.x + perpDx, pt.y + perpDy, '#333', 1.5);
+    });
 
-    // 座金マーカー（ドラッグ可能）
-    var handleR = 10;
+    // ── 座金マーカー（丸座金がバーに接触＋支柱が中心まで＋クリック選択対応） ──
     positions.forEach(function(pos, idx) {
       var x = barLeft + (pos / L_mm) * barLen;
-      // 支柱線
-      addLine(x, barY + 3, x, barY + 18, '#c8a96e', 1);
-      // ベースプレート
-      addLine(x - 6, barY + 18, x + 6, barY + 18, '#c8a96e', 1.5);
+      var yOnBar = barYAtX(x);
 
-      // ドラッグハンドル（大きめの円）
+      // 丸座金（バーに直接接する）
+      var circleY = yOnBar + bracketR + 1;
       var circle = document.createElementNS(svgNS, 'circle');
-      circle.setAttribute('cx', x); circle.setAttribute('cy', barY);
-      circle.setAttribute('r', handleR);
-      circle.setAttribute('fill', '#c8a96e'); circle.setAttribute('fill-opacity', '0.9');
-      circle.setAttribute('stroke', '#a88a4e'); circle.setAttribute('stroke-width', '1.5');
-      circle.setAttribute('class', 'ze-bracket-handle');
-      circle.setAttribute('data-idx', idx);
-      circle.addEventListener('mousedown', function(e) { zeStartDrag(e, idx); });
-      circle.addEventListener('touchstart', function(e) { zeStartDrag(e, idx); }, { passive: false });
+      circle.setAttribute('cx', x); circle.setAttribute('cy', circleY);
+      circle.setAttribute('r', bracketR);
+      circle.setAttribute('fill', '#c8a96e'); circle.setAttribute('fill-opacity', '0.15');
+      circle.setAttribute('stroke', '#c8a96e'); circle.setAttribute('stroke-width', '1.5');
       svg.appendChild(circle);
 
-      // 位置テキスト（ハンドル内）
+      // 支柱線（バーから座金中心まで）
+      addLine(x, yOnBar + 1, x, circleY, '#c8a96e', 1.2);
+
+      // 座金中心の十字マーク
+      addLine(x - 3, circleY, x + 3, circleY, '#c8a96e', 0.6);
+      addLine(x, circleY - 3, x, circleY + 3, '#c8a96e', 0.6);
+
+      // 選択中のハイライト
+      var isSelected = (zeSelectedIdx === idx);
+      if (isSelected) {
+        var highlight = document.createElementNS(svgNS, 'circle');
+        highlight.setAttribute('cx', x); highlight.setAttribute('cy', circleY);
+        highlight.setAttribute('r', bracketR + 3);
+        highlight.setAttribute('fill', 'none'); highlight.setAttribute('stroke', '#c8a96e');
+        highlight.setAttribute('stroke-width', '2'); highlight.setAttribute('stroke-dasharray', '3,2');
+        svg.appendChild(highlight);
+      }
+
+      // クリック／ドラッグ用ヒットエリア
+      var hitArea = document.createElementNS(svgNS, 'circle');
+      hitArea.setAttribute('cx', x); hitArea.setAttribute('cy', circleY);
+      hitArea.setAttribute('r', bracketR + 6);
+      hitArea.setAttribute('fill', 'transparent');
+      hitArea.setAttribute('class', 'ze-bracket-handle');
+      hitArea.setAttribute('data-idx', idx);
+      hitArea.addEventListener('mousedown', function(e) { zeStartDrag(e, idx); });
+      hitArea.addEventListener('touchstart', function(e) { zeStartDrag(e, idx); }, { passive: false });
+      hitArea.addEventListener('click', function(e) { zeSelectBracket(idx); });
+      svg.appendChild(hitArea);
+
+      // 位置テキスト（座金の下）
       var posText = document.createElementNS(svgNS, 'text');
-      posText.setAttribute('x', x); posText.setAttribute('y', barY + 4);
+      posText.setAttribute('x', x); posText.setAttribute('y', circleY + bracketR + 11);
       posText.setAttribute('text-anchor', 'middle');
-      posText.setAttribute('font-size', '8'); posText.setAttribute('fill', '#fff');
-      posText.setAttribute('font-weight', '600');
+      posText.setAttribute('font-size', '9');
+      posText.setAttribute('fill', isSelected ? '#c8a96e' : '#888');
+      posText.setAttribute('font-weight', isSelected ? '700' : '400');
       posText.setAttribute('pointer-events', 'none');
       posText.textContent = pos;
       svg.appendChild(posText);
     });
 
-    // セグメント寸法（下部）
-    var dimBelowY = barY + 32;
+    // ── セグメント寸法（座金の下、バーに平行） ──
+    var segOffsetDist = bracketR * 2 + 20;
+    var segNx = -Math.sin(actualAngle);
+    var segNy = Math.cos(actualAngle);
     var allPoints = [0].concat(positions).concat([L_mm]);
     for (var i = 1; i < allPoints.length; i++) {
       var x1 = barLeft + (allPoints[i - 1] / L_mm) * barLen;
       var x2 = barLeft + (allPoints[i] / L_mm) * barLen;
       var segLen = allPoints[i] - allPoints[i - 1];
       if (segLen <= 0) continue;
-      var midX = (x1 + x2) / 2;
+      var sy1 = barYAtX(x1) + segOffsetDist * segNy;
+      var sy2 = barYAtX(x2) + segOffsetDist * segNy;
+      var sx1 = x1 + segOffsetDist * segNx;
+      var sx2 = x2 + segOffsetDist * segNx;
+      var sMidX = (sx1 + sx2) / 2;
+      var sMidY = (sy1 + sy2) / 2;
       var segColor = segLen > MAX_SPAN_MM ? '#b8860b' : '#888';
-      addLine(x1, dimBelowY, x2, dimBelowY, segColor, 0.5);
-      addLine(x1, dimBelowY - 3, x1, dimBelowY + 3, segColor, 0.5);
-      addLine(x2, dimBelowY - 3, x2, dimBelowY + 3, segColor, 0.5);
+      addLine(sx1, sy1, sx2, sy2, segColor, 0.5);
+      addLine(sx1 - tickDx, sy1 - tickDy, sx1 + tickDx, sy1 + tickDy, segColor, 0.5);
+      addLine(sx2 - tickDx, sy2 - tickDy, sx2 + tickDx, sy2 + tickDy, segColor, 0.5);
       var segText = document.createElementNS(svgNS, 'text');
-      segText.setAttribute('x', midX);
-      segText.setAttribute('y', dimBelowY + 14);
+      segText.setAttribute('x', sMidX); segText.setAttribute('y', sMidY + 13);
       segText.setAttribute('text-anchor', 'middle');
       segText.setAttribute('font-size', '10');
       segText.setAttribute('fill', segLen > MAX_SPAN_MM ? '#b8860b' : '#555');
+      if (hasAngle) segText.setAttribute('transform', 'rotate(' + textAngle + ' ' + sMidX + ' ' + (sMidY + 13) + ')');
       segText.textContent = segLen;
       svg.appendChild(segText);
     }
+    var segDimY = Math.max(barY1, barY2) + segOffsetDist + 14;
 
-    // 座金N点ラベル
+    // ── 座金N点＋角度ラベル ──
     var noteText = document.createElementNS(svgNS, 'text');
-    noteText.setAttribute('x', (barLeft + barRight) / 2);
-    noteText.setAttribute('y', dimBelowY + 32);
+    noteText.setAttribute('x', barCX); noteText.setAttribute('y', segDimY + 30);
     noteText.setAttribute('text-anchor', 'middle');
     noteText.setAttribute('font-size', '10'); noteText.setAttribute('fill', '#888');
-    noteText.textContent = '\u300A \u5EA7\u91D1 ' + positions.length + '\u70B9 \u300B';
+    var angleLabel = hasAngle ? '  ' + zakinAngleDir.replace('left', '左').replace('right', '右') + angleDeg + '°' : '';
+    noteText.textContent = '\u300A \u5EA7\u91D1 ' + positions.length + '\u70B9' + angleLabel + ' \u300B';
     svg.appendChild(noteText);
 
     // 座金間隔警告
@@ -1427,6 +1586,7 @@
   function zeStartDrag(evt, idx) {
     evt.preventDefault();
     zeDragIdx = idx;
+    zeSelectedIdx = idx;
     var svg = document.getElementById('zeEditorSvg');
     svg.addEventListener('mousemove', zeDrag);
     svg.addEventListener('touchmove', zeDrag, { passive: false });
@@ -1455,7 +1615,7 @@
     pos = Math.round(pos / 10) * 10;
 
     // 範囲制限（両端50mm）
-    pos = Math.max(50, Math.min(L_mm - 50, pos));
+    pos = Math.max(10, Math.min(L_mm - 10, pos));
 
     // ソート済みインデックスを取得
     var sorted = zakinCustomList.slice().sort(function(a, b) { return a.pos - b.pos; });
@@ -1478,12 +1638,14 @@
   }
 
   function zeEndDrag(evt) {
+    var draggedIdx = zeDragIdx;
     zeDragIdx = -1;
     var svg = document.getElementById('zeEditorSvg');
     svg.removeEventListener('mousemove', zeDrag);
     svg.removeEventListener('touchmove', zeDrag);
     document.removeEventListener('mouseup', zeEndDrag);
     document.removeEventListener('touchend', zeEndDrag);
+    buildEditorSvg();
     zeUpdatePriceSummary();
   }
 
@@ -1779,70 +1941,267 @@
     else { document.getElementById('totalVal').textContent = fmt(baseTotal); }
   }
 
-  // ── 制作図SVG描画（白背景用）──
+  // ── 制作図SVG描画（CAD風暗背景、参照SVG準拠）──
   function buildDrawingSvg() {
     var svgNS = 'http://www.w3.org/2000/svg';
     var svg = document.getElementById('drawingSvg');
     if (!svg) return;
     svg.innerHTML = '';
+
     var L_mm = Number(document.getElementById('lengthInput').value) || 1500;
     var sorted = zakinCustomList.slice().sort(function(a, b) { return a.pos - b.pos; });
     var positions = sorted.map(function(item) { return item.pos; });
-    var W = 500, pad = 40;
-    var barY = 55, barLeft = pad, barRight = W - pad;
+
+    // A4横比率キャンバス
+    var W = 840, H = 400;
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    var C = '#333';   // 線色
+    var CD = '#666';   // 寸法線色
+
+    // ── 外枠 ──
+    var border = document.createElementNS(svgNS, 'rect');
+    border.setAttribute('x', 20); border.setAttribute('y', 15);
+    border.setAttribute('width', W - 40); border.setAttribute('height', H - 30);
+    border.setAttribute('fill', 'none'); border.setAttribute('stroke', C);
+    border.setAttribute('stroke-width', '1');
+    svg.appendChild(border);
+
+    // レイアウト定数
+    var barLeft = 150, barRight = W - 60;
     var barLen = barRight - barLeft;
-    var addLine = function(x1, y1, x2, y2, cls) {
+    var barCX = (barLeft + barRight) / 2;
+
+    // ── 角度計算 ──
+    var angleDeg = zakinGlobalAngle || 0;
+    var hasAngle = angleDeg > 0;
+    var angleRad = angleDeg * Math.PI / 180;
+    var maxVisualRise = 40;
+    var halfRise = Math.min((barLen / 2) * Math.sin(angleRad), maxVisualRise);
+    var barBaseY = 155;
+
+    var barY1, barY2;
+    if (zakinAngleDir === 'left') {
+      barY1 = barBaseY - halfRise;
+      barY2 = barBaseY + halfRise;
+    } else {
+      barY1 = barBaseY + halfRise;
+      barY2 = barBaseY - halfRise;
+    }
+
+    function barYAtX(x) {
+      var t = (x - barLeft) / barLen;
+      return barY1 + t * (barY2 - barY1);
+    }
+
+    var actualAngle = Math.atan2(barY2 - barY1, barRight - barLeft);
+    var textAngle = actualAngle * 180 / Math.PI;
+
+    var addLine = function(x1, y1, x2, y2, stroke, sw) {
       var l = document.createElementNS(svgNS, 'line');
       l.setAttribute('x1', x1); l.setAttribute('y1', y1);
       l.setAttribute('x2', x2); l.setAttribute('y2', y2);
-      l.setAttribute('class', cls); svg.appendChild(l);
+      l.setAttribute('stroke', stroke || C); l.setAttribute('stroke-width', sw || 0.5);
+      svg.appendChild(l); return l;
     };
-    var dimY = 18;
-    var totalText = document.createElementNS(svgNS, 'text');
-    totalText.setAttribute('x', (barLeft + barRight) / 2);
-    totalText.setAttribute('y', dimY - 3);
-    totalText.setAttribute('class', 'd-total-text');
-    totalText.textContent = L_mm;
-    svg.appendChild(totalText);
-    addLine(barLeft, dimY, barRight, dimY, 'd-total-dim');
-    addLine(barLeft, dimY - 4, barLeft, dimY + 4, 'd-total-dim');
-    addLine(barRight, dimY - 4, barRight, dimY + 4, 'd-total-dim');
-    addLine(barLeft, dimY + 4, barLeft, barY - 8, 'd-dim');
-    addLine(barRight, dimY + 4, barRight, barY - 8, 'd-dim');
-    addLine(barLeft, barY, barRight, barY, 'd-bar');
-    addLine(barLeft, barY - 6, barLeft, barY + 6, 'd-cap');
-    addLine(barRight, barY - 6, barRight, barY + 6, 'd-cap');
+
+    var addText = function(x, y, text, size, fill, anchor, weight) {
+      var t = document.createElementNS(svgNS, 'text');
+      t.setAttribute('x', x); t.setAttribute('y', y);
+      t.setAttribute('font-size', size || '10'); t.setAttribute('fill', fill || C);
+      t.setAttribute('text-anchor', anchor || 'middle');
+      t.setAttribute('font-family', 'var(--font), sans-serif');
+      if (weight) t.setAttribute('font-weight', weight);
+      t.textContent = text;
+      svg.appendChild(t);
+      return t;
+    };
+
+    // ── メインバー（長方形、太さ表現） ──
+    var barThick = 6;
+    var perpDx = (barThick / 2) * Math.sin(actualAngle);
+    var perpDy = -(barThick / 2) * Math.cos(actualAngle);
+    var rect = document.createElementNS(svgNS, 'polygon');
+    var pts = [
+      (barLeft - perpDx) + ',' + (barY1 - perpDy),
+      (barRight - perpDx) + ',' + (barY2 - perpDy),
+      (barRight + perpDx) + ',' + (barY2 + perpDy),
+      (barLeft + perpDx) + ',' + (barY1 + perpDy)
+    ];
+    rect.setAttribute('points', pts.join(' '));
+    rect.setAttribute('fill', 'none'); rect.setAttribute('stroke', C);
+    rect.setAttribute('stroke-width', '1');
+    svg.appendChild(rect);
+
+    // ── 座金描画（丸がバーに接触、支柱が中心まで、十字マーク） ──
+    var bR = 6;
     positions.forEach(function(pos) {
       var x = barLeft + (pos / L_mm) * barLen;
+      var yOnBar = barYAtX(x) + barThick / 2;
+      var circleY = yOnBar + bR;
+
+      // 支柱線（バー下端→座金中心）
+      addLine(x, yOnBar, x, circleY, C, 0.8);
+
+      // 丸座金
       var circle = document.createElementNS(svgNS, 'circle');
-      circle.setAttribute('cx', x); circle.setAttribute('cy', barY);
-      circle.setAttribute('r', 5); circle.setAttribute('class', 'd-bracket');
+      circle.setAttribute('cx', x); circle.setAttribute('cy', circleY);
+      circle.setAttribute('r', bR);
+      circle.setAttribute('fill', 'none'); circle.setAttribute('stroke', C);
+      circle.setAttribute('stroke-width', '0.8');
       svg.appendChild(circle);
-      addLine(x, barY + 5, x, barY + 15, 'd-dim');
-      addLine(x - 5, barY + 15, x + 5, barY + 15, 'd-bracket-icon');
+
+      // 十字マーク
+      addLine(x - 3, circleY, x + 3, circleY, C, 0.4);
+      addLine(x, circleY - 3, x, circleY + 3, C, 0.4);
     });
-    var dimBelowY = barY + 28;
+
+    // ── 全長寸法（上部、バーに平行） ──
+    var dimDist = 28;
+    var dimLx = barLeft + dimDist * Math.sin(actualAngle);
+    var dimRx = barRight + dimDist * Math.sin(actualAngle);
+    var dimLy = barY1 - dimDist * Math.cos(actualAngle);
+    var dimRy = barY2 - dimDist * Math.cos(actualAngle);
+    var dimMx = (dimLx + dimRx) / 2;
+    var dimMy = (dimLy + dimRy) / 2;
+
+    // 寸法補助線
+    addLine(barLeft, barY1 - barThick / 2, dimLx, dimLy, CD, 0.3);
+    addLine(barRight, barY2 - barThick / 2, dimRx, dimRy, CD, 0.3);
+    // 寸法線
+    addLine(dimLx, dimLy, dimRx, dimRy, C, 0.5);
+    // ティック
+    var tickLen = 4;
+    var tickDx = tickLen * Math.sin(actualAngle);
+    var tickDy = -tickLen * Math.cos(actualAngle);
+    [{x: dimLx, y: dimLy}, {x: dimRx, y: dimRy}].forEach(function(pt) {
+      addLine(pt.x - tickDx, pt.y - tickDy, pt.x + tickDx, pt.y + tickDy, C, 0.8);
+    });
+    // 全長テキスト
+    var tt = addText(dimMx, dimMy - 5, L_mm, '11', C, 'middle', '600');
+    if (hasAngle) tt.setAttribute('transform', 'rotate(' + textAngle + ' ' + dimMx + ' ' + (dimMy - 5) + ')');
+
+    // ── セグメント寸法（下部、バーに平行） ──
+    var segOffsetDist = bR * 2 + 18;
+    var segNx = -Math.sin(actualAngle);
+    var segNy = Math.cos(actualAngle);
     var allPoints = [0].concat(positions).concat([L_mm]);
     for (var i = 1; i < allPoints.length; i++) {
       var x1 = barLeft + (allPoints[i - 1] / L_mm) * barLen;
       var x2 = barLeft + (allPoints[i] / L_mm) * barLen;
       var segLen = allPoints[i] - allPoints[i - 1];
       if (segLen <= 0) continue;
-      var midX = (x1 + x2) / 2;
-      addLine(x1, dimBelowY, x2, dimBelowY, 'd-dim');
-      addLine(x1, dimBelowY - 3, x1, dimBelowY + 3, 'd-dim');
-      addLine(x2, dimBelowY - 3, x2, dimBelowY + 3, 'd-dim');
-      var segText = document.createElementNS(svgNS, 'text');
-      segText.setAttribute('x', midX); segText.setAttribute('y', dimBelowY + 14);
-      segText.setAttribute('class', 'd-dim-text'); segText.textContent = segLen;
-      svg.appendChild(segText);
+      var sy1 = barYAtX(x1) + barThick / 2 + segOffsetDist * segNy;
+      var sy2 = barYAtX(x2) + barThick / 2 + segOffsetDist * segNy;
+      var sx1 = x1 + segOffsetDist * segNx;
+      var sx2 = x2 + segOffsetDist * segNx;
+      var sMidX = (sx1 + sx2) / 2;
+      var sMidY = (sy1 + sy2) / 2;
+
+      // 寸法補助線
+      addLine(x1, barYAtX(x1) + barThick / 2 + bR * 2 + 2, sx1, sy1, CD, 0.3);
+      addLine(x2, barYAtX(x2) + barThick / 2 + bR * 2 + 2, sx2, sy2, CD, 0.3);
+      // 寸法線
+      addLine(sx1, sy1, sx2, sy2, CD, 0.5);
+      // ティック
+      addLine(sx1 - tickDx, sy1 - tickDy, sx1 + tickDx, sy1 + tickDy, CD, 0.5);
+      addLine(sx2 - tickDx, sy2 - tickDy, sx2 + tickDx, sy2 + tickDy, CD, 0.5);
+      // テキスト
+      var st = addText(sMidX, sMidY - 4, segLen, '9', CD);
+      if (hasAngle) st.setAttribute('transform', 'rotate(' + textAngle + ' ' + sMidX + ' ' + (sMidY - 4) + ')');
     }
-    var noteText = document.createElementNS(svgNS, 'text');
-    noteText.setAttribute('x', (barLeft + barRight) / 2);
-    noteText.setAttribute('y', dimBelowY + 32);
-    noteText.setAttribute('class', 'd-note');
-    noteText.textContent = '\u300A \u5EA7\u91D1 ' + positions.length + '\u70B9 \u300B';
-    svg.appendChild(noteText);
+
+    // ── 座金側面詳細図（左上） ──
+    var dxBase = 55, dyBase = 120;
+    // 支柱（縦線）
+    addLine(dxBase, dyBase, dxBase, dyBase + 30, C, 0.8);
+    // 座金丸
+    var dc = document.createElementNS(svgNS, 'circle');
+    dc.setAttribute('cx', dxBase); dc.setAttribute('cy', dyBase + 30);
+    dc.setAttribute('r', 6); dc.setAttribute('fill', 'none');
+    dc.setAttribute('stroke', C); dc.setAttribute('stroke-width', '0.8');
+    svg.appendChild(dc);
+    // ベースプレート
+    addLine(dxBase - 12, dyBase + 36, dxBase + 12, dyBase + 36, C, 0.8);
+    addLine(dxBase - 12, dyBase + 36, dxBase - 12, dyBase + 38, C, 0.5);
+    addLine(dxBase + 12, dyBase + 36, dxBase + 12, dyBase + 38, C, 0.5);
+    // 高さ寸法
+    addLine(dxBase + 18, dyBase, dxBase + 18, dyBase + 36, CD, 0.4);
+    addLine(dxBase + 15, dyBase, dxBase + 21, dyBase, CD, 0.4);
+    addLine(dxBase + 15, dyBase + 36, dxBase + 21, dyBase + 36, CD, 0.4);
+    addText(dxBase + 24, dyBase + 12, '40', '7', CD, 'start');
+    // 幅寸法
+    addLine(dxBase - 12, dyBase + 42, dxBase + 12, dyBase + 42, CD, 0.4);
+    addLine(dxBase - 12, dyBase + 39, dxBase - 12, dyBase + 45, CD, 0.4);
+    addLine(dxBase + 12, dyBase + 39, dxBase + 12, dyBase + 45, CD, 0.4);
+    addText(dxBase, dyBase + 50, '45', '7', CD);
+
+    // ── タイトルブロック（右下、CAD風） ──
+    var tbW = 260, tbRowH = 18, tbRows = 7;
+    var tbH = tbRowH * tbRows;
+    var tbX = W - 30 - tbW, tbY = H - 25 - tbH;
+    var labelW = 60;
+
+    // タイトルブロック外枠
+    var tbRect = document.createElementNS(svgNS, 'rect');
+    tbRect.setAttribute('x', tbX); tbRect.setAttribute('y', tbY);
+    tbRect.setAttribute('width', tbW); tbRect.setAttribute('height', tbH);
+    tbRect.setAttribute('fill', 'none'); tbRect.setAttribute('stroke', C);
+    tbRect.setAttribute('stroke-width', '0.8');
+    svg.appendChild(tbRect);
+
+    // 行データ
+    var today = new Date();
+    var pad2 = function(n) { return n < 10 ? '0' + n : n; };
+    var dateStr = today.getFullYear() + '-' + pad2(today.getMonth() + 1) + '-' + pad2(today.getDate());
+    var zakinInfo = positions.length + '点';
+    if (hasAngle) zakinInfo += ' / ' + zakinAngleDir.replace('left', '左').replace('right', '右') + angleDeg + '°';
+
+    var rows = [
+      ['図面名', 'René 横型手すり ' + L_mm + 'mm', true],
+      ['図番', 'IW-REN-' + L_mm, false],
+      ['材質', 'ss400 FB 6×25', false],
+      ['仕上げ', 'マットブラック', false],
+      ['尺度', '1:20', false],
+      ['設計', '柿崎 良治', false],
+      ['座金', zakinInfo, false]
+    ];
+
+    rows.forEach(function(row, i) {
+      var ry = tbY + i * tbRowH;
+      // 水平線
+      if (i > 0) addLine(tbX, ry, tbX + tbW, ry, C, 0.4);
+      // 垂直分割線
+      addLine(tbX + labelW, ry, tbX + labelW, ry + tbRowH, C, 0.4);
+      // ラベル
+      addText(tbX + labelW / 2, ry + 13, row[0], '8', CD, 'middle', '600');
+      // 値
+      addText(tbX + labelW + 8, ry + 13, row[1], row[2] ? '10' : '9', C, 'start', row[2] ? '700' : '400');
+    });
+
+    // 日付（設計行の右側に追記）
+    addText(tbX + tbW - 6, tbY + 5 * tbRowH + 13, '日付  ' + dateStr, '7', CD, 'end');
+
+    // ── 投影法マーク（タイトルブロック左横） ──
+    var pmX = tbX - 40, pmY = tbY + tbH / 2;
+    // 第三角法マーク（円錐台＋円）
+    // 簡易台形
+    var trap = document.createElementNS(svgNS, 'polygon');
+    trap.setAttribute('points', (pmX - 5) + ',' + (pmY + 10) + ' ' + (pmX + 5) + ',' + (pmY + 10) + ' ' + (pmX + 3) + ',' + (pmY - 10) + ' ' + (pmX - 3) + ',' + (pmY - 10));
+    trap.setAttribute('fill', 'none'); trap.setAttribute('stroke', C); trap.setAttribute('stroke-width', '0.6');
+    svg.appendChild(trap);
+    // 右に正面図（丸＋十字）
+    var pmcx = pmX + 22;
+    var pmc = document.createElementNS(svgNS, 'circle');
+    pmc.setAttribute('cx', pmcx); pmc.setAttribute('cy', pmY);
+    pmc.setAttribute('r', 8); pmc.setAttribute('fill', 'none');
+    pmc.setAttribute('stroke', C); pmc.setAttribute('stroke-width', '0.6');
+    svg.appendChild(pmc);
+    addLine(pmcx - 8, pmY, pmcx + 8, pmY, C, 0.4);
+    addLine(pmcx, pmY - 8, pmcx, pmY + 8, C, 0.4);
+    var pmdot = document.createElementNS(svgNS, 'circle');
+    pmdot.setAttribute('cx', pmcx); pmdot.setAttribute('cy', pmY);
+    pmdot.setAttribute('r', 1.5); pmdot.setAttribute('fill', '#333');
+    svg.appendChild(pmdot);
   }
 
   function buildDiagramSVG(L_mm, positions) {
@@ -2227,6 +2586,10 @@
   }
 
   // 数値フォーマット
+  function printDrawing() {
+    window.print();
+  }
+
   function fmt(n) { return '¥' + Math.round(n).toLocaleString('ja-JP'); }
 
   // UI更新（入力はmm）
@@ -2408,44 +2771,23 @@
   buildGLightbox();
   document.getElementById('mainImg').onclick = function() { openGLightbox(galleryIdx); };
 
-  // Stripe Checkout
-  async function addToCart() {
-    const L   = Number(document.getElementById('lengthInput').value);
-    const btn = document.getElementById('btnCheckout');
-    const errEl = document.getElementById('checkoutError');
-
-    btn.disabled = true;
-    btn.textContent = '処理中...';
-    errEl.style.display = 'none';
-
-    try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          product: 'rene',
-          lengthMm: L,
-          qty: currentQty,
-          rushDelivery: currentDeliveryType === 'rush',
-          preferredArrivalDate: document.getElementById('arrivalDatePicker').value || null,
-          preferredTimeSlot: document.getElementById('timeSlotSelect').value || null,
-        }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json().catch(function() { return {}; });
-        throw new Error(data.error || 'HTTP ' + res.status);
-      }
-
-      const { url } = await res.json();
-      window.location.href = url;
-
-    } catch (err) {
-      console.error('[checkout]', err);
-      errEl.style.display = 'block';
-      btn.disabled = false;
-      btn.textContent = 'カートに追加 — 購入手続きへ';
-    }
+  // 注文確認ページへ
+  function addToCart() {
+    const L = Number(document.getElementById('lengthInput').value);
+    const zakinCount = (typeof zakinCustomList !== 'undefined' && zakinCustomList.length)
+      ? zakinCustomList.length : calcZakin(L);
+    const p = new URLSearchParams({
+      product:     'rene',
+      lengthMm:    L,
+      rush:        currentDeliveryType === 'rush' ? '1' : '0',
+      qty:         currentQty || 1,
+      pref:        (document.getElementById('prefSelect') && document.getElementById('prefSelect').value) || '',
+      arrivalDate: document.getElementById('arrivalDatePicker').value || '',
+      timeSlot:    document.getElementById('timeSlotSelect').value || '',
+      zakin:       zakinCount,
+      shipping:    currentShipping || 0,
+    });
+    window.location.href = '/checkout.html?' + p.toString();
   }
 
   // ── 送料計算 ──────────────────────────────
@@ -2641,10 +2983,13 @@
     <button class="dm-close" onclick="closeDrawingModal()">&times;</button>
     <div class="dm-title">制作図プレビュー</div>
     <div class="dm-svg-wrap">
-      <svg id="drawingSvg" viewBox="0 0 500 130"></svg>
+      <svg id="drawingSvg" viewBox="0 0 840 400"></svg>
     </div>
-    <div class="dm-note" style="margin-top: 12px;">
-      ※ 座金の数量・位置・角度は「座金位置・角度を設定する」で変更できます。
+    <div style="display:flex;align-items:center;gap:16px;margin-top:12px;flex-wrap:wrap;">
+      <button class="dm-print-btn" onclick="printDrawing()">PDF保存 / 印刷</button>
+      <span class="dm-note" style="margin:0;">
+        ※ 座金の数量・位置・角度は「座金位置・角度を設定する」で変更できます。
+      </span>
     </div>
   </div>
 </div>
@@ -2683,7 +3028,8 @@
       </div>
       <div class="ze-note">
         ※ 座金をドラッグして位置を調整できます<br>
-        ※ 両端から100mm以上の位置に配置してください
+        ※ 座金を選択後、←→キーで1mm単位の微調整が可能です<br>
+        ※ 両端から10mm以上の位置に配置してください
       </div>
       <div class="ze-price-summary" id="zePriceSummary"></div>
       <div class="ze-links">

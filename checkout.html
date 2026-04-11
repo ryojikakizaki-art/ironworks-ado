@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ご注文内容の確認 ｜ IRONWORKS ado</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --black:   #0e0e0e;
+      --dark:    #1a1a1a;
+      --mid:     #2c2c2c;
+      --line:    #333333;
+      --muted:   #888888;
+      --light:   #cccccc;
+      --white:   #f5f5f5;
+      --accent:  #c8a96e;
+      --font:    'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+    }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* HEADER */
+    header {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 40px; height: 64px;
+      background: rgba(14,14,14,0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+    }
+    .logo {
+      font-size: 11px; letter-spacing: 0.35em;
+      text-transform: uppercase; color: var(--white);
+      text-decoration: none;
+    }
+    .logo span { color: var(--accent); }
+    nav { display: flex; align-items: center; }
+    nav a {
+      color: var(--muted); text-decoration: none;
+      font-size: 11px; letter-spacing: 0.2em;
+      text-transform: uppercase; margin-left: 32px;
+      transition: color .2s;
+    }
+    nav a:hover { color: var(--white); }
+
+    /* BREADCRUMB */
+    .breadcrumb {
+      padding: 96px 40px 0;
+      font-size: 11px; color: var(--muted);
+      letter-spacing: 0.1em;
+    }
+    .breadcrumb a { color: var(--muted); text-decoration: none; }
+    .breadcrumb a:hover { color: var(--accent); }
+    .breadcrumb span { margin: 0 8px; }
+
+    /* PAGE TITLE */
+    .page-title {
+      max-width: 1100px; margin: 32px auto 0;
+      padding: 0 40px;
+    }
+    .page-title-label {
+      font-size: 10px; letter-spacing: 0.35em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 8px;
+    }
+    .page-title h1 {
+      font-size: 22px; font-weight: 300;
+      letter-spacing: 0.06em; color: var(--white);
+    }
+
+    /* LAYOUT */
+    .checkout-wrap {
+      max-width: 1100px; margin: 32px auto 80px;
+      padding: 0 40px;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 32px;
+      align-items: start;
+    }
+
+    /* CARD */
+    .card {
+      background: var(--dark);
+      border: 1px solid var(--line);
+      padding: 32px;
+    }
+    .card + .card { margin-top: 16px; }
+
+    .card-title {
+      font-size: 10px; letter-spacing: 0.35em;
+      text-transform: uppercase; color: var(--accent);
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    /* PRODUCT ITEM */
+    .product-item {
+      display: flex; gap: 20px; align-items: flex-start;
+    }
+    .product-icon {
+      width: 72px; height: 72px;
+      background: var(--mid);
+      border: 1px solid var(--line);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--accent); font-size: 20px;
+    }
+    .product-info { flex: 1; }
+    .product-name {
+      font-size: 15px; font-weight: 500;
+      letter-spacing: 0.04em; color: var(--white);
+      margin-bottom: 4px;
+    }
+    .product-sub {
+      font-size: 11px; color: var(--muted);
+      letter-spacing: 0.06em; line-height: 1.8;
+    }
+    .product-price {
+      font-size: 16px; font-weight: 300;
+      color: var(--white); white-space: nowrap;
+    }
+
+    /* DETAIL ROWS */
+    .detail-rows { margin-top: 24px; }
+    .detail-row {
+      display: flex; justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .detail-label { color: var(--muted); }
+    .detail-value { color: var(--light); }
+    .detail-value.accent { color: var(--accent); }
+
+    /* SCHEDULE STEPS */
+    .schedule-steps { margin-top: 4px; }
+    .schedule-step {
+      display: flex; gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 12px;
+    }
+    .schedule-step:last-child { border-bottom: none; }
+    .step-num {
+      width: 20px; height: 20px;
+      border: 1px solid var(--accent);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; color: var(--accent);
+      flex-shrink: 0; margin-top: 2px;
+    }
+    .step-body { color: var(--light); line-height: 1.6; }
+    .step-date { color: var(--accent); font-weight: 500; }
+    .step-note { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+    /* PRICE BREAKDOWN */
+    .price-rows { }
+    .price-row {
+      display: flex; justify-content: space-between;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 13px;
+    }
+    .price-row:last-child { border-bottom: none; }
+    .price-row-label { color: var(--muted); }
+    .price-row-value { color: var(--light); }
+    .price-row.rush .price-row-label,
+    .price-row.rush .price-row-value { color: var(--accent); }
+
+    .total-box {
+      margin-top: 16px;
+      padding: 16px 20px;
+      border: 1px solid var(--accent);
+      display: flex; align-items: baseline;
+      justify-content: space-between;
+    }
+    .total-label {
+      font-size: 10px; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--accent);
+    }
+    .total-amount {
+      font-size: 28px; font-weight: 300;
+      letter-spacing: 0.03em; color: var(--white);
+    }
+    .total-tax { font-size: 11px; color: var(--muted); margin-left: 6px; }
+
+    /* BUTTONS */
+    .btn-stripe {
+      display: block; width: 100%;
+      margin-top: 20px;
+      padding: 18px;
+      background: var(--accent);
+      border: none; cursor: pointer;
+      color: var(--black);
+      font-size: 12px; font-weight: 600;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      font-family: var(--font);
+      transition: background .2s, transform .1s, opacity .2s;
+    }
+    .btn-stripe:hover:not(:disabled) { background: #d4b87a; }
+    .btn-stripe:active:not(:disabled) { transform: scale(0.99); }
+    .btn-stripe:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .btn-back {
+      display: block; width: 100%;
+      margin-top: 10px;
+      padding: 14px;
+      background: transparent;
+      border: 1px solid var(--line);
+      cursor: pointer; color: var(--muted);
+      font-size: 11px; letter-spacing: 0.2em;
+      text-transform: uppercase; font-family: var(--font);
+      text-decoration: none; text-align: center;
+      transition: border-color .2s, color .2s;
+    }
+    .btn-back:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* SECURE BADGE */
+    .secure-badge {
+      margin-top: 16px;
+      padding: 10px 14px;
+      background: rgba(200,169,110,0.06);
+      border: 1px solid rgba(200,169,110,0.2);
+      display: flex; align-items: center; gap: 10px;
+      font-size: 11px; color: var(--muted);
+    }
+    .secure-icon { font-size: 14px; color: var(--accent); flex-shrink: 0; }
+
+    /* ERROR */
+    .checkout-error {
+      display: none; margin-top: 12px;
+      padding: 10px 14px;
+      background: rgba(200,80,80,0.1);
+      border: 1px solid rgba(200,80,80,0.3);
+      font-size: 11px; color: #e0a0a0;
+    }
+
+    /* RUSH BADGE */
+    .rush-badge {
+      display: inline-block; padding: 2px 10px;
+      background: rgba(200,169,110,0.15);
+      border: 1px solid var(--accent);
+      color: var(--accent); font-size: 10px;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      margin-left: 8px; vertical-align: middle;
+    }
+
+    /* NOT FOUND */
+    .not-found {
+      flex: 1; display: flex; align-items: center;
+      justify-content: center; padding: 80px 40px;
+    }
+    .not-found-inner { text-align: center; max-width: 400px; }
+    .not-found-title {
+      font-size: 11px; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--muted);
+      margin-bottom: 16px;
+    }
+    .not-found-text { font-size: 14px; color: var(--light); line-height: 2; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--line);
+      padding: 32px 40px;
+      text-align: center;
+      font-size: 11px; color: var(--muted);
+      letter-spacing: 0.15em;
+      margin-top: auto;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      header { padding: 0 20px; }
+      nav { display: none; }
+      .breadcrumb { padding: 80px 20px 0; }
+      .page-title { padding: 0 20px; }
+      .checkout-wrap {
+        grid-template-columns: 1fr;
+        padding: 0 20px;
+        margin-top: 24px;
+      }
+      .card { padding: 24px 20px; }
+      .total-amount { font-size: 22px; }
+    }
+  </style>
+  <script src="/js/business-days.js"></script>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="/">IRONWORKS <span>ado</span></a>
+  <nav>
+    <a href="/item/">PRODUCTS</a>
+    <a href="/about.html">ABOUT</a>
+    <a href="/contact.html">CONTACT</a>
+  </nav>
+</header>
+
+<div class="breadcrumb">
+  <a href="/">Home</a><span>/</span>
+  <a href="/item/">Products</a><span>/</span>
+  <span id="breadcrumbProduct">—</span><span>/</span>
+  <span>ご注文確認</span>
+</div>
+
+<div class="page-title">
+  <div class="page-title-label">Order Review</div>
+  <h1>ご注文内容の確認</h1>
+</div>
+
+<div class="checkout-wrap" id="checkoutWrap" style="display:none">
+
+  <!-- LEFT: 注文サマリー -->
+  <div class="left-col">
+    <!-- 商品情報 -->
+    <div class="card">
+      <div class="card-title">ご注文商品</div>
+      <div class="product-item">
+        <div class="product-icon">⟳</div>
+        <div class="product-info">
+          <div class="product-name" id="dispProductName">—</div>
+          <div class="product-sub" id="dispProductSub">—</div>
+        </div>
+        <div class="product-price" id="dispProductPrice">—</div>
+      </div>
+
+      <div class="detail-rows" id="detailRows">
+        <div class="detail-row">
+          <span class="detail-label">長さ</span>
+          <span class="detail-value" id="dispLength">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">仕上げ</span>
+          <span class="detail-value" id="dispFinish">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">座金</span>
+          <span class="detail-value" id="dispZakin">—</span>
+        </div>
+        <div class="detail-row">
+          <span class="detail-label">数量</span>
+          <span class="detail-value" id="dispQty">—</span>
+        </div>
+        <div class="detail-row" id="rowArrival" style="display:none">
+          <span class="detail-label">到着希望日</span>
+          <span class="detail-value accent" id="dispArrival">—</span>
+        </div>
+        <div class="detail-row" id="rowTimeSlot" style="display:none">
+          <span class="detail-label">時間帯</span>
+          <span class="detail-value" id="dispTimeSlot">—</span>
+        </div>
+        <div class="detail-row" id="rowPref" style="display:none">
+          <span class="detail-label">配送先</span>
+          <span class="detail-value" id="dispPref">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 制作・配送スケジュール -->
+    <div class="card">
+      <div class="card-title">制作・配送スケジュール</div>
+      <div class="schedule-steps">
+        <div class="schedule-step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            制作開始
+            <div class="step-note"><span class="step-date" id="schedStart">—</span> より制作を開始</div>
+          </div>
+        </div>
+        <div class="schedule-step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            制作完了予定
+            <div class="step-note"><span class="step-date" id="schedComplete">—</span></div>
+          </div>
+        </div>
+        <div class="schedule-step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            発送（佐川急便）
+            <div class="step-note"><span class="step-date" id="schedShip">—</span></div>
+          </div>
+        </div>
+        <div class="schedule-step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            お届け予定
+            <div class="step-note"><span class="step-date" id="schedArrival">—</span>〜</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: 支払いパネル -->
+  <div class="right-col">
+    <div class="card">
+      <div class="card-title">お支払い内容</div>
+
+      <div class="price-rows" id="priceRows">
+        <div class="price-row">
+          <span class="price-row-label" id="basePriceLabel">基本料金</span>
+          <span class="price-row-value" id="basePriceVal">—</span>
+        </div>
+        <div class="price-row" id="rowAddon" style="display:none">
+          <span class="price-row-label">長さ追加料金</span>
+          <span class="price-row-value" id="addonVal">—</span>
+        </div>
+        <div class="price-row" id="rowSurcharge" style="display:none">
+          <span class="price-row-label">長尺割増</span>
+          <span class="price-row-value" id="surchargeVal">—</span>
+        </div>
+        <div class="price-row" id="rowZakinExtra" style="display:none">
+          <span class="price-row-label">追加座金料金</span>
+          <span class="price-row-value" id="zakinExtraVal">—</span>
+        </div>
+        <div class="price-row rush" id="rowRush" style="display:none">
+          <span class="price-row-label">特急割増（+20%）</span>
+          <span class="price-row-value" id="rushVal">—</span>
+        </div>
+        <div class="price-row" id="rowShipping">
+          <span class="price-row-label">送料</span>
+          <span class="price-row-value" id="shippingVal">別途実費（佐川急便）</span>
+        </div>
+      </div>
+
+      <div class="total-box">
+        <span class="total-label">合計</span>
+        <div>
+          <span class="total-amount" id="totalAmount">—</span>
+          <span class="total-tax">税込</span>
+        </div>
+      </div>
+
+      <button class="btn-stripe" id="btnStripe" onclick="proceedToStripe()">
+        Stripe で支払う
+      </button>
+      <a class="btn-back" id="backLink" href="/item/">← 商品ページに戻る</a>
+
+      <div class="checkout-error" id="checkoutError">
+        ⚠ エラーが発生しました。しばらく後にもう一度お試しください。
+      </div>
+
+      <div class="secure-badge">
+        <span class="secure-icon">🔒</span>
+        Stripe による安全な決済。カード情報はサイトに保存されません。
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NOT FOUND -->
+<div class="not-found" id="notFound" style="display:none">
+  <div class="not-found-inner">
+    <div class="not-found-title">商品情報が見つかりません</div>
+    <div class="not-found-text">
+      URLが正しくありません。商品ページからやり直してください。
+    </div>
+    <a class="btn-back" href="/item/" style="display:inline-block;margin-top:24px;width:auto;padding:14px 32px;">
+      商品一覧へ
+    </a>
+  </div>
+</div>
+
+<footer>
+  © IRONWORKS ado ｜ All rights reserved
+</footer>
+
+<script>
+  // ── 商品マスター（api/checkout.js と同期）──
+  var PRODUCTS = {
+    rene:      { name: 'René ルネ',               type: '横型',     basePrice: 36500,  stdLengthMm: 1500, maxMm: 5000, finish: 'マットブラック',     includedZakin: 3 },
+    claire:    { name: 'Claire クレール',          type: '横型',     basePrice: 42000,  stdLengthMm: 1500, maxMm: 5000, finish: 'マットホワイト',     includedZakin: 3 },
+    emile:     { name: 'Emile エミール',           type: '横型',     basePrice: 45800,  stdLengthMm: 1500, maxMm: 5000, finish: '鎚目仕上げ 銀古美', includedZakin: 3 },
+    marcel:    { name: 'Marcel マルセル',          type: '横型',     basePrice: 36000,  stdLengthMm: 1500, maxMm: 5000, finish: 'マットブラック',     includedZakin: 3 },
+    alexandre: { name: 'Alexandre アレクサンドル', type: '縦型',     basePrice: 32000,  stdLengthMm: 1000, maxMm: 3000, finish: 'マットブラック',     includedZakin: 3 },
+    catherine: { name: 'Catherine カトリーヌ',     type: '縦型',     basePrice: 34500,  stdLengthMm: 1000, maxMm: 3000, finish: 'マットホワイト',     includedZakin: 3 },
+    claude:    { name: 'Claude クロード',          type: '縦型',     basePrice: 30000,  stdLengthMm: 1000, maxMm: 3000, finish: 'マットブラック',     includedZakin: 3 },
+    antoine:   { name: 'Antoine アントワーヌ',     type: '縦型ロング', basePrice: 56000, stdLengthMm: 2500, maxMm: 2500, finish: 'マットブラック',     includedZakin: 4 },
+    scroll16:  { name: 'Scroll スクロール 16φ',   type: '縦型',     basePrice: 18000,  stdLengthMm: 700,  maxMm: 700,  finish: 'ミツロウ仕上げ',     includedZakin: 2 },
+    scroll19:  { name: 'Scroll スクロール 19φ',   type: '縦型',     basePrice: 32000,  stdLengthMm: 700,  maxMm: 700,  finish: 'ミツロウ仕上げ',     includedZakin: 2 },
+    scroll22:  { name: 'Scroll スクロール 22φ',   type: '縦型',     basePrice: 60000,  stdLengthMm: 800,  maxMm: 800,  finish: 'ミツロウ仕上げ',     includedZakin: 2 },
+    fabrice:   { name: 'Fabrice ファブリス',       type: '縦型',     basePrice: 100000, stdLengthMm: 800,  maxMm: 800,  finish: '無垢鉄 火造り鍛造', includedZakin: 2 },
+    tsuchime:  { name: '鎚目 TSUCHIME',           type: '縦型',     basePrice: 70000,  stdLengthMm: 800,  maxMm: 800,  finish: '手打ち鎚目仕上げ', includedZakin: 2 },
+  };
+
+  var PRICE_PER_MM      = 25;
+  var ZAKIN_PRICE       = 3500;
+  var END_DIST_MM       = 100;
+  var MAX_SPAN_MM       = 850;
+  var SURGE_START_MM    = 2000;
+  var SURGE_BASE        = 1.2;
+  var SURGE_INTERVAL_MM = 500;
+  var RUSH_RATE         = 0.2;
+
+  function calcZakin(L) {
+    if (L <= 1050) return 2;
+    return 1 + Math.ceil((L - 2 * END_DIST_MM) / MAX_SPAN_MM);
+  }
+
+  function calcPrice(L, prod) {
+    var addon    = Math.max(0, L - prod.stdLengthMm) * PRICE_PER_MM;
+    var longM    = L > SURGE_START_MM ? Math.pow(SURGE_BASE, (L - SURGE_START_MM) / SURGE_INTERVAL_MM) : 1;
+    var surcharge = L > SURGE_START_MM ? addon * (longM - 1) : 0;
+    var zakin     = calcZakin(L);
+    var addZakin  = Math.max(0, zakin - prod.includedZakin) * ZAKIN_PRICE;
+    var total     = prod.basePrice + addon + addZakin + surcharge;
+    return { addon: addon, surcharge: surcharge, addZakin: addZakin, zakin: zakin, total: total };
+  }
+
+  function fmt(n) { return '¥' + Math.round(n).toLocaleString(); }
+
+  // ── URL パラメータを解析 ──
+  var params       = new URLSearchParams(window.location.search);
+  var productKey   = (params.get('product') || '').toLowerCase();
+  var lengthMm     = Math.round(Number(params.get('lengthMm')) || 0);
+  var isRush       = params.get('rush') === '1';
+  var qty          = Math.max(1, parseInt(params.get('qty')) || 1);
+  var pref         = params.get('pref') || '';
+  var arrivalDate  = params.get('arrivalDate') || '';
+  var timeSlot     = params.get('timeSlot') || '';
+  var shippingParam = parseInt(params.get('shipping')) || 0;
+  var zakinParam   = parseInt(params.get('zakin')) || 0;
+
+  var prod = PRODUCTS[productKey];
+
+  if (!prod || !lengthMm) {
+    document.getElementById('notFound').style.display = 'flex';
+  } else {
+    document.getElementById('checkoutWrap').style.display = 'grid';
+
+    var L = Math.max(500, Math.min(prod.maxMm, lengthMm));
+    var p = calcPrice(L, prod);
+    var rushSurcharge = isRush ? Math.round(p.total * RUSH_RATE) : 0;
+    var totalYen = Math.round(p.total + rushSurcharge);
+    var zakinCount = zakinParam > 0 ? zakinParam : p.zakin;
+
+    // パンくず・商品名
+    document.getElementById('breadcrumbProduct').textContent = prod.name;
+    document.getElementById('dispProductName').innerHTML =
+      prod.name + (isRush ? ' <span class="rush-badge">特急</span>' : '');
+    document.getElementById('dispProductSub').textContent =
+      prod.finish + ' / ' + prod.type + ' / 壁付け手すり';
+    document.getElementById('dispProductPrice').textContent = fmt(totalYen);
+
+    // 詳細
+    document.getElementById('dispLength').textContent = L + ' mm';
+    document.getElementById('dispFinish').textContent = prod.finish;
+    document.getElementById('dispZakin').textContent = zakinCount + ' 個';
+    document.getElementById('dispQty').textContent = qty + ' 本';
+
+    if (arrivalDate) {
+      document.getElementById('rowArrival').style.display = 'flex';
+      document.getElementById('dispArrival').textContent = arrivalDate;
+    }
+    if (timeSlot) {
+      document.getElementById('rowTimeSlot').style.display = 'flex';
+      document.getElementById('dispTimeSlot').textContent = timeSlot;
+    }
+    if (pref) {
+      document.getElementById('rowPref').style.display = 'flex';
+      document.getElementById('dispPref').textContent = pref;
+    }
+
+    // 価格内訳
+    document.getElementById('basePriceLabel').textContent =
+      '基本料金（〜' + prod.stdLengthMm + 'mm）';
+    document.getElementById('basePriceVal').textContent = fmt(prod.basePrice);
+
+    if (p.addon > 0) {
+      document.getElementById('rowAddon').style.display = 'flex';
+      document.getElementById('addonVal').textContent = '+' + fmt(p.addon);
+    }
+    if (p.surcharge > 0) {
+      document.getElementById('rowSurcharge').style.display = 'flex';
+      document.getElementById('surchargeVal').textContent = '+' + fmt(p.surcharge);
+    }
+    if (p.addZakin > 0) {
+      document.getElementById('rowZakinExtra').style.display = 'flex';
+      document.getElementById('zakinExtraVal').textContent = '+' + fmt(p.addZakin);
+    }
+    if (isRush) {
+      document.getElementById('rowRush').style.display = 'flex';
+      document.getElementById('rushVal').textContent = '+' + fmt(rushSurcharge);
+    }
+
+    // 送料
+    if (shippingParam > 0) {
+      document.getElementById('shippingVal').textContent = fmt(shippingParam) + '（佐川急便）';
+    }
+
+    document.getElementById('totalAmount').textContent = fmt(totalYen);
+
+    // 戻るリンク
+    document.getElementById('backLink').href = '/item/' + productKey + '.html';
+
+    // スケジュール
+    var schedule = BusinessDays.getScheduleDates(new Date(), isRush);
+    document.getElementById('schedStart').textContent = BusinessDays.formatDateJa(schedule.productionStart);
+    document.getElementById('schedComplete').textContent = BusinessDays.formatDateJa(schedule.productionComplete);
+    document.getElementById('schedShip').textContent = BusinessDays.formatDateJa(schedule.shippingDate);
+    document.getElementById('schedArrival').textContent = BusinessDays.formatDateJa(schedule.arrivalDate);
+  }
+
+  // ── Stripe 決済へ進む ──
+  async function proceedToStripe() {
+    var btn = document.getElementById('btnStripe');
+    var errEl = document.getElementById('checkoutError');
+
+    btn.disabled = true;
+    btn.textContent = '処理中...';
+    errEl.style.display = 'none';
+
+    try {
+      var res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          product:              productKey,
+          lengthMm:             lengthMm,
+          rushDelivery:         isRush,
+          preferredArrivalDate: arrivalDate || null,
+          preferredTimeSlot:    timeSlot || null,
+        }),
+      });
+
+      if (!res.ok) {
+        var data = await res.json().catch(function() { return {}; });
+        throw new Error(data.error || 'HTTP ' + res.status);
+      }
+
+      var json = await res.json();
+      window.location.href = json.url;
+
+    } catch (err) {
+      console.error('[checkout]', err);
+      errEl.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Stripe で支払う';
+    }
+  }
+</script>
+</body>
+</html>

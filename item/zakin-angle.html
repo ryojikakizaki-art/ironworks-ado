@@ -15,7 +15,11 @@
     html { scroll-behavior: smooth; }
     body { background: var(--black); color: var(--white); font-family: var(--font); font-size: 14px; line-height: 1.8; }
 
-    .page { max-width: 720px; margin: 0 auto; padding: 40px 24px 80px; }
+    header { position: fixed; top: 0; left: 0; right: 0; height: 64px; background: rgba(14,14,14,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; z-index: 1000; }
+    header .logo { text-decoration: none; display: flex; align-items: center; }
+    header nav a { color: var(--light); text-decoration: none; font-size: 12px; letter-spacing: 0.2em; text-transform: uppercase; transition: color .2s; }
+    header nav a:hover { color: var(--accent); }
+    .page { max-width: 720px; margin: 0 auto; padding: 100px 24px 80px; }
 
     h1 {
       font-size: 20px; font-weight: 400; letter-spacing: 0.08em;
@@ -79,6 +83,10 @@
   </style>
 </head>
 <body>
+<header>
+  <a href="/" class="logo"><img src="/images/ado_logo_W.png" alt="IRONWORKS ado" style="height:36px;"></a>
+  <nav><a href="/">HOME</a></nav>
+</header>
   <div class="page">
 
     <h1>手すり角度の指定方法</h1>
