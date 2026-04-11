@@ -93,7 +93,7 @@ module.exports = async (req, res) => {
         quantity: 1,
       }],
       mode: 'payment',
-      success_url: `${baseUrl}/success.html?session_id={CHECKOUT_SESSION_ID}&product=${productKey}&length=${L}&rush=${rushDelivery ? '1' : '0'}`,
+      success_url: `${baseUrl}/thanks.html?session_id={CHECKOUT_SESSION_ID}&product=${productKey}&length=${L}&rush=${rushDelivery ? '1' : '0'}`,
       cancel_url:  `${baseUrl}/item/${productKey}.html`,
       metadata: {
         product:                productKey,

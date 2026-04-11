@@ -2004,31 +2004,22 @@
   function onLengthChange(v) { update(v); }
   function onSliderChange(v) { update(v); }
 
-  async function addToCart() {
+  function addToCart() {
     const L = Number(document.getElementById('lengthInput').value);
-    const btn = document.getElementById('btnCheckout');
-    const errEl = document.getElementById('checkoutError');
-    btn.disabled = true; btn.textContent = '\u51E6\u7406\u4E2D...'; errEl.style.display = 'none';
-    try {
-      const res = await fetch('/api/checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          product: PRODUCT_KEY,
-          lengthMm: L,
-          qty: currentQty,
-          rushDelivery: currentDeliveryType === 'rush',
-          preferredArrivalDate: document.getElementById('arrivalDatePicker').value || null,
-          preferredTimeSlot: document.getElementById('timeSlotSelect').value || null,
-        }),
-      });
-      if (!res.ok) { const data = await res.json().catch(() => ({})); throw new Error(data.error || 'HTTP ' + res.status); }
-      const { url } = await res.json();
-      window.location.href = url;
-    } catch (err) {
-      console.error('[checkout]', err);
-      errEl.style.display = 'block'; btn.disabled = false; btn.textContent = '\u30AB\u30FC\u30C8\u306B\u8FFD\u52A0 \u2014 \u8CFC\u5165\u624B\u7D9A\u304D\u3078';
-    }
+    const zakinCount = (typeof zakinCustomList !== 'undefined' && zakinCustomList.length)
+      ? zakinCustomList.length : calcZakin(L);
+    const p = new URLSearchParams({
+      product:     PRODUCT_KEY,
+      lengthMm:    L,
+      rush:        currentDeliveryType === 'rush' ? '1' : '0',
+      qty:         currentQty || 1,
+      pref:        (document.getElementById('prefSelect') && document.getElementById('prefSelect').value) || '',
+      arrivalDate: document.getElementById('arrivalDatePicker').value || '',
+      timeSlot:    document.getElementById('timeSlotSelect').value || '',
+      zakin:       zakinCount,
+      shipping:    currentShipping || 0,
+    });
+    window.location.href = '/checkout.html?' + p.toString();
   }
 
   // ── 送料計算 ──────────────────────────────
