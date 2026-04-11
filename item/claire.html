@@ -624,14 +624,19 @@
 
     /* STEP LABELS */
     .step-label {
-      font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
-      color: var(--accent); margin-bottom: 12px; margin-top: 24px;
+      font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 14px; margin-top: 28px;
       display: flex; align-items: center; gap: 10px;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-weight: bold;
+      padding: 6px 10px;
+      background: rgba(200,169,110,0.07);
+      border-left: 3px solid var(--accent);
     }
     .step-label:first-child { margin-top: 0; }
     .step-label::after {
       content: ''; flex: 1; height: 1px;
-      background: linear-gradient(to right, rgba(200,169,110,0.3), transparent);
+      background: linear-gradient(to right, rgba(200,169,110,0.4), transparent);
     }
     .step-divider { border: none; border-top: 1px solid var(--line); margin: 20px 0; }
 
@@ -2824,5 +2829,6 @@
     </div>
   </div>
 </div>
+<script src="/back-button.js"></script>
 </body>
 </html>
