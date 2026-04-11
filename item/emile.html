@@ -235,7 +235,7 @@
     }
     .zakin-visual-marker {
       position: absolute; top: 50%; width: 14px; height: 14px;
-      background: var(--accent); border-radius: 50%;
+      background: #b08d4a; border-radius: 50%;
       transform: translate(-50%, -50%); cursor: default;
       font-size: 0; z-index: 1;
     }
@@ -351,10 +351,10 @@
     .total-amount { font-size: 32px; font-weight: 300; letter-spacing: 0.03em; color: var(--white); }
     .total-tax { font-size: 11px; color: var(--muted); margin-left: 8px; }
     .surcharge-notice { display: none; margin-top: 12px; padding: 10px 14px; background: rgba(200,80,80,0.1); border: 1px solid rgba(200,80,80,0.3); font-size: 11px; color: #e0a0a0; }
-    .cta-wrap { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
-    .btn-primary { display: block; width: 100%; padding: 18px; background: var(--accent); border: none; cursor: pointer; color: var(--black); font-size: 12px; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; font-family: var(--font); transition: background .2s, transform .1s, opacity .2s; }
-    .btn-primary:hover:not(:disabled) { background: #d4b87a; }
-    .btn-primary:active:not(:disabled) { transform: scale(0.99); }
+    .cta-wrap { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
+    .btn-primary { display: inline-block; width: auto; padding: 14px 40px; background: linear-gradient(180deg, #c9a55a 0%, #a07830 100%); border: none; border-radius: 999px; cursor: pointer; color: #fff; font-size: 18px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; font-family: var(--font); transition: all .2s; box-shadow: 0 4px 12px rgba(160,120,48,0.4), inset 0 1px 0 rgba(255,255,255,0.2); color: #1a1a1a; }
+    .btn-primary:hover:not(:disabled) { background: linear-gradient(180deg, #d4b06a 0%, #b08840 100%); box-shadow: 0 6px 16px rgba(160,120,48,0.5), inset 0 1px 0 rgba(255,255,255,0.25); transform: translateY(-2px); }
+    .btn-primary:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 2px 6px rgba(160,120,48,0.3), inset 0 1px 0 rgba(255,255,255,0.15); }
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
     .btn-secondary { display: block; width: 100%; padding: 16px; background: transparent; border: 1px solid var(--line); cursor: pointer; color: var(--muted); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-family: var(--font); transition: border-color .2s, color .2s; text-decoration: none; text-align: center; }
     .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
@@ -554,19 +554,19 @@
 
     /* STEP LABELS */
     .step-label {
-      font-size: 13px; letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--accent); margin-bottom: 14px; margin-top: 28px;
+      font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase;
+      color: #1a1a1a; margin-bottom: 14px; margin-top: 28px;
       display: flex; align-items: center; gap: 10px;
       font-family: Georgia, 'Times New Roman', serif;
       font-weight: bold;
       padding: 6px 10px;
-      background: rgba(200,169,110,0.07);
+      background: #b08d4a;
       border-left: 3px solid var(--accent);
     }
     .step-label:first-child { margin-top: 0; }
     .step-label::after {
       content: ''; flex: 1; height: 1px;
-      background: linear-gradient(to right, rgba(200,169,110,0.4), transparent);
+      background: linear-gradient(to right, rgba(200,169,110,0.3), transparent);
     }
     .step-divider { border: none; border-top: 1px solid var(--line); margin: 20px 0; }
 
@@ -904,7 +904,7 @@
   </main>
 
   <footer>
-    <p class="logo-f">IRONWORKS <span>ADO</span></p>
+    <a href="/" class="logo-f"><img src="/images/ado_logo_W.png" alt="IRONWORKS ado" style="height:28px;"></a>
     <p class="copy">&copy; 2025 IRONWORKS ado</p>
   </footer>
 <script>
