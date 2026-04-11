@@ -2420,7 +2420,8 @@
     var L = Number(document.getElementById('lengthInput').value) || 1500;
     var count = calcZakin(L);
     setZakinPositions(count, L);
-    var _qtyEl = document.getElementById('zakinQtyInput'); if (_qtyEl) _qtyEl.value = count;
+    var qtyEl = document.getElementById('zakinQtyInput');
+    if (qtyEl) qtyEl.value = count;
     renderZakinCustom();
   }
 
@@ -2466,8 +2467,10 @@
 
   function setAngleDir(dir) {
     zakinAngleDir = dir;
-    var _el = document.getElementById('angleDirLeft'); if (_el) _el.classList.toggle('active', dir === 'left');
-    var _el = document.getElementById('angleDirRight'); if (_el) _el.classList.toggle('active', dir === 'right');
+    var dirL = document.getElementById('angleDirLeft');
+    var dirR = document.getElementById('angleDirRight');
+    if (dirL) dirL.classList.toggle('active', dir === 'left');
+    if (dirR) dirR.classList.toggle('active', dir === 'right');
     onAngleChanged();
   }
 
@@ -2506,16 +2509,20 @@
   function removeZakinItem(idx) {
     if (zakinCustomList.length <= 2) return;
     zakinCustomList.splice(parseInt(idx), 1);
-    var _qtyEl = document.getElementById('zakinQtyInput'); if (_qtyEl) _qtyEl.value = zakinCustomList.length;
+    var qtyEl = document.getElementById('zakinQtyInput');
+    if (qtyEl) qtyEl.value = zakinCustomList.length;
     renderZakinCustom();
   }
 
   function resetZakinCustom() {
     zakinGlobalAngle = 0;
     zakinAngleDir = 'left';
-    var _el = document.getElementById('zakinAngleInput'); if (_el) _el.value = 0;
-    var _el = document.getElementById('angleDirLeft'); if (_el) _el.classList.add('active');
-    var _el = document.getElementById('angleDirRight'); if (_el) _el.classList.remove('active');
+    var angEl = document.getElementById('zakinAngleInput');
+    if (angEl) angEl.value = 0;
+    var dirL = document.getElementById('angleDirLeft');
+    if (dirL) dirL.classList.add('active');
+    var dirR = document.getElementById('angleDirRight');
+    if (dirR) dirR.classList.remove('active');
     initZakinCustom();
   }
 
@@ -2600,7 +2607,8 @@
     if (zakinCustomMode) {
       // 長さに応じて座金数を常に推奨数に自動更新
       var autoCount = calcZakin(L);
-      var _qtyEl = document.getElementById('zakinQtyInput'); if (_qtyEl) _qtyEl.value = autoCount;
+      var qtyEl = document.getElementById('zakinQtyInput');
+      if (qtyEl) qtyEl.value = autoCount;
       setZakinPositions(autoCount, L);
 
       const rowAddon = document.getElementById('rowAddon');

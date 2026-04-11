@@ -2014,8 +2014,10 @@
 
   function setAngleDir(dir) {
     zakinAngleDir = dir;
-    var _el = document.getElementById('angleDirLeft'); if (_el) _el.classList.toggle('active', dir === 'left');
-    var _el = document.getElementById('angleDirRight'); if (_el) _el.classList.toggle('active', dir === 'right');
+    var dirL = document.getElementById('angleDirLeft');
+    var dirR = document.getElementById('angleDirRight');
+    if (dirL) dirL.classList.toggle('active', dir === 'left');
+    if (dirR) dirR.classList.toggle('active', dir === 'right');
     onAngleChanged();
   }
 
@@ -2045,7 +2047,8 @@
     var L = Number(document.getElementById('lengthInput').value) || 1500;
     var count = calcZakin(L);
     setZakinPositions(count, L);
-    var _qtyEl = document.getElementById('zakinQtyInput'); if (_qtyEl) _qtyEl.value = count;
+    var qtyEl = document.getElementById('zakinQtyInput');
+    if (qtyEl) qtyEl.value = count;
     renderZakinCustom();
   }
 
@@ -2486,7 +2489,8 @@
 
     if (zakinCustomMode) {
       var autoCount = calcZakin(L);
-      var _qtyEl = document.getElementById('zakinQtyInput'); if (_qtyEl) _qtyEl.value = autoCount;
+      var qtyEl = document.getElementById('zakinQtyInput');
+      if (qtyEl) qtyEl.value = autoCount;
       setZakinPositions(autoCount, L);
 
       const rowAddon = document.getElementById('rowAddon');
