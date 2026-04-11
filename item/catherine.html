@@ -87,52 +87,63 @@
     .zakin-row { display: flex; justify-content: space-between; align-items: center; }
     .zakin-label { color: var(--muted); }
     .zakin-value { color: var(--accent); font-weight: 500; }
-    .zakin-diagram {
-      margin-top: 12px;
+    .zakin-open-drawing {
+      display: block; width: 100%; margin-top: 10px; padding: 10px 12px;
+      background: transparent; border: 1px solid rgba(200,169,110,0.4);
+      color: var(--accent); font-size: 11px; letter-spacing: 0.15em;
+      text-transform: uppercase; font-family: var(--font); cursor: pointer;
+      transition: border-color .2s, background .2s;
     }
-    .zakin-diagram svg { width: 100%; height: auto; display: block; }
-    .zakin-diagram text { font-family: var(--font); }
-    .zakin-diagram .dim-line { stroke: var(--muted); stroke-width: 0.5; }
-    .zakin-diagram .dim-text { fill: var(--muted); font-size: 9px; text-anchor: middle; }
-    .zakin-diagram .bar-line { stroke: var(--light); stroke-width: 3; stroke-linecap: round; }
-    .zakin-diagram .bracket-circle { fill: var(--accent); }
-    .zakin-diagram .total-dim { stroke: var(--light); stroke-width: 0.7; }
-    .zakin-diagram .total-text { fill: var(--light); font-size: 10px; text-anchor: middle; font-weight: 500; }
+    .zakin-open-drawing:hover { border-color: var(--accent); background: rgba(200,169,110,0.08); }
 
-    /* 座金詳細図リンク */
-    .zakin-detail-toggle {
-      display: inline-block; margin-top: 8px; font-size: 10px;
-      color: var(--accent); cursor: pointer; text-decoration: none;
-      border-bottom: 1px dotted var(--accent); transition: opacity .2s;
+    /* 制作図モーダル */
+    .dm-overlay {
+      display: none; position: fixed; inset: 0; z-index: 2000;
+      background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+      align-items: center; justify-content: center; padding: 20px;
     }
-    .zakin-detail-toggle:hover { opacity: 0.7; }
-
-    /* 座金詳細図モーダル */
-    .zakin-detail-modal {
-      display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      z-index: 200; background: rgba(0,0,0,0.85);
-      align-items: center; justify-content: center;
+    .dm-overlay.open { display: flex; }
+    .dm-modal {
+      background: #fff; color: #222; width: 100%; max-width: 580px;
+      border-radius: 8px; padding: 28px 24px 24px; position: relative;
+      max-height: 90vh; overflow-y: auto; font-family: var(--font);
     }
-    .zakin-detail-modal.open { display: flex; }
-    .zakin-detail-modal-inner {
-      position: relative; background: #fff; padding: 24px;
-      max-width: 90vw; max-height: 90vh;
-    }
-    .zakin-detail-modal-inner img {
-      display: block; max-width: 100%; max-height: 80vh; height: auto;
-    }
-    .zakin-detail-modal-caption {
-      font-size: 12px; color: #666; text-align: center; margin-top: 12px;
-    }
-    .zakin-detail-modal-close {
-      position: absolute; top: -16px; right: -16px;
-      width: 36px; height: 36px; border-radius: 50%;
-      background: var(--dark); border: 1px solid var(--line);
-      color: var(--white); font-size: 18px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all .2s;
-    }
-    .zakin-detail-modal-close:hover { background: var(--accent); border-color: var(--accent); }
+    .dm-close { position: absolute; top: 12px; right: 16px; background: none; border: none; font-size: 24px; color: #999; cursor: pointer; line-height: 1; transition: color .2s; }
+    .dm-close:hover { color: #333; }
+    .dm-title { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 16px; }
+    .dm-svg-wrap { margin-bottom: 20px; }
+    .dm-svg-wrap svg { width: 100%; height: auto; display: block; }
+    .dm-svg-wrap text { font-family: var(--font); }
+    .dm-svg-wrap .d-bar { stroke: #333; stroke-width: 3; stroke-linecap: round; }
+    .dm-svg-wrap .d-cap { stroke: #333; stroke-width: 1.5; }
+    .dm-svg-wrap .d-dim { stroke: #888; stroke-width: 0.7; }
+    .dm-svg-wrap .d-dim-text { fill: #555; font-size: 11px; text-anchor: middle; }
+    .dm-svg-wrap .d-total-dim { stroke: #333; stroke-width: 0.8; }
+    .dm-svg-wrap .d-total-text { fill: #222; font-size: 12px; text-anchor: middle; font-weight: 600; }
+    .dm-svg-wrap .d-bracket { fill: #c8a96e; }
+    .dm-svg-wrap .d-bracket-icon { stroke: #c8a96e; stroke-width: 1; }
+    .dm-svg-wrap .d-note { fill: #888; font-size: 10px; text-anchor: middle; }
+    .dm-controls { border-top: 1px solid #e0e0e0; padding-top: 16px; }
+    .dm-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+    .dm-label { font-size: 12px; color: #666; white-space: nowrap; min-width: 80px; }
+    .dm-qty-controls { display: flex; align-items: center; }
+    .dm-qty-btn { width: 32px; height: 32px; background: #f5f5f5; border: 1px solid #ccc; color: #c8a96e; font-size: 16px; cursor: pointer; font-family: var(--font); display: flex; align-items: center; justify-content: center; transition: all .2s; }
+    .dm-qty-btn:hover { border-color: #c8a96e; background: rgba(200,169,110,0.1); }
+    .dm-qty-btn:first-child { border-radius: 4px 0 0 4px; }
+    .dm-qty-btn:last-child { border-radius: 0 4px 4px 0; }
+    .dm-qty-val { width: 40px; height: 32px; background: #fff; border: 1px solid #ccc; border-left: none; border-right: none; color: #222; font-size: 14px; font-family: var(--font); text-align: center; font-weight: 600; }
+    .dm-qty-val:focus { outline: none; }
+    .dm-pos-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .dm-pos-item { display: flex; align-items: center; gap: 4px; }
+    .dm-pos-num { font-size: 11px; color: #c8a96e; font-weight: 600; }
+    .dm-pos-input { width: 72px; padding: 6px 8px; background: #fff; border: 1px solid #ccc; color: #222; font-size: 12px; font-family: var(--font); text-align: center; }
+    .dm-pos-input:focus { outline: none; border-color: #c8a96e; }
+    .dm-pos-unit { font-size: 10px; color: #888; }
+    .dm-pos-remove { background: none; border: none; color: #ccc; cursor: pointer; font-size: 16px; padding: 0; line-height: 1; transition: color .2s; }
+    .dm-pos-remove:hover { color: #e06060; }
+    .dm-reset { padding: 8px 16px; font-size: 11px; font-family: var(--font); cursor: pointer; letter-spacing: 0.05em; transition: all .2s; background: #f5f5f5; border: 1px solid #ccc; color: #666; border-radius: 4px; }
+    .dm-reset:hover { border-color: #999; color: #333; }
+    .dm-note { font-size: 10px; color: #aaa; margin-top: 8px; line-height: 1.6; }
     .price-breakdown { margin-top: 20px; }
     .breakdown-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 13px; }
     .breakdown-row:last-child { border-bottom: none; }
@@ -311,13 +322,12 @@
           </div>
           <div class="zakin-info">
             <div class="zakin-row">
-              <span class="zakin-label">推奨座金数（自動計算）</span>
+              <span class="zakin-label" id="zakinLabel">推奨座金数（自動計算）</span>
               <span class="zakin-value" id="zakinCount">4 個</span>
             </div>
-            <div class="zakin-diagram" id="zakinDiagram">
-              <svg id="zakinSvg" viewBox="0 0 400 100"></svg>
-            </div>
-        <a class="zakin-detail-toggle" onclick="toggleZakinDetail()">座金詳細図を見る ▸</a>
+            <button class="zakin-open-drawing" onclick="openDrawingModal()">
+              制作図を確認・座金位置を指定
+            </button>
           </div>
           <div class="surcharge-notice" id="surchargeNotice">
             ⚠ 2000mmを超えると長尺割増が加算されます。取り回しや施工の難易度が上がるため、事前に設置場所のご確認をお勧めします。
@@ -462,132 +472,206 @@
     return positions;
   }
 
-  function buildDiagramSVG(L_mm, positions) {
-    var svgNS = 'http://www.w3.org/2000/svg';
-    var svg = document.getElementById('zakinSvg');
-    svg.innerHTML = '';
+  // ── 制作図モーダル ──
+  var zakinCustomMode = false;
+  var zakinCustomList = [];
+  var drawingModalOpen = false;
 
-    // Layout constants
-    var pad = 30;
-    var barY = 40;
-    var W = 400;
-    var barLeft = pad;
-    var barRight = W - pad;
-    var barLen = barRight - barLeft;
-
-    // ── Total dimension line (above bar) ──
-    var dimY = 16;
-    var wText = document.createElementNS(svgNS, 'text');
-    wText.setAttribute('x', (barLeft + barRight) / 2);
-    wText.setAttribute('y', dimY - 5);
-    wText.setAttribute('class', 'total-text');
-    wText.textContent = L_mm;
-    svg.appendChild(wText);
-
-    // Dimension line with ticks
-    var addDimLine = function(x1, x2, y) {
-      var line = document.createElementNS(svgNS, 'line');
-      line.setAttribute('x1', x1); line.setAttribute('y1', y);
-      line.setAttribute('x2', x2); line.setAttribute('y2', y);
-      line.setAttribute('class', 'total-dim');
-      svg.appendChild(line);
-      [x1, x2].forEach(function(x) {
-        var tick = document.createElementNS(svgNS, 'line');
-        tick.setAttribute('x1', x); tick.setAttribute('y1', y - 3);
-        tick.setAttribute('x2', x); tick.setAttribute('y2', y + 3);
-        tick.setAttribute('class', 'total-dim');
-        svg.appendChild(tick);
-      });
-    };
-    addDimLine(barLeft, barRight, dimY);
-
-    // ── Main horizontal bar (handrail) ──
-    var barLine = document.createElementNS(svgNS, 'line');
-    barLine.setAttribute('x1', barLeft); barLine.setAttribute('y1', barY);
-    barLine.setAttribute('x2', barRight); barLine.setAttribute('y2', barY);
-    barLine.setAttribute('class', 'bar-line');
-    svg.appendChild(barLine);
-
-    // Bar end caps
-    [barLeft, barRight].forEach(function(x) {
-      var cap = document.createElementNS(svgNS, 'line');
-      cap.setAttribute('x1', x); cap.setAttribute('y1', barY - 5);
-      cap.setAttribute('x2', x); cap.setAttribute('y2', barY + 5);
-      cap.setAttribute('stroke', 'var(--light)'); cap.setAttribute('stroke-width', '1.5');
-      svg.appendChild(cap);
-    });
-
-    // ── Bracket markers ──
-    var dimBelowY = barY + 22;
-
-    positions.forEach(function(pos) {
-      var x = barLeft + (pos / L_mm) * barLen;
-
-      // Bracket circle on bar
-      var bCircle = document.createElementNS(svgNS, 'circle');
-      bCircle.setAttribute('cx', x); bCircle.setAttribute('cy', barY);
-      bCircle.setAttribute('r', 4);
-      bCircle.setAttribute('class', 'bracket-circle');
-      svg.appendChild(bCircle);
-
-      // Short line below bracket
-      var drop = document.createElementNS(svgNS, 'line');
-      drop.setAttribute('x1', x); drop.setAttribute('y1', barY + 4);
-      drop.setAttribute('x2', x); drop.setAttribute('y2', barY + 12);
-      drop.setAttribute('stroke', 'var(--accent)'); drop.setAttribute('stroke-width', '0.8');
-      svg.appendChild(drop);
-    });
-
-    // ── Segment dimensions (below bar) ──
-    var segments = [0].concat(positions).concat([L_mm]);
-
-    for (var i = 0; i < segments.length - 1; i++) {
-      var x1 = barLeft + (segments[i] / L_mm) * barLen;
-      var x2 = barLeft + (segments[i + 1] / L_mm) * barLen;
-      var segLen = segments[i + 1] - segments[i];
-      var midX = (x1 + x2) / 2;
-
-      var dLine = document.createElementNS(svgNS, 'line');
-      dLine.setAttribute('x1', x1); dLine.setAttribute('y1', dimBelowY);
-      dLine.setAttribute('x2', x2); dLine.setAttribute('y2', dimBelowY);
-      dLine.setAttribute('class', 'dim-line');
-      svg.appendChild(dLine);
-
-      [x1, x2].forEach(function(tx) {
-        var t = document.createElementNS(svgNS, 'line');
-        t.setAttribute('x1', tx); t.setAttribute('y1', dimBelowY - 2);
-        t.setAttribute('x2', tx); t.setAttribute('y2', dimBelowY + 2);
-        t.setAttribute('class', 'dim-line');
-        svg.appendChild(t);
-      });
-
-      var dText = document.createElementNS(svgNS, 'text');
-      dText.setAttribute('x', midX);
-      dText.setAttribute('y', dimBelowY + 12);
-      dText.setAttribute('class', 'dim-text');
-      dText.textContent = segLen;
-      svg.appendChild(dText);
+  function openDrawingModal() {
+    var L = Number(document.getElementById('lengthInput').value) || 1000;
+    if (!zakinCustomMode) {
+      var count = calcZakin(L);
+      dmSetPositions(count, L);
+      document.getElementById('dmQtyInput').value = count;
+    } else {
+      document.getElementById('dmQtyInput').value = zakinCustomList.length;
     }
-
-    // Count label
-    var countText = document.createElementNS(svgNS, 'text');
-    countText.setAttribute('x', (barLeft + barRight) / 2);
-    countText.setAttribute('y', 92);
-    countText.setAttribute('class', 'dim-text');
-    countText.textContent = '\u300A \u5EA7\u91D1 ' + positions.length + '\u70B9 \u300B';
-    svg.appendChild(countText);
+    drawingModalOpen = true;
+    document.getElementById('drawingOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    dmRenderAll();
   }
 
-  // ── 座金詳細図モーダル ──────────────────────────────
-  function toggleZakinDetail() {
-    var modal = document.getElementById('zakinDetailModal');
-    if (modal.classList.contains('open')) {
-      modal.classList.remove('open');
-      document.body.style.overflow = '';
-    } else {
-      modal.classList.add('open');
-      document.body.style.overflow = 'hidden';
+  function closeDrawingModal() {
+    drawingModalOpen = false;
+    document.getElementById('drawingOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+    if (zakinCustomMode) dmUpdatePrice();
+  }
+
+  function dmSetPositions(count, L) {
+    zakinCustomList = [];
+    var positions = getZakinPositions(L, count);
+    for (var j = 0; j < positions.length; j++) {
+      zakinCustomList.push({ pos: positions[j] });
     }
+  }
+
+  function dmChangeQty(delta) {
+    var input = document.getElementById('dmQtyInput');
+    var newVal = Math.max(2, Math.min(10, parseInt(input.value) + delta));
+    input.value = newVal;
+    zakinCustomMode = true;
+    var L = Number(document.getElementById('lengthInput').value) || 1000;
+    dmSetPositions(newVal, L);
+    dmRenderAll();
+  }
+
+  function dmOnQtyInput(el) {
+    var val = Math.max(2, Math.min(10, parseInt(el.value) || 2));
+    el.value = val;
+    zakinCustomMode = true;
+    var L = Number(document.getElementById('lengthInput').value) || 1000;
+    dmSetPositions(val, L);
+    dmRenderAll();
+  }
+
+  function dmOnPosChange(input) {
+    var idx = parseInt(input.dataset.idx);
+    var L = Number(document.getElementById('lengthInput').value) || 1000;
+    var val = Math.max(0, Math.min(L, parseInt(input.value) || 0));
+    zakinCustomList[idx].pos = val;
+    zakinCustomMode = true;
+    buildDrawingSvg();
+    dmUpdatePrice();
+  }
+
+  function dmRemovePos(idx) {
+    if (zakinCustomList.length <= 2) return;
+    zakinCustomList.splice(parseInt(idx), 1);
+    document.getElementById('dmQtyInput').value = zakinCustomList.length;
+    zakinCustomMode = true;
+    dmRenderAll();
+  }
+
+  function dmReset() {
+    zakinCustomMode = false;
+    var L = Number(document.getElementById('lengthInput').value) || 1000;
+    var count = calcZakin(L);
+    dmSetPositions(count, L);
+    document.getElementById('dmQtyInput').value = count;
+    dmRenderAll();
+    update(L);
+  }
+
+  function dmRenderAll() {
+    buildDrawingSvg();
+    dmRenderPosList();
+    dmUpdatePrice();
+  }
+
+  function dmRenderPosList() {
+    var L = Number(document.getElementById('lengthInput').value) || 1000;
+    var list = document.getElementById('dmPosList');
+    list.innerHTML = '';
+    zakinCustomList.forEach(function(item, idx) {
+      var wrap = document.createElement('div');
+      wrap.className = 'dm-pos-item';
+      var num = document.createElement('span');
+      num.className = 'dm-pos-num';
+      num.textContent = (idx + 1);
+      var inp = document.createElement('input');
+      inp.className = 'dm-pos-input';
+      inp.type = 'number'; inp.min = '0'; inp.max = String(L);
+      inp.value = item.pos; inp.dataset.idx = idx;
+      inp.oninput = function() { dmOnPosChange(this); };
+      var unit = document.createElement('span');
+      unit.className = 'dm-pos-unit'; unit.textContent = 'mm';
+      wrap.appendChild(num); wrap.appendChild(inp); wrap.appendChild(unit);
+      if (zakinCustomList.length > 2) {
+        var rm = document.createElement('button');
+        rm.className = 'dm-pos-remove'; rm.innerHTML = '&times;';
+        rm.dataset.idx = idx;
+        rm.onclick = function() { dmRemovePos(this.dataset.idx); };
+        wrap.appendChild(rm);
+      }
+      list.appendChild(wrap);
+    });
+  }
+
+  function dmUpdatePrice() {
+    var count = zakinCustomList.length;
+    var addZakin = Math.max(0, count - INCLUDED_ZAKIN) * ZAKIN_PRICE;
+    document.getElementById('zakinLabel').textContent = zakinCustomMode ? '座金数（カスタム指定）' : '推奨座金数（自動計算）';
+    document.getElementById('zakinCount').textContent = count + ' 個';
+
+    var L = Number(document.getElementById('lengthInput').value) || 1000;
+    var p = calcPrice(L);
+    var baseTotal = zakinCustomMode ? (BASE_PRICE + p.addon + addZakin + p.surcharge) : p.total;
+
+    var rowZakin = document.getElementById('rowZakin');
+    var showZakin = zakinCustomMode ? (addZakin > 0) : (p.addZakin > 0);
+    if (showZakin) {
+      rowZakin.style.display = 'flex';
+      document.getElementById('zakinVal').textContent = fmt(zakinCustomMode ? addZakin : p.addZakin);
+    } else { rowZakin.style.display = 'none'; }
+    document.getElementById('totalVal').textContent = fmt(baseTotal);
+  }
+
+  // ── 制作図SVG描画（白背景用）──
+  function buildDrawingSvg() {
+    var svgNS = 'http://www.w3.org/2000/svg';
+    var svg = document.getElementById('drawingSvg');
+    if (!svg) return;
+    svg.innerHTML = '';
+    var L_mm = Number(document.getElementById('lengthInput').value) || 1000;
+    var sorted = zakinCustomList.slice().sort(function(a, b) { return a.pos - b.pos; });
+    var positions = sorted.map(function(item) { return item.pos; });
+    var W = 500, pad = 40;
+    var barY = 55, barLeft = pad, barRight = W - pad;
+    var barLen = barRight - barLeft;
+    var addLine = function(x1, y1, x2, y2, cls) {
+      var l = document.createElementNS(svgNS, 'line');
+      l.setAttribute('x1', x1); l.setAttribute('y1', y1);
+      l.setAttribute('x2', x2); l.setAttribute('y2', y2);
+      l.setAttribute('class', cls); svg.appendChild(l);
+    };
+    var dimY = 18;
+    var totalText = document.createElementNS(svgNS, 'text');
+    totalText.setAttribute('x', (barLeft + barRight) / 2);
+    totalText.setAttribute('y', dimY - 3);
+    totalText.setAttribute('class', 'd-total-text');
+    totalText.textContent = L_mm;
+    svg.appendChild(totalText);
+    addLine(barLeft, dimY, barRight, dimY, 'd-total-dim');
+    addLine(barLeft, dimY - 4, barLeft, dimY + 4, 'd-total-dim');
+    addLine(barRight, dimY - 4, barRight, dimY + 4, 'd-total-dim');
+    addLine(barLeft, dimY + 4, barLeft, barY - 8, 'd-dim');
+    addLine(barRight, dimY + 4, barRight, barY - 8, 'd-dim');
+    addLine(barLeft, barY, barRight, barY, 'd-bar');
+    addLine(barLeft, barY - 6, barLeft, barY + 6, 'd-cap');
+    addLine(barRight, barY - 6, barRight, barY + 6, 'd-cap');
+    positions.forEach(function(pos) {
+      var x = barLeft + (pos / L_mm) * barLen;
+      var circle = document.createElementNS(svgNS, 'circle');
+      circle.setAttribute('cx', x); circle.setAttribute('cy', barY);
+      circle.setAttribute('r', 5); circle.setAttribute('class', 'd-bracket');
+      svg.appendChild(circle);
+      addLine(x, barY + 5, x, barY + 15, 'd-dim');
+      addLine(x - 5, barY + 15, x + 5, barY + 15, 'd-bracket-icon');
+    });
+    var dimBelowY = barY + 28;
+    var allPoints = [0].concat(positions).concat([L_mm]);
+    for (var i = 1; i < allPoints.length; i++) {
+      var x1 = barLeft + (allPoints[i - 1] / L_mm) * barLen;
+      var x2 = barLeft + (allPoints[i] / L_mm) * barLen;
+      var segLen = allPoints[i] - allPoints[i - 1];
+      if (segLen <= 0) continue;
+      var midX = (x1 + x2) / 2;
+      addLine(x1, dimBelowY, x2, dimBelowY, 'd-dim');
+      addLine(x1, dimBelowY - 3, x1, dimBelowY + 3, 'd-dim');
+      addLine(x2, dimBelowY - 3, x2, dimBelowY + 3, 'd-dim');
+      var segText = document.createElementNS(svgNS, 'text');
+      segText.setAttribute('x', midX); segText.setAttribute('y', dimBelowY + 14);
+      segText.setAttribute('class', 'd-dim-text'); segText.textContent = segLen;
+      svg.appendChild(segText);
+    }
+    var noteText = document.createElementNS(svgNS, 'text');
+    noteText.setAttribute('x', (barLeft + barRight) / 2);
+    noteText.setAttribute('y', dimBelowY + 32);
+    noteText.setAttribute('class', 'd-note');
+    noteText.textContent = '\u300A \u5EA7\u91D1 ' + positions.length + '\u70B9 \u300B';
+    svg.appendChild(noteText);
   }
 
   function fmt(n) { return '\u00A5' + Math.round(n).toLocaleString('ja-JP'); }
@@ -599,46 +683,77 @@
     document.getElementById('lengthSlider').value = L;
     const pct = (L - 500) / (MAX_LENGTH_MM - 500) * 100;
     document.getElementById('lengthSlider').style.background = 'linear-gradient(to right, var(--accent) ' + pct + '%, var(--line) ' + pct + '%)';
-    document.getElementById('zakinCount').textContent = p.zakin + ' \u500B';
-    buildDiagramSVG(L, getZakinPositions(L, p.zakin));
+
+    if (drawingModalOpen) {
+      if (!zakinCustomMode) {
+        var count = calcZakin(L);
+        dmSetPositions(count, L);
+        document.getElementById('dmQtyInput').value = count;
+      }
+      dmRenderAll();
+    }
+
+    if (!zakinCustomMode) {
+      document.getElementById('zakinLabel').textContent = '推奨座金数（自動計算）';
+      document.getElementById('zakinCount').textContent = p.zakin + ' 個';
+    }
+
     const rowAddon = document.getElementById('rowAddon');
     if (p.addon > 0) { rowAddon.style.display = 'flex'; document.getElementById('addonVal').textContent = fmt(p.addon); } else { rowAddon.style.display = 'none'; }
-    const rowZakin = document.getElementById('rowZakin');
-    if (p.addZakin > 0) { rowZakin.style.display = 'flex'; document.getElementById('zakinVal').textContent = fmt(p.addZakin); } else { rowZakin.style.display = 'none'; }
-    const rowSurcharge = document.getElementById('rowSurcharge');
-    const notice = document.getElementById('surchargeNotice');
-    if (p.surcharge > 0) { rowSurcharge.style.display = 'flex'; document.getElementById('surchargeVal').textContent = fmt(p.surcharge); notice.style.display = 'block'; } else { rowSurcharge.style.display = 'none'; notice.style.display = 'none'; }
-    document.getElementById('totalVal').textContent = fmt(p.total);
+
+    if (!zakinCustomMode) {
+      const rowZakin = document.getElementById('rowZakin');
+      if (p.addZakin > 0) { rowZakin.style.display = 'flex'; document.getElementById('zakinVal').textContent = fmt(p.addZakin); } else { rowZakin.style.display = 'none'; }
+      const rowSurcharge = document.getElementById('rowSurcharge');
+      const notice = document.getElementById('surchargeNotice');
+      if (p.surcharge > 0) { rowSurcharge.style.display = 'flex'; document.getElementById('surchargeVal').textContent = fmt(p.surcharge); notice.style.display = 'block'; } else { rowSurcharge.style.display = 'none'; notice.style.display = 'none'; }
+      document.getElementById('totalVal').textContent = fmt(p.total);
+    } else {
+      dmUpdatePrice();
+    }
   }
 
   function onLengthChange(v) { update(v); }
   function onSliderChange(v) { update(v); }
 
-  async function addToCart() {
+  function addToCart() {
     const L = Number(document.getElementById('lengthInput').value);
-    const btn = document.getElementById('btnCheckout');
-    const errEl = document.getElementById('checkoutError');
-    btn.disabled = true; btn.textContent = '\u51E6\u7406\u4E2D...'; errEl.style.display = 'none';
-    try {
-      const res = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ product: PRODUCT_KEY, lengthMm: L }) });
-      if (!res.ok) { const data = await res.json().catch(() => ({})); throw new Error(data.error || 'HTTP ' + res.status); }
-      const { url } = await res.json();
-      window.location.href = url;
-    } catch (err) {
-      console.error('[checkout]', err);
-      errEl.style.display = 'block'; btn.disabled = false; btn.textContent = '\u30AB\u30FC\u30C8\u306B\u8FFD\u52A0 \u2014 \u8CFC\u5165\u624B\u7D9A\u304D\u3078';
-    }
+    const p = new URLSearchParams({ product: PRODUCT_KEY, lengthMm: L });
+    window.location.href = '/checkout.html?' + p.toString();
   }
 
   update(1000);
 </script>
 
-<!-- 座金詳細図モーダル -->
-<div class="zakin-detail-modal" id="zakinDetailModal" onclick="if(event.target===this)toggleZakinDetail()">
-  <div class="zakin-detail-modal-inner">
-    <button class="zakin-detail-modal-close" onclick="toggleZakinDetail()">&times;</button>
-    <img src="/item/images/zakin-detail.png" alt="横型手すり座金 詳細図（側面図・正面図）">
-    <p class="zakin-detail-modal-caption">横型手すり座金 詳細図（側面図・正面図）</p>
+<!-- 制作図モーダル -->
+<div class="dm-overlay" id="drawingOverlay" onclick="if(event.target===this)closeDrawingModal()">
+  <div class="dm-modal">
+    <button class="dm-close" onclick="closeDrawingModal()">&times;</button>
+    <div class="dm-title">制作図プレビュー</div>
+    <div class="dm-svg-wrap">
+      <svg id="drawingSvg" viewBox="0 0 500 130"></svg>
+    </div>
+    <div class="dm-controls">
+      <div class="dm-row">
+        <span class="dm-label">座金数</span>
+        <div class="dm-qty-controls">
+          <button class="dm-qty-btn" onclick="dmChangeQty(-1)">−</button>
+          <input class="dm-qty-val" id="dmQtyInput" type="number" min="2" max="10" value="2" onchange="dmOnQtyInput(this)">
+          <button class="dm-qty-btn" onclick="dmChangeQty(1)">＋</button>
+        </div>
+      </div>
+      <div class="dm-row">
+        <span class="dm-label">座金位置</span>
+      </div>
+      <div class="dm-pos-list" id="dmPosList"></div>
+      <div class="dm-row">
+        <button class="dm-reset" onclick="dmReset()">自動配置に戻す</button>
+      </div>
+      <div class="dm-note">
+        ※ 両端から100mm以上の位置に配置してください。<br>
+        ※ 数量を変更すると位置は自動で均等配置されます。
+      </div>
+    </div>
   </div>
 </div>
 
