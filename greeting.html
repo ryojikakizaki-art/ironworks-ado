@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <title>代表ごあいさつ | IRONWORKS ado</title>
+  <style>
+    :root {
+      --black: #0e0e0e; --dark: #1a1a1a; --mid: #2c2c2c; --line: #333333;
+      --muted: #888888; --light: #cccccc; --white: #f5f5f5; --accent: #c8a96e;
+      --font: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+      --serif: 'Noto Serif JP', serif;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--black); color: var(--white); font-size: 14px; line-height: 1.7; font-family: var(--font); }
+
+    header {
+      position: fixed; top: 0; left: 0; right: 0; height: 64px;
+      background: rgba(14, 14, 14, 0.95); backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--line); display: flex; justify-content: space-between;
+      align-items: center; padding: 0 40px; z-index: 1000;
+    }
+
+    header .logo { font-size: 14px; font-weight: bold; letter-spacing: 0.15em; text-decoration: none; color: var(--white); text-transform: uppercase; }
+    header .logo span { color: var(--accent); }
+    header nav { display: flex; gap: 40px; }
+    header nav a { font-size: 12px; letter-spacing: 0.1em; text-decoration: none; color: var(--light); text-transform: uppercase; transition: color 0.3s ease; }
+    header nav a:hover { color: var(--accent); }
+
+    main { margin-top: 64px; }
+
+    .page-hero {
+      padding: 80px 40px; text-align: center; border-bottom: 1px solid var(--line);
+    }
+
+    .page-hero h1 {
+      font-size: 48px; font-weight: normal; letter-spacing: 0.05em; margin-bottom: 20px;
+    }
+
+    .greeting-section {
+      max-width: 900px; margin: 0 auto; padding: 80px 40px;
+    }
+
+    .greeting-section h2 {
+      font-family: var(--serif);
+      font-size: 24px; font-weight: 300; letter-spacing: 0.08em; margin-bottom: 40px;
+      text-align: center;
+    }
+
+    .greeting-section p {
+      font-family: var(--serif);
+      font-size: 15px; color: var(--light); line-height: 2.2; margin-bottom: 24px;
+    }
+
+    .greeting-section p:last-child {
+      margin-bottom: 0;
+    }
+
+    .greeting-sign {
+      text-align: right;
+      margin-top: 48px;
+      font-family: var(--serif);
+      font-size: 15px;
+      color: var(--light);
+      line-height: 2;
+    }
+
+    .cta-section {
+      text-align: center; padding: 80px 40px;
+      border-top: 1px solid var(--line);
+    }
+
+    .cta-button {
+      display: inline-block; padding: 14px 40px; background: var(--accent); color: var(--black);
+      text-decoration: none; font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase;
+      font-weight: bold; transition: all 0.3s ease;
+    }
+
+    .cta-button:hover {
+      background: #dbb875; transform: translateY(-2px);
+    }
+
+    footer {
+      background: var(--black); border-top: 1px solid var(--line);
+      padding: 48px 40px; display: flex; justify-content: space-between;
+      align-items: center; margin-top: 60px;
+    }
+
+    footer .logo-f { font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; }
+    footer .logo-f span { color: var(--accent); }
+    footer .copy { font-size: 11px; color: var(--muted); }
+
+    @media (max-width: 768px) {
+      header { padding: 0 20px; } header nav { gap: 20px; } .page-hero { padding: 50px 20px; } .page-hero h1 { font-size: 36px; } .greeting-section { padding: 50px 20px; } footer { flex-direction: column; gap: 20px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="/" class="logo"><img src="/images/ado_logo_W.png" alt="IRONWORKS ado" style="height:36px;"></a>
+    <nav>
+      <a href="/">HOME</a>
+      <a href="/item/#category">CATEGORY</a>
+      <a href="/about.html">ABOUT</a>
+      <a href="/blog/">BLOG</a>
+      <a href="/contact.html">CONTACT</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="page-hero">
+      <h1>GREETING</h1>
+    </div>
+
+    <div class="greeting-section">
+      <h2>ごあいさつ</h2>
+
+      <p>はじめまして、IRONWORKS ado 代表 蠣崎良治（カキザキリョウジ）と申します。</p>
+
+      <p>当ショップの商品に興味を持っていただき、数あるショップの中から訪れていただきありがとうございます。私は鉄の美しさ、可能性に惹かれ、本格ロートアイアンの工房『鍛鉄工房ZEST』として、フルオーダーを中心に鉄のインテリアやエクステリアを制作してまいりました。ロートアイアンは、古典技法を用いて工芸や美術的要素も取り入れ一点ものでデザインし形にするため、高額になり少し敷居が高くなってしまいます。そこで、これまでに培い磨いてきた感性と技術を用いて、規格化しお求めやすい価格でご提供できればきっと喜んでいただけると感じておりました。そうした想いから、セミオーダーでご注文をいただくセカンドブランドの【IRONWORKS ado】を立ち上げることにいたしました。</p>
+
+      <p>個人の小さな工房ですが、だからこそできること、私にしかできないことがあると考えております。私の強みは一般的な鉄職人にはない、有数な修行経験から得た『用の美』への意識だと考えております。</p>
+
+      <p>10年ほど勤めた機械製造会社で板金技術（いわゆる一般的な鉄工所の職人の技術）を身につけた後、より深い鉄の工芸、芸術の世界に魅せられ、西洋鍛冶（ロートアイアン）の世界へと進みました。</p>
+
+      <p>弟子入り修行させていただいた国内有数のロートアイアン工房では、古典的な鍛冶技術を用いながら自由な造形で『大胆に繊細に』作り上げるをテーマに、今まで見たことのない力強く美しい鉄のインテリア・エクステリア、オブジェの制作を経験しました。そこでそれぞれに素晴らしい感性の兄弟子たちにも恵まれたこともあり、それまで希薄だったものづくりへの美意識を急速に学ぶことができました。</p>
+
+      <p>2023年夏にはイタリアで行われた鉄のビエンナーレでは、その兄弟子たちと共に日本を代表し海を渡り、オブジェ制作を依頼される作り手として光栄な機会にも恵まれました。</p>
+
+      <p>無垢の鉄を叩き作り、『火造り鍛造』とも言われるロートアイアンは、日本では歴史が浅く建築にも文化がありませんので、鉄を型に溶かして作る『鋳物（イモノ）』とよく間違えられます。日本で見る豪華そうに見える門扉やフェンスでアイアン製と認識されているものは、ほぼこの鋳物によるロートアイアンを模した物です。（イタリアでは鋳物もアルミの物もほとんど見かけませんでした）</p>
+
+      <p>IRONWORKS ado はこれまで見てきた鉄の世界での経験を活かし、使い続けるほど好きに、本物と言っていただけるような商品を提案してまいります。</p>
+
+      <p>当ショップはアイアン製品の販売ショップとしてはアイテム数はまだ多くはございませんが、一つひとつの品質には自信を持っております。アイアン製品をお探しでご縁のあったお客様にとって、必ず最適な選択となり喜んでいただけるよう手間や技術を惜しまず、誠実な説明と仕事を心がけ、作り手として『良い物を遺す』『喜ばれる』ことを信条に制作しております。</p>
+
+      <p>業者様のまとまった量のご依頼にも、一点一点誠実な仕事でお応えいたします。</p>
+
+      <p>私生活では二人の息子と書籍のデザインをしている妻との4人暮らし。自然、映画、焚き火、ウイスキー、ギター、猫、蕎麦、が好きです。</p>
+
+      <p>長く暮らすこだわりの住まいだからこそ、良いものを。</p>
+
+      <p>お問い合わせを心よりお待ちしております。</p>
+
+      <div class="greeting-sign">
+        IRONWORKS ado 代表<br>
+        蠣崎 良治
+      </div>
+    </div>
+
+    <div class="cta-section">
+      <a href="/contact.html" class="cta-button">お問い合わせする</a>
+    </div>
+  </main>
+
+  <footer>
+    <p class="logo-f">IRONWORKS <span>ADO</span></p>
+    <p class="copy">&copy; 2025 IRONWORKS ado</p>
+  </footer>
+<script src="/back-button.js"></script>
+</body>
+</html>
