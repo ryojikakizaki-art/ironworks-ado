@@ -495,6 +495,129 @@
       .p-card-name { font-size: 11px; }
       .p-card-price { font-size: 14px; }
     }
+
+    /* ── INFO NAV BUTTONS ── */
+    .info-nav {
+      border-top: 1px solid var(--line);
+      padding: 64px 40px;
+      background: var(--black);
+    }
+
+    .info-nav-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .info-nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      padding: 56px 32px 48px;
+      text-decoration: none;
+      color: var(--white);
+      background: var(--dark);
+      border: 1px solid var(--line);
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.35s, transform 0.35s, background 0.35s;
+    }
+
+    .info-nav-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(200,169,110,0.06) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.35s;
+    }
+
+    .info-nav-btn:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      background: var(--mid);
+    }
+
+    .info-nav-btn:hover::before {
+      opacity: 1;
+    }
+
+    .info-nav-icon {
+      width: 48px;
+      height: 48px;
+      border: 1px solid var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      font-size: 20px;
+      transition: background 0.35s, color 0.35s;
+      flex-shrink: 0;
+    }
+
+    .info-nav-btn:hover .info-nav-icon {
+      background: var(--accent);
+      color: var(--black);
+    }
+
+    .info-nav-ja {
+      font-family: var(--serif);
+      font-size: 18px;
+      font-weight: 300;
+      letter-spacing: 0.12em;
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .info-nav-en {
+      font-family: var(--serif-en);
+      font-size: 11px;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-align: center;
+    }
+
+    .info-nav-arrow {
+      font-size: 18px;
+      color: var(--accent);
+      margin-top: 8px;
+      transition: transform 0.3s;
+    }
+
+    .info-nav-btn:hover .info-nav-arrow {
+      transform: translateX(4px);
+    }
+
+    @media (max-width: 768px) {
+      .info-nav { padding: 48px 16px; }
+
+      .info-nav-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+
+      .info-nav-btn {
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 20px;
+        padding: 28px 24px;
+        text-align: left;
+      }
+
+      .info-nav-btn .info-nav-arrow {
+        margin-top: 0;
+        margin-left: auto;
+      }
+
+      .info-nav-ja { font-size: 16px; text-align: left; }
+      .info-nav-en { text-align: left; }
+    }
   </style>
 </head>
 <body>
@@ -551,6 +674,40 @@
   <section class="intro">
     <h2>IRONWORKS ado</h2>
     <p>世界でも第一線の技術力を持つ工房で修行し、鍛冶職人として独立した後、価格以上の確かな品質でこれから毎日お使いいただく方の心豊かな暮らしを思い制作しております。アイアン手すりを中心に、テーブルの脚や棚など、アイアンインテリアをセミオーダーでご提供いたします。</p>
+  </section>
+
+  <!-- ── INFO NAV ── -->
+  <section class="info-nav">
+    <div class="info-nav-grid">
+
+      <a href="/about.html" class="info-nav-btn">
+        <div class="info-nav-icon">✦</div>
+        <div>
+          <div class="info-nav-en">Greeting</div>
+          <div class="info-nav-ja">ごあいさつ</div>
+        </div>
+        <span class="info-nav-arrow">→</span>
+      </a>
+
+      <a href="/contact.html" class="info-nav-btn">
+        <div class="info-nav-icon">◈</div>
+        <div>
+          <div class="info-nav-en">Order Flow</div>
+          <div class="info-nav-ja">お問い合わせから<br>納品までの流れ</div>
+        </div>
+        <span class="info-nav-arrow">→</span>
+      </a>
+
+      <a href="/contact.html#faq" class="info-nav-btn">
+        <div class="info-nav-icon">?</div>
+        <div>
+          <div class="info-nav-en">FAQ</div>
+          <div class="info-nav-ja">よくある質問</div>
+        </div>
+        <span class="info-nav-arrow">→</span>
+      </a>
+
+    </div>
   </section>
 
   <!-- ══════════════ 横型手すり ══════════════ -->
