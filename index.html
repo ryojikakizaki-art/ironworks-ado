@@ -423,6 +423,114 @@
       line-height: 1.7;
     }
 
+    /* ── VOICES SLIDER ── */
+    .voices-section {
+      border-top: 1px solid var(--line);
+      padding: 80px 0;
+      background: var(--black);
+      overflow: hidden;
+    }
+
+    .voices-section h2 {
+      font-family: var(--serif);
+      font-size: 22px;
+      font-weight: 300;
+      letter-spacing: 0.08em;
+      text-align: center;
+      margin-bottom: 8px;
+    }
+
+    .voices-section .voices-en {
+      font-family: var(--serif-en);
+      font-size: 12px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--accent);
+      text-align: center;
+      margin-bottom: 48px;
+    }
+
+    .voices-carousel {
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 60px;
+    }
+
+    .voices-track-wrap {
+      overflow: hidden;
+      border: 1px solid var(--line);
+    }
+
+    .voices-track {
+      display: flex;
+      transition: transform 0.5s ease;
+    }
+
+    .voices-slide {
+      flex: 0 0 100%;
+      min-width: 0;
+    }
+
+    .voices-slide img {
+      width: 100%;
+      display: block;
+      object-fit: contain;
+      background: var(--black);
+    }
+
+    .voices-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      background: transparent;
+      border: 1px solid var(--line);
+      color: var(--light);
+      font-size: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      z-index: 10;
+    }
+
+    .voices-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .voices-btn.prev { left: 0; }
+    .voices-btn.next { right: 0; }
+
+    .voices-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 24px;
+    }
+
+    .voices-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--line);
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      transition: background 0.2s;
+    }
+
+    .voices-dot.active { background: var(--accent); }
+
+    @media (max-width: 768px) {
+      .voices-section { padding: 60px 0; }
+      .voices-carousel { padding: 0 44px; }
+      .voices-btn { width: 36px; height: 36px; font-size: 16px; }
+    }
+
     /* ── FOOTER ── */
     footer {
       border-top: 1px solid var(--line);
@@ -908,6 +1016,28 @@
     <a href="/paint.html" class="cta">About</a>
   </section>
 
+  <!-- ══════════════ お客様の声 ══════════════ -->
+  <section class="voices-section" id="voices">
+    <h2>お客様の声</h2>
+    <p class="voices-en">Customer Voices</p>
+    <div class="voices-carousel">
+      <button class="voices-btn prev" aria-label="前へ">&#8592;</button>
+      <div class="voices-track-wrap">
+        <div class="voices-track" id="voicesTrack">
+          <div class="voices-slide"><img src="/images/voices/Voices.jpg" alt="お客様の声 1" loading="lazy"></div>
+          <div class="voices-slide"><img src="/images/voices/Voices2.jpg" alt="お客様の声 2" loading="lazy"></div>
+          <div class="voices-slide"><img src="/images/voices/Voices3.jpg" alt="お客様の声 3" loading="lazy"></div>
+          <div class="voices-slide"><img src="/images/voices/Voices4.jpg" alt="お客様の声 4" loading="lazy"></div>
+          <div class="voices-slide"><img src="/images/voices/Voices5.jpg" alt="お客様の声 5" loading="lazy"></div>
+          <div class="voices-slide"><img src="/images/voices/Voices6.jpg" alt="お客様の声 6" loading="lazy"></div>
+          <div class="voices-slide"><img src="/images/voices/Voices7.jpg" alt="お客様の声 7" loading="lazy"></div>
+        </div>
+      </div>
+      <button class="voices-btn next" aria-label="次へ">&#8594;</button>
+      <div class="voices-dots" id="voicesDots"></div>
+    </div>
+  </section>
+
   <!-- ══════════════ BLOG ══════════════ -->
   <section class="blog-section">
     <h2>BLOG</h2>
@@ -947,6 +1077,58 @@
         current = (current + 1) % imgs.length;
         imgs[current].classList.add('active');
       }, 5000);
+    })();
+  </script>
+
+  <!-- ── VOICES SLIDER ── -->
+  <script>
+    (function() {
+      var track = document.getElementById('voicesTrack');
+      var dotsWrap = document.getElementById('voicesDots');
+      if (!track) return;
+      var slides = track.querySelectorAll('.voices-slide');
+      var total = slides.length;
+      var current = 0;
+      var timer;
+
+      // build dots
+      for (var i = 0; i < total; i++) {
+        var d = document.createElement('button');
+        d.className = 'voices-dot' + (i === 0 ? ' active' : '');
+        d.setAttribute('aria-label', (i + 1) + '枚目');
+        d.dataset.idx = i;
+        dotsWrap.appendChild(d);
+      }
+
+      function goTo(idx) {
+        current = (idx + total) % total;
+        track.style.transform = 'translateX(-' + (current * 100) + '%)';
+        dotsWrap.querySelectorAll('.voices-dot').forEach(function(d, i) {
+          d.classList.toggle('active', i === current);
+        });
+      }
+
+      function startAuto() {
+        timer = setInterval(function() { goTo(current + 1); }, 4000);
+      }
+
+      function resetAuto() {
+        clearInterval(timer);
+        startAuto();
+      }
+
+      document.querySelector('.voices-btn.prev').addEventListener('click', function() {
+        goTo(current - 1); resetAuto();
+      });
+      document.querySelector('.voices-btn.next').addEventListener('click', function() {
+        goTo(current + 1); resetAuto();
+      });
+      dotsWrap.addEventListener('click', function(e) {
+        var btn = e.target.closest('.voices-dot');
+        if (btn) { goTo(parseInt(btn.dataset.idx)); resetAuto(); }
+      });
+
+      startAuto();
     })();
   </script>
 </body>
