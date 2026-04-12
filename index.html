@@ -658,7 +658,7 @@
 
     .info-nav-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 24px;
       max-width: 1100px;
       margin: 0 auto;
@@ -666,11 +666,11 @@
 
     .info-nav-btn {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       gap: 16px;
-      padding: 56px 32px 48px;
+      padding: 20px 24px;
       text-decoration: none;
       color: var(--white);
       background: var(--dark);
@@ -739,7 +739,7 @@
     .info-nav-arrow {
       font-size: 18px;
       color: var(--accent);
-      margin-top: 8px;
+      margin-left: auto;
       transition: transform 0.3s;
     }
 
