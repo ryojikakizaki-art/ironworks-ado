@@ -228,11 +228,24 @@
     }
     .length-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 16px; height: 16px;
+      width: 22px; height: 22px;
       border-radius: 50%;
-      background: #b08d4a;
-      cursor: pointer;
+      background: var(--accent);
+      cursor: grab;
+      box-shadow: 0 0 0 4px rgba(200,169,110,0.2), 0 2px 6px rgba(0,0,0,0.3);
+      transition: box-shadow .2s, transform .2s;
     }
+    .length-slider:active::-webkit-slider-thumb {
+      cursor: grabbing;
+      box-shadow: 0 0 0 6px rgba(200,169,110,0.3), 0 2px 8px rgba(0,0,0,0.4);
+      transform: scale(1.15);
+    }
+    .slider-hint {
+      text-align: center; font-size: 10px; color: var(--muted);
+      margin-top: 6px; letter-spacing: 0.05em;
+    }
+    .slider-hint::before { content: '◀ '; font-size: 8px; }
+    .slider-hint::after { content: ' ▶'; font-size: 8px; }
     .slider-labels {
       display: flex; justify-content: space-between;
       font-size: 10px; color: var(--muted);
@@ -1001,6 +1014,7 @@
         <input type="range" class="length-slider" id="lengthSlider"
           min="500" max="5000" step="1" value="1500"
           oninput="onSliderChange(this.value)">
+        <div class="slider-hint">スライダーをドラッグして長さを調整</div>
         <div class="slider-labels">
           <span>500</span>
           <span>1500（標準）</span>

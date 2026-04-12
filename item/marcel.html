@@ -123,7 +123,11 @@
     .length-input-wrap input { flex: 1; background: transparent; border: none; outline: none; color: var(--black); font-size: 20px; font-weight: 300; padding: 12px 16px; font-family: var(--font); width: 0; }
     .length-unit { display: flex; align-items: center; padding: 0 16px; font-size: 12px; color: var(--muted); border-left: 1px solid var(--line); letter-spacing: 0.1em; }
     .length-slider { width: 100%; margin-top: 10px; -webkit-appearance: none; height: 2px; background: linear-gradient(to right, var(--accent) 0%, var(--line) 0%); border: none; outline: none; cursor: pointer; }
-    .length-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+    .length-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: var(--accent); cursor: grab; box-shadow: 0 0 0 4px rgba(200,169,110,0.2), 0 2px 6px rgba(0,0,0,0.3); transition: box-shadow .2s, transform .2s; }
+    .length-slider:active::-webkit-slider-thumb { cursor: grabbing; box-shadow: 0 0 0 6px rgba(200,169,110,0.3), 0 2px 8px rgba(0,0,0,0.4); transform: scale(1.15); }
+    .slider-hint { text-align: center; font-size: 10px; color: var(--muted); margin-top: 6px; letter-spacing: 0.05em; }
+    .slider-hint::before { content: '◀ '; font-size: 8px; }
+    .slider-hint::after { content: ' ▶'; font-size: 8px; }
     .slider-labels { display: flex; justify-content: space-between; font-size: 10px; color: var(--muted); margin-top: 4px; }
     .zakin-info { background: rgba(200,169,110,0.06); border: 1px solid rgba(200,169,110,0.2); padding: 14px 16px; font-size: 12px; }
     .zakin-row { display: flex; justify-content: space-between; align-items: center; }
@@ -795,6 +799,7 @@
               <div class="length-unit">mm</div>
             </div>
             <input type="range" class="length-slider" id="lengthSlider" min="500" max="5000" step="1" value="1500" oninput="onSliderChange(this.value)">
+            <div class="slider-hint">スライダーをドラッグして長さを調整</div>
             <div class="slider-labels">
               <span>500</span><span>1500（標準）</span><span>2000（長尺）</span><span>5000mm</span>
             </div>
