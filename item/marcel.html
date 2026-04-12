@@ -399,8 +399,21 @@
     .btn-primary:hover:not(:disabled) { background: linear-gradient(180deg, #d9b85a 0%, #b8983e 25%, #9a7d28 70%, #7b6228 100%); box-shadow: 0 7px 20px rgba(60,40,5,0.65), 0 3px 6px rgba(60,40,5,0.35), inset 0 2px 1px rgba(255,240,180,0.35), inset 0 -2px 1px rgba(0,0,0,0.2); transform: translateY(-2px); }
     .btn-primary:active:not(:disabled) { background: linear-gradient(180deg, #9a7d28 0%, #8a6d1e 30%, #6b5218 100%); transform: translateY(2px); box-shadow: 0 1px 3px rgba(60,40,5,0.3), inset 0 3px 6px rgba(0,0,0,0.25); border-top-color: rgba(255,230,160,0.15); border-bottom-width: 1px; }
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-secondary { display: block; width: 100%; padding: 16px; background: transparent; border: 1px solid var(--line); cursor: pointer; color: var(--black); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-family: var(--font); transition: border-color .2s, color .2s; text-decoration: none; text-align: center; }
-    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-secondary {
+      display: inline-block; width: auto;
+      padding: 10px 24px;
+      background: #fff;
+      border: 1px solid #ccc; cursor: pointer;
+      color: #333;
+      font-size: 11px;
+      letter-spacing: 0.15em;
+      font-family: var(--font);
+      transition: all .2s;
+      text-decoration: none;
+      text-align: center;
+      border-radius: 999px;
+    }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); background: #faf6ef; }
     .checkout-error { display: none; margin-top: 10px; padding: 10px 14px; background: rgba(200,80,80,0.1); border: 1px solid rgba(200,80,80,0.3); font-size: 11px; color: #e0a0a0; }
     .notes { margin-top: 24px; font-size: 11px; color: var(--muted); line-height: 2; }
     .notes li { list-style: none; padding-left: 12px; position: relative; }
