@@ -120,7 +120,7 @@
     .input-hint { font-size: 10px; color: var(--muted); }
     .length-input-wrap { display: flex; align-items: stretch; border: 1px solid var(--line); background: var(--mid); transition: border-color .2s; }
     .length-input-wrap:focus-within { border-color: var(--accent); }
-    .length-input-wrap input { flex: 1; background: transparent; border: none; outline: none; color: var(--white); font-size: 20px; font-weight: 300; padding: 12px 16px; font-family: var(--font); width: 0; }
+    .length-input-wrap input { flex: 1; background: transparent; border: none; outline: none; color: var(--black); font-size: 20px; font-weight: 300; padding: 12px 16px; font-family: var(--font); width: 0; }
     .length-unit { display: flex; align-items: center; padding: 0 16px; font-size: 12px; color: var(--muted); border-left: 1px solid var(--line); letter-spacing: 0.1em; }
     .length-slider { width: 100%; margin-top: 10px; -webkit-appearance: none; height: 2px; background: linear-gradient(to right, var(--accent) 0%, var(--line) 0%); border: none; outline: none; cursor: pointer; }
     .length-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--accent); cursor: pointer; }
@@ -380,11 +380,11 @@
       font-size: 11px; color: var(--muted); line-height: 1.6;
     }
     .cta-wrap { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
-    .btn-primary { display: inline-block; width: auto; padding: 14px 40px; background: linear-gradient(180deg, #c9a55a 0%, #a07830 100%); border: none; border-radius: 999px; cursor: pointer; color: #fff; font-size: 18px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; font-family: var(--font); transition: all .2s; box-shadow: 0 4px 12px rgba(160,120,48,0.4), inset 0 1px 0 rgba(255,255,255,0.2); color: #1a1a1a; }
-    .btn-primary:hover:not(:disabled) { background: linear-gradient(180deg, #d4b06a 0%, #b08840 100%); box-shadow: 0 6px 16px rgba(160,120,48,0.5), inset 0 1px 0 rgba(255,255,255,0.25); transform: translateY(-2px); }
-    .btn-primary:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 2px 6px rgba(160,120,48,0.3), inset 0 1px 0 rgba(255,255,255,0.15); }
+    .btn-primary { display: inline-block; width: auto; padding: 10px 18px; background: linear-gradient(180deg, #8a6d2e 0%, #6b5220 100%); border: none; border-radius: 999px; cursor: pointer; color: #fff; font-size: 14px; font-weight: 700; letter-spacing: 0.2em; font-family: 'Georgia', 'Hiragino Mincho ProN', 'Yu Mincho', serif; transition: all .2s; box-shadow: 0 3px 8px rgba(100,70,20,0.4), inset 0 1px 0 rgba(255,255,255,0.15); color: #1a1a1a; }
+    .btn-primary:hover:not(:disabled) { background: linear-gradient(180deg, #9a7d3e 0%, #7b6230 100%); box-shadow: 0 6px 16px rgba(100,70,20,0.5), inset 0 1px 0 rgba(255,255,255,0.25); transform: translateY(-2px); }
+    .btn-primary:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 1px 4px rgba(100,70,20,0.3), inset 0 1px 0 rgba(255,255,255,0.1); }
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
-    .btn-secondary { display: block; width: 100%; padding: 16px; background: transparent; border: 1px solid var(--line); cursor: pointer; color: var(--muted); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-family: var(--font); transition: border-color .2s, color .2s; text-decoration: none; text-align: center; }
+    .btn-secondary { display: block; width: 100%; padding: 16px; background: transparent; border: 1px solid var(--line); cursor: pointer; color: var(--black); font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; font-family: var(--font); transition: border-color .2s, color .2s; text-decoration: none; text-align: center; }
     .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
     .checkout-error { display: none; margin-top: 10px; padding: 10px 14px; background: rgba(200,80,80,0.1); border: 1px solid rgba(200,80,80,0.3); font-size: 11px; color: #e0a0a0; }
     .notes { margin-top: 24px; font-size: 11px; color: var(--muted); line-height: 2; }
@@ -478,6 +478,17 @@
     .advanced-toggle-btn.open .arrow { transform: rotate(90deg); }
     .advanced-panel { display: none; margin-top: 12px; }
     .advanced-panel.open { display: block; }
+    .zakin-action-row {
+      display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;
+    }
+    .zakin-action-row .advanced-toggle-btn { margin-top: 0; }
+    .zakin-action-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: none; border: 1px solid var(--line); color: var(--muted);
+      font-size: 11px; letter-spacing: 0.05em; cursor: pointer;
+      padding: 8px 14px; font-family: var(--font); transition: all .2s;
+    }
+    .zakin-action-btn:hover { border-color: var(--accent); color: var(--accent); }
 
     /* DELIVERY SECTION */
     .delivery-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-bottom: 16px; }
@@ -807,9 +818,13 @@
               <svg id="zakinSvg" viewBox="0 0 400 120"></svg>
             </div>
             <!-- 座金エディター起動ボタン -->
-            <button class="advanced-toggle-btn" onclick="openZakinEditor()">
-              <span class="arrow">▸</span> 座金位置・角度を設定する
-            </button>
+            <div class="zakin-action-row">
+              <button class="advanced-toggle-btn" onclick="openZakinEditor()">
+                <span class="arrow">▸</span> 座金位置・角度を設定する
+              </button>
+              <button class="zakin-action-btn" onclick="openDrawingModal();">制作図プレビュー ▸</button>
+              <button class="zakin-action-btn" onclick="toggleZakinDetail();">座金詳細図 ▸</button>
+            </div>
             <div id="zakinSpanWarning" style="display:none;margin-top:8px;padding:6px 12px;font-size:11px;color:#f5c542;background:rgba(245,197,66,0.1);border:1px solid rgba(245,197,66,0.3);">⚠ 座金間隔が900mmを超えています。強度にご注意ください。</div>
           </div>
 
