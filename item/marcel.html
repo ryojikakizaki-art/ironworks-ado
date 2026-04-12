@@ -478,21 +478,31 @@
 
     /* STEP LABELS */
     .step-label {
-      font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase;
-      color: #1a1a1a; margin-bottom: 14px; margin-top: 28px;
-      display: flex; align-items: center; gap: 10px;
+      display: flex; align-items: center; gap: 12px;
+      margin: 32px 0 16px; font-size: 13px; letter-spacing: 0.15em;
+      text-transform: uppercase;
       font-family: Georgia, 'Times New Roman', serif;
-      font-weight: bold;
-      padding: 6px 10px;
-      background: #b08d4a;
-      border-left: 3px solid var(--accent);
+      font-weight: 600; color: var(--white);
+      background: none; border-left: none; padding: 0;
     }
     .step-label:first-child { margin-top: 0; }
+    .step-num {
+      display: flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1.5px solid var(--accent); color: var(--accent);
+      font-size: 13px; font-weight: 700; flex-shrink: 0;
+    }
     .step-label::after {
       content: ''; flex: 1; height: 1px;
-      background: linear-gradient(to right, rgba(200,169,110,0.3), transparent);
+      background: linear-gradient(to right, rgba(200,169,110,0.4), transparent);
     }
     .step-divider { border: none; border-top: 1px solid var(--line); margin: 20px 0; }
+    .pref-warning {
+      display: none; margin-top: 6px; padding: 6px 12px;
+      font-size: 11px; color: #e06060;
+      background: rgba(224,96,96,0.1); border: 1px solid rgba(224,96,96,0.3);
+    }
+    .pref-invalid { border-color: #e06060 !important; }
 
     /* ADVANCED TOGGLE */
     .advanced-toggle-btn {
@@ -774,7 +784,7 @@
         <div class="calc-section">
           <div class="calc-title">サイズ・価格シミュレーター</div>
 
-          <div class="step-label">Step 1 — 長さを選ぶ</div>
+          <div class="step-label"><span class="step-num">1</span>長さを選ぶ</div>
           <div class="input-group">
             <div class="input-label">
               <span>ご希望の長さ</span>
@@ -790,7 +800,7 @@
             </div>
 
           <hr class="step-divider">
-          <div class="step-label">Step 2 — 数量・配送先</div>
+          <div class="step-label"><span class="step-num">2</span>数量・配送先</div>
           <div class="qty-pref-group">
             <div>
               <label for="qtyInput">数量</label>
@@ -833,6 +843,7 @@
                 </optgroup>
                 <option>沖縄県</option>
               </select>
+          <div class="pref-warning" id="prefWarning">⚠ 発送先を選択してください</div>
             </div>
           </div>
           </div>
@@ -857,7 +868,7 @@
           </div>
 
           <hr class="step-divider">
-          <div class="step-label">Step 3 — 納品日・配送を選ぶ</div>
+          <div class="step-label"><span class="step-num">3</span>納品日・配送を選ぶ</div>
 
           <div class="delivery-toggle">
             <button type="button" class="delivery-btn active" id="btnStandard" onclick="setDeliveryType('standard')">
@@ -895,7 +906,7 @@
           </div>
 
           <hr class="step-divider">
-          <div class="step-label">Step 4 — 確認して購入</div>
+          <div class="step-label"><span class="step-num">4</span>確認して購入</div>
 
           <div class="price-breakdown">
             <div class="breakdown-row">
@@ -2407,6 +2418,13 @@
   function onSliderChange(v) { update(v); }
 
   function addToCart() {
+    var prefSel = document.getElementById('prefSelect');
+    if (!prefSel.value) {
+      prefSel.classList.add('pref-invalid');
+      document.getElementById('prefWarning').style.display = 'block';
+      prefSel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
     const L = Number(document.getElementById('lengthInput').value);
     const zakinCount = (typeof zakinCustomList !== 'undefined' && zakinCustomList.length)
       ? zakinCustomList.length : calcZakin(L);
@@ -2495,13 +2513,30 @@
   }
 
   function onQtyChange() { var q = parseInt(document.getElementById('qtyInput').value) || 1; if (q < 1) q = 1; if (q > 99) q = 99; currentQty = q; calcShipping(); }
-  function onPrefChange() { calcShipping(); updateDeliveryDate(); }
+  function onPrefChange() {
+    var sel = document.getElementById('prefSelect');
+    var warn = document.getElementById('prefWarning');
+    if (sel.value) {
+      sel.classList.remove('pref-invalid');
+      warn.style.display = 'none';
+    }
+    calcShipping();
+    updateDeliveryDate();
+  }
   function updateTotal() { var baseTotal = parseInt(document.getElementById('totalVal').dataset.base) || 0; var grandTotal = baseTotal * currentQty + currentShipping; document.getElementById('totalVal').textContent = fmt(grandTotal); }
 
   // 初期描画
   initZakinCustom();
   update(1500);
   updateDeliveryDate();
+  // 初期状態: 発送先未選択警告
+  (function() {
+    var sel = document.getElementById('prefSelect');
+    if (!sel.value) {
+      sel.classList.add('pref-invalid');
+      document.getElementById('prefWarning').style.display = 'block';
+    }
+  })();
 </script>
 <!-- 座金詳細図モーダル -->
 <div class="zakin-detail-modal" id="zakinDetailModal" onclick="if(event.target===this)toggleZakinDetail()">
