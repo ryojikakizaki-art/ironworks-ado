@@ -205,7 +205,7 @@
       flex: 1;
       background: #b08d4a;
       border: none; outline: none;
-      color: var(--white);
+      color: var(--black);
       font-size: 20px; font-weight: 300;
       padding: 12px 16px;
       font-family: var(--font);
@@ -517,34 +517,40 @@
     .cta-wrap { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; align-items: center; }
 
     .btn-primary {
-      display: block; width: 100%;
-      padding: 18px;
-      background: #b08d4a;
-      border: none; cursor: pointer;
-      color: var(--black);
-      font-size: 12px; font-weight: 600;
-      letter-spacing: 0.3em; text-transform: uppercase;
-      font-family: var(--font);
-      transition: background .2s, transform .1s, opacity .2s;
+      display: inline-block; width: auto;
+      padding: 10px 24px;
+      background: linear-gradient(180deg, #c9a84a 0%, #a8882e 25%, #8a6d1e 70%, #6b5218 100%);
+      border: none; border-top: 1px solid rgba(255,230,160,0.5); border-bottom: 3px solid #3e2e0a;
+      cursor: pointer;
+      color: #1a1400;
+      font-size: 15px; font-weight: 700;
+      letter-spacing: 0.2em;
+      font-family: 'Georgia', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
+      transition: all .15s ease;
+      box-shadow: 0 5px 15px rgba(60,40,5,0.6), 0 2px 4px rgba(60,40,5,0.4), inset 0 2px 1px rgba(255,240,180,0.3), inset 0 -2px 1px rgba(0,0,0,0.2);
+      text-shadow: 0 1px 0 rgba(255,230,160,0.4);
+      border-radius: 999px;
+      position: relative;
     }
-    .btn-primary:hover:not(:disabled) { background: linear-gradient(180deg, #d4b06a 0%, #b08840 100%); box-shadow: 0 6px 16px rgba(160,120,48,0.5), inset 0 1px 0 rgba(255,255,255,0.25); transform: translateY(-2px); }
-    .btn-primary:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 2px 6px rgba(160,120,48,0.3), inset 0 1px 0 rgba(255,255,255,0.15); }
+    .btn-primary:hover:not(:disabled) { background: linear-gradient(180deg, #d9b85a 0%, #b8983e 25%, #9a7d28 70%, #7b6228 100%); box-shadow: 0 7px 20px rgba(60,40,5,0.65), 0 3px 6px rgba(60,40,5,0.35), inset 0 2px 1px rgba(255,240,180,0.35), inset 0 -2px 1px rgba(0,0,0,0.2); transform: translateY(-2px); }
+    .btn-primary:active:not(:disabled) { background: linear-gradient(180deg, #9a7d28 0%, #8a6d1e 30%, #6b5218 100%); transform: translateY(2px); box-shadow: 0 1px 3px rgba(60,40,5,0.3), inset 0 3px 6px rgba(0,0,0,0.25); border-top-color: rgba(255,230,160,0.15); border-bottom-width: 1px; }
     .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
 
     .btn-secondary {
-      display: block; width: 100%;
-      padding: 16px;
-      background: #b08d4a;
-      border: 1px solid var(--line); cursor: pointer;
-      color: var(--muted);
+      display: inline-block; width: auto;
+      padding: 10px 24px;
+      background: #fff;
+      border: 1px solid #ccc; cursor: pointer;
+      color: #333;
       font-size: 11px;
-      letter-spacing: 0.2em; text-transform: uppercase;
+      letter-spacing: 0.15em;
       font-family: var(--font);
-      transition: border-color .2s, color .2s;
+      transition: all .2s;
       text-decoration: none;
       text-align: center;
+      border-radius: 999px;
     }
-    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-secondary:hover { border-color: var(--accent); color: var(--accent); background: #faf6ef; }
 
     .checkout-error {
       display: none;
@@ -667,21 +673,31 @@
 
     /* STEP LABELS */
     .step-label {
-      font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase;
-      color: #1a1a1a; margin-bottom: 14px; margin-top: 28px;
-      display: flex; align-items: center; gap: 10px;
+      display: flex; align-items: center; gap: 12px;
+      margin: 32px 0 16px; font-size: 13px; letter-spacing: 0.15em;
+      text-transform: uppercase;
       font-family: Georgia, 'Times New Roman', serif;
-      font-weight: bold;
-      padding: 6px 10px;
-      background: #b08d4a;
-      border-left: 3px solid var(--accent);
+      font-weight: 600; color: var(--white);
+      background: none; border-left: none; padding: 0;
     }
     .step-label:first-child { margin-top: 0; }
+    .step-num {
+      display: flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1.5px solid var(--accent); color: var(--accent);
+      font-size: 13px; font-weight: 700; flex-shrink: 0;
+    }
     .step-label::after {
       content: ''; flex: 1; height: 1px;
-      background: linear-gradient(to right, rgba(200,169,110,0.3), transparent);
+      background: linear-gradient(to right, rgba(200,169,110,0.4), transparent);
     }
     .step-divider { border: none; border-top: 1px solid var(--line); margin: 20px 0; }
+    .pref-warning {
+      display: none; margin-top: 6px; padding: 6px 12px;
+      font-size: 11px; color: #e06060;
+      background: rgba(224,96,96,0.1); border: 1px solid rgba(224,96,96,0.3);
+    }
+    .pref-invalid { border-color: #e06060 !important; }
 
     /* ADVANCED TOGGLE */
     .advanced-toggle-btn {
@@ -695,6 +711,18 @@
     .advanced-toggle-btn.open .arrow { transform: rotate(90deg); }
     .advanced-panel { display: none; margin-top: 12px; }
     .advanced-panel.open { display: block; }
+
+    .zakin-action-row {
+      display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;
+    }
+    .zakin-action-row .advanced-toggle-btn { margin-top: 0; }
+    .zakin-action-btn {
+      display: flex; align-items: center; gap: 6px;
+      background: none; border: 1px solid var(--line); color: var(--muted);
+      font-size: 11px; letter-spacing: 0.05em; cursor: pointer;
+      padding: 8px 14px; font-family: var(--font); transition: all .2s;
+    }
+    .zakin-action-btn:hover { border-color: var(--accent); color: var(--accent); }
 
     /* DELIVERY SECTION */
     .delivery-toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-bottom: 16px; }
@@ -958,7 +986,7 @@
     <div class="calc-section">
       <div class="calc-title">サイズ・価格シミュレーター</div>
 
-      <div class="step-label">Step 1 — 長さを選ぶ</div>
+      <div class="step-label"><span class="step-num">1</span>長さを選ぶ</div>
       <div class="input-group">
         <div class="input-label">
           <span>ご希望の長さ</span>
@@ -981,7 +1009,7 @@
         </div>
 
       <hr class="step-divider">
-      <div class="step-label">Step 2 — 数量・配送先</div>
+      <div class="step-label"><span class="step-num">2</span>数量・配送先</div>
       <div class="qty-pref-group">
         <div>
           <label for="qtyInput">数量</label>
@@ -1024,6 +1052,7 @@
             </optgroup>
             <option>沖縄県</option>
           </select>
+          <div class="pref-warning" id="prefWarning">⚠ 発送先を選択してください</div>
         </div>
       </div>
       </div>
@@ -1036,15 +1065,19 @@
         <div class="zakin-diagram" id="zakinDiagram">
           <svg id="zakinSvg" viewBox="0 0 400 120"></svg>
         </div>
-        <!-- 座金エディター起動ボタン -->
-        <button class="advanced-toggle-btn" onclick="openZakinEditor()">
-          <span class="arrow">▸</span> 座金位置・角度を設定する
-        </button>
+        <!-- 座金エディター・制作図・座金詳細図ボタン -->
+        <div class="zakin-action-row">
+          <button class="advanced-toggle-btn" onclick="openZakinEditor()">
+            <span class="arrow">▸</span> 座金位置・角度を設定する
+          </button>
+          <button class="zakin-action-btn" onclick="openDrawingModal();">制作図プレビュー ▸</button>
+          <button class="zakin-action-btn" onclick="toggleZakinDetail();">座金詳細図 ▸</button>
+        </div>
         <div id="zakinSpanWarning" style="display:none;margin-top:8px;padding:6px 12px;font-size:11px;color:#f5c542;background:rgba(245,197,66,0.1);border:1px solid rgba(245,197,66,0.3);">⚠ 座金間隔が900mmを超えています。強度にご注意ください。</div>
       </div>
 
       <hr class="step-divider">
-      <div class="step-label">Step 3 — 納品日・配送を選ぶ</div>
+      <div class="step-label"><span class="step-num">3</span>納品日・配送を選ぶ</div>
 
       <div class="delivery-toggle">
         <button type="button" class="delivery-btn active" id="btnStandard" onclick="setDeliveryType('standard')">
@@ -1082,7 +1115,7 @@
       </div>
 
       <hr class="step-divider">
-      <div class="step-label">Step 4 — 確認して購入</div>
+      <div class="step-label"><span class="step-num">4</span>確認して購入</div>
 
       <div class="price-breakdown">
         <div class="breakdown-row">
@@ -1128,9 +1161,6 @@
         <button class="btn-primary" id="btnCheckout" onclick="addToCart()">
           カートに追加 — 購入手続きへ
         </button>
-        <a class="btn-secondary" href="mailto:info@tantetuzest.com">
-          お問い合わせ・カスタム相談
-        </a>
       </div>
 
       <div class="shipping-inquiry" id="shippingInquiry"></div>
@@ -1142,7 +1172,7 @@
       <ul class="notes">
         <li>受注生産 — 通常10営業日、特急5営業日でお届け</li>
         <li>施工・取り付けは含まれません（別途ご相談可）</li>
-        <li>サイズは指定寸法±5mm以内の精度でお届けします</li>
+        <li>サイズは指定寸法±1mm以内の精度でお届けします</li>
         <li>クレジットカード決済（Stripe）対応</li>
       </ul>
       <div class="surcharge-notice" id="surchargeNotice">
@@ -2773,6 +2803,13 @@
 
   // 注文確認ページへ
   function addToCart() {
+    var prefSel = document.getElementById('prefSelect');
+    if (!prefSel.value) {
+      prefSel.classList.add('pref-invalid');
+      document.getElementById('prefWarning').style.display = 'block';
+      prefSel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
     const L = Number(document.getElementById('lengthInput').value);
     const zakinCount = (typeof zakinCustomList !== 'undefined' && zakinCustomList.length)
       ? zakinCustomList.length : calcZakin(L);
@@ -2952,6 +2989,12 @@
     calcShipping();
   }
   function onPrefChange() {
+    var sel = document.getElementById('prefSelect');
+    var warn = document.getElementById('prefWarning');
+    if (sel.value) {
+      sel.classList.remove('pref-invalid');
+      warn.style.display = 'none';
+    }
     calcShipping();
     updateDeliveryDate();
   }
@@ -2965,6 +3008,14 @@
   initZakinCustom();
   update(1500);
   updateDeliveryDate();
+  // 初期状態: 発送先未選択警告
+  (function() {
+    var sel = document.getElementById('prefSelect');
+    if (!sel.value) {
+      sel.classList.add('pref-invalid');
+      document.getElementById('prefWarning').style.display = 'block';
+    }
+  })();
 
 </script>
 

@@ -156,6 +156,13 @@
     .total-amount { font-size: 32px; font-weight: 300; letter-spacing: 0.03em; color: var(--white); }
     .total-tax { font-size: 11px; color: var(--muted); margin-left: 8px; }
     .surcharge-notice { display: none; margin-top: 12px; padding: 10px 14px; background: rgba(200,80,80,0.1); border: 1px solid rgba(200,80,80,0.3); font-size: 11px; color: #e0a0a0; }
+    .step-label { display: flex; align-items: center; gap: 12px; margin: 32px 0 16px; font-size: 13px; letter-spacing: 0.15em; text-transform: uppercase; font-family: Georgia, 'Times New Roman', serif; font-weight: 600; color: var(--white); background: none; border-left: none; padding: 0; }
+    .step-label:first-child { margin-top: 0; }
+    .step-num { display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--accent); color: var(--accent); font-size: 13px; font-weight: 700; flex-shrink: 0; }
+    .step-label::after { content: ''; flex: 1; height: 1px; background: linear-gradient(to right, rgba(200,169,110,0.4), transparent); }
+    .step-divider { border: none; border-top: 1px solid var(--line); margin: 20px 0; }
+    .pref-warning { display: none; margin-top: 6px; padding: 6px 12px; font-size: 11px; color: #e06060; background: rgba(224,96,96,0.1); border: 1px solid rgba(224,96,96,0.3); }
+    .pref-invalid { border-color: #e06060 !important; }
     .cta-wrap { margin-top: 24px; display: flex; flex-direction: column; gap: 10px; }
     .btn-primary { display: block; width: 100%; padding: 18px; background: var(--accent); border: none; cursor: pointer; color: var(--black); font-size: 12px; font-weight: 600; letter-spacing: 0.3em; text-transform: uppercase; font-family: var(--font); transition: background .2s, transform .1s, opacity .2s; }
     .btn-primary:hover:not(:disabled) { background: #d4b87a; }
@@ -307,6 +314,7 @@
 
         <div class="calc-section">
           <div class="calc-title">サイズ・価格シミュレーター</div>
+          <div class="step-label"><span class="step-num">1</span>長さを選ぶ</div>
           <div class="input-group">
             <div class="input-label">
               <span>ご希望の高さ</span>
@@ -321,6 +329,25 @@
               <span>500</span><span>1000（標準）</span><span>2000（長尺）</span><span>3000mm</span>
             </div>
           </div>
+          <hr class="step-divider">
+          <div class="step-label"><span class="step-num">2</span>数量・配送先</div>
+          <div class="input-group">
+            <label for="prefSelect" style="font-size:12px;color:var(--light);letter-spacing:0.05em;margin-bottom:8px;display:block;">配送先（都道府県）</label>
+            <select id="prefSelect" onchange="onPrefChange()" style="width:100%;padding:10px 12px;background:var(--mid);border:1px solid var(--line);color:var(--white);font-size:14px;font-family:var(--font);">
+              <option value="">選択してください</option>
+              <option>北海道</option>
+              <optgroup label="東北"><option>青森県</option><option>岩手県</option><option>秋田県</option><option>宮城県</option><option>山形県</option><option>福島県</option></optgroup>
+              <optgroup label="関東"><option>茨城県</option><option>栃木県</option><option>群馬県</option><option>埼玉県</option><option>千葉県</option><option>東京都</option><option>神奈川県</option><option>山梨県</option></optgroup>
+              <optgroup label="信越・北陸"><option>新潟県</option><option>長野県</option><option>富山県</option><option>石川県</option><option>福井県</option></optgroup>
+              <optgroup label="東海"><option>岐阜県</option><option>静岡県</option><option>愛知県</option><option>三重県</option></optgroup>
+              <optgroup label="関西"><option>滋賀県</option><option>京都府</option><option>大阪府</option><option>兵庫県</option><option>奈良県</option><option>和歌山県</option></optgroup>
+              <optgroup label="中国"><option>鳥取県</option><option>島根県</option><option>岡山県</option><option>広島県</option><option>山口県</option></optgroup>
+              <optgroup label="四国"><option>徳島県</option><option>香川県</option><option>愛媛県</option><option>高知県</option></optgroup>
+              <optgroup label="九州"><option>福岡県</option><option>佐賀県</option><option>長崎県</option><option>熊本県</option><option>大分県</option><option>宮崎県</option><option>鹿児島県</option></optgroup>
+              <option>沖縄県</option>
+            </select>
+          <div class="pref-warning" id="prefWarning">⚠ 発送先を選択してください</div>
+          </div>
           <div class="zakin-info">
             <div class="zakin-row">
               <span class="zakin-label" id="zakinLabel">推奨座金数（自動計算）</span>
@@ -333,6 +360,8 @@
           <div class="surcharge-notice" id="surchargeNotice">
             ⚠ 2000mmを超えると長尺割増が加算されます。取り回しや施工の難易度が上がるため、事前に設置場所のご確認をお勧めします。
           </div>
+          <hr class="step-divider">
+          <div class="step-label"><span class="step-num">3</span>納品日・配送を選ぶ</div>
           <div class="price-breakdown">
             <div class="breakdown-row">
               <span class="breakdown-label">基本料金（〜1000mm）</span>
@@ -358,6 +387,8 @@
               <span class="total-tax">税込</span>
             </div>
           </div>
+          <hr class="step-divider">
+          <div class="step-label"><span class="step-num">4</span>確認して購入</div>
           <div class="cta-wrap">
             <button class="btn-primary" id="btnCheckout" onclick="addToCart()">カートに追加 — 購入手続きへ</button>
             <a class="btn-secondary" href="mailto:info@tantetuzest.com">お問い合わせ・カスタム相談</a>
@@ -717,13 +748,38 @@
   function onLengthChange(v) { update(v); }
   function onSliderChange(v) { update(v); }
 
+  function onPrefChange() {
+    var sel = document.getElementById('prefSelect');
+    var warn = document.getElementById('prefWarning');
+    if (sel.value) {
+      sel.classList.remove('pref-invalid');
+      warn.style.display = 'none';
+    }
+  }
+
   function addToCart() {
+    var prefSel = document.getElementById('prefSelect');
+    if (!prefSel.value) {
+      prefSel.classList.add('pref-invalid');
+      document.getElementById('prefWarning').style.display = 'block';
+      prefSel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
     const L = Number(document.getElementById('lengthInput').value);
     const p = new URLSearchParams({ product: PRODUCT_KEY, lengthMm: L });
     window.location.href = '/checkout.html?' + p.toString();
   }
 
   update(1000);
+
+  // 初期状態: 発送先未選択警告
+  (function() {
+    var sel = document.getElementById('prefSelect');
+    if (!sel.value) {
+      sel.classList.add('pref-invalid');
+      document.getElementById('prefWarning').style.display = 'block';
+    }
+  })();
 </script>
 
 <!-- 制作図モーダル -->
