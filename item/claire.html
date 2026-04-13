@@ -2344,8 +2344,11 @@
       return t;
     };
 
-    // ── メインバー（長方形、太さ表現） ──
-    var barThick = 6;
+    // ── 縮尺（全図面共通、px/mm） ──
+    var scale = barLen / L_mm;
+
+    // ── メインバー（φ25.4 丸鋼、縮尺連動） ──
+    var barThick = Math.max(25.4 * scale, 2);
     var perpDx = (barThick / 2) * Math.sin(actualAngle);
     var perpDy = -(barThick / 2) * Math.cos(actualAngle);
     var rect = document.createElementNS(svgNS, 'polygon');
@@ -2360,17 +2363,14 @@
     rect.setAttribute('stroke-width', '1');
     svg.appendChild(rect);
 
-    // ── 座金描画（丸がバーに接触、支柱が中心まで、十字マーク） ──
-    var bR = 6;
+    // ── 座金描画（φ45丸座金、縮尺連動） ──
+    var bR = Math.max(45 / 2 * scale, 3);
     positions.forEach(function(pos) {
       var x = barLeft + (pos / L_mm) * barLen;
       var yOnBar = barYAtX(x) + barThick / 2;
       var circleY = yOnBar + bR;
 
-      // 支柱線（バー下端→座金中心）
-      addLine(x, yOnBar, x, circleY, C, 0.8);
-
-      // 丸座金
+      // 丸座金（φ45）
       var circle = document.createElementNS(svgNS, 'circle');
       circle.setAttribute('cx', x); circle.setAttribute('cy', circleY);
       circle.setAttribute('r', bR);
@@ -2378,9 +2378,28 @@
       circle.setAttribute('stroke-width', '0.8');
       svg.appendChild(circle);
 
-      // 十字マーク
-      addLine(x - 3, circleY, x + 3, circleY, C, 0.4);
-      addLine(x, circleY - 3, x, circleY + 3, C, 0.4);
+      // 支柱（φ9、二本線＋下端半丸、半丸中心＝座金中心）
+      var postW = Math.max(9 * scale, 1.5);
+      addLine(x - postW / 2, yOnBar, x - postW / 2, circleY, C, 0.5);
+      addLine(x + postW / 2, yOnBar, x + postW / 2, circleY, C, 0.5);
+      var pArc = document.createElementNS(svgNS, 'path');
+      pArc.setAttribute('d', 'M ' + (x - postW / 2) + ' ' + circleY + ' A ' + (postW / 2) + ' ' + (postW / 2) + ' 0 0 0 ' + (x + postW / 2) + ' ' + circleY);
+      pArc.setAttribute('fill', 'none'); pArc.setAttribute('stroke', C); pArc.setAttribute('stroke-width', '0.5');
+      svg.appendChild(pArc);
+
+      // 段付き穴×3（正三角形配置、上部は支柱接続部なので避ける）
+      var holeR = Math.max(3.5 * scale, 1);
+      var holeDist = bR * 0.6;
+      [90, 210, 330].forEach(function(deg) {
+        var rad = deg * Math.PI / 180;
+        var hc = document.createElementNS(svgNS, 'circle');
+        hc.setAttribute('cx', x + holeDist * Math.cos(rad));
+        hc.setAttribute('cy', circleY + holeDist * Math.sin(rad));
+        hc.setAttribute('r', holeR);
+        hc.setAttribute('fill', 'none'); hc.setAttribute('stroke', C);
+        hc.setAttribute('stroke-width', '0.4');
+        svg.appendChild(hc);
+      });
     });
 
     // ── 全長寸法（上部、バーに平行） ──
@@ -2438,30 +2457,122 @@
       if (hasAngle) st.setAttribute('transform', 'rotate(' + textAngle + ' ' + sMidX + ' ' + (sMidY - 4) + ')');
     }
 
-    // ── 座金側面詳細図（左上） ──
-    var dxBase = 55, dyBase = 120;
-    // 支柱（縦線）
-    addLine(dxBase, dyBase, dxBase, dyBase + 30, C, 0.8);
-    // 座金丸
-    var dc = document.createElementNS(svgNS, 'circle');
-    dc.setAttribute('cx', dxBase); dc.setAttribute('cy', dyBase + 30);
-    dc.setAttribute('r', 6); dc.setAttribute('fill', 'none');
-    dc.setAttribute('stroke', C); dc.setAttribute('stroke-width', '0.8');
-    svg.appendChild(dc);
-    // ベースプレート
-    addLine(dxBase - 12, dyBase + 36, dxBase + 12, dyBase + 36, C, 0.8);
-    addLine(dxBase - 12, dyBase + 36, dxBase - 12, dyBase + 38, C, 0.5);
-    addLine(dxBase + 12, dyBase + 36, dxBase + 12, dyBase + 38, C, 0.5);
-    // 高さ寸法
-    addLine(dxBase + 18, dyBase, dxBase + 18, dyBase + 36, CD, 0.4);
-    addLine(dxBase + 15, dyBase, dxBase + 21, dyBase, CD, 0.4);
-    addLine(dxBase + 15, dyBase + 36, dxBase + 21, dyBase + 36, CD, 0.4);
-    addText(dxBase + 24, dyBase + 12, '40', '7', CD, 'start');
-    // 幅寸法
-    addLine(dxBase - 12, dyBase + 42, dxBase + 12, dyBase + 42, CD, 0.4);
-    addLine(dxBase - 12, dyBase + 39, dxBase - 12, dyBase + 45, CD, 0.4);
-    addLine(dxBase + 12, dyBase + 39, dxBase + 12, dyBase + 45, CD, 0.4);
-    addText(dxBase, dyBase + 50, '45', '7', CD);
+    // ── 座金側面詳細図（正面図下、独立詳細図、同一縮尺） ──
+    // 全寸法を scale(px/mm) で計算
+    var pipeR_s = 25.4 / 2 * scale;
+    var washerR_s = 45 / 2 * scale;
+    var bracket40_s = 40 * scale;
+    var totalProj_s = 65.4 * scale;
+    var bpThick_s = Math.max(4.5 * scale, 1);
+    var postD_s = Math.max(9 * scale, 1.5);
+    var bendR = Math.max(9 * scale, 2); // φ9丸棒の曲げR（きつめ）
+    var hp = postD_s / 2; // 支柱半幅
+
+    // 配置: 正面図barLeftの左横（余裕をもって）、Y軸共有
+    var sPipeCX = barLeft - 30;
+    var sWallX = sPipeCX - bracket40_s - pipeR_s;
+    var sideY = barBaseY; // Y軸整列
+    var sArmY = sideY + pipeR_s + Math.max(20 * scale, 8);
+
+    // 壁面（全域ハッチング、座金は後で白塗りで上書き）
+    var wH = Math.max(washerR_s * 2 + 10, 24);
+    addLine(sWallX, sArmY - wH / 2, sWallX, sArmY + wH / 2, C, 1);
+    for (var wi = sArmY - wH / 2; wi < sArmY + wH / 2; wi += 4)
+      addLine(sWallX, wi, sWallX - 5, wi + 3, C, 0.25);
+
+    // パイプ断面 φ25.4
+    var spC = document.createElementNS(svgNS, 'circle');
+    spC.setAttribute('cx', sPipeCX); spC.setAttribute('cy', sideY);
+    spC.setAttribute('r', Math.max(pipeR_s, 2));
+    spC.setAttribute('fill', 'none'); spC.setAttribute('stroke', C);
+    spC.setAttribute('stroke-width', '0.8');
+    svg.appendChild(spC);
+
+    // 座金プレート φ45（白塗りつぶし矩形で壁ハッチングを遮蔽）
+    var sbpRect = document.createElementNS(svgNS, 'rect');
+    sbpRect.setAttribute('x', sWallX - 6); sbpRect.setAttribute('y', sArmY - washerR_s);
+    sbpRect.setAttribute('width', bpThick_s + 6); sbpRect.setAttribute('height', washerR_s * 2);
+    sbpRect.setAttribute('fill', '#fff'); sbpRect.setAttribute('stroke', 'none');
+    svg.appendChild(sbpRect);
+    // 座金プレート外形線
+    var sbpLine = document.createElementNS(svgNS, 'rect');
+    sbpLine.setAttribute('x', sWallX); sbpLine.setAttribute('y', sArmY - washerR_s);
+    sbpLine.setAttribute('width', bpThick_s); sbpLine.setAttribute('height', washerR_s * 2);
+    sbpLine.setAttribute('fill', 'none'); sbpLine.setAttribute('stroke', C);
+    sbpLine.setAttribute('stroke-width', '0.8');
+    svg.appendChild(sbpLine);
+
+    // 段付き穴×3（アーム高さ基準で配置）
+    var sHoleSp = washerR_s * 0.55;
+    [-sHoleSp, 0, sHoleSp].forEach(function(dy) {
+      var shc = document.createElementNS(svgNS, 'circle');
+      shc.setAttribute('cx', sWallX + bpThick_s / 2);
+      shc.setAttribute('cy', sArmY + dy);
+      shc.setAttribute('r', Math.max(3.5 * scale, 1));
+      shc.setAttribute('fill', 'none'); shc.setAttribute('stroke', C);
+      shc.setAttribute('stroke-width', '0.4');
+      svg.appendChild(shc);
+    });
+
+    // 支柱 φ9 二本線（直線→同一Rで90°曲げ→直線、オフセットは直線部のみ）
+    var sArmStartX = sWallX + bpThick_s;
+    var pipeBot = sideY + Math.max(pipeR_s, 2);
+    // 中心線パスで曲げ位置を計算
+    // 水平直線: Y=sArmY, X: sArmStartX → sPipeCX - bendR
+    // 円弧: 中心(sPipeCX, sArmY), R=bendR, 180°→270°
+    // 垂直直線: X=sPipeCX, Y: sArmY - bendR → pipeBot
+    // 二本線は直線部分を±hpオフセット、円弧部分は同じR・同じ中心
+    addLine(sArmStartX, sArmY - hp, sPipeCX - bendR, sArmY - hp, C, 0.5); // 上水平
+    addLine(sArmStartX, sArmY + hp, sPipeCX - bendR, sArmY + hp, C, 0.5); // 下水平
+    addLine(sPipeCX - hp, sArmY - bendR, sPipeCX - hp, pipeBot, C, 0.5); // 左垂直
+    addLine(sPipeCX + hp, sArmY - bendR, sPipeCX + hp, pipeBot, C, 0.5); // 右垂直
+    // 円弧（内側・外側とも同じ中心(sPipeCX, sArmY)からのオフセット）
+    var arcI = document.createElementNS(svgNS, 'path');
+    var rI = bendR - hp;
+    arcI.setAttribute('d', 'M ' + (sPipeCX - bendR) + ' ' + (sArmY - hp) +
+      ' A ' + rI + ' ' + rI + ' 0 0 0 ' + (sPipeCX - hp) + ' ' + (sArmY - bendR));
+    arcI.setAttribute('fill', 'none'); arcI.setAttribute('stroke', C); arcI.setAttribute('stroke-width', '0.5');
+    svg.appendChild(arcI);
+    var arcO = document.createElementNS(svgNS, 'path');
+    var rO = bendR + hp;
+    arcO.setAttribute('d', 'M ' + (sPipeCX - bendR) + ' ' + (sArmY + hp) +
+      ' A ' + rO + ' ' + rO + ' 0 0 0 ' + (sPipeCX + hp) + ' ' + (sArmY - bendR));
+    arcO.setAttribute('fill', 'none'); arcO.setAttribute('stroke', C); arcO.setAttribute('stroke-width', '0.5');
+    svg.appendChild(arcO);
+    // 壁側端キャップ
+    addLine(sArmStartX, sArmY - hp, sArmStartX, sArmY + hp, C, 0.5);
+
+    // 寸法構成: 65.4（壁〜パイプ外端） = 40（壁〜内端）+ 25.4（径）
+    // 寸法は図形の上に配置（重ならないよう十分な間隔）
+    var sPiX = sPipeCX - Math.max(pipeR_s, 2);
+    var sPoX = sPipeCX + Math.max(pipeR_s, 2);
+    // 65.4（最上段）
+    var sDY1 = sideY - Math.max(pipeR_s, 3) - 28;
+    addLine(sWallX, sArmY - wH / 2, sWallX, sDY1 - 4, CD, 0.3);
+    addLine(sPoX, sideY - Math.max(pipeR_s, 2) - 2, sPoX, sDY1 - 4, CD, 0.3);
+    addLine(sWallX, sDY1, sPoX, sDY1, CD, 0.5);
+    addLine(sWallX - 2, sDY1 - 2, sWallX + 2, sDY1 + 2, CD, 0.5);
+    addLine(sPoX - 2, sDY1 - 2, sPoX + 2, sDY1 + 2, CD, 0.5);
+    addText((sWallX + sPoX) / 2, sDY1 - 3, '65.4', '7', CD);
+    // 40 + 25.4（二段目、分割）
+    var sDY2 = sDY1 + 12;
+    addLine(sPiX, sideY - Math.max(pipeR_s, 2) - 2, sPiX, sDY2 + 2, CD, 0.3);
+    addLine(sWallX, sDY2, sPiX, sDY2, CD, 0.4);
+    addLine(sWallX - 2, sDY2 - 2, sWallX + 2, sDY2 + 2, CD, 0.4);
+    addLine(sPiX - 2, sDY2 - 2, sPiX + 2, sDY2 + 2, CD, 0.4);
+    addText((sWallX + sPiX) / 2, sDY2 - 3, '40', '7', CD);
+    addLine(sPiX, sDY2, sPoX, sDY2, CD, 0.4);
+    addLine(sPoX - 2, sDY2 - 2, sPoX + 2, sDY2 + 2, CD, 0.4);
+    addText((sPiX + sPoX) / 2, sDY2 - 3, '25.4', '7', CD);
+    // 4.5（座金厚み、下部）
+    var sDY3 = sArmY + washerR_s + 6;
+    addLine(sWallX, sArmY + washerR_s + 2, sWallX, sDY3 + 2, CD, 0.3);
+    addLine(sWallX + bpThick_s, sArmY + washerR_s + 2, sWallX + bpThick_s, sDY3 + 2, CD, 0.3);
+    addLine(sWallX, sDY3, sWallX + bpThick_s, sDY3, CD, 0.4);
+    addText(sWallX + bpThick_s / 2, sDY3 + 8, '4.5', '6', CD);
+
+    // ラベル: 支柱9φ
+    addText((sArmStartX + sPipeCX) / 2, sArmY + 10, '支柱9φ', '7', CD, 'middle');
 
     // ── タイトルブロック（右下、CAD風） ──
     var tbW = 260, tbRowH = 18, tbRows = 7;
@@ -2487,10 +2598,10 @@
     var rows = [
       ['図面名', 'Claire 横型手すり ' + L_mm + 'mm', true],
       ['図番', 'IW-CLA-' + L_mm, false],
-      ['材質', 'ss400 丸鋼 φ16', false],
+      ['材質', 'STKM φ25.4', false],
       ['仕上げ', 'マットブラック', false],
       ['尺度', '1:20', false],
-      ['設計', '柿崎 良治', false],
+      ['設計', '蠣崎 良治', false],
       ['座金', zakinInfo, false]
     ];
 
@@ -2509,27 +2620,6 @@
     // 日付（設計行の右側に追記）
     addText(tbX + tbW - 6, tbY + 5 * tbRowH + 13, '日付  ' + dateStr, '7', CD, 'end');
 
-    // ── 投影法マーク（タイトルブロック左横） ──
-    var pmX = tbX - 40, pmY = tbY + tbH / 2;
-    // 第三角法マーク（円錐台＋円）
-    // 簡易台形
-    var trap = document.createElementNS(svgNS, 'polygon');
-    trap.setAttribute('points', (pmX - 5) + ',' + (pmY + 10) + ' ' + (pmX + 5) + ',' + (pmY + 10) + ' ' + (pmX + 3) + ',' + (pmY - 10) + ' ' + (pmX - 3) + ',' + (pmY - 10));
-    trap.setAttribute('fill', 'none'); trap.setAttribute('stroke', C); trap.setAttribute('stroke-width', '0.6');
-    svg.appendChild(trap);
-    // 右に正面図（丸＋十字）
-    var pmcx = pmX + 22;
-    var pmc = document.createElementNS(svgNS, 'circle');
-    pmc.setAttribute('cx', pmcx); pmc.setAttribute('cy', pmY);
-    pmc.setAttribute('r', 8); pmc.setAttribute('fill', 'none');
-    pmc.setAttribute('stroke', C); pmc.setAttribute('stroke-width', '0.6');
-    svg.appendChild(pmc);
-    addLine(pmcx - 8, pmY, pmcx + 8, pmY, C, 0.4);
-    addLine(pmcx, pmY - 8, pmcx, pmY + 8, C, 0.4);
-    var pmdot = document.createElementNS(svgNS, 'circle');
-    pmdot.setAttribute('cx', pmcx); pmdot.setAttribute('cy', pmY);
-    pmdot.setAttribute('r', 1.5); pmdot.setAttribute('fill', '#333');
-    svg.appendChild(pmdot);
   }
 
   function printDrawing() {
