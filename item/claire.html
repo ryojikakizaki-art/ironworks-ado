@@ -1429,34 +1429,27 @@
     var barLen = barRight - barLeft;
     var barCX = (barLeft + barRight) / 2;
 
-    // ── 角度計算（シミュレーターと同様） ──
+    // ── 角度計算（バーは水平、角度は座金側に表現） ──
     var angleDeg = zakinGlobalAngle || 0;
     var hasAngle = angleDeg > 0;
     var angleRad = angleDeg * Math.PI / 180;
-    var maxVisualRise = 30;
-    var halfRise = Math.min((barLen / 2) * Math.sin(angleRad), maxVisualRise);
-    var barBaseY = hasAngle ? 55 : 50;
+    var barBaseY = 50;
 
-    var barY1, barY2;
-    if (zakinAngleDir === 'left') {
-      barY1 = barBaseY - halfRise;
-      barY2 = barBaseY + halfRise;
-    } else {
-      barY1 = barBaseY + halfRise;
-      barY2 = barBaseY - halfRise;
-    }
+    var barY1 = barBaseY, barY2 = barBaseY;
 
     function barYAtX(x) {
-      var t = (x - barLeft) / barLen;
-      return barY1 + t * (barY2 - barY1);
+      return barBaseY;
     }
 
-    var actualAngle = Math.atan2(barY2 - barY1, barRight - barLeft);
-    var textAngle = actualAngle * 180 / Math.PI;
+    var actualAngle = 0;
+    var textAngle = 0;
+    // 座金の傾き方向（左: 座金が左に傾く, 右: 右に傾く）
+    var zakinTiltSign = (zakinAngleDir === 'left') ? -1 : 1;
 
     // 座金パラメータ
     var bracketR = 8;
-    var bracketBottomY = Math.max(barY1, barY2) + bracketR * 2 + 4;
+    var dropDist = bracketR + 1; // バーから座金中心までの距離
+    var bracketBottomY = barBaseY + dropDist * Math.cos(angleRad) + bracketR + 4;
 
     // viewBox高さ調整
     var H = bracketBottomY + 60;
@@ -1515,27 +1508,38 @@
       var x = barLeft + (pos / L_mm) * barLen;
       var yOnBar = barYAtX(x);
 
-      // 丸座金（バーに直接接する）
-      var circleY = yOnBar + bracketR + 1;
+      // 座金の傾き計算（バーは水平、支柱が角度を持つ）
+      var cxOffset = hasAngle ? dropDist * Math.sin(angleRad) * (-zakinTiltSign) : 0;
+      var cyDrop = hasAngle ? dropDist * Math.cos(angleRad) : dropDist;
+      var circleX = x + cxOffset;
+      var circleY = yOnBar + cyDrop;
+
+      // 丸座金（角度付き）
       var circle = document.createElementNS(svgNS, 'circle');
-      circle.setAttribute('cx', x); circle.setAttribute('cy', circleY);
+      circle.setAttribute('cx', circleX); circle.setAttribute('cy', circleY);
       circle.setAttribute('r', bracketR);
       circle.setAttribute('fill', '#c8a96e'); circle.setAttribute('fill-opacity', '0.15');
       circle.setAttribute('stroke', '#c8a96e'); circle.setAttribute('stroke-width', '1.5');
       svg.appendChild(circle);
 
-      // 支柱線（バーから座金中心まで）
-      addLine(x, yOnBar + 1, x, circleY, '#c8a96e', 1.2);
+      // 支柱（二本線＋下端半丸、制作図プレビューと同様の表現）
+      var postW = 3;
+      addLine(x - postW / 2, yOnBar + 1, circleX - postW / 2, circleY, '#c8a96e', 1);
+      addLine(x + postW / 2, yOnBar + 1, circleX + postW / 2, circleY, '#c8a96e', 1);
+      var pArc = document.createElementNS(svgNS, 'path');
+      pArc.setAttribute('d', 'M ' + (circleX - postW / 2) + ' ' + circleY + ' A ' + (postW / 2) + ' ' + (postW / 2) + ' 0 0 0 ' + (circleX + postW / 2) + ' ' + circleY);
+      pArc.setAttribute('fill', 'none'); pArc.setAttribute('stroke', '#c8a96e'); pArc.setAttribute('stroke-width', '0.8');
+      svg.appendChild(pArc);
 
       // 座金中心の十字マーク
-      addLine(x - 3, circleY, x + 3, circleY, '#c8a96e', 0.6);
-      addLine(x, circleY - 3, x, circleY + 3, '#c8a96e', 0.6);
+      addLine(circleX - 3, circleY, circleX + 3, circleY, '#c8a96e', 0.6);
+      addLine(circleX, circleY - 3, circleX, circleY + 3, '#c8a96e', 0.6);
 
       // 選択中のハイライト
       var isSelected = (zeSelectedIdx === idx);
       if (isSelected) {
         var highlight = document.createElementNS(svgNS, 'circle');
-        highlight.setAttribute('cx', x); highlight.setAttribute('cy', circleY);
+        highlight.setAttribute('cx', circleX); highlight.setAttribute('cy', circleY);
         highlight.setAttribute('r', bracketR + 3);
         highlight.setAttribute('fill', 'none'); highlight.setAttribute('stroke', '#c8a96e');
         highlight.setAttribute('stroke-width', '2'); highlight.setAttribute('stroke-dasharray', '3,2');
@@ -1544,7 +1548,7 @@
 
       // クリック／ドラッグ用ヒットエリア
       var hitArea = document.createElementNS(svgNS, 'circle');
-      hitArea.setAttribute('cx', x); hitArea.setAttribute('cy', circleY);
+      hitArea.setAttribute('cx', circleX); hitArea.setAttribute('cy', circleY);
       hitArea.setAttribute('r', bracketR + 6);
       hitArea.setAttribute('fill', 'transparent');
       hitArea.setAttribute('class', 'ze-bracket-handle');
@@ -1556,7 +1560,7 @@
 
       // 位置テキスト（座金の下）
       var posText = document.createElementNS(svgNS, 'text');
-      posText.setAttribute('x', x); posText.setAttribute('y', circleY + bracketR + 11);
+      posText.setAttribute('x', circleX); posText.setAttribute('y', circleY + bracketR + 11);
       posText.setAttribute('text-anchor', 'middle');
       posText.setAttribute('font-size', '9');
       posText.setAttribute('fill', isSelected ? '#c8a96e' : '#888');
@@ -1827,9 +1831,11 @@
     if (!svg) return;
     svg.innerHTML = '';
 
-    // Get angle for tilt
+    // 角度計算（バーは水平、支柱が角度を持つ）
     var angleDeg = zakinGlobalAngle || 0;
     var hasAngle = angleDeg > 0;
+    var angleRad = angleDeg * Math.PI / 180;
+    var zakinTiltSign = (zakinAngleDir === 'left') ? -1 : 1;
 
     // Layout constants
     var pad = 30;
@@ -1839,31 +1845,14 @@
     var barLen = barRight - barLeft;
     var barCX = (barLeft + barRight) / 2;
 
-    // Calculate bar Y positions with angle (cap visual rise to 30px max)
-    var angleRad = angleDeg * Math.PI / 180;
-    var maxVisualRise = 30;
-    var halfRise = Math.min((barLen / 2) * Math.sin(angleRad), maxVisualRise);
-    var barBaseY = hasAngle ? 48 : 35;
-    var H = hasAngle ? 130 + halfRise : 120;
+    var barBaseY = 35;
+    var barY1 = barBaseY, barY2 = barBaseY;
+    var H = 120;
     svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
 
-    // Left/right Y based on angle direction
-    var barY1, barY2;
-    if (zakinAngleDir === 'left') {
-      barY1 = barBaseY - halfRise;
-      barY2 = barBaseY + halfRise;
-    } else {
-      barY1 = barBaseY + halfRise;
-      barY2 = barBaseY - halfRise;
-    }
+    function barYAtX(x) { return barBaseY; }
 
-    function barYAtX(x) {
-      var t = (x - barLeft) / barLen;
-      return barY1 + t * (barY2 - barY1);
-    }
-
-    // Actual visual angle of the rendered bar (differs from input angleRad when rise is capped)
-    var actualAngle = Math.atan2(barY2 - barY1, barRight - barLeft);
+    var actualAngle = 0;
 
     // ── Total dimension line (parallel to bar, offset perpendicular above) ──
     var dimDist = 18;
@@ -1891,14 +1880,11 @@
       svg.appendChild(tick);
     });
 
-    var textAngle = actualAngle * 180 / Math.PI;
+    var textAngle = 0;
     var wText = document.createElementNS(svgNS, 'text');
     wText.setAttribute('x', dimMx);
     wText.setAttribute('y', dimMy - 5);
     wText.setAttribute('class', 'total-text');
-    if (hasAngle) {
-      wText.setAttribute('transform', 'rotate(' + textAngle + ' ' + dimMx + ' ' + (dimMy - 5) + ')');
-    }
     wText.textContent = L_mm;
     svg.appendChild(wText);
 
@@ -1909,37 +1895,41 @@
     barLine.setAttribute('class', 'bar-line');
     svg.appendChild(barLine);
 
-    // Bar end caps (perpendicular to bar)
+    // Bar end caps
     var capLen = 5;
-    var perpDx = capLen * Math.sin(actualAngle);
-    var perpDy = -capLen * Math.cos(actualAngle);
     [{ x: barLeft, y: barY1 }, { x: barRight, y: barY2 }].forEach(function(pt) {
       var cap = document.createElementNS(svgNS, 'line');
-      cap.setAttribute('x1', pt.x - perpDx); cap.setAttribute('y1', pt.y - perpDy);
-      cap.setAttribute('x2', pt.x + perpDx); cap.setAttribute('y2', pt.y + perpDy);
+      cap.setAttribute('x1', pt.x); cap.setAttribute('y1', pt.y - capLen);
+      cap.setAttribute('x2', pt.x); cap.setAttribute('y2', pt.y + capLen);
       cap.setAttribute('stroke', 'var(--light)'); cap.setAttribute('stroke-width', '1.5');
       svg.appendChild(cap);
     });
 
-    // ── Bracket markers (below bar) ──
+    // ── Bracket markers (below bar, pillar angled) ──
     var bracketDropLen = 5;
     var bracketCircleR = 4;
+    var dropTotal = bracketDropLen + bracketCircleR + 1;
 
     positions.forEach(function(pos) {
       var x = barLeft + (pos / L_mm) * barLen;
       var yOnBar = barYAtX(x);
 
-      // Support line (drop from bar downward)
+      // 支柱の傾き（バーは水平、支柱が角度を持つ）
+      var cxOffset = hasAngle ? dropTotal * Math.sin(angleRad) * (-zakinTiltSign) : 0;
+      var circleX = x + cxOffset;
+      var circleY = yOnBar + dropTotal;
+
+      // Support line (drop from bar, angled)
       var drop = document.createElementNS(svgNS, 'line');
       drop.setAttribute('x1', x); drop.setAttribute('y1', yOnBar + 2);
-      drop.setAttribute('x2', x); drop.setAttribute('y2', yOnBar + bracketDropLen);
+      drop.setAttribute('x2', circleX); drop.setAttribute('y2', yOnBar + bracketDropLen);
       drop.setAttribute('stroke', 'var(--accent)'); drop.setAttribute('stroke-width', '1');
       svg.appendChild(drop);
 
       // Bracket circle below bar
       var bCircle = document.createElementNS(svgNS, 'circle');
-      bCircle.setAttribute('cx', x);
-      bCircle.setAttribute('cy', yOnBar + bracketDropLen + bracketCircleR + 1);
+      bCircle.setAttribute('cx', circleX);
+      bCircle.setAttribute('cy', circleY);
       bCircle.setAttribute('r', bracketCircleR);
       bCircle.setAttribute('class', 'bracket-circle');
       svg.appendChild(bCircle);
@@ -1982,9 +1972,6 @@
       dText.setAttribute('x', sMidX);
       dText.setAttribute('y', sMidY + 12);
       dText.setAttribute('class', 'dim-text');
-      if (hasAngle) {
-        dText.setAttribute('transform', 'rotate(' + textAngle + ' ' + sMidX + ' ' + (sMidY + 12) + ')');
-      }
       dText.textContent = segLen;
       svg.appendChild(dText);
     }
@@ -2299,30 +2286,21 @@
     var barLen = barRight - barLeft;
     var barCX = (barLeft + barRight) / 2;
 
-    // ── 角度計算 ──
+    // ── 角度計算（バーは水平、角度は座金側に表現） ──
     var angleDeg = zakinGlobalAngle || 0;
     var hasAngle = angleDeg > 0;
     var angleRad = angleDeg * Math.PI / 180;
-    var maxVisualRise = 40;
-    var halfRise = Math.min((barLen / 2) * Math.sin(angleRad), maxVisualRise);
     var barBaseY = 155;
 
-    var barY1, barY2;
-    if (zakinAngleDir === 'left') {
-      barY1 = barBaseY - halfRise;
-      barY2 = barBaseY + halfRise;
-    } else {
-      barY1 = barBaseY + halfRise;
-      barY2 = barBaseY - halfRise;
-    }
+    var barY1 = barBaseY, barY2 = barBaseY;
 
     function barYAtX(x) {
-      var t = (x - barLeft) / barLen;
-      return barY1 + t * (barY2 - barY1);
+      return barBaseY;
     }
 
-    var actualAngle = Math.atan2(barY2 - barY1, barRight - barLeft);
-    var textAngle = actualAngle * 180 / Math.PI;
+    var actualAngle = 0;
+    var textAngle = 0;
+    var zakinTiltSign = (zakinAngleDir === 'left') ? -1 : 1;
 
     var addLine = function(x1, y1, x2, y2, stroke, sw) {
       var l = document.createElementNS(svgNS, 'line');
@@ -2347,59 +2325,67 @@
     // ── 縮尺（全図面共通、px/mm） ──
     var scale = barLen / L_mm;
 
-    // ── メインバー（φ25.4 丸鋼、縮尺連動） ──
+    // ── メインバー（φ25.4 丸鋼、縮尺連動、水平） ──
     var barThick = Math.max(25.4 * scale, 2);
-    var perpDx = (barThick / 2) * Math.sin(actualAngle);
-    var perpDy = -(barThick / 2) * Math.cos(actualAngle);
-    var rect = document.createElementNS(svgNS, 'polygon');
-    var pts = [
-      (barLeft - perpDx) + ',' + (barY1 - perpDy),
-      (barRight - perpDx) + ',' + (barY2 - perpDy),
-      (barRight + perpDx) + ',' + (barY2 + perpDy),
-      (barLeft + perpDx) + ',' + (barY1 + perpDy)
-    ];
-    rect.setAttribute('points', pts.join(' '));
+    var rect = document.createElementNS(svgNS, 'rect');
+    rect.setAttribute('x', barLeft); rect.setAttribute('y', barBaseY - barThick / 2);
+    rect.setAttribute('width', barLen); rect.setAttribute('height', barThick);
     rect.setAttribute('fill', 'none'); rect.setAttribute('stroke', C);
     rect.setAttribute('stroke-width', '1');
     svg.appendChild(rect);
 
-    // ── 座金描画（φ45丸座金、縮尺連動） ──
+    // ── 座金描画（φ45丸座金、縮尺連動、角度は座金側に表現） ──
     var bR = Math.max(45 / 2 * scale, 3);
     positions.forEach(function(pos) {
       var x = barLeft + (pos / L_mm) * barLen;
       var yOnBar = barYAtX(x) + barThick / 2;
-      var circleY = yOnBar + bR;
 
-      // 丸座金（φ45）
+      // 座金中心は側面図とY軸整列（固定Y）、角度で水平オフセットのみ
+      var cxOffset = hasAngle ? bR * Math.sin(angleRad) * (-zakinTiltSign) : 0;
+      var circleX = x + cxOffset;
+      var circleY = yOnBar + bR; // 側面図とY軸整列
+
+      // 丸座金（φ45、支柱の背面に描画）
       var circle = document.createElementNS(svgNS, 'circle');
-      circle.setAttribute('cx', x); circle.setAttribute('cy', circleY);
+      circle.setAttribute('cx', circleX); circle.setAttribute('cy', circleY);
       circle.setAttribute('r', bR);
       circle.setAttribute('fill', 'none'); circle.setAttribute('stroke', C);
       circle.setAttribute('stroke-width', '0.8');
       svg.appendChild(circle);
 
-      // 支柱（φ9、二本線＋下端半丸、半丸中心＝座金中心）
-      var postW = Math.max(9 * scale, 1.5);
-      addLine(x - postW / 2, yOnBar, x - postW / 2, circleY, C, 0.5);
-      addLine(x + postW / 2, yOnBar, x + postW / 2, circleY, C, 0.5);
-      var pArc = document.createElementNS(svgNS, 'path');
-      pArc.setAttribute('d', 'M ' + (x - postW / 2) + ' ' + circleY + ' A ' + (postW / 2) + ' ' + (postW / 2) + ' 0 0 0 ' + (x + postW / 2) + ' ' + circleY);
-      pArc.setAttribute('fill', 'none'); pArc.setAttribute('stroke', C); pArc.setAttribute('stroke-width', '0.5');
-      svg.appendChild(pArc);
-
-      // 段付き穴×3（正三角形配置、上部は支柱接続部なので避ける）
+      // 段付き穴×3（正三角形配置、支柱との位置関係は角度に関わらず固定）
       var holeR = Math.max(3.5 * scale, 1);
       var holeDist = bR * 0.6;
       [90, 210, 330].forEach(function(deg) {
         var rad = deg * Math.PI / 180;
         var hc = document.createElementNS(svgNS, 'circle');
-        hc.setAttribute('cx', x + holeDist * Math.cos(rad));
+        hc.setAttribute('cx', circleX + holeDist * Math.cos(rad));
         hc.setAttribute('cy', circleY + holeDist * Math.sin(rad));
         hc.setAttribute('r', holeR);
         hc.setAttribute('fill', 'none'); hc.setAttribute('stroke', C);
         hc.setAttribute('stroke-width', '0.4');
         svg.appendChild(hc);
       });
+
+      // 支柱（φ9、二本線＋下端半丸）※座金の前面に描画
+      var postW = Math.max(9 * scale, 1.5);
+      // 白背景で座金の線を遮蔽
+      var postBg = document.createElementNS(svgNS, 'polygon');
+      postBg.setAttribute('points',
+        (x - postW / 2) + ',' + yOnBar + ' ' +
+        (x + postW / 2) + ',' + yOnBar + ' ' +
+        (circleX + postW / 2) + ',' + circleY + ' ' +
+        (circleX - postW / 2) + ',' + circleY);
+      postBg.setAttribute('fill', '#fff'); postBg.setAttribute('stroke', 'none');
+      svg.appendChild(postBg);
+      // 二本線
+      addLine(x - postW / 2, yOnBar, circleX - postW / 2, circleY, C, 0.5);
+      addLine(x + postW / 2, yOnBar, circleX + postW / 2, circleY, C, 0.5);
+      // 下端半丸
+      var pArc = document.createElementNS(svgNS, 'path');
+      pArc.setAttribute('d', 'M ' + (circleX - postW / 2) + ' ' + circleY + ' A ' + (postW / 2) + ' ' + (postW / 2) + ' 0 0 0 ' + (circleX + postW / 2) + ' ' + circleY);
+      pArc.setAttribute('fill', 'none'); pArc.setAttribute('stroke', C); pArc.setAttribute('stroke-width', '0.5');
+      svg.appendChild(pArc);
     });
 
     // ── 全長寸法（上部、バーに平行） ──
