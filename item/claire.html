@@ -1509,10 +1509,9 @@
       var yOnBar = barYAtX(x);
 
       // 座金の傾き計算（バーは水平、支柱が角度を持つ）
-      var cxOffset = hasAngle ? dropDist * Math.sin(angleRad) * (-zakinTiltSign) : 0;
-      var cyDrop = hasAngle ? dropDist * Math.cos(angleRad) : dropDist;
-      var circleX = x + cxOffset;
-      var circleY = yOnBar + cyDrop;
+      var circleX = x;
+      var circleY = yOnBar + dropDist;
+      var pillarTopX = x + (hasAngle ? dropDist * Math.sin(angleRad) * zakinTiltSign : 0);
 
       // 丸座金（角度付き）
       var circle = document.createElementNS(svgNS, 'circle');
@@ -1524,8 +1523,8 @@
 
       // 支柱（二本線＋下端半丸、制作図プレビューと同様の表現）
       var postW = 3;
-      addLine(x - postW / 2, yOnBar + 1, circleX - postW / 2, circleY, '#c8a96e', 1);
-      addLine(x + postW / 2, yOnBar + 1, circleX + postW / 2, circleY, '#c8a96e', 1);
+      addLine(circleX - postW / 2, circleY, pillarTopX - postW / 2, yOnBar + 1, '#c8a96e', 1);
+      addLine(circleX + postW / 2, circleY, pillarTopX + postW / 2, yOnBar + 1, '#c8a96e', 1);
       var pArc = document.createElementNS(svgNS, 'path');
       pArc.setAttribute('d', 'M ' + (circleX - postW / 2) + ' ' + circleY + ' A ' + (postW / 2) + ' ' + (postW / 2) + ' 0 0 0 ' + (circleX + postW / 2) + ' ' + circleY);
       pArc.setAttribute('fill', 'none'); pArc.setAttribute('stroke', '#c8a96e'); pArc.setAttribute('stroke-width', '0.8');
@@ -1915,13 +1914,13 @@
       var yOnBar = barYAtX(x);
 
       // 支柱の傾き（バーは水平、支柱が角度を持つ）
-      var cxOffset = hasAngle ? dropTotal * Math.sin(angleRad) * (-zakinTiltSign) : 0;
-      var circleX = x + cxOffset;
+      var circleX = x;
       var circleY = yOnBar + dropTotal;
+      var pillarTopX = x + (hasAngle ? dropTotal * Math.sin(angleRad) * zakinTiltSign : 0);
 
-      // Support line (drop from bar, angled)
+      // Support line (from washer center to bar)
       var drop = document.createElementNS(svgNS, 'line');
-      drop.setAttribute('x1', x); drop.setAttribute('y1', yOnBar + 2);
+      drop.setAttribute('x1', pillarTopX); drop.setAttribute('y1', yOnBar + 2);
       drop.setAttribute('x2', circleX); drop.setAttribute('y2', yOnBar + bracketDropLen);
       drop.setAttribute('stroke', 'var(--accent)'); drop.setAttribute('stroke-width', '1');
       svg.appendChild(drop);
@@ -2341,9 +2340,9 @@
       var yOnBar = barYAtX(x) + barThick / 2;
 
       // 座金中心は側面図とY軸整列（固定Y）、角度で水平オフセットのみ
-      var cxOffset = hasAngle ? bR * Math.sin(angleRad) * (-zakinTiltSign) : 0;
-      var circleX = x + cxOffset;
-      var circleY = yOnBar + bR; // 側面図とY軸整列
+      var circleX = x;
+      var circleY = yOnBar + bR;
+      var pillarTopX = x + (hasAngle ? bR * Math.sin(angleRad) * zakinTiltSign : 0);
 
       // 丸座金（φ45、支柱の背面に描画）
       var circle = document.createElementNS(svgNS, 'circle');
@@ -2356,8 +2355,9 @@
       // 段付き穴×3（正三角形配置、支柱との位置関係は角度に関わらず固定）
       var holeR = Math.max(3.5 * scale, 1);
       var holeDist = bR * 0.6;
+      var holeAngleOffset = hasAngle ? angleDeg * zakinTiltSign : 0;
       [90, 210, 330].forEach(function(deg) {
-        var rad = deg * Math.PI / 180;
+        var rad = (deg + holeAngleOffset) * Math.PI / 180;
         var hc = document.createElementNS(svgNS, 'circle');
         hc.setAttribute('cx', circleX + holeDist * Math.cos(rad));
         hc.setAttribute('cy', circleY + holeDist * Math.sin(rad));
@@ -2372,15 +2372,15 @@
       // 白背景で座金の線を遮蔽
       var postBg = document.createElementNS(svgNS, 'polygon');
       postBg.setAttribute('points',
-        (x - postW / 2) + ',' + yOnBar + ' ' +
-        (x + postW / 2) + ',' + yOnBar + ' ' +
+        (pillarTopX - postW / 2) + ',' + yOnBar + ' ' +
+        (pillarTopX + postW / 2) + ',' + yOnBar + ' ' +
         (circleX + postW / 2) + ',' + circleY + ' ' +
         (circleX - postW / 2) + ',' + circleY);
       postBg.setAttribute('fill', '#fff'); postBg.setAttribute('stroke', 'none');
       svg.appendChild(postBg);
       // 二本線
-      addLine(x - postW / 2, yOnBar, circleX - postW / 2, circleY, C, 0.5);
-      addLine(x + postW / 2, yOnBar, circleX + postW / 2, circleY, C, 0.5);
+      addLine(circleX - postW / 2, circleY, pillarTopX - postW / 2, yOnBar, C, 0.5);
+      addLine(circleX + postW / 2, circleY, pillarTopX + postW / 2, yOnBar, C, 0.5);
       // 下端半丸
       var pArc = document.createElementNS(svgNS, 'path');
       pArc.setAttribute('d', 'M ' + (circleX - postW / 2) + ' ' + circleY + ' A ' + (postW / 2) + ' ' + (postW / 2) + ' 0 0 0 ' + (circleX + postW / 2) + ' ' + circleY);
