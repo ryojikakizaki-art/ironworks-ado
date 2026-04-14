@@ -1239,20 +1239,27 @@
 </footer>
 
 <script>
-  // 価格設定（単位: mm）
-  const BASE_PRICE     = 36500;
+  // 価格設定（単位: mm）── 2025年価格改定版
+  // 価格テーブル（スプレッドシート確定値、座金込み）
+  const PRICE_TABLE = [
+    { mm: 1500, price: 36500 },
+    { mm: 2000, price: 48000 },
+    { mm: 2500, price: 54000 },
+    { mm: 3000, price: 69000 },
+    { mm: 3500, price: 80000 },
+    { mm: 4000, price: 95000 },
+    { mm: 4500, price: 112000 },
+    { mm: 5000, price: 130000 }
+  ];
+  const BASE_PRICE     = 36500;  // 〜1500mm一律（表示用）
   const STD_LENGTH_MM  = 1500;
-  const PRICE_PER_MM   = 25;
   const ZAKIN_PRICE    = 3500;
-  const ANGLE_PRICE    = 2000;  // 角度加工 座金1箇所あたり
+  const ANGLE_PRICE    = 2000;   // 角度加工 座金1箇所あたり
   const INCLUDED_ZAKIN = 3;
   const END_DIST_MM    = 100;
   const MAX_SPAN_MM    = 900;
-  const SURGE_START_MM = 2000;
-  const SURGE_BASE     = 1.2;
-  const SURGE_INTERVAL_MM = 500;
   const MAX_LENGTH_MM  = 5000;
-  const RUSH_RATE      = 0.2;  // 特急割増率
+  const RUSH_RATE      = 0.2;    // 特急割増率
 
   // ── 座金エディターモーダル ──
   var zeDragIdx = -1;
@@ -1792,14 +1799,27 @@
 
   // 価格計算（入力はmm、全額税込）
   function calcPrice(L_mm) {
-    const addon     = Math.max(0, L_mm - STD_LENGTH_MM) * PRICE_PER_MM;
-    const longM     = L_mm > SURGE_START_MM
-                    ? Math.pow(SURGE_BASE, (L_mm - SURGE_START_MM) / SURGE_INTERVAL_MM)
-                    : 1;
-    const surcharge = L_mm > SURGE_START_MM ? addon * (longM - 1) : 0;
-    const zakin     = calcZakin(L_mm);
-    const addZakin  = Math.max(0, zakin - INCLUDED_ZAKIN) * ZAKIN_PRICE;
-    const total     = BASE_PRICE + addon + addZakin + surcharge;
+    const zakin = calcZakin(L_mm);
+    // 価格テーブルから線形補間（座金込み価格）
+    var price;
+    if (L_mm <= PRICE_TABLE[0].mm) {
+      price = PRICE_TABLE[0].price;
+    } else if (L_mm >= PRICE_TABLE[PRICE_TABLE.length - 1].mm) {
+      price = PRICE_TABLE[PRICE_TABLE.length - 1].price;
+    } else {
+      for (var i = 1; i < PRICE_TABLE.length; i++) {
+        if (L_mm <= PRICE_TABLE[i].mm) {
+          var lo = PRICE_TABLE[i - 1], hi = PRICE_TABLE[i];
+          var t = (L_mm - lo.mm) / (hi.mm - lo.mm);
+          price = Math.round(lo.price + t * (hi.price - lo.price));
+          break;
+        }
+      }
+    }
+    const total = price;
+    const addon = price - BASE_PRICE;
+    const addZakin = 0;  // 座金はテーブル価格に含む
+    const surcharge = 0;
     return { addon, surcharge, addZakin, zakin, total };
   }
 
