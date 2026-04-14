@@ -669,14 +669,9 @@
     /* 印刷用（A4横、図面部分のみ） */
     @media print {
       @page { size: A4 landscape; margin: 10mm; }
-      body * { visibility: hidden !important; }
-      .dm-overlay.open,
-      .dm-overlay.open .dm-modal,
-      .dm-overlay.open .dm-svg-wrap,
-      .dm-overlay.open .dm-svg-wrap * {
-        visibility: visible !important;
-      }
+      body > *:not(.dm-overlay) { display: none !important; }
       .dm-overlay.open {
+        display: block !important;
         position: static !important; background: none !important;
         backdrop-filter: none !important; padding: 0 !important;
       }
@@ -692,7 +687,7 @@
       .dm-overlay.open .dm-svg-wrap svg {
         width: 100% !important; height: auto !important;
       }
-      .dm-close, .dm-title, .dm-print-btn, .dm-note,
+      .dm-close, .dm-title, .dm-print-btn, .dm-note, .dm-controls,
       .ze-overlay, .zakin-detail-modal { display: none !important; }
     }
   </style>
