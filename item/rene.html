@@ -2067,8 +2067,8 @@
     // ── 縮尺（全図面共通、px/mm） ──
     var scale = barLen / L_mm;
 
-    // ── メインバー（FB 9×32、縮尺連動、水平） ──
-    var barThick = Math.max(9 * scale, 3);
+    // ── メインバー（φ25.4 丸鋼、縮尺連動、水平） ──
+    var barThick = Math.max(25.4 * scale, 2);
     var rect = document.createElementNS(svgNS, 'rect');
     rect.setAttribute('x', barLeft); rect.setAttribute('y', barBaseY - barThick / 2);
     rect.setAttribute('width', barLen); rect.setAttribute('height', barThick);
@@ -2189,46 +2189,51 @@
     }
 
     // ── 座金側面詳細図（正面図下、独立詳細図、同一縮尺） ──
-    var fbW_s = 32 * scale, fbH_s = 9 * scale;
+    // 全寸法を scale(px/mm) で計算
+    var pipeR_s = 25.4 / 2 * scale;
     var washerR_s = 45 / 2 * scale;
     var bracket40_s = 40 * scale;
-    var totalProj_s = (40 + 32 / 2) * scale;
+    var totalProj_s = 65.4 * scale;
     var bpThick_s = Math.max(4.5 * scale, 1);
     var postD_s = Math.max(9 * scale, 1.5);
     var bendR = Math.max(9 * scale, 2); // φ9丸棒の曲げR（きつめ）
-    var hp = postD_s / 2;
+    var hp = postD_s / 2; // 支柱半幅
 
-    var sFbCX = barLeft - 30;
-    var sWallX = sFbCX - bracket40_s;
-    var sFbInner = sFbCX - fbW_s / 2, sFbOuter = sFbCX + fbW_s / 2;
+    // 配置: 正面図barLeftの左横（余裕をもって）、Y軸共有
+    var sPipeCX = barLeft - 30;
+    var sWallX = sPipeCX - bracket40_s - pipeR_s;
     var sideY = barBaseY; // Y軸整列
-    var sArmY = sideY + Math.max(fbH_s / 2, 3) + Math.max(20 * scale, 8);
+    var sArmY = sideY + pipeR_s + Math.max(20 * scale, 8);
 
+    // 壁面（全域ハッチング、座金は後で白塗りで上書き）
     var wH = Math.max(washerR_s * 2 + 10, 24);
-    // 壁面（縦線＋ハッチング）
     addLine(sWallX, sArmY - wH / 2, sWallX, sArmY + wH / 2, C, 1);
     for (var wi = sArmY - wH / 2; wi < sArmY + wH / 2; wi += 4)
       addLine(sWallX, wi, sWallX - 5, wi + 3, C, 0.25);
 
-    var sfbr = document.createElementNS(svgNS, 'rect');
-    sfbr.setAttribute('x', sFbInner); sfbr.setAttribute('y', sideY - Math.max(fbH_s, 4) / 2);
-    sfbr.setAttribute('width', Math.max(fbW_s, 2)); sfbr.setAttribute('height', Math.max(fbH_s, 4));
-    sfbr.setAttribute('fill', 'none'); sfbr.setAttribute('stroke', C);
-    sfbr.setAttribute('stroke-width', '0.8');
-    svg.appendChild(sfbr);
+    // パイプ断面 φ25.4
+    var spC = document.createElementNS(svgNS, 'circle');
+    spC.setAttribute('cx', sPipeCX); spC.setAttribute('cy', sideY);
+    spC.setAttribute('r', Math.max(pipeR_s, 2));
+    spC.setAttribute('fill', 'none'); spC.setAttribute('stroke', C);
+    spC.setAttribute('stroke-width', '0.8');
+    svg.appendChild(spC);
 
-    var sbpBg = document.createElementNS(svgNS, 'rect');
-    sbpBg.setAttribute('x', sWallX - 6); sbpBg.setAttribute('y', sArmY - washerR_s);
-    sbpBg.setAttribute('width', bpThick_s + 6); sbpBg.setAttribute('height', washerR_s * 2);
-    sbpBg.setAttribute('fill', '#fff'); sbpBg.setAttribute('stroke', 'none');
-    svg.appendChild(sbpBg);
+    // 座金プレート φ45（白塗りつぶし矩形で壁ハッチングを遮蔽）
     var sbpRect = document.createElementNS(svgNS, 'rect');
-    sbpRect.setAttribute('x', sWallX); sbpRect.setAttribute('y', sArmY - washerR_s);
-    sbpRect.setAttribute('width', bpThick_s); sbpRect.setAttribute('height', washerR_s * 2);
-    sbpRect.setAttribute('fill', 'none'); sbpRect.setAttribute('stroke', C);
-    sbpRect.setAttribute('stroke-width', '0.8');
+    sbpRect.setAttribute('x', sWallX - 6); sbpRect.setAttribute('y', sArmY - washerR_s);
+    sbpRect.setAttribute('width', bpThick_s + 6); sbpRect.setAttribute('height', washerR_s * 2);
+    sbpRect.setAttribute('fill', '#fff'); sbpRect.setAttribute('stroke', 'none');
     svg.appendChild(sbpRect);
+    // 座金プレート外形線
+    var sbpLine = document.createElementNS(svgNS, 'rect');
+    sbpLine.setAttribute('x', sWallX); sbpLine.setAttribute('y', sArmY - washerR_s);
+    sbpLine.setAttribute('width', bpThick_s); sbpLine.setAttribute('height', washerR_s * 2);
+    sbpLine.setAttribute('fill', 'none'); sbpLine.setAttribute('stroke', C);
+    sbpLine.setAttribute('stroke-width', '0.8');
+    svg.appendChild(sbpLine);
 
+    // 段付き穴×3（アーム高さ基準で配置）
     var sHoleSp = washerR_s * 0.55;
     [-sHoleSp, 0, sHoleSp].forEach(function(dy) {
       var shc = document.createElementNS(svgNS, 'circle');
@@ -2240,44 +2245,47 @@
       svg.appendChild(shc);
     });
 
+    // 支柱 φ9 二本線（直線→同一Rで90°曲げ→直線、オフセットは直線部のみ）
     var sArmStartX = sWallX + bpThick_s;
-    var fbBot = sideY + Math.max(fbH_s / 2, 2);
-    addLine(sArmStartX, sArmY - hp, sFbCX - bendR, sArmY - hp, C, 0.5);
-    addLine(sArmStartX, sArmY + hp, sFbCX - bendR, sArmY + hp, C, 0.5);
-    addLine(sFbCX - hp, sArmY - bendR, sFbCX - hp, fbBot, C, 0.5);
-    addLine(sFbCX + hp, sArmY - bendR, sFbCX + hp, fbBot, C, 0.5);
+    var pipeBot = sideY + Math.max(pipeR_s, 2);
+    addLine(sArmStartX, sArmY - hp, sPipeCX - bendR, sArmY - hp, C, 0.5);
+    addLine(sArmStartX, sArmY + hp, sPipeCX - bendR, sArmY + hp, C, 0.5);
+    addLine(sPipeCX - hp, sArmY - bendR, sPipeCX - hp, pipeBot, C, 0.5);
+    addLine(sPipeCX + hp, sArmY - bendR, sPipeCX + hp, pipeBot, C, 0.5);
     var arcI = document.createElementNS(svgNS, 'path');
     var rI = bendR - hp;
-    arcI.setAttribute('d', 'M ' + (sFbCX - bendR) + ' ' + (sArmY - hp) +
-      ' A ' + rI + ' ' + rI + ' 0 0 0 ' + (sFbCX - hp) + ' ' + (sArmY - bendR));
+    arcI.setAttribute('d', 'M ' + (sPipeCX - bendR) + ' ' + (sArmY - hp) +
+      ' A ' + rI + ' ' + rI + ' 0 0 0 ' + (sPipeCX - hp) + ' ' + (sArmY - bendR));
     arcI.setAttribute('fill', 'none'); arcI.setAttribute('stroke', C); arcI.setAttribute('stroke-width', '0.5');
     svg.appendChild(arcI);
     var arcO = document.createElementNS(svgNS, 'path');
     var rO = bendR + hp;
-    arcO.setAttribute('d', 'M ' + (sFbCX - bendR) + ' ' + (sArmY + hp) +
-      ' A ' + rO + ' ' + rO + ' 0 0 0 ' + (sFbCX + hp) + ' ' + (sArmY - bendR));
+    arcO.setAttribute('d', 'M ' + (sPipeCX - bendR) + ' ' + (sArmY + hp) +
+      ' A ' + rO + ' ' + rO + ' 0 0 0 ' + (sPipeCX + hp) + ' ' + (sArmY - bendR));
     arcO.setAttribute('fill', 'none'); arcO.setAttribute('stroke', C); arcO.setAttribute('stroke-width', '0.5');
     svg.appendChild(arcO);
     addLine(sArmStartX, sArmY - hp, sArmStartX, sArmY + hp, C, 0.5);
 
-    // 寸法構成: 壁〜FB外端 = 40 + 9/2
-    var sDY1 = sideY - Math.max(Math.max(fbH_s / 2, washerR_s), 3) - 28;
+    // 寸法構成: 65.4（壁〜パイプ外端） = 40（壁〜内端）+ 25.4（径）
+    var sPiX = sPipeCX - Math.max(pipeR_s, 2);
+    var sPoX = sPipeCX + Math.max(pipeR_s, 2);
+    var sDY1 = sideY - Math.max(pipeR_s, 3) - 28;
     addLine(sWallX, sArmY - wH / 2, sWallX, sDY1 - 4, CD, 0.3);
-    addLine(sFbOuter, sideY - Math.max(fbH_s / 2, 2) - 2, sFbOuter, sDY1 - 4, CD, 0.3);
-    addLine(sWallX, sDY1, sFbOuter, sDY1, CD, 0.5);
-    addDimArrow(sWallX, sDY1, sWallX - sFbOuter, 0, CD);
-    addDimArrow(sFbOuter, sDY1, sFbOuter - sWallX, 0, CD);
-    addText((sWallX + sFbOuter) / 2, sDY1 - 3, String(Math.round((40 + 32 / 2) * 10) / 10), '7', CD);
+    addLine(sPoX, sideY - Math.max(pipeR_s, 2) - 2, sPoX, sDY1 - 4, CD, 0.3);
+    addLine(sWallX, sDY1, sPoX, sDY1, CD, 0.5);
+    addDimArrow(sWallX, sDY1, sWallX - sPoX, 0, CD);
+    addDimArrow(sPoX, sDY1, sPoX - sWallX, 0, CD);
+    addText((sWallX + sPoX) / 2, sDY1 - 3, '65.4', '7', CD);
     var sDY2 = sDY1 + 12;
-    addLine(sFbInner, sideY - Math.max(fbH_s / 2, 2) - 2, sFbInner, sDY2 + 2, CD, 0.3);
-    addLine(sWallX, sDY2, sFbInner, sDY2, CD, 0.4);
-    addDimArrow(sWallX, sDY2, sWallX - sFbInner, 0, CD);
-    addDimArrow(sFbInner, sDY2, sFbInner - sWallX, 0, CD);
-    addText((sWallX + sFbInner) / 2, sDY2 - 3, '40', '7', CD);
-    addLine(sFbInner, sDY2, sFbOuter, sDY2, CD, 0.4);
-    addDimArrow(sFbOuter, sDY2, sFbOuter - sFbInner, 0, CD);
-    addDimArrow(sFbInner, sDY2, sFbInner - sFbOuter, 0, CD);
-    addText((sFbInner + sFbOuter) / 2, sDY2 - 3, '32', '7', CD);
+    addLine(sPiX, sideY - Math.max(pipeR_s, 2) - 2, sPiX, sDY2 + 2, CD, 0.3);
+    addLine(sWallX, sDY2, sPiX, sDY2, CD, 0.4);
+    addDimArrow(sWallX, sDY2, sWallX - sPiX, 0, CD);
+    addDimArrow(sPiX, sDY2, sPiX - sWallX, 0, CD);
+    addText((sWallX + sPiX) / 2, sDY2 - 3, '40', '7', CD);
+    addLine(sPiX, sDY2, sPoX, sDY2, CD, 0.4);
+    addDimArrow(sPoX, sDY2, sPoX - sPiX, 0, CD);
+    addDimArrow(sPiX, sDY2, sPiX - sPoX, 0, CD);
+    addText((sPiX + sPoX) / 2, sDY2 - 3, '25.4', '7', CD);
     var sDY3 = sArmY + washerR_s + 6;
     addLine(sWallX, sArmY + washerR_s + 2, sWallX, sDY3 + 2, CD, 0.3);
     addLine(sWallX + bpThick_s, sArmY + washerR_s + 2, sWallX + bpThick_s, sDY3 + 2, CD, 0.3);
@@ -2286,7 +2294,7 @@
     addDimArrow(sWallX + bpThick_s, sDY3, -bpThick_s, 0, CD);
     addText(sWallX + bpThick_s / 2, sDY3 + 8, '4.5', '6', CD);
 
-    addText((sArmStartX + sFbCX) / 2, sArmY + 10, '支柱9φ', '7', CD, 'middle');
+    addText((sArmStartX + sPipeCX) / 2, sArmY + 10, '支柱9φ', '7', CD, 'middle');
 
     // ── タイトルブロック（右下、CAD風） ──
     var tbW = 260, tbRowH = 18, tbRows = 7;
@@ -2312,7 +2320,7 @@
     var rows = [
       ['図面名', 'René 横型手すり ' + L_mm + 'mm', true],
       ['図番', 'IW-REN-' + L_mm, false],
-      ['材質', 'ss400 FB 9×32', false],
+      ['材質', 'STKM φ25.4', false],
       ['仕上げ', 'マットブラック', false],
       ['尺度', '1:20', false],
       ['設計', '蠣崎 良治', false],
