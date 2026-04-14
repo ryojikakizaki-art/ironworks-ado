@@ -2161,7 +2161,7 @@
     var scale = barLen / L_mm;
 
     // ── メインバー（FB 9×32、縮尺連動、水平） ──
-    var barThick = Math.max(32 * scale, 3);
+    var barThick = Math.max(9 * scale, 3);
     var rect = document.createElementNS(svgNS, 'rect');
     rect.setAttribute('x', barLeft); rect.setAttribute('y', barBaseY - barThick / 2);
     rect.setAttribute('width', barLen); rect.setAttribute('height', barThick);
@@ -2281,10 +2281,10 @@
     }
 
     // ── 座金側面詳細図（正面図下、独立詳細図、同一縮尺） ──
-    var fbW_s = 9 * scale, fbH_s = 32 * scale;
+    var fbW_s = 32 * scale, fbH_s = 9 * scale;
     var washerR_s = 45 / 2 * scale;
     var bracket40_s = 40 * scale;
-    var totalProj_s = (40 + 9 / 2) * scale;
+    var totalProj_s = (40 + 32 / 2) * scale;
     var bpThick_s = Math.max(4.5 * scale, 1);
     var postD_s = Math.max(9 * scale, 1.5);
     var bendR = Math.max(9 * scale, 2); // φ9丸棒の曲げR（きつめ）
@@ -2359,7 +2359,7 @@
     addLine(sWallX, sDY1, sFbOuter, sDY1, CD, 0.5);
     addDimArrow(sWallX, sDY1, sWallX - sFbOuter, 0, CD);
     addDimArrow(sFbOuter, sDY1, sFbOuter - sWallX, 0, CD);
-    addText((sWallX + sFbOuter) / 2, sDY1 - 3, String(Math.round((40 + 4.5) * 10) / 10), '7', CD);
+    addText((sWallX + sFbOuter) / 2, sDY1 - 3, String(Math.round((40 + 32 / 2) * 10) / 10), '7', CD);
     var sDY2 = sDY1 + 12;
     addLine(sFbInner, sideY - Math.max(fbH_s / 2, 2) - 2, sFbInner, sDY2 + 2, CD, 0.3);
     addLine(sWallX, sDY2, sFbInner, sDY2, CD, 0.4);
@@ -2369,7 +2369,7 @@
     addLine(sFbInner, sDY2, sFbOuter, sDY2, CD, 0.4);
     addDimArrow(sFbOuter, sDY2, sFbOuter - sFbInner, 0, CD);
     addDimArrow(sFbInner, sDY2, sFbInner - sFbOuter, 0, CD);
-    addText((sFbInner + sFbOuter) / 2, sDY2 - 3, '9', '7', CD);
+    addText((sFbInner + sFbOuter) / 2, sDY2 - 3, '32', '7', CD);
     var sDY3 = sArmY + washerR_s + 6;
     addLine(sWallX, sArmY + washerR_s + 2, sWallX, sDY3 + 2, CD, 0.3);
     addLine(sWallX + bpThick_s, sArmY + washerR_s + 2, sWallX + bpThick_s, sDY3 + 2, CD, 0.3);
