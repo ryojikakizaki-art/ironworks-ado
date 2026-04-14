@@ -684,17 +684,19 @@
   })();
 </script>
 <script>
-  const BASE_PRICE    = 30000;
+  // 価格設定（単位: mm）── 2025年価格改定版
+  // 縦型Claude: 〜1000mm一律¥30,000 / 1001〜1500mm ¥34,000
+  const PRICE_TABLE = [
+    { mm: 1000, price: 30000 },
+    { mm: 1500, price: 34000 }
+  ];
+  const BASE_PRICE    = 30000;  // 〜1000mm一律（表示用）
   const STD_LENGTH_MM = 1000;
-  const PRICE_PER_MM  = 25;
   const ZAKIN_PRICE   = 3500;
   const INCLUDED_ZAKIN= 3;
   const END_DIST_MM   = 100;
   const MAX_SPAN_MM   = 850;
-  const SURGE_START_MM= 2000;
-  const SURGE_BASE    = 1.2;
-  const SURGE_INTERVAL_MM= 500;
-  const MAX_LENGTH_MM = 3000;
+  const MAX_LENGTH_MM = 1500;
   const PRODUCT_KEY   = 'claude';
 
   function calcZakin(L_mm) {
@@ -704,12 +706,26 @@
   }
 
   function calcPrice(L_mm) {
-    const addon    = Math.max(0, L_mm - STD_LENGTH_MM) * PRICE_PER_MM;
-    const longM    = L_mm > SURGE_START_MM ? Math.pow(SURGE_BASE, (L_mm - SURGE_START_MM) / SURGE_INTERVAL_MM) : 1;
-    const surcharge= L_mm > SURGE_START_MM ? addon * (longM - 1) : 0;
-    const zakin    = calcZakin(L_mm);
-    const addZakin = Math.max(0, zakin - INCLUDED_ZAKIN) * ZAKIN_PRICE;
-    const total     = BASE_PRICE + addon + addZakin + surcharge;
+    const zakin = calcZakin(L_mm);
+    var price;
+    if (L_mm <= PRICE_TABLE[0].mm) {
+      price = PRICE_TABLE[0].price;
+    } else if (L_mm >= PRICE_TABLE[PRICE_TABLE.length - 1].mm) {
+      price = PRICE_TABLE[PRICE_TABLE.length - 1].price;
+    } else {
+      for (var i = 1; i < PRICE_TABLE.length; i++) {
+        if (L_mm <= PRICE_TABLE[i].mm) {
+          var lo = PRICE_TABLE[i - 1], hi = PRICE_TABLE[i];
+          var t = (L_mm - lo.mm) / (hi.mm - lo.mm);
+          price = Math.round(lo.price + t * (hi.price - lo.price));
+          break;
+        }
+      }
+    }
+    const total = price;
+    const addon = price - BASE_PRICE;
+    const addZakin = 0;
+    const surcharge = 0;
     return { addon, surcharge, addZakin, zakin, total };
   }
 
