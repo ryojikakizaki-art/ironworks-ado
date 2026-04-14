@@ -2620,46 +2620,14 @@
 
     // 日付（設計行の右側に追記）
     addText(tbX + tbW - 6, tbY + 5 * tbRowH + 13, '日付  ' + dateStr, '7', CD, 'end');
-    // ── ado IRONWORKS ロゴ（タイトルブロック左横、白黒） ──
-    (function() {
-      var lx = tbX - 70, ly = tbY + tbH / 2;
-      var lw = 9, gp = 2.5, bh = 22, dh = 34, sw = 2.8, r = lw / 2;
-      var yBot = ly + bh / 2, yTop = ly - bh / 2, yDTop = ly - dh / 2;
-      var lc = '#333';
-
-      // "a"
-      var ax = lx - lw - gp - lw / 2;
-      var pa = document.createElementNS(svgNS, 'path');
-      pa.setAttribute('d', 'M ' + ax + ' ' + yTop + ' V ' + (yBot - r) + ' A ' + r + ' ' + r + ' 0 0 0 ' + (ax + lw) + ' ' + (yBot - r) + ' V ' + yTop);
-      pa.setAttribute('fill', 'none'); pa.setAttribute('stroke', lc);
-      pa.setAttribute('stroke-width', sw); pa.setAttribute('stroke-linecap', 'round');
-      svg.appendChild(pa);
-
-      // "d"
-      var dx = lx - lw / 2;
-      var pd = document.createElementNS(svgNS, 'path');
-      pd.setAttribute('d', 'M ' + dx + ' ' + yTop + ' V ' + (yBot - r) + ' A ' + r + ' ' + r + ' 0 0 0 ' + (dx + lw) + ' ' + (yBot - r) + ' V ' + yDTop);
-      pd.setAttribute('fill', 'none'); pd.setAttribute('stroke', lc);
-      pd.setAttribute('stroke-width', sw); pd.setAttribute('stroke-linecap', 'round');
-      svg.appendChild(pd);
-
-      // "o"
-      var ox = lx + lw / 2 + gp;
-      var po = document.createElementNS(svgNS, 'path');
-      po.setAttribute('d', 'M ' + ox + ' ' + yTop + ' V ' + (yBot - r) + ' A ' + r + ' ' + r + ' 0 0 0 ' + (ox + lw) + ' ' + (yBot - r) + ' V ' + yTop);
-      po.setAttribute('fill', 'none'); po.setAttribute('stroke', lc);
-      po.setAttribute('stroke-width', sw); po.setAttribute('stroke-linecap', 'round');
-      svg.appendChild(po);
-
-      // "IRONWORKS"
-      var iwText = document.createElementNS(svgNS, 'text');
-      iwText.setAttribute('x', lx); iwText.setAttribute('y', yBot + 10);
-      iwText.setAttribute('text-anchor', 'middle'); iwText.setAttribute('font-size', '5');
-      iwText.setAttribute('fill', lc); iwText.setAttribute('letter-spacing', '3px');
-      iwText.setAttribute('font-family', 'var(--font), sans-serif');
-      iwText.textContent = 'IRONWORKS';
-      svg.appendChild(iwText);
-    })();
+    // ── ado IRONWORKS ロゴ（タイトルブロック左横） ──
+    var logoImg = document.createElementNS(svgNS, 'image');
+    logoImg.setAttribute('x', tbX - 80);
+    logoImg.setAttribute('y', tbY + (tbH - 52) / 2);
+    logoImg.setAttribute('width', '45');
+    logoImg.setAttribute('height', '52');
+    logoImg.setAttribute('href', 'data:image/png;base64,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');
+    svg.appendChild(logoImg);
 
   }
 
