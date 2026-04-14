@@ -1670,9 +1670,9 @@
       var x = barLeft + (pos / L_mm) * barLen;
       var yOnBar = barYAtX(x);
 
-      // 座金中心（バーに接触＝中心はバー＋半径）
+      // 座金中心（バー太線と重ならないよう少し下げる）
       var circleX = x;
-      var circleY = yOnBar + bracketCircleR;
+      var circleY = yOnBar + bracketCircleR + 2;
       // 支柱のバー接続点（角度に応じてオフセット）
       var pillarTopX = x + (hasAngle ? bracketCircleR * Math.sin(angleRad) * zakinTiltSign : 0);
 
@@ -2242,10 +2242,10 @@
     // 寸法補助線
     addLine(barLeft, barY1 - barThick / 2, dimLx, dimLy, CD, 0.3);
     addLine(barRight, barY2 - barThick / 2, dimRx, dimRy, CD, 0.3);
-    // 寸法線＋矢印
+    // 寸法線＋矢印（外向き＝引出線に向かって外を向く）
     addLine(dimLx, dimLy, dimRx, dimRy, C, 0.5);
-    addDimArrow(dimLx, dimLy, dimRx - dimLx, dimRy - dimLy, C);
-    addDimArrow(dimRx, dimRy, dimLx - dimRx, dimLy - dimRy, C);
+    addDimArrow(dimLx, dimLy, dimLx - dimRx, dimLy - dimRy, C);
+    addDimArrow(dimRx, dimRy, dimRx - dimLx, dimRy - dimLy, C);
     // 全長テキスト
     var tt = addText(dimMx, dimMy - 5, L_mm, '11', C, 'middle', '600');
     if (hasAngle) tt.setAttribute('transform', 'rotate(' + textAngle + ' ' + dimMx + ' ' + (dimMy - 5) + ')');
@@ -2270,10 +2270,16 @@
       // 寸法補助線
       addLine(x1, barYAtX(x1) + barThick / 2 + bR * 2 + 2, sx1, sy1, CD, 0.3);
       addLine(x2, barYAtX(x2) + barThick / 2 + bR * 2 + 2, sx2, sy2, CD, 0.3);
-      // 寸法線＋矢印
+      // 寸法線＋矢印（外向き、狭い場合は内向き）
       addLine(sx1, sy1, sx2, sy2, CD, 0.5);
-      addDimArrow(sx1, sy1, sx2 - sx1, sy2 - sy1, CD);
-      addDimArrow(sx2, sy2, sx1 - sx2, sy1 - sy2, CD);
+      var segPx = Math.sqrt((sx2 - sx1) * (sx2 - sx1) + (sy2 - sy1) * (sy2 - sy1));
+      if (segPx > 12) {
+        addDimArrow(sx1, sy1, sx1 - sx2, sy1 - sy2, CD);
+        addDimArrow(sx2, sy2, sx2 - sx1, sy2 - sy1, CD);
+      } else {
+        addDimArrow(sx1, sy1, sx2 - sx1, sy2 - sy1, CD);
+        addDimArrow(sx2, sy2, sx1 - sx2, sy1 - sy2, CD);
+      }
       // テキスト
       var st = addText(sMidX, sMidY - 4, segLen, '9', CD);
       if (hasAngle) st.setAttribute('transform', 'rotate(' + textAngle + ' ' + sMidX + ' ' + (sMidY - 4) + ')');
@@ -2356,24 +2362,26 @@
     addLine(sWallX, sArmY - wH / 2, sWallX, sDY1 - 4, CD, 0.3);
     addLine(sFbOuter, sideY - Math.max(fbH_s / 2, 2) - 2, sFbOuter, sDY1 - 4, CD, 0.3);
     addLine(sWallX, sDY1, sFbOuter, sDY1, CD, 0.5);
-    addDimArrow(sWallX, sDY1, sFbOuter - sWallX, 0, CD);
-    addDimArrow(sFbOuter, sDY1, sWallX - sFbOuter, 0, CD);
+    addDimArrow(sWallX, sDY1, sWallX - sFbOuter, 0, CD);
+    addDimArrow(sFbOuter, sDY1, sFbOuter - sWallX, 0, CD);
     addText((sWallX + sFbOuter) / 2, sDY1 - 3, String(Math.round((40 + 4.5) * 10) / 10), '7', CD);
     var sDY2 = sDY1 + 12;
     addLine(sFbInner, sideY - Math.max(fbH_s / 2, 2) - 2, sFbInner, sDY2 + 2, CD, 0.3);
     addLine(sWallX, sDY2, sFbInner, sDY2, CD, 0.4);
-    addDimArrow(sWallX, sDY2, sFbInner - sWallX, 0, CD);
-    addDimArrow(sFbInner, sDY2, sWallX - sFbInner, 0, CD);
+    addDimArrow(sWallX, sDY2, sWallX - sFbInner, 0, CD);
+    addDimArrow(sFbInner, sDY2, sFbInner - sWallX, 0, CD);
     addText((sWallX + sFbInner) / 2, sDY2 - 3, '40', '7', CD);
     addLine(sFbInner, sDY2, sFbOuter, sDY2, CD, 0.4);
-    addDimArrow(sFbOuter, sDY2, sFbInner - sFbOuter, 0, CD);
+    addDimArrow(sFbOuter, sDY2, sFbOuter - sFbInner, 0, CD);
     addText((sFbInner + sFbOuter) / 2, sDY2 - 3, '9', '7', CD);
     var sDY3 = sArmY + washerR_s + 6;
     addLine(sWallX, sArmY + washerR_s + 2, sWallX, sDY3 + 2, CD, 0.3);
     addLine(sWallX + bpThick_s, sArmY + washerR_s + 2, sWallX + bpThick_s, sDY3 + 2, CD, 0.3);
     addLine(sWallX, sDY3, sWallX + bpThick_s, sDY3, CD, 0.4);
+    // 狭い寸法→内向き矢印
     addDimArrow(sWallX, sDY3, bpThick_s, 0, CD);
     addDimArrow(sWallX + bpThick_s, sDY3, -bpThick_s, 0, CD);
+    // ※4.5は狭いため内向き維持
     addText(sWallX + bpThick_s / 2, sDY3 + 8, '4.5', '6', CD);
 
     addText((sArmStartX + sFbCX) / 2, sArmY + 10, '支柱9φ', '7', CD, 'middle');
