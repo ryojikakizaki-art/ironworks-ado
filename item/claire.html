@@ -1904,38 +1904,37 @@
       svg.appendChild(cap);
     });
 
-    // ── Bracket markers (below bar, pillar angled) ──
-    var bracketDropLen = 5;
+    // ── 座金マーカー（手すりに接触、支柱は座金中心からバーへ） ──
     var bracketCircleR = 4;
-    var dropTotal = bracketDropLen + bracketCircleR + 1;
 
     positions.forEach(function(pos) {
       var x = barLeft + (pos / L_mm) * barLen;
       var yOnBar = barYAtX(x);
 
-      // 支柱の傾き（バーは水平、支柱が角度を持つ）
+      // 座金中心（バーに接触＝中心はバー＋半径）
       var circleX = x;
-      var circleY = yOnBar + dropTotal;
-      var pillarTopX = x + (hasAngle ? dropTotal * Math.sin(angleRad) * zakinTiltSign : 0);
+      var circleY = yOnBar + bracketCircleR;
+      // 支柱のバー接続点（角度に応じてオフセット）
+      var pillarTopX = x + (hasAngle ? bracketCircleR * Math.sin(angleRad) * zakinTiltSign : 0);
 
-      // Support line (from washer center to bar)
-      var drop = document.createElementNS(svgNS, 'line');
-      drop.setAttribute('x1', pillarTopX); drop.setAttribute('y1', yOnBar + 2);
-      drop.setAttribute('x2', circleX); drop.setAttribute('y2', yOnBar + bracketDropLen);
-      drop.setAttribute('stroke', 'var(--accent)'); drop.setAttribute('stroke-width', '1');
-      svg.appendChild(drop);
-
-      // Bracket circle below bar
+      // Bracket circle (touching bar)
       var bCircle = document.createElementNS(svgNS, 'circle');
       bCircle.setAttribute('cx', circleX);
       bCircle.setAttribute('cy', circleY);
       bCircle.setAttribute('r', bracketCircleR);
       bCircle.setAttribute('class', 'bracket-circle');
       svg.appendChild(bCircle);
+
+      // 支柱線（座金中心からバーへ）
+      var drop = document.createElementNS(svgNS, 'line');
+      drop.setAttribute('x1', circleX); drop.setAttribute('y1', circleY);
+      drop.setAttribute('x2', pillarTopX); drop.setAttribute('y2', yOnBar);
+      drop.setAttribute('stroke', 'var(--accent)'); drop.setAttribute('stroke-width', '1');
+      svg.appendChild(drop);
     });
 
     // ── Segment dimensions (below brackets, parallel to bar) ──
-    var segOffsetDist = bracketDropLen + bracketCircleR * 2 + 14;
+    var segOffsetDist = bracketCircleR * 2 + 14;
     var segments = [0].concat(positions).concat([L_mm]);
     // Perpendicular offset below bar (opposite direction from dim line above)
     var segNx = -Math.sin(actualAngle);
@@ -2309,6 +2308,22 @@
       svg.appendChild(l); return l;
     };
 
+    // 寸法矢印ヘルパー（始点・終点に三角矢印を描画）
+    var addDimArrow = function(x, y, dx, dy, stroke) {
+      var len = Math.sqrt(dx * dx + dy * dy);
+      if (len === 0) return;
+      var ux = dx / len, uy = dy / len;
+      var px = -uy, py = ux;
+      var aLen = 3, aW = 1.2;
+      var p = document.createElementNS(svgNS, 'polygon');
+      p.setAttribute('points',
+        x + ',' + y + ' ' +
+        (x - ux * aLen + px * aW) + ',' + (y - uy * aLen + py * aW) + ' ' +
+        (x - ux * aLen - px * aW) + ',' + (y - uy * aLen - py * aW));
+      p.setAttribute('fill', stroke || C); p.setAttribute('stroke', 'none');
+      svg.appendChild(p);
+    };
+
     var addText = function(x, y, text, size, fill, anchor, weight) {
       var t = document.createElementNS(svgNS, 'text');
       t.setAttribute('x', x); t.setAttribute('y', y);
@@ -2402,13 +2417,9 @@
     addLine(barRight, barY2 - barThick / 2, dimRx, dimRy, CD, 0.3);
     // 寸法線
     addLine(dimLx, dimLy, dimRx, dimRy, C, 0.5);
-    // ティック
-    var tickLen = 4;
-    var tickDx = tickLen * Math.sin(actualAngle);
-    var tickDy = -tickLen * Math.cos(actualAngle);
-    [{x: dimLx, y: dimLy}, {x: dimRx, y: dimRy}].forEach(function(pt) {
-      addLine(pt.x - tickDx, pt.y - tickDy, pt.x + tickDx, pt.y + tickDy, C, 0.8);
-    });
+    // 寸法線＋矢印
+    addDimArrow(dimLx, dimLy, dimRx - dimLx, dimRy - dimLy, C);
+    addDimArrow(dimRx, dimRy, dimLx - dimRx, dimLy - dimRy, C);
     // 全長テキスト
     var tt = addText(dimMx, dimMy - 5, L_mm, '11', C, 'middle', '600');
     if (hasAngle) tt.setAttribute('transform', 'rotate(' + textAngle + ' ' + dimMx + ' ' + (dimMy - 5) + ')');
@@ -2435,9 +2446,9 @@
       addLine(x2, barYAtX(x2) + barThick / 2 + bR * 2 + 2, sx2, sy2, CD, 0.3);
       // 寸法線
       addLine(sx1, sy1, sx2, sy2, CD, 0.5);
-      // ティック
-      addLine(sx1 - tickDx, sy1 - tickDy, sx1 + tickDx, sy1 + tickDy, CD, 0.5);
-      addLine(sx2 - tickDx, sy2 - tickDy, sx2 + tickDx, sy2 + tickDy, CD, 0.5);
+      // 寸法線＋矢印
+      addDimArrow(sx1, sy1, sx2 - sx1, sy2 - sy1, CD);
+      addDimArrow(sx2, sy2, sx1 - sx2, sy1 - sy2, CD);
       // テキスト
       var st = addText(sMidX, sMidY - 4, segLen, '9', CD);
       if (hasAngle) st.setAttribute('transform', 'rotate(' + textAngle + ' ' + sMidX + ' ' + (sMidY - 4) + ')');
@@ -2537,24 +2548,26 @@
     addLine(sWallX, sArmY - wH / 2, sWallX, sDY1 - 4, CD, 0.3);
     addLine(sPoX, sideY - Math.max(pipeR_s, 2) - 2, sPoX, sDY1 - 4, CD, 0.3);
     addLine(sWallX, sDY1, sPoX, sDY1, CD, 0.5);
-    addLine(sWallX - 2, sDY1 - 2, sWallX + 2, sDY1 + 2, CD, 0.5);
-    addLine(sPoX - 2, sDY1 - 2, sPoX + 2, sDY1 + 2, CD, 0.5);
+    addDimArrow(sWallX, sDY1, sPoX - sWallX, 0, CD);
+    addDimArrow(sPoX, sDY1, sWallX - sPoX, 0, CD);
     addText((sWallX + sPoX) / 2, sDY1 - 3, '65.4', '7', CD);
     // 40 + 25.4（二段目、分割）
     var sDY2 = sDY1 + 12;
     addLine(sPiX, sideY - Math.max(pipeR_s, 2) - 2, sPiX, sDY2 + 2, CD, 0.3);
     addLine(sWallX, sDY2, sPiX, sDY2, CD, 0.4);
-    addLine(sWallX - 2, sDY2 - 2, sWallX + 2, sDY2 + 2, CD, 0.4);
-    addLine(sPiX - 2, sDY2 - 2, sPiX + 2, sDY2 + 2, CD, 0.4);
+    addDimArrow(sWallX, sDY2, sPiX - sWallX, 0, CD);
+    addDimArrow(sPiX, sDY2, sWallX - sPiX, 0, CD);
     addText((sWallX + sPiX) / 2, sDY2 - 3, '40', '7', CD);
     addLine(sPiX, sDY2, sPoX, sDY2, CD, 0.4);
-    addLine(sPoX - 2, sDY2 - 2, sPoX + 2, sDY2 + 2, CD, 0.4);
+    addDimArrow(sPoX, sDY2, sPiX - sPoX, 0, CD);
     addText((sPiX + sPoX) / 2, sDY2 - 3, '25.4', '7', CD);
     // 4.5（座金厚み、下部）
     var sDY3 = sArmY + washerR_s + 6;
     addLine(sWallX, sArmY + washerR_s + 2, sWallX, sDY3 + 2, CD, 0.3);
     addLine(sWallX + bpThick_s, sArmY + washerR_s + 2, sWallX + bpThick_s, sDY3 + 2, CD, 0.3);
     addLine(sWallX, sDY3, sWallX + bpThick_s, sDY3, CD, 0.4);
+    addDimArrow(sWallX, sDY3, bpThick_s, 0, CD);
+    addDimArrow(sWallX + bpThick_s, sDY3, -bpThick_s, 0, CD);
     addText(sWallX + bpThick_s / 2, sDY3 + 8, '4.5', '6', CD);
 
     // ラベル: 支柱9φ
