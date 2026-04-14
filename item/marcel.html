@@ -2411,6 +2411,46 @@
 
     // 日付（設計行の右側に追記）
     addText(tbX + tbW - 6, tbY + 5 * tbRowH + 13, '日付  ' + dateStr, '7', CD, 'end');
+    // ── ado IRONWORKS ロゴ（タイトルブロック左横、白黒） ──
+    (function() {
+      var lx = tbX - 70, ly = tbY + tbH / 2;
+      var lw = 9, gp = 2.5, bh = 22, dh = 34, sw = 2.8, r = lw / 2;
+      var yBot = ly + bh / 2, yTop = ly - bh / 2, yDTop = ly - dh / 2;
+      var lc = '#333';
+
+      // "a"
+      var ax = lx - lw - gp - lw / 2;
+      var pa = document.createElementNS(svgNS, 'path');
+      pa.setAttribute('d', 'M ' + ax + ' ' + yTop + ' V ' + (yBot - r) + ' A ' + r + ' ' + r + ' 0 0 0 ' + (ax + lw) + ' ' + (yBot - r) + ' V ' + yTop);
+      pa.setAttribute('fill', 'none'); pa.setAttribute('stroke', lc);
+      pa.setAttribute('stroke-width', sw); pa.setAttribute('stroke-linecap', 'round');
+      svg.appendChild(pa);
+
+      // "d"
+      var dx = lx - lw / 2;
+      var pd = document.createElementNS(svgNS, 'path');
+      pd.setAttribute('d', 'M ' + dx + ' ' + yTop + ' V ' + (yBot - r) + ' A ' + r + ' ' + r + ' 0 0 0 ' + (dx + lw) + ' ' + (yBot - r) + ' V ' + yDTop);
+      pd.setAttribute('fill', 'none'); pd.setAttribute('stroke', lc);
+      pd.setAttribute('stroke-width', sw); pd.setAttribute('stroke-linecap', 'round');
+      svg.appendChild(pd);
+
+      // "o"
+      var ox = lx + lw / 2 + gp;
+      var po = document.createElementNS(svgNS, 'path');
+      po.setAttribute('d', 'M ' + ox + ' ' + yTop + ' V ' + (yBot - r) + ' A ' + r + ' ' + r + ' 0 0 0 ' + (ox + lw) + ' ' + (yBot - r) + ' V ' + yTop);
+      po.setAttribute('fill', 'none'); po.setAttribute('stroke', lc);
+      po.setAttribute('stroke-width', sw); po.setAttribute('stroke-linecap', 'round');
+      svg.appendChild(po);
+
+      // "IRONWORKS"
+      var iwText = document.createElementNS(svgNS, 'text');
+      iwText.setAttribute('x', lx); iwText.setAttribute('y', yBot + 10);
+      iwText.setAttribute('text-anchor', 'middle'); iwText.setAttribute('font-size', '5');
+      iwText.setAttribute('fill', lc); iwText.setAttribute('letter-spacing', '3px');
+      iwText.setAttribute('font-family', 'var(--font), sans-serif');
+      iwText.textContent = 'IRONWORKS';
+      svg.appendChild(iwText);
+    })();
 
   }
 
