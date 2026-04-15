@@ -347,6 +347,8 @@ export default function ProductDetailPage() {
                           product={product.drawing}
                           lengthMm={length}
                           positions={zakin.positions}
+                          angleDeg={zakin.angleDeg}
+                          angleDir={zakin.angleDir}
                           className="mt-3"
                         />
                         <ZakinEditor
@@ -608,23 +610,22 @@ export default function ProductDetailPage() {
               </div>
             </section>
 
-            {/* Video Section */}
-            <section>
-              <h2 className="font-serif text-2xl mb-6">制作動画</h2>
-              <div className="aspect-video bg-dark rounded-lg overflow-hidden relative group cursor-pointer">
-                <Image
-                  src="/images/craftsman.jpg"
-                  alt="制作動画サムネイル"
-                  fill
-                  className="object-cover opacity-80 group-hover:opacity-60 transition-opacity"
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <Play className="w-8 h-8 text-dark ml-1" fill="currentColor" />
-                  </div>
+            {/* Video Section (YouTube embed — youtubeId が設定されている商品のみ表示) */}
+            {product.youtubeId && (
+              <section>
+                <h2 className="font-serif text-2xl mb-6">制作動画</h2>
+                <div className="aspect-video bg-dark rounded-lg overflow-hidden">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${product.youtubeId}`}
+                    title={`${product.nameEn} ${product.nameJaShort} 制作動画`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    loading="lazy"
+                    className="w-full h-full border-0"
+                  />
                 </div>
-              </div>
-            </section>
+              </section>
+            )}
 
             {/* Related Products */}
             <section>
@@ -732,6 +733,9 @@ export default function ProductDetailPage() {
         onClose={() => setIsDrawingOpen(false)}
         lengthMm={length}
         productSlug={slug}
+        positions={zakin.positions}
+        angleDeg={zakin.angleDeg}
+        angleDir={zakin.angleDir}
       />
     </>
   )

@@ -12,6 +12,10 @@ export interface VerticalDrawingParams {
   L_mm: number
   positions: number[]
   product: DrawingProductConfig
+  /** 角度 (度) — horizontal category のみ有効、0 で角度なし */
+  angleDeg?: number
+  /** 角度方向 — horizontal category のみ有効 */
+  angleDir?: "left" | "right"
 }
 
 const COLOR_BAR = "#333"
@@ -25,8 +29,13 @@ export function buildVerticalRailDrawingSvg(
   params: VerticalDrawingParams
 ): void {
   const svgNS = "http://www.w3.org/2000/svg"
-  const { L_mm } = params
+  const { L_mm, product, angleDeg = 0, angleDir = "left" } = params
   const positions = [...params.positions].sort((a, b) => a - b)
+  // 横型のみ角度を反映、縦型は無視
+  const isHorizontal = product.category === "horizontal"
+  const effectiveAngle = isHorizontal ? angleDeg : 0
+  const angleRad = (effectiveAngle * Math.PI) / 180
+  const tiltSign = angleDir === "left" ? -1 : 1
 
   while (svg.firstChild) svg.removeChild(svg.firstChild)
   svg.setAttribute("viewBox", "0 0 500 130")
@@ -92,17 +101,40 @@ export function buildVerticalRailDrawingSvg(
   addLine(barLeft, barY - 6, barLeft, barY + 6, COLOR_BAR, 1.5)
   addLine(barRight, barY - 6, barRight, barY + 6, COLOR_BAR, 1.5)
 
-  // 座金 (円 + 下方向アイコン)
+  // 座金描画
+  // 横型: バーの下に丸座金 + 支柱線を上向きに (角度で傾き可)
+  // 縦型: バー上に丸座金のみ
+  const bracketR = 5
   positions.forEach((pos) => {
-    const x = barLeft + (pos / L_mm) * barLen
-    const circle = document.createElementNS(svgNS, "circle")
-    circle.setAttribute("cx", String(x))
-    circle.setAttribute("cy", String(barY))
-    circle.setAttribute("r", "5")
-    circle.setAttribute("fill", COLOR_BRACKET)
-    svg.appendChild(circle)
-    addLine(x, barY + 5, x, barY + 15, COLOR_DIM, 0.7)
-    addLine(x - 5, barY + 15, x + 5, barY + 15, COLOR_BRACKET, 1)
+    const barX = barLeft + (pos / L_mm) * barLen
+
+    if (isHorizontal) {
+      // 座金中心はバーの直下 (接触)
+      const circleX = barX
+      const circleY = barY + bracketR + 2
+      // 支柱上端のバー接続点 (角度分だけ水平オフセット)
+      const pillarTopX =
+        barX + (effectiveAngle > 0 ? bracketR * Math.sin(angleRad) * tiltSign : 0)
+
+      // 支柱線 (座金中心からバー接続点へ)
+      addLine(circleX, circleY, pillarTopX, barY, COLOR_BRACKET, 1.2)
+      // 丸座金
+      const circle = document.createElementNS(svgNS, "circle")
+      circle.setAttribute("cx", String(circleX))
+      circle.setAttribute("cy", String(circleY))
+      circle.setAttribute("r", String(bracketR))
+      circle.setAttribute("fill", COLOR_BRACKET)
+      circle.setAttribute("stroke", COLOR_BRACKET)
+      svg.appendChild(circle)
+    } else {
+      // 縦型: バー上に丸座金のみ
+      const circle = document.createElementNS(svgNS, "circle")
+      circle.setAttribute("cx", String(barX))
+      circle.setAttribute("cy", String(barY))
+      circle.setAttribute("r", String(bracketR))
+      circle.setAttribute("fill", COLOR_BRACKET)
+      svg.appendChild(circle)
+    }
   })
 
   // セグメント寸法
