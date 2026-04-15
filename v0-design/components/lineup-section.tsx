@@ -12,7 +12,7 @@ const categories = [
     id: "horizontal",
     nameEn: "Horizontal",
     nameJp: "横型手すり",
-    image: `${CDN}/d0f5f0e83d40a4d29044.jpg/fit=cover,w=800,h=600`,
+    image: `${CDN}/d0f5f0e83d40a4d29044.jpg/public`,
     size: "large",
     products: [
       { name: "René", image: `${CDN}/d0f5f0e83d40a4d29044.jpg/fit=cover,w=200,h=200` },
@@ -24,7 +24,7 @@ const categories = [
     id: "vertical",
     nameEn: "Vertical",
     nameJp: "縦型手すり",
-    image: `${CDN}/86278edb68c21957e339.jpg/fit=cover,w=800,h=600`,
+    image: `${CDN}/86278edb68c21957e339.jpg/public`,
     size: "large",
     products: [
       { name: "Claude", image: `${CDN}/86278edb68c21957e339.jpg/fit=cover,w=200,h=200` },
@@ -36,7 +36,7 @@ const categories = [
     id: "wrought-iron",
     nameEn: "Wrought Iron",
     nameJp: "ロートアイアン",
-    image: `${CDN}/2a64ecfb5e50e78cb374.jpg/fit=cover,w=600,h=400`,
+    image: `${CDN}/2a64ecfb5e50e78cb374.jpg/public`,
     size: "small",
     products: [
       { name: "Scroll 16φ", image: `${CDN}/2a64ecfb5e50e78cb374.jpg/fit=cover,w=200,h=200` },
@@ -47,7 +47,7 @@ const categories = [
     id: "stairs-fence",
     nameEn: "Stairs & Fence",
     nameJp: "階段・フェンス",
-    image: `${CDN}/579e79e794eed28d9ac7.jpg/fit=cover,w=600,h=400`,
+    image: `${CDN}/579e79e794eed28d9ac7.jpg/public`,
     size: "small",
     products: [
       { name: "階段手すり", image: `${CDN}/579e79e794eed28d9ac7.jpg/fit=cover,w=200,h=200` },
@@ -58,7 +58,7 @@ const categories = [
     id: "gate-door",
     nameEn: "Gate & Door",
     nameJp: "ゲート・ドア",
-    image: `${CDN}/ef8821265072eeb099dc.jpg/fit=cover,w=600,h=400`,
+    image: `${CDN}/ef8821265072eeb099dc.jpg/public`,
     size: "small",
     products: [
       { name: "ゲート", image: `${CDN}/ef8821265072eeb099dc.jpg/fit=cover,w=200,h=200` },
@@ -69,7 +69,7 @@ const categories = [
     id: "others",
     nameEn: "Others",
     nameJp: "その他",
-    image: `${CDN}/720c42cc222961d0c4f7.jpg/fit=cover,w=600,h=400`,
+    image: `${CDN}/720c42cc222961d0c4f7.jpg/public`,
     size: "small",
     products: [
       { name: "テーブル脚", image: `${CDN}/720c42cc222961d0c4f7.jpg/fit=cover,w=200,h=200` },
@@ -96,10 +96,10 @@ export function LineupSection() {
         onMouseLeave={() => setExpandedId(null)}
         layout
       >
-        <motion.div 
-          className={`relative overflow-hidden ${isLarge ? "aspect-[4/3]" : "aspect-square"}`}
-          animate={{ 
-            height: isExpanded ? (isLarge ? "calc(100% + 100px)" : "calc(100% + 80px)") : "100%" 
+        <motion.div
+          className={`relative overflow-hidden bg-secondary transition-colors duration-500 ${isLarge ? "aspect-[4/3]" : "aspect-square"}`}
+          animate={{
+            height: isExpanded ? (isLarge ? "calc(100% + 100px)" : "calc(100% + 80px)") : "100%"
           }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
         >
@@ -107,10 +107,12 @@ export function LineupSection() {
             src={category.image}
             alt={category.nameJp}
             fill
-            className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+            className={`transition-all duration-500 ease-out ${
+              isExpanded ? "object-contain p-2" : "object-cover"
+            }`}
           />
           {/* Dark overlay */}
-          <div className="absolute inset-0 bg-dark/30 group-hover:bg-dark/60 transition-colors duration-500" />
+          <div className="absolute inset-0 bg-dark/30 group-hover:bg-dark/20 transition-colors duration-500" />
           
           {/* Content */}
           <div className="absolute inset-0 flex flex-col justify-between p-4 md:p-6">
