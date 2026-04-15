@@ -8,6 +8,7 @@ import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { ReneDrawingModal } from "@/components/drawing-modal/rene-drawing-modal"
+import { InlineRailSimulator } from "@/components/drawing-modal/inline-rail-simulator"
 import { getProductFull, galleryUrl } from "@/lib/products/display"
 import { ChevronLeft, ChevronRight, X, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench } from "lucide-react"
 
@@ -322,6 +323,11 @@ export default function ProductDetailPage() {
                             </span>
                           </div>
                         </div>
+                        <InlineRailSimulator
+                          product={product.drawing}
+                          lengthMm={length}
+                          className="mt-3"
+                        />
                         <button
                           type="button"
                           onClick={() => setIsDrawingOpen(true)}
