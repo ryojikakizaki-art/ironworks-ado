@@ -33,7 +33,8 @@ const COLOR_BAR = "#333"
 const COLOR_DIM = "#888"
 const COLOR_TEXT = "#555"
 const COLOR_TOTAL_TEXT = "#222"
-const COLOR_BRACKET = "#c8a96e"
+const COLOR_BRACKET = "#c8a96e" // 座金 (金色)
+const COLOR_PILLAR = "#333" // 支柱 (座金と区別するため濃いグレー、角度が見えやすい)
 const BRACKET_R = 5
 
 /**
@@ -183,8 +184,8 @@ export function InlineRailSimulator({
                   y1={circleY}
                   x2={pillarTopX}
                   y2={BAR_Y}
-                  stroke={COLOR_BRACKET}
-                  strokeWidth={1.2}
+                  stroke={COLOR_PILLAR}
+                  strokeWidth={1.5}
                 />
                 {/* Visible circle */}
                 <circle

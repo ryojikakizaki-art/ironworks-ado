@@ -597,8 +597,8 @@ export default function ProductDetailPage() {
               
               <div className="grid sm:grid-cols-2 gap-4">
                 {[
-                  { icon: Hammer, title: "手打ち鍛造", desc: "一点一点、職人が手打ちで仕上げます" },
-                  { icon: Paintbrush, title: "マット塗装", desc: "耐久性の高い焼付塗装で長持ち" },
+                  { icon: Hammer, title: "職人の手仕上げ", desc: "一点一点、職人が手作業で丁寧に仕上げます" },
+                  { icon: Paintbrush, title: "2液ウレタン塗装", desc: "耐久性の高い2液型ウレタン塗装で長持ち" },
                   { icon: Ruler, title: "オーダーメイド", desc: "お好みのサイズでお作りします" },
                   { icon: Wrench, title: "取付簡単", desc: "付属の金具で簡単に取り付け可能" },
                 ].map((feature, index) => (
