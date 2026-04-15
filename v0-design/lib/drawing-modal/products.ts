@@ -16,7 +16,9 @@ export type RailShape =
       totalProjection: number // mm, 壁〜FB外端 (= 40 + width/2)
     }
 
-export type RailCategory = "horizontal" | "vertical"
+export type RailCategory = "horizontal" | "vertical" | "fixed"
+// "fixed" = 固定長の装飾商品 (scroll/fabrice/tsuchime)
+// 長さ調整不可・制作図モーダルなし
 
 export interface DrawingProductConfig {
   slug: string
@@ -151,6 +153,72 @@ DRAWING_PRODUCTS.antoine = {
   stdLengthMm: 2500,
   maxMm: 2500,
   includedZakin: 4,
+}
+
+// 固定長装飾商品 (scroll/fabrice/tsuchime) - 制作図モーダル非対応
+DRAWING_PRODUCTS.scroll16 = {
+  slug: "scroll16",
+  nameJa: "Scroll 16φ",
+  drawingCode: "IW-SC16",
+  material: "無垢鉄 16φ",
+  finish: "ミツロウ仕上げ",
+  category: "fixed",
+  basePrice: 18000,
+  stdLengthMm: 700,
+  maxMm: 700,
+  includedZakin: 2,
+}
+
+DRAWING_PRODUCTS.scroll19 = {
+  slug: "scroll19",
+  nameJa: "Scroll 19φ",
+  drawingCode: "IW-SC19",
+  material: "無垢鉄 19φ",
+  finish: "ミツロウ仕上げ",
+  category: "fixed",
+  basePrice: 32000,
+  stdLengthMm: 700,
+  maxMm: 700,
+  includedZakin: 2,
+}
+
+DRAWING_PRODUCTS.scroll22 = {
+  slug: "scroll22",
+  nameJa: "Scroll 22φ",
+  drawingCode: "IW-SC22",
+  material: "無垢鉄 22φ",
+  finish: "ミツロウ仕上げ",
+  category: "fixed",
+  basePrice: 60000,
+  stdLengthMm: 800,
+  maxMm: 800,
+  includedZakin: 2,
+}
+
+DRAWING_PRODUCTS.fabrice = {
+  slug: "fabrice",
+  nameJa: "Fabrice 無垢鉄手すり",
+  drawingCode: "IW-FAB",
+  material: "純無垢鉄",
+  finish: "ミツロウ仕上げ",
+  category: "fixed",
+  basePrice: 100000,
+  stdLengthMm: 800,
+  maxMm: 800,
+  includedZakin: 2,
+}
+
+DRAWING_PRODUCTS.tsuchime = {
+  slug: "tsuchime",
+  nameJa: "鎚目 TSUCHIME",
+  drawingCode: "IW-TCH",
+  material: "純無垢鉄",
+  finish: "手打ち鎚目仕上げ",
+  category: "fixed",
+  basePrice: 70000,
+  stdLengthMm: 800,
+  maxMm: 800,
+  includedZakin: 2,
 }
 
 export function getDrawingProduct(slug: string): DrawingProductConfig | null {
