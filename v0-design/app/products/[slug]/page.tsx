@@ -135,9 +135,9 @@ export default function ProductDetailPage() {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
             {/* LEFT COLUMN - Gallery */}
             <div className="space-y-4">
-              {/* Main Image */}
-              <motion.div 
-                className="relative aspect-[4/3] bg-secondary rounded-lg overflow-hidden cursor-zoom-in group"
+              {/* Main Image — 商品画像は 1:1 正方形 (768×768 CDN) なので aspect-square */}
+              <motion.div
+                className="relative aspect-square bg-secondary rounded-lg overflow-hidden cursor-zoom-in group"
                 onClick={() => setIsLightboxOpen(true)}
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.3 }}
@@ -286,7 +286,7 @@ export default function ProductDetailPage() {
                               type="range"
                               min={500}
                               max={product.drawing.maxMm}
-                              step={100}
+                              step={1}
                               value={length}
                               onChange={(e) => setLength(Number(e.target.value))}
                               className="w-full h-2 bg-muted rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-gold [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md"
@@ -301,7 +301,7 @@ export default function ProductDetailPage() {
                               type="number"
                               min={500}
                               max={product.drawing.maxMm}
-                              step={100}
+                              step={1}
                               value={length}
                               onChange={(e) => setLength(Math.min(product.drawing.maxMm, Math.max(500, Number(e.target.value))))}
                               className="w-28 h-12 bg-gold/10 border-2 border-gold text-center font-mono text-lg text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
