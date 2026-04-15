@@ -151,14 +151,8 @@ export function RankingSection() {
               style={{ perspective: "1000px" }}
             >
               <motion.div
-                animate={{
-                  rotateY: hoveredIndex === index ? -3 : 0,
-                  rotateX: hoveredIndex === index ? 2 : 0,
-                  scale: hoveredIndex === index ? 1.1 : 1,
-                }}
                 transition={{ duration: 0.4, ease: "easeOut" }}
-                style={{ transformStyle: "preserve-3d", transformOrigin: "center center", zIndex: hoveredIndex === index ? 10 : 1 }}
-                className={`bg-white overflow-hidden shadow-sm hover:shadow-2xl transition-shadow duration-500 h-full relative ${
+                className={`bg-white overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-500 h-full relative ${
                   item.rank === 1 ? "rounded-2xl" : "rounded-t-none rounded-b-lg"
                 }`}
               >
@@ -179,12 +173,18 @@ export function RankingSection() {
                     item.rank === 1 ? "h-[240px] md:h-[300px]" : "h-[180px] md:h-[220px]"
                   }`}
                 >
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    fill
-                    className="object-contain"
-                  />
+                  <motion.div
+                    className="absolute inset-0"
+                    animate={{ scale: hoveredIndex === index ? 1.1 : 1 }}
+                    transition={{ duration: 0.4, ease: "easeOut" }}
+                  >
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      fill
+                      className="object-contain"
+                    />
+                  </motion.div>
                   {/* Rank Badge */}
                   <div className={`absolute top-4 left-4 rounded-full bg-gold text-white flex items-center justify-center font-medium shadow-lg ${
                     item.rank === 1 ? "w-14 h-14 text-2xl" : "w-10 h-10 text-lg"
