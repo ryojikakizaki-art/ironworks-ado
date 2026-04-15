@@ -19,6 +19,14 @@ export interface ProductDisplay {
   shortDescription: string // 1行キャッチ
   longDescription: string // 「製品について」本文
   specs: ProductSpec[]
+  galleryIds: string[] // 既存 item/*.html の GALLERY_IDS から抜粋 (先頭6件程度)
+}
+
+// Cloudflare Images CDN
+export const CDN_BASE = "https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7"
+
+export function galleryUrl(id: string, variant: string = "public"): string {
+  return `${CDN_BASE}/${id}/${variant}`
 }
 
 const DISPLAY: Record<string, ProductDisplay> = {
@@ -39,6 +47,14 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "太さ", value: "φ25mm" },
       { label: "付属品", value: "座金3個・取付ビス一式" },
     ],
+    galleryIds: [
+      "d0f5f0e83d40a4d29044.jpg",
+      "441adb48d70157c88ced.jpg",
+      "7918619d2ac80c628b18.jpg",
+      "8b014530a248acab27b4.jpg",
+      "2f3045de2d64fb258555.jpg",
+      "95c11abfffdb58afc397.jpg",
+    ],
   },
   claire: {
     slug: "claire",
@@ -56,6 +72,14 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "標準長さ", value: "〜1500mm（最大5000mm）" },
       { label: "太さ", value: "φ25mm" },
       { label: "付属品", value: "座金3個・取付ビス一式" },
+    ],
+    galleryIds: [
+      "0a0c0c78f9f636cca733.jpg",
+      "eae60ee60278fdc5aef7.jpg",
+      "7669ac50e3027f2f4056.jpg",
+      "5bda48c8598f2c5e0fa4.jpg",
+      "28918bd828b8c4793b5a.jpg",
+      "1eb8f8e79ab4b31ec686.jpg",
     ],
   },
   marcel: {
@@ -75,6 +99,14 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "寸法", value: "9×32mm" },
       { label: "付属品", value: "座金3個・取付ビス一式" },
     ],
+    galleryIds: [
+      "939d0690971c550c1dd9.jpg",
+      "a3959136fa0812a028ab.jpg",
+      "c3d3980716a89741f308.jpg",
+      "c65c9c3e16afcb54dfd1.jpg",
+      "918bdf512ec60b0714fc.jpg",
+      "6ae94e74595cc9233f9a.jpg",
+    ],
   },
   emile: {
     slug: "emile",
@@ -92,6 +124,14 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "標準長さ", value: "〜1500mm（最大5000mm）" },
       { label: "寸法", value: "9×32mm" },
       { label: "付属品", value: "座金3個・取付ビス一式" },
+    ],
+    galleryIds: [
+      "fa95f550baa05216d291.jpg",
+      "52eb04f0bc4006be50ab.jpg",
+      "ad5c57a5a6d663f39de5.jpg",
+      "c31fc7db2bfd832d548d.jpg",
+      "f5a0332bb1ab9928a512.jpg",
+      "7feab012748952757a3c.jpg",
     ],
   },
   claude: {
@@ -111,6 +151,14 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "太さ", value: "φ25mm" },
       { label: "付属品", value: "座金・取付ビス一式" },
     ],
+    galleryIds: [
+      "86278edb68c21957e339.jpg",
+      "4891b02ffce1786113ae.jpg",
+      "e490e7cc7493378ef896.jpg",
+      "2c953ba91fe0b264c2fe.jpg",
+      "ad53ccfcea905eea06b9.jpg",
+      "3942c2d19e73235a5b7f.jpg",
+    ],
   },
   catherine: {
     slug: "catherine",
@@ -128,6 +176,14 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "標準長さ", value: "〜1000mm 一律料金（最大3000mm）" },
       { label: "太さ", value: "φ25mm" },
       { label: "付属品", value: "座金・取付ビス一式" },
+    ],
+    galleryIds: [
+      "8775cfcb40298257834a.jpg",
+      "5e4377eb8cce3ba15572.jpg",
+      "8e9f10b474c179961a81.jpg",
+      "f4a030f56d5784dc460c.jpg",
+      "dfc095e36e07842b1e1a.jpg",
+      "be8ace3369f4527a90ce.jpg",
     ],
   },
   alexandre: {
@@ -147,6 +203,14 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "太さ", value: "φ31.8mm（太径）" },
       { label: "付属品", value: "座金・取付ビス一式" },
     ],
+    galleryIds: [
+      "759848de1a99945b4d90.jpg",
+      "b10994fb69518432cb40.jpg",
+      "35ec7502d69a4e5aea2b.jpg",
+      "8b61a9e2e373016b634a.jpg",
+      "51f634876bc5ffff0639.jpg",
+      "ed9cafa6cf003bdf2ed1.jpg",
+    ],
   },
   antoine: {
     slug: "antoine",
@@ -165,6 +229,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "太さ", value: "φ25mm" },
       { label: "付属品", value: "座金4個・取付ビス一式" },
     ],
+    galleryIds: ["2d1043dcd7658a96e5f3.jpg"],
   },
 }
 

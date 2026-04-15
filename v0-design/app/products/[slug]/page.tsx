@@ -8,21 +8,10 @@ import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { ReneDrawingModal } from "@/components/drawing-modal/rene-drawing-modal"
-import { getProductFull } from "@/lib/products/display"
+import { getProductFull, galleryUrl } from "@/lib/products/display"
 import { ChevronLeft, ChevronRight, X, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench } from "lucide-react"
 
-const CDN = "https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7"
-
-const productImages = [
-  { src: `${CDN}/d0f5f0e83d40a4d29044.jpg/public`, alt: "René 全体" },
-  { src: `${CDN}/64c3f4b2b519ba72780d.jpg/public`, alt: "ブラケット詳細" },
-  { src: `${CDN}/c3cf0cf4cc3e4a4fece7.jpg/public`, alt: "側面" },
-  { src: `${CDN}/ab37d46e36cbcbdd77d6.jpg/public`, alt: "施工例" },
-  { src: `${CDN}/f8d5e9e1c6ecbeebfaf1.jpg/public`, alt: "取り付けイメージ" },
-  { src: `${CDN}/0a0c0c78f9f636cca733.jpg/public`, alt: "カラーバリエーション" },
-]
-
-// specs は商品ごとに display.ts から取得
+// productImages / specs は商品ごとに display.ts から取得
 
 const prefectures = [
   "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
@@ -35,9 +24,9 @@ const prefectures = [
 ]
 
 const relatedProducts = [
-  { name: "Claire クレール", price: "¥42,000〜", image: `${CDN}/0a0c0c78f9f636cca733.jpg/fit=cover,w=400,h=400`, href: "/products/claire" },
-  { name: "Marcel マルセル", price: "¥36,000〜", image: `${CDN}/939d0690971c550c1dd9.jpg/fit=cover,w=400,h=400`, href: "/products/marcel" },
-  { name: "Émile エミール", price: "¥45,800〜", image: `${CDN}/2d1043dcd7658a96e5f3.jpg/fit=cover,w=400,h=400`, href: "/products/emile" },
+  { name: "Claire クレール", price: "¥42,000〜", image: galleryUrl("0a0c0c78f9f636cca733.jpg"), href: "/products/claire" },
+  { name: "Marcel マルセル", price: "¥36,000〜", image: galleryUrl("939d0690971c550c1dd9.jpg"), href: "/products/marcel" },
+  { name: "Émile エミール", price: "¥45,800〜", image: galleryUrl("2d1043dcd7658a96e5f3.jpg"), href: "/products/emile" },
 ]
 
 export default function ProductDetailPage() {
@@ -46,6 +35,11 @@ export default function ProductDetailPage() {
   // 商品マスターから表示情報 + 価格パラメータを取得 (未登録商品は rene にフォールバック)
   const product = getProductFull(slug) ?? getProductFull("rene")!
   const specs = product.specs
+  // ギャラリー画像 (galleryIds から CDN URL を構築)
+  const productImages = product.galleryIds.map((id, i) => ({
+    src: galleryUrl(id),
+    alt: `${product.nameEn} ${i + 1}`,
+  }))
   const [selectedImage, setSelectedImage] = useState(0)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
   const [length, setLength] = useState(product.drawing.stdLengthMm)
