@@ -266,45 +266,60 @@ export default function ProductDetailPage() {
                   <div className="absolute left-[13px] top-8 bottom-0 w-px bg-border" />
                   
                   <div className="space-y-3">
-                    <h3 className="text-[14px] font-medium text-foreground">長さを選ぶ</h3>
-                    <div className="flex items-center gap-4">
-                      <div className="relative flex-1">
-                        <input
-                          type="range"
-                          min={500}
-                          max={product.drawing.maxMm}
-                          step={100}
-                          value={length}
-                          onChange={(e) => setLength(Number(e.target.value))}
-                          className="w-full h-2 bg-muted rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-gold [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md"
-                        />
-                        <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-                          <span>500mm</span>
-                          <span>{product.drawing.maxMm}mm</span>
+                    <h3 className="text-[14px] font-medium text-foreground">
+                      {product.drawing.category === "fixed" ? "サイズ" : "長さを選ぶ"}
+                    </h3>
+                    {product.drawing.category === "fixed" ? (
+                      <div className="flex items-center gap-4">
+                        <div className="flex-1 px-4 py-4 bg-secondary border border-border text-[14px] text-foreground">
+                          高さ {product.drawing.stdLengthMm}mm 固定サイズ
+                          <span className="text-[11px] text-muted-foreground ml-2">
+                            （長さ調整不可）
+                          </span>
                         </div>
                       </div>
-                      <div className="relative">
-                        <input
-                          type="number"
-                          min={500}
-                          max={product.drawing.maxMm}
-                          step={100}
-                          value={length}
-                          onChange={(e) => setLength(Math.min(product.drawing.maxMm, Math.max(500, Number(e.target.value))))}
-                          className="w-28 h-12 bg-gold/10 border-2 border-gold text-center font-mono text-lg text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
-                        />
-                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">
-                          mm
-                        </span>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setIsDrawingOpen(true)}
-                      className="mt-2 inline-flex items-center gap-2 text-[12px] tracking-wider text-gold hover:text-gold/80 border border-gold/40 hover:border-gold px-4 py-2 transition-colors"
-                    >
-                      制作図プレビュー ▸
-                    </button>
+                    ) : (
+                      <>
+                        <div className="flex items-center gap-4">
+                          <div className="relative flex-1">
+                            <input
+                              type="range"
+                              min={500}
+                              max={product.drawing.maxMm}
+                              step={100}
+                              value={length}
+                              onChange={(e) => setLength(Number(e.target.value))}
+                              className="w-full h-2 bg-muted rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-gold [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md"
+                            />
+                            <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                              <span>500mm</span>
+                              <span>{product.drawing.maxMm}mm</span>
+                            </div>
+                          </div>
+                          <div className="relative">
+                            <input
+                              type="number"
+                              min={500}
+                              max={product.drawing.maxMm}
+                              step={100}
+                              value={length}
+                              onChange={(e) => setLength(Math.min(product.drawing.maxMm, Math.max(500, Number(e.target.value))))}
+                              className="w-28 h-12 bg-gold/10 border-2 border-gold text-center font-mono text-lg text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">
+                              mm
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsDrawingOpen(true)}
+                          className="mt-2 inline-flex items-center gap-2 text-[12px] tracking-wider text-gold hover:text-gold/80 border border-gold/40 hover:border-gold px-4 py-2 transition-colors"
+                        >
+                          制作図プレビュー ▸
+                        </button>
+                      </>
+                    )}
                   </div>
                 </div>
 

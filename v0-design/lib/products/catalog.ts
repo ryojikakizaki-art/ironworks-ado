@@ -57,11 +57,11 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
   { cat: "handrail_v", label: "壁付け手すり ・ 縦型", name: "Antoine アントワーヌ", sub: "ロング 25φ マットブラック", price: 56000, img: "2d1043dcd7658a96e5f3", href: "/products/antoine" },
 
   // 縦型ロートアイアン (5 商品 — 外部)
-  { cat: "handrail_v", label: "ロートアイアン ・ 縦型", name: "Scroll スクロール 16φ", sub: "70cm 無垢鉄 火造り鍛造", price: 18000, img: "2a64ecfb5e50e78cb374", href: "https://ironworks-ado.stores.jp/items/65fe7e7c5804470df54dfd01", external: true },
-  { cat: "handrail_v", label: "ロートアイアン ・ 縦型", name: "Scroll スクロール 19φ", sub: "70cm 無垢鉄 火造り鍛造", price: 32000, img: "25b6438ea6a9393aa027", href: "https://ironworks-ado.stores.jp/items/65fa0fd65b4cc5205bb4d1d1", external: true },
-  { cat: "handrail_v", label: "ロートアイアン ・ 縦型", name: "Scroll スクロール 22φ", sub: "80cm 無垢鉄 火造り鍛造", price: 60000, img: "d09c9426e8510d2ca152", href: "https://ironworks-ado.stores.jp/items/660289ce145555003eb036c0", external: true },
-  { cat: "handrail_v", label: "ロートアイアン ・ 縦型", name: "Fabrice ファブリス", sub: "80cm 無垢鉄 火造り鍛造", price: 100000, badge: "Artisan", img: "66a699b295bcdb8f3598", href: "https://ironworks-ado.stores.jp/items/64be6290c99430002e93fa5c", external: true },
-  { cat: "handrail_v", label: "ロートアイアン ・ 縦型", name: "鎚目 TSUCHIME", sub: "80cm 無垢鉄 火造り鍛造", price: 70000, badge: "Artisan", img: "569af3ee76a1999863e7", href: "https://ironworks-ado.stores.jp/items/66e3f1939b5b82073548df6b", external: true },
+  { cat: "handrail_v", label: "ロートアイアン ・ 縦型", name: "Scroll スクロール 16φ", sub: "70cm 無垢鉄 火造り鍛造", price: 18000, img: "2a64ecfb5e50e78cb374", href: "/products/scroll16" },
+  { cat: "handrail_v", label: "ロートアイアン ・ 縦型", name: "Scroll スクロール 19φ", sub: "70cm 無垢鉄 火造り鍛造", price: 32000, img: "25b6438ea6a9393aa027", href: "/products/scroll19" },
+  { cat: "handrail_v", label: "ロートアイアン ・ 縦型", name: "Scroll スクロール 22φ", sub: "80cm 無垢鉄 火造り鍛造", price: 60000, img: "d09c9426e8510d2ca152", href: "/products/scroll22" },
+  { cat: "handrail_v", label: "ロートアイアン ・ 縦型", name: "Fabrice ファブリス", sub: "80cm 無垢鉄 火造り鍛造", price: 100000, badge: "Artisan", img: "66a699b295bcdb8f3598", href: "/products/fabrice" },
+  { cat: "handrail_v", label: "ロートアイアン ・ 縦型", name: "鎚目 TSUCHIME", sub: "80cm 無垢鉄 火造り鍛造", price: 70000, badge: "Artisan", img: "569af3ee76a1999863e7", href: "/products/tsuchime" },
 
   // アプローチ (3 商品)
   { cat: "approach", label: "アプローチ手すり", name: "Simple -black-", sub: "フラットバー マットブラック", price: 0, img: "579e79e794eed28d9ac7", href: "https://ironworks-ado.stores.jp/items/678f8682c6500803fc924386", external: true },
