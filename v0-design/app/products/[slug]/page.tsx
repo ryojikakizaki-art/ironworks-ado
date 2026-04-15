@@ -8,6 +8,7 @@ import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { ReneDrawingModal } from "@/components/drawing-modal/rene-drawing-modal"
+import { getProductFull } from "@/lib/products/display"
 import { ChevronLeft, ChevronRight, X, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench } from "lucide-react"
 
 const CDN = "https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7"
@@ -21,14 +22,7 @@ const productImages = [
   { src: `${CDN}/0a0c0c78f9f636cca733.jpg/public`, alt: "カラーバリエーション" },
 ]
 
-const specs = [
-  { label: "素材", value: "鉄（無垢丸鋼）" },
-  { label: "仕上げ", value: "焼付マット塗装" },
-  { label: "カラー", value: "マットブラック" },
-  { label: "標準長さ", value: "〜1500mm（最大5000mm）" },
-  { label: "太さ", value: "φ25mm" },
-  { label: "付属品", value: "座金3個・取付ビス一式" },
-]
+// specs は商品ごとに display.ts から取得
 
 const prefectures = [
   "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
@@ -49,9 +43,12 @@ const relatedProducts = [
 export default function ProductDetailPage() {
   const routeParams = useParams<{ slug: string }>()
   const slug = routeParams?.slug ?? "rene"
+  // 商品マスターから表示情報 + 価格パラメータを取得 (未登録商品は rene にフォールバック)
+  const product = getProductFull(slug) ?? getProductFull("rene")!
+  const specs = product.specs
   const [selectedImage, setSelectedImage] = useState(0)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
-  const [length, setLength] = useState(1000)
+  const [length, setLength] = useState(product.drawing.stdLengthMm)
   const [quantity, setQuantity] = useState(1)
   const [prefecture, setPrefecture] = useState("")
   const [deliveryType, setDeliveryType] = useState<"normal" | "express">("normal")
@@ -60,8 +57,11 @@ export default function ProductDetailPage() {
   const [isDrawingOpen, setIsDrawingOpen] = useState(false)
 
   // Price calculation — matches API route logic (checkout/route.ts)
-  const BASE_PRICE = 36500       // René base price
-  const STD_LENGTH = 1500        // mm included in base
+  // 商品マスターから取得
+  const BASE_PRICE = product.drawing.basePrice
+  const STD_LENGTH = product.drawing.stdLengthMm
+  const INCLUDED_ZAKIN = product.drawing.includedZakin
+  // 共通定数 (全商品同じ)
   const PRICE_PER_MM = 25
   const ZAKIN_PRICE = 3500
   const END_DIST = 100
@@ -70,7 +70,6 @@ export default function ProductDetailPage() {
   const SURGE_BASE = 1.2
   const SURGE_INTERVAL = 500
   const RUSH_RATE = 0.2
-  const INCLUDED_ZAKIN = 3
 
   const shippingCosts: { [key: string]: number } = {
     "北海道": 3500,
@@ -131,9 +130,9 @@ export default function ProductDetailPage() {
           <nav className="flex items-center gap-2 text-[11px] font-mono tracking-wide text-muted-foreground">
             <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
             <span>/</span>
-            <Link href="/products" className="hover:text-foreground transition-colors">横型手すり</Link>
+            <Link href="/products" className="hover:text-foreground transition-colors">{product.breadcrumbCategory}</Link>
             <span>/</span>
-            <span className="text-foreground">René ルネ</span>
+            <span className="text-foreground">{product.nameEn} {product.nameJaShort}</span>
           </nav>
         </div>
 
@@ -222,17 +221,17 @@ export default function ProductDetailPage() {
               <div className="flex items-center gap-3">
                 <div className="w-1 h-6 bg-gold rounded-full" />
                 <span className="text-[12px] tracking-wide text-muted-foreground">
-                  壁付け手すり ・ 横型
+                  {product.subtitle}
                 </span>
               </div>
 
               {/* Product Name */}
               <div>
                 <h1 className="font-serif text-3xl lg:text-4xl text-foreground mb-2">
-                  René ルネ
+                  {product.nameEn} {product.nameJaShort}
                 </h1>
                 <p className="text-[13px] text-muted-foreground leading-relaxed">
-                  鍛冶職人制作 壁付けアイアン手すり 横型 φ25 マットブラック
+                  {product.shortDescription}
                 </p>
               </div>
 
@@ -279,7 +278,7 @@ export default function ProductDetailPage() {
                         <input
                           type="range"
                           min={500}
-                          max={5000}
+                          max={product.drawing.maxMm}
                           step={100}
                           value={length}
                           onChange={(e) => setLength(Number(e.target.value))}
@@ -287,17 +286,17 @@ export default function ProductDetailPage() {
                         />
                         <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
                           <span>500mm</span>
-                          <span>5000mm</span>
+                          <span>{product.drawing.maxMm}mm</span>
                         </div>
                       </div>
                       <div className="relative">
                         <input
                           type="number"
                           min={500}
-                          max={5000}
+                          max={product.drawing.maxMm}
                           step={100}
                           value={length}
-                          onChange={(e) => setLength(Math.min(5000, Math.max(500, Number(e.target.value))))}
+                          onChange={(e) => setLength(Math.min(product.drawing.maxMm, Math.max(500, Number(e.target.value))))}
                           className="w-28 h-12 bg-gold/10 border-2 border-gold text-center font-mono text-lg text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">
@@ -493,10 +492,7 @@ export default function ProductDetailPage() {
             <section className="max-w-3xl">
               <h2 className="font-serif text-2xl mb-6">製品について</h2>
               <p className="text-[14px] leading-relaxed text-muted-foreground mb-8">
-                René（ルネ）は、シンプルでありながら存在感のある横型アイアン手すりです。
-                φ25mmの無垢丸鋼を鍛冶職人が一本一本手作りし、焼付マット塗装で仕上げています。
-                マットブラックの落ち着いた佇まいは和洋どちらの空間にも馴染み、
-                握りやすい太さで安全性と美しさを両立。座金・取付ビス一式付属で、届いたらすぐに取り付けられます。
+                {product.longDescription}
               </p>
               
               <div className="grid sm:grid-cols-2 gap-4">
