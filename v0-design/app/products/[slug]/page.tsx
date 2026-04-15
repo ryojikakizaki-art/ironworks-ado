@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
+import { useParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
@@ -46,6 +47,8 @@ const relatedProducts = [
 ]
 
 export default function ProductDetailPage() {
+  const routeParams = useParams<{ slug: string }>()
+  const slug = routeParams?.slug ?? "rene"
   const [selectedImage, setSelectedImage] = useState(0)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
   const [length, setLength] = useState(1000)
@@ -637,6 +640,7 @@ export default function ProductDetailPage() {
         open={isDrawingOpen}
         onClose={() => setIsDrawingOpen(false)}
         lengthMm={length}
+        productSlug={slug}
       />
     </>
   )

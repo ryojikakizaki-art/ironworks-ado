@@ -1,25 +1,35 @@
-// René 横型手すり 制作図SVG ビルダー
+// 横型手すり(丸パイプ型) 制作図SVG ビルダー
 // 既存 item/rene.html の buildDrawingSvg() (lines 2006-2537) を純粋関数化
 // 元コードの createElementNS ベースのimperative描画ロジックを忠実に保持
+// rene / claire 等の丸パイプ (STKM φ25.4) 商品で共用
+
+import type { DrawingProductConfig } from "./products"
 
 export type AngleDir = "left" | "right"
 
-export interface ReneDrawingParams {
+export interface RoundRailDrawingParams {
   L_mm: number
   positions: number[]
   angleDeg: number
   angleDir: AngleDir
+  product: DrawingProductConfig
 }
+
+// 後方互換用エイリアス
+export type ReneDrawingParams = RoundRailDrawingParams
+
+// 後方互換: 旧関数名
+export { buildRoundRailDrawingSvg as buildReneDrawingSvg }
 
 // 既存rene.htmlではdata:URLで埋め込まれていたが、v0-designでは public/images/ado_logo_W.png を参照
 const ADO_LOGO_URL = "/images/ado_logo_W.png"
 
-export function buildReneDrawingSvg(
+export function buildRoundRailDrawingSvg(
   svg: SVGSVGElement,
-  params: ReneDrawingParams
+  params: RoundRailDrawingParams
 ): void {
   const svgNS = "http://www.w3.org/2000/svg"
-  const { L_mm, angleDeg, angleDir } = params
+  const { L_mm, angleDeg, angleDir, product } = params
   const positions = [...params.positions].sort((a, b) => a - b)
 
   // Clear
@@ -425,10 +435,10 @@ export function buildReneDrawingSvg(
     zakinInfo += ` / ${angleDir === "left" ? "左" : "右"}${angleDeg}°`
 
   const rows: [string, string, boolean][] = [
-    ["図面名", `René 横型手すり ${L_mm}mm`, true],
-    ["図番", `IW-REN-${L_mm}`, false],
-    ["材質", "STKM φ25.4", false],
-    ["仕上げ", "マットブラック", false],
+    ["図面名", `${product.nameJa} ${L_mm}mm`, true],
+    ["図番", `${product.drawingCode}-${L_mm}`, false],
+    ["材質", product.material, false],
+    ["仕上げ", product.finish, false],
     ["尺度", "1:20", false],
     ["設計", "蠣崎 良治", false],
     ["座金", zakinInfo, false],
