@@ -41,11 +41,11 @@ const DISPLAY: Record<string, ProductDisplay> = {
     longDescription:
       "René（ルネ）は、シンプルでありながら存在感のある横型アイアン手すりです。φ25mmの無垢丸鋼を鍛冶職人が一本一本手作りし、2液型ウレタン塗装で仕上げています。マットブラックの落ち着いた佇まいは和洋どちらの空間にも馴染み、握りやすい太さで安全性と美しさを両立。座金・取付ビス一式付属で、届いたらすぐに取り付けられます。",
     specs: [
-      { label: "素材", value: "鉄（無垢丸鋼）" },
+      { label: "素材", value: "STKM 炭素鋼鋼管" },
       { label: "仕上げ", value: "2液型ウレタン塗装" },
       { label: "カラー", value: "マットブラック" },
       { label: "標準長さ", value: "〜1500mm（最大5000mm）" },
-      { label: "太さ", value: "φ25mm" },
+      { label: "太さ", value: "25.4φ" },
       { label: "付属品", value: "座金3個・取付ビス一式" },
     ],
     galleryIds: [
