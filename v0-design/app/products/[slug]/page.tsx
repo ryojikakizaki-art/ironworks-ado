@@ -9,6 +9,8 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { ReneDrawingModal } from "@/components/drawing-modal/rene-drawing-modal"
 import { InlineRailSimulator } from "@/components/drawing-modal/inline-rail-simulator"
+import { ZakinEditor, type ZakinState } from "@/components/drawing-modal/zakin-editor"
+import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants"
 import { getProductFull, galleryUrl } from "@/lib/products/display"
 import { ChevronLeft, ChevronRight, X, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench } from "lucide-react"
 
@@ -50,6 +52,17 @@ export default function ProductDetailPage() {
   const [isPrefectureOpen, setIsPrefectureOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [isDrawingOpen, setIsDrawingOpen] = useState(false)
+  // 簡易座金エディター state (既存 rene.html の zakinCustomList + zakinGlobalAngle 相当)
+  const [zakin, setZakin] = useState<ZakinState>(() => {
+    const L = product.drawing.stdLengthMm
+    const count = calcZakin(L)
+    return {
+      positions: getZakinPositions(L, count),
+      angleDeg: 0,
+      angleDir: "left",
+      customMode: false,
+    }
+  })
 
   // Price calculation — matches API route logic (checkout/route.ts)
   // 商品マスターから取得
@@ -59,6 +72,7 @@ export default function ProductDetailPage() {
   // 共通定数 (全商品同じ)
   const PRICE_PER_MM = 25
   const ZAKIN_PRICE = 3500
+  const ANGLE_PRICE = 2000 // 角度加工: 座金1箇所あたり (rene.html 準拠)
   const END_DIST = 100
   const MAX_SPAN = 850
   const SURGE_START = 2000
@@ -78,9 +92,14 @@ export default function ProductDetailPage() {
       ? Math.pow(SURGE_BASE, (length - SURGE_START) / SURGE_INTERVAL)
       : 1
     const surcharge = length > SURGE_START ? addon * (longM - 1) : 0
-    const zakinCount = length <= 1050 ? 2 : 1 + Math.ceil((length - 2 * END_DIST) / MAX_SPAN)
+    // 座金数はカスタムモードなら zakin.positions.length、自動なら calcZakin
+    const zakinCount = zakin.customMode
+      ? zakin.positions.length
+      : (length <= 1050 ? 2 : 1 + Math.ceil((length - 2 * END_DIST) / MAX_SPAN))
     const addZakin = Math.max(0, zakinCount - INCLUDED_ZAKIN) * ZAKIN_PRICE
-    const unitPrice = BASE_PRICE + addon + addZakin + surcharge
+    // 角度加工料金 (angleDeg > 0 の場合のみ、座金数 × ANGLE_PRICE)
+    const angleCost = zakin.angleDeg > 0 ? zakinCount * ANGLE_PRICE : 0
+    const unitPrice = BASE_PRICE + addon + addZakin + surcharge + angleCost
     const subtotal = Math.round(unitPrice) * quantity
     const expressAddon = deliveryType === "express" ? Math.round(subtotal * RUSH_RATE) : 0
     const shipping = prefecture
@@ -92,6 +111,7 @@ export default function ProductDetailPage() {
       addon: Math.round(addon),
       addZakin,
       surcharge: Math.round(surcharge),
+      angleCost,
       unitPrice: Math.round(unitPrice),
       subtotal,
       expressAddon,
@@ -99,7 +119,7 @@ export default function ProductDetailPage() {
       total,
       zakinCount,
     }
-  }, [length, quantity, deliveryType, prefecture])
+  }, [length, quantity, deliveryType, prefecture, zakin])
 
   const prices = calculatePrice()
 
@@ -326,6 +346,13 @@ export default function ProductDetailPage() {
                         <InlineRailSimulator
                           product={product.drawing}
                           lengthMm={length}
+                          positions={zakin.positions}
+                          className="mt-3"
+                        />
+                        <ZakinEditor
+                          lengthMm={length}
+                          state={zakin}
+                          onChange={setZakin}
                           className="mt-3"
                         />
                         <button
@@ -491,6 +518,14 @@ export default function ProductDetailPage() {
                             長尺割増（{length}mm）
                           </span>
                           <span>+¥{prices.surcharge.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {prices.angleCost > 0 && (
+                        <div className="flex justify-between text-[13px]">
+                          <span className="text-muted-foreground">
+                            角度加工料金（{prices.zakinCount}個 × ¥{ANGLE_PRICE.toLocaleString()}、{zakin.angleDir === "left" ? "左" : "右"}{zakin.angleDeg}°）
+                          </span>
+                          <span>+¥{prices.angleCost.toLocaleString()}</span>
                         </div>
                       )}
                       {quantity > 1 && (
