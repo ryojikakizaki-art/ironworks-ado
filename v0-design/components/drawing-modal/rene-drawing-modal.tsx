@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react"
 import { buildRoundRailDrawingSvg } from "@/lib/drawing-modal/rene-svg"
+import { buildVerticalRailDrawingSvg } from "@/lib/drawing-modal/vertical-svg"
 import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants"
 import { getDrawingProduct } from "@/lib/drawing-modal/products"
 
@@ -27,18 +28,27 @@ export function ReneDrawingModal({ open, onClose, lengthMm, productSlug }: Drawi
     }
   }, [open])
 
-  // SVGを再描画
+  // SVGを再描画 (category で横型/縦型を分岐)
   useEffect(() => {
     if (!open || !svgRef.current || !product) return
     const count = calcZakin(lengthMm)
     const positions = getZakinPositions(lengthMm, count)
-    buildRoundRailDrawingSvg(svgRef.current, {
-      L_mm: lengthMm,
-      positions,
-      angleDeg: 0,
-      angleDir: "left",
-      product,
-    })
+    if (product.category === "vertical") {
+      buildVerticalRailDrawingSvg(svgRef.current, {
+        L_mm: lengthMm,
+        positions,
+        product,
+      })
+    } else {
+      if (!product.shape) return
+      buildRoundRailDrawingSvg(svgRef.current, {
+        L_mm: lengthMm,
+        positions,
+        angleDeg: 0,
+        angleDir: "left",
+        product,
+      })
+    }
   }, [open, lengthMm, product])
 
   if (!open) return null
@@ -65,6 +75,9 @@ export function ReneDrawingModal({ open, onClose, lengthMm, productSlug }: Drawi
     )
   }
 
+  // カテゴリに応じて viewBox を切り替え (縦型は小さい schematic)
+  const viewBox = product.category === "vertical" ? "0 0 500 130" : "0 0 840 400"
+
   return (
     <div
       className="dm-overlay open"
@@ -78,7 +91,7 @@ export function ReneDrawingModal({ open, onClose, lengthMm, productSlug }: Drawi
         </button>
         <div className="dm-title">制作図プレビュー</div>
         <div className="dm-svg-wrap">
-          <svg ref={svgRef} id="drawingSvg" viewBox="0 0 840 400" />
+          <svg ref={svgRef} id="drawingSvg" viewBox={viewBox} />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 12, flexWrap: "wrap" }}>
           <button className="dm-print-btn" onClick={() => window.print()}>
