@@ -6,6 +6,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { ReneDrawingModal } from "@/components/drawing-modal/rene-drawing-modal"
 import { ChevronLeft, ChevronRight, X, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench } from "lucide-react"
 
 const CDN = "https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7"
@@ -53,6 +54,7 @@ export default function ProductDetailPage() {
   const [deliveryType, setDeliveryType] = useState<"normal" | "express">("normal")
   const [isPrefectureOpen, setIsPrefectureOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
+  const [isDrawingOpen, setIsDrawingOpen] = useState(false)
 
   // Price calculation — matches API route logic (checkout/route.ts)
   const BASE_PRICE = 36500       // René base price
@@ -300,6 +302,13 @@ export default function ProductDetailPage() {
                         </span>
                       </div>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsDrawingOpen(true)}
+                      className="mt-2 inline-flex items-center gap-2 text-[12px] tracking-wider text-gold hover:text-gold/80 border border-gold/40 hover:border-gold px-4 py-2 transition-colors"
+                    >
+                      制作図プレビュー ▸
+                    </button>
                   </div>
                 </div>
 
@@ -623,6 +632,12 @@ export default function ProductDetailPage() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ReneDrawingModal
+        open={isDrawingOpen}
+        onClose={() => setIsDrawingOpen(false)}
+        lengthMm={length}
+      />
     </>
   )
 }
