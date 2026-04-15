@@ -100,21 +100,17 @@ export function LineupSection() {
           className={`relative overflow-hidden bg-secondary ${isLarge ? "aspect-[4/3]" : "aspect-square"}`}
           animate={{
             height: isExpanded ? (isLarge ? "calc(100% + 100px)" : "calc(100% + 80px)") : "100%",
+            scale: isExpanded ? 1.15 : 1,
           }}
+          style={{ transformOrigin: "center center", zIndex: isExpanded ? 10 : 1 }}
           transition={{ duration: 0.4, ease: "easeInOut" }}
         >
-          <motion.div
-            className="absolute inset-0"
-            animate={{ scale: isExpanded ? 1.08 : 1 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-          >
-            <Image
-              src={category.image}
-              alt={category.nameJp}
-              fill
-              className="object-contain"
-            />
-          </motion.div>
+          <Image
+            src={category.image}
+            alt={category.nameJp}
+            fill
+            className="object-contain"
+          />
           {/* Dark overlay */}
           <div className="absolute inset-0 bg-dark/30 group-hover:bg-dark/20 transition-colors duration-500" />
           
