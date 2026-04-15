@@ -3,6 +3,7 @@
 import { motion, useInView, AnimatePresence } from "framer-motion"
 import { useRef, useState } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 
 const CDN = "https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7"
@@ -230,10 +231,10 @@ export function LineupSection() {
           transition={{ duration: 0.5, delay: 0.7 }}
           className="flex justify-center mt-12"
         >
-          <button className="group inline-flex items-center gap-3 px-8 py-3 border border-dark text-dark text-sm tracking-wider hover:bg-dark hover:text-white transition-all duration-300">
+          <Link href="/products" className="group inline-flex items-center gap-3 px-8 py-3 border border-dark text-dark text-sm tracking-wider hover:bg-dark hover:text-white transition-all duration-300">
             <span>すべての製品を見る</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
-          </button>
+          </Link>
         </motion.div>
       </div>
     </section>

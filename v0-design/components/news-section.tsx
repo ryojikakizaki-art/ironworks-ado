@@ -52,9 +52,8 @@ export function NewsSection() {
         {/* News List - items slide in from right with stagger */}
         <div className="divide-y divide-border">
           {news.map((item, index) => (
-            <motion.a
+            <motion.div
               key={index}
-              href="#"
               initial={{ opacity: 0, x: 60 }}
               animate={isInView ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.5, delay: 0.2 + index * 0.15 }}
@@ -86,7 +85,7 @@ export function NewsSection() {
 
               {/* Arrow */}
               <ArrowRight className="hidden sm:block w-4 h-4 text-muted-foreground/30 group-hover:text-gold group-hover:translate-x-1 transition-all duration-300 flex-shrink-0 mt-0.5" />
-            </motion.a>
+            </motion.div>
           ))}
         </div>
 
@@ -97,13 +96,9 @@ export function NewsSection() {
           transition={{ duration: 0.5, delay: 0.6 }}
           className="text-center mt-8"
         >
-          <a 
-            href="#" 
-            className="inline-flex items-center gap-2 text-[13px] text-muted-foreground hover:text-gold transition-colors duration-300 group"
-          >
+          <span className="inline-flex items-center gap-2 text-[13px] text-muted-foreground">
             <span>すべてのお知らせを見る</span>
-            <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-300" />
-          </a>
+          </span>
         </motion.div>
       </div>
     </section>

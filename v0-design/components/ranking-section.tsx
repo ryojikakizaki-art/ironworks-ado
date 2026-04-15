@@ -3,6 +3,7 @@
 import { motion, useInView } from "framer-motion"
 import { useRef, useState } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 const CDN = "https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7"
@@ -145,11 +146,12 @@ export function RankingSection() {
               transition={{ duration: 0.5, delay: 0.1 + index * 0.08 }}
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
-              className={`flex-shrink-0 snap-start cursor-pointer ${
+              className={`flex-shrink-0 snap-start ${
                 item.rank === 1 ? "w-[320px] md:w-[380px]" : "w-[260px] md:w-[300px]"
               }`}
               style={{ perspective: "1000px" }}
             >
+            <Link href={item.href} className="block h-full cursor-pointer">
               <motion.div
                 transition={{ duration: 0.4, ease: "easeOut" }}
                 className={`bg-white shadow-sm hover:shadow-xl transition-shadow duration-500 h-full relative ${
@@ -209,6 +211,7 @@ export function RankingSection() {
                   </div>
                 </div>
               </motion.div>
+            </Link>
             </motion.div>
           ))}
         </div>

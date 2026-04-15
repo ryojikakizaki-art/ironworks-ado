@@ -2,6 +2,7 @@
 
 import { motion, useScroll, useTransform } from "framer-motion"
 import Image from "next/image"
+import Link from "next/link"
 import { useRef } from "react"
 import { ChevronRight } from "lucide-react"
 
@@ -75,16 +76,16 @@ export function HeroSection() {
           transition={{ duration: 0.8, delay: 0.9 }}
           className="flex flex-col sm:flex-row gap-4"
         >
-          <button className="group relative px-8 py-4 bg-gold text-white rounded-full overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(184,134,11,0.4)]">
+          <Link href="/products" className="group relative px-8 py-4 bg-gold text-white rounded-full overflow-hidden transition-all duration-300 hover:shadow-[0_0_30px_rgba(184,134,11,0.4)] inline-block">
             <span className="relative z-10 flex items-center gap-2 text-sm tracking-wide">
               製品を見る
               <ChevronRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
             </span>
             <div className="absolute inset-0 bg-gold-light transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-          </button>
-          <button className="group px-8 py-4 border border-white/40 text-white rounded-full transition-all duration-300 hover:bg-white hover:text-dark hover:border-white">
+          </Link>
+          <Link href="/contact" className="group px-8 py-4 border border-white/40 text-white rounded-full transition-all duration-300 hover:bg-white hover:text-dark hover:border-white inline-block">
             <span className="text-sm tracking-wide">お問い合わせ</span>
-          </button>
+          </Link>
         </motion.div>
 
         {/* Scroll Indicator */}
