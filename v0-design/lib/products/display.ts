@@ -20,6 +20,7 @@ export interface ProductDisplay {
   longDescription: string // 「製品について」本文
   specs: ProductSpec[]
   galleryIds: string[] // 既存 item/*.html の GALLERY_IDS から抜粋 (先頭6件程度)
+  youtubeId?: string // 制作動画 (あれば埋め込み表示)
 }
 
 // Cloudflare Images CDN
@@ -38,10 +39,10 @@ const DISPLAY: Record<string, ProductDisplay> = {
     subtitle: "壁付け手すり ・ 横型",
     shortDescription: "鍛冶職人制作 壁付けアイアン手すり 横型 φ25 マットブラック",
     longDescription:
-      "René（ルネ）は、シンプルでありながら存在感のある横型アイアン手すりです。φ25mmの無垢丸鋼を鍛冶職人が一本一本手作りし、焼付マット塗装で仕上げています。マットブラックの落ち着いた佇まいは和洋どちらの空間にも馴染み、握りやすい太さで安全性と美しさを両立。座金・取付ビス一式付属で、届いたらすぐに取り付けられます。",
+      "René（ルネ）は、シンプルでありながら存在感のある横型アイアン手すりです。φ25mmの無垢丸鋼を鍛冶職人が一本一本手作りし、2液型ウレタン塗装で仕上げています。マットブラックの落ち着いた佇まいは和洋どちらの空間にも馴染み、握りやすい太さで安全性と美しさを両立。座金・取付ビス一式付属で、届いたらすぐに取り付けられます。",
     specs: [
       { label: "素材", value: "鉄（無垢丸鋼）" },
-      { label: "仕上げ", value: "焼付マット塗装" },
+      { label: "仕上げ", value: "2液型ウレタン塗装" },
       { label: "カラー", value: "マットブラック" },
       { label: "標準長さ", value: "〜1500mm（最大5000mm）" },
       { label: "太さ", value: "φ25mm" },
@@ -55,6 +56,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       "2f3045de2d64fb258555.jpg",
       "95c11abfffdb58afc397.jpg",
     ],
+    youtubeId: "NYRb4pMN0NI",
   },
   claire: {
     slug: "claire",
@@ -81,6 +83,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       "28918bd828b8c4793b5a.jpg",
       "1eb8f8e79ab4b31ec686.jpg",
     ],
+    youtubeId: "NYRb4pMN0NI",
   },
   marcel: {
     slug: "marcel",

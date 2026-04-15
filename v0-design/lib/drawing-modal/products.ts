@@ -53,7 +53,7 @@ export const DRAWING_PRODUCTS: Record<string, DrawingProductConfig> = {
     nameJa: "René 横型手すり",
     drawingCode: "IW-REN",
     material: "STKM φ25.4",
-    finish: "マットブラック",
+    finish: "2液型ウレタン マットブラック",
     category: "horizontal",
     shape: ROUND_25_4,
     basePrice: 36500,

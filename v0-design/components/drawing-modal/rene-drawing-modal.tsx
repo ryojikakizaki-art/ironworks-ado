@@ -11,9 +11,23 @@ interface DrawingModalProps {
   onClose: () => void
   lengthMm: number
   productSlug: string
+  /** 座金エディターから渡される位置配列。未指定時は自動計算 */
+  positions?: number[]
+  /** 角度 (度) — 横型のみ有効 */
+  angleDeg?: number
+  /** 角度方向 — 横型のみ有効 */
+  angleDir?: "left" | "right"
 }
 
-export function ReneDrawingModal({ open, onClose, lengthMm, productSlug }: DrawingModalProps) {
+export function ReneDrawingModal({
+  open,
+  onClose,
+  lengthMm,
+  productSlug,
+  positions: positionsProp,
+  angleDeg = 0,
+  angleDir = "left",
+}: DrawingModalProps) {
   const svgRef = useRef<SVGSVGElement>(null)
   const product = getDrawingProduct(productSlug)
 
@@ -31,25 +45,27 @@ export function ReneDrawingModal({ open, onClose, lengthMm, productSlug }: Drawi
   // SVGを再描画 (category で横型/縦型を分岐)
   useEffect(() => {
     if (!open || !svgRef.current || !product) return
-    const count = calcZakin(lengthMm)
-    const positions = getZakinPositions(lengthMm, count)
+    const positions =
+      positionsProp ?? getZakinPositions(lengthMm, calcZakin(lengthMm))
     if (product.category === "vertical") {
       buildVerticalRailDrawingSvg(svgRef.current, {
         L_mm: lengthMm,
         positions,
         product,
+        angleDeg,
+        angleDir,
       })
     } else {
       if (!product.shape) return
       buildRoundRailDrawingSvg(svgRef.current, {
         L_mm: lengthMm,
         positions,
-        angleDeg: 0,
-        angleDir: "left",
+        angleDeg,
+        angleDir,
         product,
       })
     }
-  }, [open, lengthMm, product])
+  }, [open, lengthMm, product, positionsProp, angleDeg, angleDir])
 
   if (!open) return null
 

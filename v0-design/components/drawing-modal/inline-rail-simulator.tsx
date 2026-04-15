@@ -10,6 +10,10 @@ interface InlineRailSimulatorProps {
   lengthMm: number
   /** Optional: override positions (for editor integration later) */
   positions?: number[]
+  /** 角度 (度) — 横型のみ有効 */
+  angleDeg?: number
+  /** 角度方向 — 横型のみ有効 */
+  angleDir?: "left" | "right"
   className?: string
 }
 
@@ -22,6 +26,8 @@ export function InlineRailSimulator({
   product,
   lengthMm,
   positions,
+  angleDeg,
+  angleDir,
   className,
 }: InlineRailSimulatorProps) {
   const svgRef = useRef<SVGSVGElement>(null)
@@ -34,8 +40,10 @@ export function InlineRailSimulator({
       L_mm: lengthMm,
       positions: actualPositions,
       product,
+      angleDeg,
+      angleDir,
     })
-  }, [product, lengthMm, positions])
+  }, [product, lengthMm, positions, angleDeg, angleDir])
 
   return (
     <div
