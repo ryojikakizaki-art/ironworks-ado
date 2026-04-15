@@ -1,17 +1,20 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { buildReneDrawingSvg } from "@/lib/drawing-modal/rene-svg"
+import { buildRoundRailDrawingSvg } from "@/lib/drawing-modal/rene-svg"
 import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants"
+import { getDrawingProduct } from "@/lib/drawing-modal/products"
 
-interface ReneDrawingModalProps {
+interface DrawingModalProps {
   open: boolean
   onClose: () => void
   lengthMm: number
+  productSlug: string
 }
 
-export function ReneDrawingModal({ open, onClose, lengthMm }: ReneDrawingModalProps) {
+export function ReneDrawingModal({ open, onClose, lengthMm, productSlug }: DrawingModalProps) {
   const svgRef = useRef<SVGSVGElement>(null)
+  const product = getDrawingProduct(productSlug)
 
   // モーダルが開いている間、bodyスクロールを止める
   useEffect(() => {
@@ -26,18 +29,41 @@ export function ReneDrawingModal({ open, onClose, lengthMm }: ReneDrawingModalPr
 
   // SVGを再描画
   useEffect(() => {
-    if (!open || !svgRef.current) return
+    if (!open || !svgRef.current || !product) return
     const count = calcZakin(lengthMm)
     const positions = getZakinPositions(lengthMm, count)
-    buildReneDrawingSvg(svgRef.current, {
+    buildRoundRailDrawingSvg(svgRef.current, {
       L_mm: lengthMm,
       positions,
       angleDeg: 0,
       angleDir: "left",
+      product,
     })
-  }, [open, lengthMm])
+  }, [open, lengthMm, product])
 
   if (!open) return null
+
+  // 対応外の商品の場合はフォールバック
+  if (!product) {
+    return (
+      <div
+        className="dm-overlay open"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onClose()
+        }}
+      >
+        <div className="dm-modal">
+          <button className="dm-close" onClick={onClose} aria-label="閉じる">
+            ×
+          </button>
+          <div className="dm-title">制作図プレビュー</div>
+          <div style={{ padding: "40px 20px", textAlign: "center", color: "#666" }}>
+            この商品の制作図は現在準備中です。
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div
