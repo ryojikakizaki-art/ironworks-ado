@@ -137,3 +137,105 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ── 制作図モーダル (dm-overlay) ── */
+.dm-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.dm-overlay.open { display: flex; }
+.dm-modal {
+  background: #fff;
+  color: #222;
+  width: 100%;
+  max-width: 1100px;
+  border-radius: 8px;
+  padding: 28px 24px 24px;
+  position: relative;
+  max-height: 95vh;
+  overflow-y: auto;
+}
+.dm-close {
+  position: absolute;
+  top: 12px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: #999;
+  cursor: pointer;
+  line-height: 1;
+  transition: color 0.2s;
+}
+.dm-close:hover { color: #333; }
+.dm-title {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #999;
+  margin-bottom: 16px;
+}
+.dm-svg-wrap {
+  margin-bottom: 20px;
+  border: 1px solid #e0e0e0;
+  background: #fff;
+}
+.dm-svg-wrap svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.dm-print-btn {
+  padding: 10px 24px;
+  background: #333;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  transition: background 0.2s;
+}
+.dm-print-btn:hover { background: #555; }
+.dm-note {
+  font-size: 10px;
+  color: #aaa;
+  margin-top: 8px;
+  line-height: 1.6;
+}
+
+/* 印刷時: モーダルだけ表示 */
+@media print {
+  body > *:not(.dm-overlay) { display: none !important; }
+  .dm-overlay.open {
+    position: static;
+    background: #fff;
+    padding: 0;
+    display: block;
+  }
+  .dm-overlay.open .dm-modal {
+    box-shadow: none;
+    max-height: none;
+    overflow: visible;
+    padding: 0;
+  }
+  .dm-overlay.open .dm-svg-wrap {
+    border: none;
+  }
+  .dm-overlay.open .dm-svg-wrap svg {
+    width: 100%;
+    height: auto;
+  }
+  .dm-close,
+  .dm-title,
+  .dm-print-btn,
+  .dm-note {
+    display: none !important;
+  }
+}
