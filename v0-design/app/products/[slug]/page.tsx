@@ -44,6 +44,7 @@ export default function ProductDetailPage() {
     alt: `${product.nameEn} ${i + 1}`,
   }))
   const [selectedImage, setSelectedImage] = useState(0)
+  const [hoveredImage, setHoveredImage] = useState<number | null>(null)
   const [isLightboxOpen, setIsLightboxOpen] = useState(false)
   const [length, setLength] = useState(product.drawing.stdLengthMm)
   const [quantity, setQuantity] = useState(1)
@@ -130,6 +131,14 @@ export default function ProductDetailPage() {
     if (deliveryType) setCurrentStep(Math.max(currentStep, 3))
   }, [length, quantity, prefecture, deliveryType, currentStep])
 
+  // Lightbox 開閉時の body スクロールロック
+  useEffect(() => {
+    if (isLightboxOpen) {
+      document.body.style.overflow = "hidden"
+      return () => { document.body.style.overflow = "" }
+    }
+  }, [isLightboxOpen])
+
   // Delivery date calculation
   const getDeliveryDate = () => {
     const days = deliveryType === "express" ? 5 : 10
@@ -176,16 +185,16 @@ export default function ProductDetailPage() {
               >
                 <AnimatePresence mode="wait">
                   <motion.div
-                    key={selectedImage}
+                    key={hoveredImage ?? selectedImage}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{ duration: 0.4 }}
+                    transition={{ duration: 0.2 }}
                     className="absolute inset-0"
                   >
                     <Image
-                      src={productImages[selectedImage].src}
-                      alt={productImages[selectedImage].alt}
+                      src={productImages[hoveredImage ?? selectedImage].src}
+                      alt={productImages[hoveredImage ?? selectedImage].alt}
                       fill
                       className="object-cover"
                       priority
@@ -215,15 +224,19 @@ export default function ProductDetailPage() {
                 </div>
               </motion.div>
 
-              {/* Thumbnail Strip */}
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {/* Thumbnail Strip — ホバーでヒーロー画像切替、クリックでLightbox */}
+              <div
+                className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide"
+                onMouseLeave={() => setHoveredImage(null)}
+              >
                 {productImages.map((image, index) => (
                   <button
                     key={index}
-                    onClick={() => setSelectedImage(index)}
+                    onMouseEnter={() => setHoveredImage(index)}
+                    onClick={() => { setSelectedImage(index); setIsLightboxOpen(true); }}
                     className={`relative w-20 h-20 flex-shrink-0 rounded-md overflow-hidden transition-all duration-300 ${
-                      selectedImage === index 
-                        ? "ring-2 ring-gold ring-offset-2" 
+                      selectedImage === index
+                        ? "ring-2 ring-gold ring-offset-2"
                         : "opacity-60 hover:opacity-100"
                     }`}
                   >

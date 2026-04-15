@@ -34,11 +34,8 @@ export function ReneDrawingModal({
   // モーダルが開いている間、bodyスクロールを止める
   useEffect(() => {
     if (open) {
-      const prev = document.body.style.overflow
       document.body.style.overflow = "hidden"
-      return () => {
-        document.body.style.overflow = prev
-      }
+      return () => { document.body.style.overflow = "" }
     }
   }, [open])
 
