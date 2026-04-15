@@ -86,7 +86,18 @@ export default function ProductDetailPage() {
       ? (shippingCosts[prefecture] || shippingCosts.default)
       : 0
     const total = subtotal + expressAddon + shipping
-    return { unitPrice: Math.round(unitPrice), subtotal, expressAddon, shipping, total, zakinCount }
+    return {
+      basePrice: BASE_PRICE,
+      addon: Math.round(addon),
+      addZakin,
+      surcharge: Math.round(surcharge),
+      unitPrice: Math.round(unitPrice),
+      subtotal,
+      expressAddon,
+      shipping,
+      total,
+      zakinCount,
+    }
   }, [length, quantity, deliveryType, prefecture])
 
   const prices = calculatePrice()
@@ -444,22 +455,56 @@ export default function ProductDetailPage() {
                   <div className="space-y-4">
                     <h3 className="text-[14px] font-medium text-foreground">確認して購入</h3>
                     
-                    {/* Price Breakdown */}
+                    {/* Price Breakdown (詳細内訳) */}
                     <div className="bg-muted/50 rounded-lg p-4 space-y-2">
                       <div className="flex justify-between text-[13px]">
-                        <span className="text-muted-foreground">本体価格 ({length}mm × {quantity})</span>
-                        <span>¥{prices.subtotal.toLocaleString()}</span>
+                        <span className="text-muted-foreground">
+                          基本料金（〜{product.drawing.stdLengthMm}mm）
+                        </span>
+                        <span>¥{prices.basePrice.toLocaleString()}</span>
                       </div>
+                      {prices.addon > 0 && (
+                        <div className="flex justify-between text-[13px]">
+                          <span className="text-muted-foreground">
+                            長さ追加料金（+{length - product.drawing.stdLengthMm}mm × ¥{PRICE_PER_MM}）
+                          </span>
+                          <span>+¥{prices.addon.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {prices.addZakin > 0 && (
+                        <div className="flex justify-between text-[13px]">
+                          <span className="text-muted-foreground">
+                            追加座金料金（{prices.zakinCount - INCLUDED_ZAKIN}個 × ¥{ZAKIN_PRICE.toLocaleString()}）
+                          </span>
+                          <span>+¥{prices.addZakin.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {prices.surcharge > 0 && (
+                        <div className="flex justify-between text-[13px]">
+                          <span className="text-muted-foreground">
+                            長尺割増（{length}mm）
+                          </span>
+                          <span>+¥{prices.surcharge.toLocaleString()}</span>
+                        </div>
+                      )}
+                      {quantity > 1 && (
+                        <div className="flex justify-between text-[13px] pt-2 border-t border-border/60">
+                          <span className="text-muted-foreground">
+                            単価 × {quantity}
+                          </span>
+                          <span>¥{prices.subtotal.toLocaleString()}</span>
+                        </div>
+                      )}
                       {prices.expressAddon > 0 && (
                         <div className="flex justify-between text-[13px]">
-                          <span className="text-muted-foreground">特急オプション (+20%)</span>
-                          <span>¥{prices.expressAddon.toLocaleString()}</span>
+                          <span className="text-muted-foreground">特急割増（+20%）</span>
+                          <span>+¥{prices.expressAddon.toLocaleString()}</span>
                         </div>
                       )}
                       {prices.shipping > 0 && (
-                        <div className="flex justify-between text-[13px]">
-                          <span className="text-muted-foreground">送料 ({prefecture})</span>
-                          <span>¥{prices.shipping.toLocaleString()}</span>
+                        <div className="flex justify-between text-[13px] pt-2 border-t border-border/60">
+                          <span className="text-muted-foreground">送料（{prefecture}）</span>
+                          <span>+¥{prices.shipping.toLocaleString()}</span>
                         </div>
                       )}
                     </div>
