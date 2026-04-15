@@ -152,7 +152,7 @@ export function RankingSection() {
             >
               <motion.div
                 transition={{ duration: 0.4, ease: "easeOut" }}
-                className={`bg-white overflow-hidden shadow-sm hover:shadow-xl transition-shadow duration-500 h-full relative ${
+                className={`bg-white shadow-sm hover:shadow-xl transition-shadow duration-500 h-full relative ${
                   item.rank === 1 ? "rounded-2xl" : "rounded-t-none rounded-b-lg"
                 }`}
               >
