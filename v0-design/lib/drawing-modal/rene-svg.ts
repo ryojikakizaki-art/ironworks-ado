@@ -141,8 +141,11 @@ export function buildRoundRailDrawingSvg(
   // 縮尺
   const scale = barLen / L_mm
 
-  // メインバー φ25.4
-  const barThick = Math.max(25.4 * scale, 2)
+  // メインバー厚み (丸パイプは直径、FBは高さ)
+  const barThick =
+    product.shape.type === "round"
+      ? Math.max(product.shape.diameter * scale, 2)
+      : Math.max(product.shape.height * scale, 3)
   const rect = document.createElementNS(svgNS, "rect")
   rect.setAttribute("x", String(barLeft))
   rect.setAttribute("y", String(barBaseY - barThick / 2))
@@ -274,7 +277,6 @@ export function buildRoundRailDrawingSvg(
   }
 
   // 座金側面詳細図
-  const pipeR_s = (25.4 / 2) * scale
   const washerR_s = (45 / 2) * scale
   const bracket40_s = 40 * scale
   const bpThick_s = Math.max(4.5 * scale, 1)
@@ -282,10 +284,34 @@ export function buildRoundRailDrawingSvg(
   const bendR = Math.max(9 * scale, 2)
   const hp = postD_s / 2
 
-  const sPipeCX = barLeft - 30
-  const sWallX = sPipeCX - bracket40_s - pipeR_s
+  // shape-specific: 座金側面図の寸法値と座標
+  const sBarCX = barLeft - 30
   const sideY = barBaseY
-  const sArmY = sideY + pipeR_s + Math.max(20 * scale, 8)
+  let barHalf_s: number
+  let sWallX: number
+  let sInnerX: number // バーの壁側端
+  let sOuterX: number // バーの壁反対側端
+  let dimTotalLabel: string // 65.4 or 52
+  let dimInnerLabel: string // 25.4 or 32
+  if (product.shape.type === "round") {
+    const pipeR_s = (product.shape.diameter / 2) * scale
+    barHalf_s = pipeR_s
+    sWallX = sBarCX - bracket40_s - pipeR_s
+    sInnerX = sBarCX - Math.max(pipeR_s, 2)
+    sOuterX = sBarCX + Math.max(pipeR_s, 2)
+    dimTotalLabel = String(product.shape.totalProjection)
+    dimInnerLabel = String(product.shape.diameter)
+  } else {
+    const fbW_s = product.shape.width * scale
+    const fbH_s = product.shape.height * scale
+    barHalf_s = fbH_s / 2
+    sWallX = sBarCX - bracket40_s
+    sInnerX = sBarCX - fbW_s / 2
+    sOuterX = sBarCX + fbW_s / 2
+    dimTotalLabel = String(product.shape.totalProjection)
+    dimInnerLabel = String(product.shape.width)
+  }
+  const sArmY = sideY + Math.max(barHalf_s, 3) + Math.max(20 * scale, 8)
 
   // 壁面ハッチング
   const wH = Math.max(washerR_s * 2 + 10, 24)
@@ -294,15 +320,27 @@ export function buildRoundRailDrawingSvg(
     addLine(sWallX, wi, sWallX - 5, wi + 3, C, 0.25)
   }
 
-  // パイプ断面
-  const spC = document.createElementNS(svgNS, "circle")
-  spC.setAttribute("cx", String(sPipeCX))
-  spC.setAttribute("cy", String(sideY))
-  spC.setAttribute("r", String(Math.max(pipeR_s, 2)))
-  spC.setAttribute("fill", "none")
-  spC.setAttribute("stroke", C)
-  spC.setAttribute("stroke-width", "0.8")
-  svg.appendChild(spC)
+  // バー断面
+  if (product.shape.type === "round") {
+    const spC = document.createElementNS(svgNS, "circle")
+    spC.setAttribute("cx", String(sBarCX))
+    spC.setAttribute("cy", String(sideY))
+    spC.setAttribute("r", String(Math.max(barHalf_s, 2)))
+    spC.setAttribute("fill", "none")
+    spC.setAttribute("stroke", C)
+    spC.setAttribute("stroke-width", "0.8")
+    svg.appendChild(spC)
+  } else {
+    const sfbr = document.createElementNS(svgNS, "rect")
+    sfbr.setAttribute("x", String(sInnerX))
+    sfbr.setAttribute("y", String(sideY - Math.max(barHalf_s * 2, 4) / 2))
+    sfbr.setAttribute("width", String(Math.max(sOuterX - sInnerX, 2)))
+    sfbr.setAttribute("height", String(Math.max(barHalf_s * 2, 4)))
+    sfbr.setAttribute("fill", "none")
+    sfbr.setAttribute("stroke", C)
+    sfbr.setAttribute("stroke-width", "0.8")
+    svg.appendChild(sfbr)
+  }
 
   // 座金プレート（白塗り → 外形線）
   const sbpRect = document.createElementNS(svgNS, "rect")
@@ -339,17 +377,17 @@ export function buildRoundRailDrawingSvg(
 
   // 支柱 φ9 二本線（直線→曲げ→直線）
   const sArmStartX = sWallX + bpThick_s
-  const pipeBot = sideY + Math.max(pipeR_s, 2)
-  addLine(sArmStartX, sArmY - hp, sPipeCX - bendR, sArmY - hp, C, 0.5)
-  addLine(sArmStartX, sArmY + hp, sPipeCX - bendR, sArmY + hp, C, 0.5)
-  addLine(sPipeCX - hp, sArmY - bendR, sPipeCX - hp, pipeBot, C, 0.5)
-  addLine(sPipeCX + hp, sArmY - bendR, sPipeCX + hp, pipeBot, C, 0.5)
+  const barBot = sideY + Math.max(barHalf_s, 2)
+  addLine(sArmStartX, sArmY - hp, sBarCX - bendR, sArmY - hp, C, 0.5)
+  addLine(sArmStartX, sArmY + hp, sBarCX - bendR, sArmY + hp, C, 0.5)
+  addLine(sBarCX - hp, sArmY - bendR, sBarCX - hp, barBot, C, 0.5)
+  addLine(sBarCX + hp, sArmY - bendR, sBarCX + hp, barBot, C, 0.5)
   const arcI = document.createElementNS(svgNS, "path")
   const rI = bendR - hp
   arcI.setAttribute(
     "d",
-    `M ${sPipeCX - bendR} ${sArmY - hp} A ${rI} ${rI} 0 0 0 ${
-      sPipeCX - hp
+    `M ${sBarCX - bendR} ${sArmY - hp} A ${rI} ${rI} 0 0 0 ${
+      sBarCX - hp
     } ${sArmY - bendR}`
   )
   arcI.setAttribute("fill", "none")
@@ -360,8 +398,8 @@ export function buildRoundRailDrawingSvg(
   const rO = bendR + hp
   arcO.setAttribute(
     "d",
-    `M ${sPipeCX - bendR} ${sArmY + hp} A ${rO} ${rO} 0 0 0 ${
-      sPipeCX + hp
+    `M ${sBarCX - bendR} ${sArmY + hp} A ${rO} ${rO} 0 0 0 ${
+      sBarCX + hp
     } ${sArmY - bendR}`
   )
   arcO.setAttribute("fill", "none")
@@ -370,26 +408,24 @@ export function buildRoundRailDrawingSvg(
   svg.appendChild(arcO)
   addLine(sArmStartX, sArmY - hp, sArmStartX, sArmY + hp, C, 0.5)
 
-  // 寸法 65.4 = 40 + 25.4
-  const sPiX = sPipeCX - Math.max(pipeR_s, 2)
-  const sPoX = sPipeCX + Math.max(pipeR_s, 2)
-  const sDY1 = sideY - Math.max(pipeR_s, 3) - 28
+  // 寸法 (round: 65.4=40+25.4 / flat: 56=40+32)
+  const sDY1 = sideY - Math.max(barHalf_s, 3) - 28
   addLine(sWallX, sArmY - wH / 2, sWallX, sDY1 - 4, CD, 0.3)
-  addLine(sPoX, sideY - Math.max(pipeR_s, 2) - 2, sPoX, sDY1 - 4, CD, 0.3)
-  addLine(sWallX, sDY1, sPoX, sDY1, CD, 0.5)
-  addDimArrow(sWallX, sDY1, sWallX - sPoX, 0, CD)
-  addDimArrow(sPoX, sDY1, sPoX - sWallX, 0, CD)
-  addText((sWallX + sPoX) / 2, sDY1 - 3, "65.4", "7", CD)
+  addLine(sOuterX, sideY - Math.max(barHalf_s, 2) - 2, sOuterX, sDY1 - 4, CD, 0.3)
+  addLine(sWallX, sDY1, sOuterX, sDY1, CD, 0.5)
+  addDimArrow(sWallX, sDY1, sWallX - sOuterX, 0, CD)
+  addDimArrow(sOuterX, sDY1, sOuterX - sWallX, 0, CD)
+  addText((sWallX + sOuterX) / 2, sDY1 - 3, dimTotalLabel, "7", CD)
   const sDY2 = sDY1 + 12
-  addLine(sPiX, sideY - Math.max(pipeR_s, 2) - 2, sPiX, sDY2 + 2, CD, 0.3)
-  addLine(sWallX, sDY2, sPiX, sDY2, CD, 0.4)
-  addDimArrow(sWallX, sDY2, sWallX - sPiX, 0, CD)
-  addDimArrow(sPiX, sDY2, sPiX - sWallX, 0, CD)
-  addText((sWallX + sPiX) / 2, sDY2 - 3, "40", "7", CD)
-  addLine(sPiX, sDY2, sPoX, sDY2, CD, 0.4)
-  addDimArrow(sPoX, sDY2, sPoX - sPiX, 0, CD)
-  addDimArrow(sPiX, sDY2, sPiX - sPoX, 0, CD)
-  addText((sPiX + sPoX) / 2, sDY2 - 3, "25.4", "7", CD)
+  addLine(sInnerX, sideY - Math.max(barHalf_s, 2) - 2, sInnerX, sDY2 + 2, CD, 0.3)
+  addLine(sWallX, sDY2, sInnerX, sDY2, CD, 0.4)
+  addDimArrow(sWallX, sDY2, sWallX - sInnerX, 0, CD)
+  addDimArrow(sInnerX, sDY2, sInnerX - sWallX, 0, CD)
+  addText((sWallX + sInnerX) / 2, sDY2 - 3, "40", "7", CD)
+  addLine(sInnerX, sDY2, sOuterX, sDY2, CD, 0.4)
+  addDimArrow(sOuterX, sDY2, sOuterX - sInnerX, 0, CD)
+  addDimArrow(sInnerX, sDY2, sInnerX - sOuterX, 0, CD)
+  addText((sInnerX + sOuterX) / 2, sDY2 - 3, dimInnerLabel, "7", CD)
   const sDY3 = sArmY + washerR_s + 6
   addLine(sWallX, sArmY + washerR_s + 2, sWallX, sDY3 + 2, CD, 0.3)
   addLine(
@@ -404,7 +440,7 @@ export function buildRoundRailDrawingSvg(
   addDimArrow(sWallX, sDY3, bpThick_s, 0, CD)
   addDimArrow(sWallX + bpThick_s, sDY3, -bpThick_s, 0, CD)
   addText(sWallX + bpThick_s / 2, sDY3 + 8, "4.5", "6", CD)
-  addText((sArmStartX + sPipeCX) / 2, sArmY + 10, "支柱9φ", "7", CD, "middle")
+  addText((sArmStartX + sBarCX) / 2, sArmY + 10, "支柱9φ", "7", CD, "middle")
 
   // タイトルブロック
   const tbW = 260
