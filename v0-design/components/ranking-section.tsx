@@ -167,31 +167,28 @@ export function RankingSection() {
                   />
                 )}
 
-                {/* Image Container */}
-                <div
-                  className={`relative overflow-hidden bg-secondary ${
+                {/* Image Container (frame + photo scale together on hover) */}
+                <motion.div
+                  animate={{ scale: hoveredIndex === index ? 1.15 : 1 }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                  style={{ transformOrigin: "center center" }}
+                  className={`relative bg-secondary ${
                     item.rank === 1 ? "h-[240px] md:h-[300px]" : "h-[180px] md:h-[220px]"
                   }`}
                 >
-                  <motion.div
-                    className="absolute inset-0"
-                    animate={{ scale: hoveredIndex === index ? 1.1 : 1 }}
-                    transition={{ duration: 0.4, ease: "easeOut" }}
-                  >
-                    <Image
-                      src={item.image}
-                      alt={item.name}
-                      fill
-                      className="object-contain"
-                    />
-                  </motion.div>
+                  <Image
+                    src={item.image}
+                    alt={item.name}
+                    fill
+                    className="object-contain"
+                  />
                   {/* Rank Badge */}
                   <div className={`absolute top-4 left-4 rounded-full bg-gold text-white flex items-center justify-center font-medium shadow-lg ${
                     item.rank === 1 ? "w-14 h-14 text-2xl" : "w-10 h-10 text-lg"
                   }`}>
                     {item.rank}
                   </div>
-                </div>
+                </motion.div>
 
                 {/* Info */}
                 <div className="p-5">
