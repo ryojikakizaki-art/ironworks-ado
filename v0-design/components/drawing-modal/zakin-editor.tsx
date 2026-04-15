@@ -34,13 +34,16 @@ export function ZakinEditor({
 }: ZakinEditorProps) {
   const [open, setOpen] = useState(false)
 
-  // 長さが変わったとき、customMode でなければ自動再配置
+  // 長さが変わったとき、座金を再配置する。
+  // - 自動モード: calcZakin(lengthMm) で座金数を再計算して等間隔配置
+  // - カスタムモード: 現在の座金数を保って新しい長さで等間隔配置
+  //   (これがないとドラッグした座金が新しい長さでバーから はみ出す)
   useEffect(() => {
-    if (!state.customMode) {
-      const count = calcZakin(lengthMm)
-      const positions = getZakinPositions(lengthMm, count)
-      onChange({ ...state, positions })
-    }
+    const count = state.customMode
+      ? state.positions.length
+      : calcZakin(lengthMm)
+    const positions = getZakinPositions(lengthMm, count)
+    onChange({ ...state, positions })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lengthMm])
 
