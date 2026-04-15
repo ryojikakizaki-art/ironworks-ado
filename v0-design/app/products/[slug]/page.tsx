@@ -349,6 +349,9 @@ export default function ProductDetailPage() {
                           positions={zakin.positions}
                           angleDeg={zakin.angleDeg}
                           angleDir={zakin.angleDir}
+                          onPositionsChange={(positions) =>
+                            setZakin({ ...zakin, positions, customMode: true })
+                          }
                           className="mt-3"
                         />
                         <ZakinEditor
