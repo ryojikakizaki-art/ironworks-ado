@@ -273,13 +273,9 @@ export function TestimonialsSection() {
           transition={{ duration: 0.5, delay: 0.4 }}
           className="text-center mt-10"
         >
-          <a 
-            href="#" 
-            className="inline-flex items-center gap-2 text-[13px] text-foreground hover:text-gold transition-colors duration-300 group border-b border-foreground hover:border-gold pb-0.5"
-          >
+          <span className="inline-flex items-center gap-2 text-[13px] text-muted-foreground pb-0.5">
             <span>すべてのレビューを見る</span>
-            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform duration-300" />
-          </a>
+          </span>
         </motion.div>
       </div>
     </section>

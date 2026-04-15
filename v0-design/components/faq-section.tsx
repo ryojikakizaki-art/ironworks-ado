@@ -2,6 +2,7 @@
 
 import { motion, useInView, AnimatePresence } from "framer-motion"
 import { useRef, useState } from "react"
+import Link from "next/link"
 import { ChevronDown } from "lucide-react"
 
 const faqs = [
@@ -107,12 +108,12 @@ export function FaqSection() {
           <p className="text-muted-foreground text-sm mb-4">
             その他ご不明な点がございましたら、お気軽にお問い合わせください。
           </p>
-          <button className="group inline-flex items-center gap-2 text-sm text-dark hover:text-gold transition-colors duration-300">
+          <Link href="/contact" className="group inline-flex items-center gap-2 text-sm text-dark hover:text-gold transition-colors duration-300">
             お問い合わせフォームへ
             <span className="w-6 h-6 rounded-full border border-current flex items-center justify-center group-hover:bg-gold group-hover:border-gold group-hover:text-white transition-all duration-300">
               →
             </span>
-          </button>
+          </Link>
         </motion.div>
       </div>
     </section>

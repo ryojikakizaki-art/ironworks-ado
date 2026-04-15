@@ -3,6 +3,7 @@
 import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
 import Image from "next/image"
+import Link from "next/link"
 import { Phone, Mail, ArrowRight } from "lucide-react"
 
 const supportSteps = [
@@ -162,11 +163,11 @@ export function LifetimeSupportSection() {
             <span className="text-[11px] text-muted-foreground">［月〜金 9:00〜17:00］</span>
           </div>
           
-          <button className="mt-6 inline-flex items-center gap-2 px-6 py-3 border border-dark text-dark text-[13px] rounded-full hover:bg-dark hover:text-white transition-all duration-300 group">
+          <Link href="/contact" className="mt-6 inline-flex items-center gap-2 px-6 py-3 border border-dark text-dark text-[13px] rounded-full hover:bg-dark hover:text-white transition-all duration-300 group">
             <Mail className="w-4 h-4" />
             <span>メールでのお問い合わせ</span>
             <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform duration-300" />
-          </button>
+          </Link>
         </motion.div>
       </div>
     </section>
