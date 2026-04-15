@@ -174,13 +174,18 @@ export function RankingSection() {
                 )}
 
                 {/* Image Container */}
-                <div className={`relative overflow-hidden bg-muted ${item.rank === 1 ? "h-[240px] md:h-[300px]" : "h-[180px] md:h-[220px]"}`}>
+                <div
+                  className={`relative overflow-hidden transition-colors duration-500 ${
+                    hoveredIndex === index ? "bg-secondary" : "bg-muted"
+                  } ${item.rank === 1 ? "h-[240px] md:h-[300px]" : "h-[180px] md:h-[220px]"}`}
+                >
                   <Image
                     src={item.image}
                     alt={item.name}
                     fill
-                    className="object-cover transition-transform duration-700"
-                    style={{ transform: hoveredIndex === index ? "scale(1.1)" : "scale(1)" }}
+                    className={`transition-all duration-500 ${
+                      hoveredIndex === index ? "object-contain p-2" : "object-cover"
+                    }`}
                   />
                   {/* Rank Badge */}
                   <div className={`absolute top-4 left-4 rounded-full bg-gold text-white flex items-center justify-center font-medium shadow-lg ${
