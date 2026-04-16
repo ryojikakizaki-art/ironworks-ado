@@ -4,14 +4,14 @@ import { motion, useInView, AnimatePresence } from "framer-motion"
 import { useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowRight, Minus, GripVertical, Sparkles, ArrowUpDown, DoorOpen, LayoutGrid, ExternalLink } from "lucide-react"
+import { ArrowRight, RailSymbol, Columns, Flame, Footprints, Fence, Castle, Grid3X3, Home, ExternalLink } from "lucide-react"
 
 const CDN = "https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7"
 
 const categories = [
   {
     id: "horizontal",
-    icon: Minus,
+    icon: RailSymbol,
     nameEn: "Horizontal",
     nameJp: "横型手すり",
     desc: "壁付け丸パイプ・フラットバー",
@@ -26,7 +26,7 @@ const categories = [
   },
   {
     id: "vertical",
-    icon: GripVertical,
+    icon: Columns,
     nameEn: "Vertical",
     nameJp: "縦型手すり",
     desc: "壁付け縦型・ロング",
@@ -39,7 +39,7 @@ const categories = [
   },
   {
     id: "wrought-iron",
-    icon: Sparkles,
+    icon: Flame,
     nameEn: "Wrought Iron",
     nameJp: "ロートアイアン",
     desc: "無垢鉄・火造り鍛造",
@@ -52,20 +52,32 @@ const categories = [
     ],
   },
   {
-    id: "stairs-fence",
-    icon: ArrowUpDown,
-    nameEn: "ArrowUpDown & Fence",
-    nameJp: "階段・フェンス",
-    desc: "スケルトン階段・フェンス",
+    id: "stairs",
+    icon: Footprints,
+    nameEn: "Stairs",
+    nameJp: "階段",
+    desc: "スケルトン・外階段",
     products: [
       { name: "直線階段", sub: "オーダー", img: "7a3358b5d7a86318eda1", href: "https://ironworks-ado.stores.jp/items/6458a2646e44950030b06a70", external: true },
-      { name: "廻り階段", sub: "オーダー", img: "853fb7dae26475eee4a0", href: "https://ironworks-ado.stores.jp/items/645b965813edcc003101fec5", external: true },
+      { name: "廻り階段", sub: "力桁1本型", img: "853fb7dae26475eee4a0", href: "https://ironworks-ado.stores.jp/items/645b965813edcc003101fec5", external: true },
+      { name: "外階段", sub: "かね折れ", img: "6957d69de71788107932", href: "https://ironworks-ado.stores.jp/items/6460dfe3418fdf00312349c1", external: true },
+    ],
+  },
+  {
+    id: "fence",
+    icon: Fence,
+    nameEn: "Fence",
+    nameJp: "フェンス",
+    desc: "吹き抜け・面格子",
+    products: [
       { name: "吹き抜けフェンス", sub: "オーダー", img: "1aaca5578d6e1f890e31", href: "https://ironworks-ado.stores.jp/items/63eaf4431c151869487fdc83", external: true },
+      { name: "屋外フェンス", sub: "zigzag", img: "ff214d4dd6a4e6f0b3b1", href: "https://ironworks-ado.stores.jp/items/645882ac32510f002d97ec96", external: true },
+      { name: "面格子", sub: "防犯", img: "9a7ccb077d6627266f13", href: "https://ironworks-ado.stores.jp/items/67959f99ce75b203a869f649", external: true },
     ],
   },
   {
     id: "gate-door",
-    icon: DoorOpen,
+    icon: Castle,
     nameEn: "Gate & Door",
     nameJp: "ゲート・ドア",
     desc: "バーンドア・アラベスク",
@@ -76,15 +88,27 @@ const categories = [
     ],
   },
   {
-    id: "others",
-    icon: LayoutGrid,
-    nameEn: "Others",
-    nameJp: "その他",
-    desc: "アプローチ・家具・什器",
+    id: "approach",
+    icon: Home,
+    nameEn: "Approach",
+    nameJp: "アプローチ",
+    desc: "屋外手すり・エントランス",
     products: [
-      { name: "アプローチ 黒", sub: "FB", img: "579e79e794eed28d9ac7", href: "https://ironworks-ado.stores.jp/items/678f8682c6500803fc924386", external: true },
-      { name: "アプローチ 蔦", sub: "亜鉛メッキ", img: "051b216ddd9e64d0ae37", href: "https://ironworks-ado.stores.jp/items/64584887edfbca00302b343f", external: true },
+      { name: "Simple 黒", sub: "FB", img: "579e79e794eed28d9ac7", href: "https://ironworks-ado.stores.jp/items/678f8682c6500803fc924386", external: true },
+      { name: "Simple 白", sub: "FB", img: "ef1a6b4999d530d6fb67", href: "https://ironworks-ado.stores.jp/items/64585625559798002e8072e2", external: true },
+      { name: "蔦", sub: "亜鉛メッキ", img: "051b216ddd9e64d0ae37", href: "https://ironworks-ado.stores.jp/items/64584887edfbca00302b343f", external: true },
+    ],
+  },
+  {
+    id: "furniture",
+    icon: Grid3X3,
+    nameEn: "Furniture",
+    nameJp: "家具・什器",
+    desc: "テーブル脚・ラック・パーテーション",
+    products: [
       { name: "テーブル脚", sub: "サイズオーダー", img: "720c42cc222961d0c4f7", href: "https://ironworks-ado.stores.jp/items/64cc5d6bf55a3000329bb450", external: true },
+      { name: "パーテーション", sub: "アクリル", img: "162201d592318f444a98", href: "https://ironworks-ado.stores.jp/items/645b851613edcc002b021dc9", external: true },
+      { name: "アイアンラック", sub: "棚・什器", img: "2aecc4e6b289986d9859", href: "https://ironworks-ado.stores.jp/items/64be2861d397ae002db004cd", external: true },
     ],
   },
 ]
@@ -118,7 +142,7 @@ export function LineupSection() {
         </div>
 
         {/* Category Grid — アイコン中心 */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+        <div className="grid grid-cols-3 md:grid-cols-3 lg:grid-cols-9 gap-4 md:gap-6">
           {categories.map((cat, index) => {
             const isExpanded = expandedId === cat.id
             const Icon = cat.icon
