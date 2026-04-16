@@ -35,10 +35,10 @@ const footerLinks = {
 }
 
 const socialLinks = [
-  { icon: Instagram, href: "https://instagram.com", label: "Instagram" },
-  { icon: Facebook, href: "https://facebook.com", label: "Facebook" },
+  { icon: Instagram, href: "https://www.instagram.com/", label: "Instagram" },
+  { icon: Facebook, href: "https://www.facebook.com/profile.php?id=61556286998274", label: "Facebook" },
   { icon: Youtube, href: "https://youtube.com", label: "YouTube" },
-  { icon: Mail, href: "mailto:info@ironworks-ado.jp", label: "メール" },
+  { icon: Mail, href: "mailto:ado@tantetuzest.com", label: "メール" },
 ]
 
 export function Footer() {

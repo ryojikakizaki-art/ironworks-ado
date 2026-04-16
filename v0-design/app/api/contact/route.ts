@@ -11,8 +11,11 @@ const categoryLabels: Record<string, string> = {
 };
 
 const productLabels: Record<string, string> = {
-  rene: 'René ルネ（壁付け横型）', marie: 'Marie マリー（壁付け縦型）',
-  leon: 'Leon レオン（笠木型）', other: 'その他・複数',
+  rene: 'René ルネ（横型 25φ 黒）', claire: 'Claire クレール（横型 25φ 白）',
+  marcel: 'Marcel マルセル（横型 FB 黒）', emile: 'Émile エミール（横型 FB 鎚目）',
+  claude: 'Claude クロード（縦型 25φ 黒）', catherine: 'Catherine カトリーヌ（縦型 25φ 白）',
+  alexandre: 'Alexandre アレクサンドル（縦型 31.8φ）', antoine: 'Antoine アントワーヌ（縦型ロング）',
+  other: 'その他・複数',
 };
 
 export async function POST(request: NextRequest) {
@@ -30,7 +33,7 @@ export async function POST(request: NextRequest) {
     const categoryLabel = categoryLabels[category] || category;
     const productLabel  = productLabels[product]   || '—';
     const fromAddress   = process.env.CONTACT_FROM     || 'IRONWORKS ado <noreply@tantetuzest.com>';
-    const toAddress     = process.env.CONTACT_TO_EMAIL || 'ryoji.kakizaki@gmail.com';
+    const toAddress     = process.env.CONTACT_TO_EMAIL || 'ado@tantetuzest.com';
 
     const notifyHtml = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
 <style>body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f9f9f9;color:#333;margin:0;padding:0;}
@@ -81,7 +84,7 @@ export async function POST(request: NextRequest) {
 </div>
 <hr class="divider">
 <p style="font-size:12px;color:#888;">このメールは自動送信です。返信はできません。<br>
-お問い合わせ: <a href="mailto:info@tantetuzest.com" style="color:#c8a96e;">info@tantetuzest.com</a></p>
+お問い合わせ: <a href="mailto:ado@tantetuzest.com" style="color:#c8a96e;">ado@tantetuzest.com</a></p>
 </div>
 <div class="footer"><p>&copy; IRONWORKS <span>ado</span> — All rights reserved</p></div>
 </div></body></html>`;
