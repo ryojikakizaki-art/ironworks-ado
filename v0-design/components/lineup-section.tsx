@@ -4,14 +4,14 @@ import { motion, useInView, AnimatePresence } from "framer-motion"
 import { useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { ArrowRight, RailSymbol, Columns, Flame, Footprints, Fence, Castle, Grid3X3, Home, ExternalLink } from "lucide-react"
+import { ArrowRight, SeparatorHorizontal, SeparatorVertical, Flame, Footprints, Fence, Castle, Grid3X3, Home, ExternalLink } from "lucide-react"
 
 const CDN = "https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7"
 
 const categories = [
   {
     id: "horizontal",
-    icon: RailSymbol,
+    icon: SeparatorHorizontal,
     nameEn: "Horizontal",
     nameJp: "横型手すり",
     desc: "壁付け丸パイプ・フラットバー",
@@ -26,7 +26,7 @@ const categories = [
   },
   {
     id: "vertical",
-    icon: Columns,
+    icon: SeparatorVertical,
     nameEn: "Vertical",
     nameJp: "縦型手すり",
     desc: "壁付け縦型・ロング",
