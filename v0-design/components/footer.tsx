@@ -35,7 +35,7 @@ const footerLinks = {
 }
 
 const socialLinks = [
-  { icon: Instagram, href: "https://www.instagram.com/", label: "Instagram" },
+  { icon: Instagram, href: "https://www.instagram.com/ironworks_ado/", label: "Instagram" },
   { icon: Facebook, href: "https://www.facebook.com/profile.php?id=61556286998274", label: "Facebook" },
   { icon: Youtube, href: "https://youtube.com", label: "YouTube" },
   { icon: Mail, href: "mailto:ado@tantetuzest.com", label: "メール" },
