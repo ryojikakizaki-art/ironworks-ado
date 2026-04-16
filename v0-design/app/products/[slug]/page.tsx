@@ -176,9 +176,9 @@ export default function ProductDetailPage() {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
             {/* LEFT COLUMN - Gallery */}
             <div className="space-y-4">
-              {/* Main Image — モバイルは 4:3 で画面占有を抑え、デスクトップは正方形 */}
+              {/* Main Image — サムネと同じスクエア */}
               <motion.div
-                className="relative aspect-[4/3] md:aspect-square bg-secondary rounded-lg overflow-hidden cursor-zoom-in group"
+                className="relative aspect-square bg-secondary rounded-lg overflow-hidden cursor-zoom-in group"
                 onClick={() => setIsLightboxOpen(true)}
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.3 }}
