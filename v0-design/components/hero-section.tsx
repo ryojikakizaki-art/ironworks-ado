@@ -1,10 +1,17 @@
 "use client"
 
-import { motion, useScroll, useTransform } from "framer-motion"
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
-import { useRef } from "react"
+import { useRef, useState, useEffect, useCallback } from "react"
 import { ChevronRight } from "lucide-react"
+
+const heroImages = [
+  { src: "/images/DSCF1995.JPG", alt: "アイアン手すり施工例 1" },
+  { src: "/images/DSCF6186.JPG", alt: "アイアン手すり施工例 2" },
+  { src: "/images/DSCF6234.JPG", alt: "アイアン手すり施工例 3" },
+  { src: "/images/DSCF6699.JPG", alt: "アイアン手すり施工例 4" },
+]
 
 export function HeroSection() {
   const ref = useRef(null)
@@ -12,29 +19,52 @@ export function HeroSection() {
     target: ref,
     offset: ["start start", "end start"]
   })
-  
+
   const y = useTransform(scrollYProgress, [0, 1], [0, 200])
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
 
+  const [currentSlide, setCurrentSlide] = useState(0)
+
+  const nextSlide = useCallback(() => {
+    setCurrentSlide((prev) => (prev + 1) % heroImages.length)
+  }, [])
+
+  // 自動スライド (5秒間隔)
+  useEffect(() => {
+    const timer = setInterval(nextSlide, 5000)
+    return () => clearInterval(timer)
+  }, [nextSlide])
+
   return (
     <section ref={ref} className="relative h-screen min-h-[700px] overflow-hidden">
-      {/* Background Image with Parallax */}
-      <motion.div 
+      {/* Background Image Slideshow with Parallax */}
+      <motion.div
         style={{ y }}
         className="absolute inset-0"
       >
-        <Image
-          src="/images/DSCF6186.JPG"
-          alt="手作りアイアン手摺"
-          fill
-          className="object-cover"
-          priority
-        />
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentSlide}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.2 }}
+            className="absolute inset-0"
+          >
+            <Image
+              src={heroImages[currentSlide].src}
+              alt={heroImages[currentSlide].alt}
+              fill
+              className="object-cover"
+              priority
+            />
+          </motion.div>
+        </AnimatePresence>
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
       </motion.div>
 
       {/* Content */}
-      <motion.div 
+      <motion.div
         style={{ opacity }}
         className="relative z-10 h-full flex flex-col justify-center items-center text-center px-6"
       >
@@ -86,6 +116,25 @@ export function HeroSection() {
           <Link href="/contact" className="group px-8 py-4 border border-white/40 text-white rounded-full transition-all duration-300 hover:bg-white hover:text-dark hover:border-white inline-block">
             <span className="text-sm tracking-wide">お問い合わせ</span>
           </Link>
+        </motion.div>
+
+        {/* Slide Dots */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 1.0 }}
+          className="absolute bottom-28 left-1/2 -translate-x-1/2 flex gap-3"
+        >
+          {heroImages.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentSlide(index)}
+              className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${
+                currentSlide === index ? "bg-gold w-8" : "bg-white/40 hover:bg-white/70"
+              }`}
+              aria-label={`スライド ${index + 1}`}
+            />
+          ))}
         </motion.div>
 
         {/* Scroll Indicator */}
