@@ -26,21 +26,21 @@ export default function ProductListPage() {
       <main className="pt-20 lg:pt-24 pb-20 bg-background">
         {/* Page Header */}
         <div className="border-b border-border">
-          <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-12 lg:py-16">
-            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+          <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-8 lg:py-12">
+            <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
               <div>
-                <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-3">Item</p>
-                <h1 className="font-serif text-3xl lg:text-5xl text-foreground">製品一覧</h1>
+                <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Item</p>
+                <h1 className="font-serif text-2xl lg:text-4xl text-foreground">製品一覧</h1>
               </div>
 
               {/* Filter bar */}
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {CATEGORIES.map((c) => (
                   <button
                     key={c.key}
                     type="button"
                     onClick={() => setFilter(c.key as FilterKey)}
-                    className={`px-4 py-2 text-[10px] tracking-[0.2em] uppercase border transition-colors ${
+                    className={`px-3 py-1.5 text-[9px] tracking-[0.15em] uppercase border rounded-full transition-colors ${
                       filter === c.key
                         ? "border-gold text-gold bg-gold/10"
                         : "border-border text-muted-foreground hover:border-gold hover:text-gold"
@@ -54,68 +54,46 @@ export default function ProductListPage() {
           </div>
         </div>
 
-        {/* Products grid */}
-        <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-12 lg:py-16">
+        {/* Products grid — 6列ミニマル */}
+        <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-8">
           <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[2px]"
+            className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3"
             layout
           >
             {products.map((p) => {
               const isExternal = p.external === true
               const content = (
-                <>
-                  <div className="relative aspect-[3/4] overflow-hidden bg-secondary">
+                <div className="group">
+                  <div className="relative aspect-square overflow-hidden bg-secondary rounded-lg">
                     <Image
                       src={galleryUrl(`${p.img}.jpg`)}
                       alt={p.name}
                       fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 16vw"
+                      className="object-contain transition-transform duration-500 group-hover:scale-110"
                     />
                     {p.badge && (
-                      <span className="absolute top-4 left-4 bg-gold text-dark text-[9px] tracking-[0.25em] uppercase font-semibold px-2.5 py-1">
+                      <span className="absolute top-1.5 left-1.5 bg-gold text-dark text-[7px] tracking-[0.15em] uppercase font-semibold px-1.5 py-0.5 rounded-sm">
                         {p.badge}
                       </span>
                     )}
                     {isExternal && (
-                      <span className="absolute top-4 right-4 bg-black/60 text-white text-[9px] tracking-wider uppercase px-2 py-1 flex items-center gap-1">
-                        <ExternalLink className="w-3 h-3" /> STORES
-                      </span>
+                      <ExternalLink className="absolute top-1.5 right-1.5 w-3 h-3 text-muted-foreground/50" />
                     )}
                   </div>
-                  <div className="p-6 border-t border-border bg-card">
-                    <div className="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">
-                      {p.label}
-                    </div>
-                    <div className="text-lg font-light text-foreground mb-1">
+                  <div className="pt-2 pb-1 px-0.5">
+                    <div className="text-[11px] font-medium text-foreground leading-tight truncate group-hover:text-gold transition-colors">
                       {p.name}
                     </div>
-                    <div className="text-[11px] tracking-wide text-muted-foreground mb-4">
-                      {p.sub}
-                    </div>
-                    <div className="pt-4 border-t border-border flex items-baseline justify-between">
-                      {p.price > 0 ? (
-                        <>
-                          <span className="text-[10px] tracking-wider text-muted-foreground uppercase">
-                            From
-                          </span>
-                          <div>
-                            <span className="text-xl font-light text-foreground">
-                              ¥{p.price.toLocaleString()}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground ml-1">
-                              税込
-                            </span>
-                          </div>
-                        </>
-                      ) : (
-                        <span className="text-[12px] tracking-wide text-muted-foreground">
-                          要見積もり
-                        </span>
-                      )}
-                    </div>
+                    {p.price > 0 ? (
+                      <div className="text-[10px] text-muted-foreground mt-0.5">
+                        ¥{p.price.toLocaleString()}
+                      </div>
+                    ) : (
+                      <div className="text-[10px] text-muted-foreground mt-0.5">要見積もり</div>
+                    )}
                   </div>
-                </>
+                </div>
               )
               return isExternal ? (
                 <a
@@ -123,12 +101,12 @@ export default function ProductListPage() {
                   href={p.href}
                   target="_blank"
                   rel="noopener"
-                  className="group bg-card block"
+                  className="block"
                 >
                   {content}
                 </a>
               ) : (
-                <Link key={p.name} href={p.href} className="group bg-card block">
+                <Link key={p.name} href={p.href} className="block">
                   {content}
                 </Link>
               )
@@ -136,18 +114,16 @@ export default function ProductListPage() {
           </motion.div>
 
           {/* Custom CTA */}
-          <div className="mt-16 border border-border p-8 lg:p-12 bg-card grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-8 items-center">
+          <div className="mt-12 border border-border p-6 lg:p-8 bg-card rounded-xl grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-center">
             <div>
-              <div className="text-lg font-light mb-2">ご要望に合わせたカスタムオーダー</div>
-              <p className="text-[13px] text-muted-foreground leading-relaxed">
-                掲載製品以外のデザイン・サイズ・仕様にも対応します。
-                <br />
-                まずはお気軽にお問い合わせください。
+              <div className="text-base font-light mb-1">ご要望に合わせたカスタムオーダー</div>
+              <p className="text-[12px] text-muted-foreground leading-relaxed">
+                掲載製品以外のデザイン・サイズ・仕様にも対応します。まずはお気軽にお問い合わせください。
               </p>
             </div>
             <a
               href="/contact"
-              className="inline-block px-8 py-4 border border-gold text-gold text-[10px] tracking-[0.3em] uppercase hover:bg-gold hover:text-dark transition-colors whitespace-nowrap text-center"
+              className="inline-block px-6 py-3 border border-gold text-gold text-[10px] tracking-[0.2em] uppercase rounded-full hover:bg-gold hover:text-dark transition-colors whitespace-nowrap text-center"
             >
               お問い合わせ
             </a>
