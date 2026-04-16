@@ -176,9 +176,9 @@ export default function ProductDetailPage() {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
             {/* LEFT COLUMN - Gallery */}
             <div className="space-y-4">
-              {/* Main Image — 商品画像は 1:1 正方形 (768×768 CDN) なので aspect-square */}
+              {/* Main Image — モバイルは 4:3 で画面占有を抑え、デスクトップは正方形 */}
               <motion.div
-                className="relative aspect-square bg-secondary rounded-lg overflow-hidden cursor-zoom-in group"
+                className="relative aspect-[4/3] md:aspect-square bg-secondary rounded-lg overflow-hidden cursor-zoom-in group"
                 onClick={() => setIsLightboxOpen(true)}
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.3 }}
@@ -224,9 +224,9 @@ export default function ProductDetailPage() {
                 </div>
               </motion.div>
 
-              {/* Thumbnail Strip — ホバーでヒーロー画像切替、クリックでLightbox */}
+              {/* Thumbnail Grid — ホバーでヒーロー画像切替、クリックでLightbox */}
               <div
-                className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide"
+                className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-5 lg:grid-cols-7 gap-2"
                 onMouseLeave={() => setHoveredImage(null)}
               >
                 {productImages.map((image, index) => (
@@ -234,7 +234,7 @@ export default function ProductDetailPage() {
                     key={index}
                     onMouseEnter={() => setHoveredImage(index)}
                     onClick={() => { setSelectedImage(index); setIsLightboxOpen(true); }}
-                    className={`relative w-20 h-20 flex-shrink-0 rounded-md overflow-hidden transition-all duration-300 ${
+                    className={`relative aspect-square rounded-md overflow-hidden transition-all duration-300 ${
                       selectedImage === index
                         ? "ring-2 ring-gold ring-offset-2"
                         : "opacity-60 hover:opacity-100"
