@@ -6,6 +6,11 @@ import { ArrowRight } from "lucide-react"
 
 const news = [
   {
+    date: "2025.04.10",
+    isNew: true,
+    title: "【施工動画】たまご型吹き抜け階段のアイアン手すり — 職人の技と現場の息遣いをご紹介します。",
+  },
+  {
     date: "2025.04.01",
     isNew: true,
     title: "2025年4月 価格改定のお知らせ — 一部商品の価格を改定いたしました。",

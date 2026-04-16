@@ -1,13 +1,23 @@
 "use client"
 
-import { motion, useInView } from "framer-motion"
-import { useRef } from "react"
+import { motion, useInView, AnimatePresence } from "framer-motion"
+import { useRef, useState } from "react"
 import Image from "next/image"
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, Play, X } from "lucide-react"
 
 const CDN = "https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7"
 
 const blogPosts = [
+  {
+    id: 0,
+    title: "たまご型吹き抜け階段のアイアン手すり",
+    excerpt: "吹き抜け空間を活かしたオーダーメイドのアイアン手すり。職人の技と現場の息遣いをご覧ください。",
+    image: `${CDN}/7a3358b5d7a86318eda1.jpg/fit=cover,w=600,h=450`,
+    category: "施工動画",
+    date: "2025.04.10",
+    type: "video" as const,
+    videoSrc: "/videos/staircase-handrail.mp4",
+  },
   {
     id: 1,
     title: "階段・廊下の手すりの取り付け方",
@@ -15,7 +25,7 @@ const blogPosts = [
     image: `${CDN}/579e79e794eed28d9ac7.jpg/fit=cover,w=600,h=450`,
     category: "施工ガイド",
     date: "2025.12.10",
-    href: "/blog/kaidan",
+    type: "article" as const,
   },
   {
     id: 2,
@@ -24,7 +34,7 @@ const blogPosts = [
     image: `${CDN}/720c42cc222961d0c4f7.jpg/fit=cover,w=600,h=450`,
     category: "暮らしのヒント",
     date: "2025.11.20",
-    href: "/blog/pet",
+    type: "article" as const,
   },
   {
     id: 3,
@@ -33,13 +43,27 @@ const blogPosts = [
     image: `${CDN}/d0f5f0e83d40a4d29044.jpg/fit=cover,w=600,h=450`,
     category: "選び方ガイド",
     date: "2025.10.15",
-    href: "/blog/handrail",
+    type: "article" as const,
   },
 ]
 
 export function BlogSection() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
+  const [videoOpen, setVideoOpen] = useState(false)
+  const [videoSrc, setVideoSrc] = useState("")
+
+  const openVideo = (src: string) => {
+    setVideoSrc(src)
+    setVideoOpen(true)
+    document.body.style.overflow = "hidden"
+  }
+
+  const closeVideo = () => {
+    setVideoOpen(false)
+    setVideoSrc("")
+    document.body.style.overflow = ""
+  }
 
   return (
     <section ref={ref} className="py-24 md:py-32 bg-cream">
@@ -64,19 +88,18 @@ export function BlogSection() {
               お知らせ・コラム
             </motion.h2>
           </div>
-          <motion.button
+          <motion.span
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="group inline-flex items-center gap-2 text-sm text-dark hover:text-gold transition-colors duration-300"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground"
           >
             すべての記事を見る
-            <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-          </motion.button>
+          </motion.span>
         </div>
 
-        {/* Blog Grid - with left gold border accent and grayscale reveal */}
-        <div className="grid md:grid-cols-3 gap-8">
+        {/* Blog Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
           {blogPosts.map((post, index) => (
             <motion.article
               key={post.id}
@@ -84,8 +107,8 @@ export function BlogSection() {
               animate={isInView ? { opacity: 1, y: 0, rotateY: 0 } : {}}
               transition={{ duration: 0.6, delay: 0.1 * index }}
               className="group cursor-pointer"
+              onClick={() => post.type === "video" && post.videoSrc && openVideo(post.videoSrc)}
             >
-              {/* Card with left gold border accent */}
               <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border-l-4 border-transparent hover:border-gold hover:-translate-y-2">
                 {/* Image with grayscale to color transition */}
                 <div className="relative aspect-[4/3] overflow-hidden">
@@ -99,6 +122,14 @@ export function BlogSection() {
                   <span className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm text-dark text-xs rounded-full">
                     {post.category}
                   </span>
+                  {/* Play Button for Video */}
+                  {post.type === "video" && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-16 h-16 rounded-full bg-gold/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                        <Play className="w-7 h-7 text-white ml-1" fill="white" />
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Content */}
@@ -111,10 +142,9 @@ export function BlogSection() {
                     {post.excerpt}
                   </p>
 
-                  {/* Read More with arrow reveal */}
                   <span className="inline-flex items-center gap-2 text-sm text-dark group-hover:text-gold transition-colors duration-300">
                     <span className="relative">
-                      READ
+                      {post.type === "video" ? "WATCH" : "READ"}
                       <span className="absolute bottom-0 left-0 w-0 h-px bg-gold group-hover:w-full transition-all duration-300" />
                     </span>
                     <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
@@ -125,6 +155,36 @@ export function BlogSection() {
           ))}
         </div>
       </div>
+
+      {/* Fullscreen Video Modal */}
+      <AnimatePresence>
+        {videoOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center"
+            onClick={closeVideo}
+          >
+            <button
+              onClick={closeVideo}
+              className="absolute top-6 right-6 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors z-10"
+              aria-label="閉じる"
+            >
+              <X className="w-6 h-6 text-white" />
+            </button>
+            <div className="relative w-full max-w-5xl mx-6" onClick={(e) => e.stopPropagation()}>
+              <video
+                src={videoSrc}
+                controls
+                autoPlay
+                className="w-full rounded-lg"
+                style={{ maxHeight: "85vh" }}
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   )
 }
