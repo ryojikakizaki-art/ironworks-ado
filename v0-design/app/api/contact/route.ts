@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 
     const categoryLabel = categoryLabels[category] || category;
     const productLabel  = productLabels[product]   || '—';
-    const fromAddress   = process.env.CONTACT_FROM     || 'IRONWORKS ado <noreply@tantetuzest.com>';
+    const fromAddress   = process.env.CONTACT_FROM     || 'IRONWORKS ado <onboarding@resend.dev>';
     const toAddress     = process.env.CONTACT_TO_EMAIL || 'ado@tantetuzest.com';
 
     const notifyHtml = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
