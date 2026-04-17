@@ -14,10 +14,24 @@ const inter = Inter({
   variable: "--font-inter"
 });
 
+// 制作中のためデフォルトで検索エンジンに非表示
+// 本番公開時に Vercel 環境変数 SITE_INDEXABLE=true を設定する
+const isIndexable = process.env.SITE_INDEXABLE === 'true'
+
 export const metadata: Metadata = {
   title: 'IRONWORKS ado | 鍛冶職人が手掛けるアイアン手摺',
   description: '一本一本、鍛冶職人が心を込めて手作りするアイアン手摺。伝統の技と現代のデザインが融合した、唯一無二の手摺をお届けします。',
   generator: 'v0.app',
+  robots: isIndexable
+    ? { index: true, follow: true }
+    : {
+        index: false,
+        follow: false,
+        noarchive: true,
+        nosnippet: true,
+        noimageindex: true,
+        googleBot: { index: false, follow: false, noimageindex: true },
+      },
   icons: {
     icon: [
       {
