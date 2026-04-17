@@ -2,30 +2,12 @@
 
 import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
+import Link from "next/link"
 import { ArrowRight } from "lucide-react"
+import { NEWS } from "@/lib/news"
 
-const news = [
-  {
-    date: "2025.04.10",
-    isNew: true,
-    title: "【施工動画】階段手すりのオーダー制作例 — 職人の技と現場の息遣いをご紹介します。",
-  },
-  {
-    date: "2025.04.01",
-    isNew: true,
-    title: "2025年4月 価格改定のお知らせ — 一部商品の価格を改定いたしました。",
-  },
-  {
-    date: "2025.02.01",
-    isNew: false,
-    title: "新商品「Clémence クレマンス」横型フラットバー手すり 発売開始しました。",
-  },
-  {
-    date: "2024.12.20",
-    isNew: false,
-    title: "年末年始の営業について — 12/28〜1/5は冬季休業とさせていただきます。",
-  },
-]
+// トップページでは最新 4 件のみ表示
+const news = NEWS.slice(0, 4)
 
 export function NewsSection() {
   const ref = useRef(null)
@@ -101,9 +83,13 @@ export function NewsSection() {
           transition={{ duration: 0.5, delay: 0.6 }}
           className="text-center mt-8"
         >
-          <span className="inline-flex items-center gap-2 text-[13px] text-muted-foreground">
+          <Link
+            href="/news"
+            className="inline-flex items-center gap-2 text-[13px] text-muted-foreground hover:text-gold transition-colors group"
+          >
             <span>すべてのお知らせを見る</span>
-          </span>
+            <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+          </Link>
         </motion.div>
       </div>
     </section>
