@@ -29,7 +29,7 @@ export default async function handler(req, res) {
 
   const categoryLabel = categoryLabels[category] || category;
   const productLabel  = productLabels[product]   || '—';
-  const fromAddress   = process.env.CONTACT_FROM     || 'IRONWORKS ado <noreply@tantetuzest.com>';
+  const fromAddress   = process.env.CONTACT_FROM     || 'IRONWORKS ado <onboarding@resend.dev>';
   const toAddress     = process.env.CONTACT_TO_EMAIL || 'ryoji.kakizaki@gmail.com';
 
   const notifyHtml = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
