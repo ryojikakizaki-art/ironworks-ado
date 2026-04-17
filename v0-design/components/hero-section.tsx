@@ -1,39 +1,105 @@
 "use client"
 
-import { motion, useScroll, useTransform } from "framer-motion"
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
 import Image from "next/image"
-import { useRef } from "react"
+import { useRef, useState, useEffect, useCallback } from "react"
 import { ChevronRight } from "lucide-react"
+
+const SLIDES = [
+  { type: "image" as const, src: "/images/DSCF6186.JPG", alt: "手作りアイアン手摺", duration: 6000 },
+  { type: "video" as const, src: "/videos/hero.mp4",                               duration: 0 },
+]
 
 export function HeroSection() {
   const ref = useRef(null)
-  const { scrollYProgress } = useScroll({
-    target: ref,
-    offset: ["start start", "end start"]
-  })
-  
-  const y = useTransform(scrollYProgress, [0, 1], [0, 200])
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [current, setCurrent] = useState(0)
+  const [fading, setFading] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] })
+  const y       = useTransform(scrollYProgress, [0, 1], [0, 200])
   const opacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
+
+  const goTo = useCallback((index: number) => {
+    setFading(true)
+    setTimeout(() => {
+      setCurrent(index)
+      setFading(false)
+    }, 600)
+  }, [])
+
+  const next = useCallback(() => {
+    goTo((current + 1) % SLIDES.length)
+  }, [current, goTo])
+
+  // スライド切替タイマー
+  useEffect(() => {
+    const slide = SLIDES[current]
+    if (slide.type === "image") {
+      timerRef.current = setTimeout(next, slide.duration)
+    }
+    return () => { if (timerRef.current) clearTimeout(timerRef.current) }
+  }, [current, next])
+
+  // 動画終了時に次へ
+  const handleVideoEnded = useCallback(() => { next() }, [next])
+
+  // 動画スライドになったら再生
+  useEffect(() => {
+    if (SLIDES[current].type === "video" && videoRef.current) {
+      videoRef.current.currentTime = 0
+      videoRef.current.play().catch(() => {})
+    }
+  }, [current])
 
   return (
     <section ref={ref} className="relative h-screen min-h-[700px] overflow-hidden">
-      {/* Background Image with Parallax */}
-      <motion.div 
-        style={{ y }}
-        className="absolute inset-0"
-      >
-        <Image
-          src="/images/DSCF6186.JPG"
-          alt="手作りアイアン手摺"
-          fill
-          className="object-cover"
-          priority
-        />
+      {/* Background Slides */}
+      <motion.div style={{ y }} className="absolute inset-0">
+        <AnimatePresence mode="wait">
+          {SLIDES[current].type === "image" ? (
+            <motion.div
+              key={`img-${current}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: fading ? 0 : 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6 }}
+              className="absolute inset-0"
+            >
+              <Image
+                src={SLIDES[current].src}
+                alt={(SLIDES[current] as { alt: string }).alt}
+                fill
+                className="object-cover"
+                priority
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key={`vid-${current}`}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: fading ? 0 : 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.6 }}
+              className="absolute inset-0"
+            >
+              <video
+                ref={videoRef}
+                src={SLIDES[current].src}
+                className="w-full h-full object-cover"
+                muted
+                playsInline
+                onEnded={handleVideoEnded}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
       </motion.div>
 
       {/* Content */}
-      <motion.div 
+      <motion.div
         style={{ opacity }}
         className="relative z-10 h-full flex flex-col justify-center items-center text-center px-6"
       >
@@ -87,6 +153,20 @@ export function HeroSection() {
           </button>
         </motion.div>
 
+        {/* Slide Indicators */}
+        <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex gap-2">
+          {SLIDES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              className={`h-0.5 transition-all duration-300 rounded-full ${
+                i === current ? "w-8 bg-white" : "w-4 bg-white/40"
+              }`}
+              aria-label={`スライド ${i + 1}`}
+            />
+          ))}
+        </div>
+
         {/* Scroll Indicator */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -99,7 +179,7 @@ export function HeroSection() {
             <motion.div
               animate={{ y: [0, 8, 0] }}
               transition={{ duration: 1.5, repeat: Infinity }}
-              className="w-px h-12 bg-gradient-to-b from-white/60 to-transparent"
+              className="w-px h-8 bg-gradient-to-b from-white/60 to-transparent"
             />
           </div>
         </motion.div>
