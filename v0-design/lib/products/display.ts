@@ -10,6 +10,14 @@ export interface ProductSpec {
   value: string
 }
 
+// 商品ページの「製品について」セクションに表示する 4 つの特徴アイコン
+export type FeatureIconName = "Hammer" | "Paintbrush" | "Ruler" | "Wrench"
+export interface FeatureBullet {
+  icon: FeatureIconName
+  title: string
+  desc: string
+}
+
 export interface ProductDisplay {
   slug: string
   nameEn: string // "René"
@@ -19,9 +27,39 @@ export interface ProductDisplay {
   shortDescription: string // 1行キャッチ
   longDescription: string // 「製品について」本文
   specs: ProductSpec[]
+  featureBullets: FeatureBullet[] // 「製品について」の 4 点アイコン (仕上げ・製法で変わる)
   galleryIds: string[] // 既存 item/*.html の GALLERY_IDS から抜粋 (先頭6件程度)
   youtubeId?: string // 制作動画 (あれば埋め込み表示)
 }
+
+// 仕上げ別の特徴プリセット (同一プリセットを複数商品で共有)
+const FB_STKM_URETHANE: FeatureBullet[] = [
+  { icon: "Hammer", title: "職人の手仕上げ", desc: "一点一点、職人が手作業で丁寧に仕上げます" },
+  { icon: "Paintbrush", title: "2液ウレタン塗装", desc: "耐久性の高い2液型ウレタン塗装で長持ち" },
+  { icon: "Ruler", title: "オーダーメイド", desc: "お好みのサイズでお作りします" },
+  { icon: "Wrench", title: "取付簡単", desc: "付属の金具で簡単に取り付け可能" },
+]
+
+const FB_EMILE_SILVER: FeatureBullet[] = [
+  { icon: "Hammer", title: "手打ち鎚目", desc: "職人が一打ち一打ち手で仕上げた独特の表情" },
+  { icon: "Paintbrush", title: "銀古美仕上げ", desc: "クラシカルで格調高い経年変化を楽しめる仕上げ" },
+  { icon: "Ruler", title: "オーダーメイド", desc: "お好みのサイズでお作りします" },
+  { icon: "Wrench", title: "取付簡単", desc: "付属の金具で簡単に取り付け可能" },
+]
+
+const FB_MITSUROU: FeatureBullet[] = [
+  { icon: "Hammer", title: "火造り鍛造", desc: "職人の手打ちで一本一本鍛え上げた無垢鉄" },
+  { icon: "Paintbrush", title: "ミツロウ仕上げ", desc: "使い込むほどに深まる経年変化を楽しめる天然仕上げ" },
+  { icon: "Ruler", title: "固定サイズ", desc: "職人の逸品として決まった寸法でお届けします" },
+  { icon: "Wrench", title: "取付簡単", desc: "付属の金具で簡単に取り付け可能" },
+]
+
+const FB_TSUCHIME: FeatureBullet[] = [
+  { icon: "Hammer", title: "手打ち鎚目", desc: "職人の一打ち一打ちが生む、唯一無二の表情" },
+  { icon: "Paintbrush", title: "火造り鍛造", desc: "伝統の火造り鍛造で無垢鉄を鍛え上げます" },
+  { icon: "Ruler", title: "固定サイズ", desc: "職人の逸品として決まった寸法でお届けします" },
+  { icon: "Wrench", title: "取付簡単", desc: "付属の金具で簡単に取り付け可能" },
+]
 
 // Cloudflare Images CDN
 export const CDN_BASE = "https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7"
@@ -48,6 +86,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "太さ", value: "25.4φ" },
       { label: "付属品", value: "座金3個・取付ビス一式" },
     ],
+    featureBullets: FB_STKM_URETHANE,
     galleryIds: [
       "d0f5f0e83d40a4d29044.jpg","441adb48d70157c88ced.jpg","7918619d2ac80c628b18.jpg",
       "8b014530a248acab27b4.jpg","2f3045de2d64fb258555.jpg","95c11abfffdb58afc397.jpg",
@@ -76,6 +115,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "太さ", value: "25.4φ" },
       { label: "付属品", value: "座金3個・取付ビス一式" },
     ],
+    featureBullets: FB_STKM_URETHANE,
     galleryIds: [
       "0a0c0c78f9f636cca733.jpg","eae60ee60278fdc5aef7.jpg","7669ac50e3027f2f4056.jpg",
       "5bda48c8598f2c5e0fa4.jpg","28918bd828b8c4793b5a.jpg","1eb8f8e79ab4b31ec686.jpg",
@@ -105,6 +145,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "寸法", value: "9×32mm" },
       { label: "付属品", value: "座金3個・取付ビス一式" },
     ],
+    featureBullets: FB_STKM_URETHANE,
     galleryIds: [
       "939d0690971c550c1dd9.jpg","a3959136fa0812a028ab.jpg","c3d3980716a89741f308.jpg",
       "c65c9c3e16afcb54dfd1.jpg","918bdf512ec60b0714fc.jpg","6ae94e74595cc9233f9a.jpg",
@@ -131,6 +172,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "寸法", value: "9×32mm" },
       { label: "付属品", value: "座金3個・取付ビス一式" },
     ],
+    featureBullets: FB_EMILE_SILVER,
     galleryIds: [
       "fa95f550baa05216d291.jpg","52eb04f0bc4006be50ab.jpg","ad5c57a5a6d663f39de5.jpg",
       "c31fc7db2bfd832d548d.jpg","f5a0332bb1ab9928a512.jpg","7feab012748952757a3c.jpg",
@@ -157,6 +199,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "太さ", value: "25.4φ" },
       { label: "付属品", value: "座金・取付ビス一式" },
     ],
+    featureBullets: FB_STKM_URETHANE,
     galleryIds: [
       "86278edb68c21957e339.jpg","4891b02ffce1786113ae.jpg","e490e7cc7493378ef896.jpg",
       "2c953ba91fe0b264c2fe.jpg","ad53ccfcea905eea06b9.jpg","3942c2d19e73235a5b7f.jpg",
@@ -184,6 +227,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "太さ", value: "φ25mm" },
       { label: "付属品", value: "座金・取付ビス一式" },
     ],
+    featureBullets: FB_STKM_URETHANE,
     galleryIds: [
       "8775cfcb40298257834a.jpg","5e4377eb8cce3ba15572.jpg","8e9f10b474c179961a81.jpg",
       "f4a030f56d5784dc460c.jpg","dfc095e36e07842b1e1a.jpg","be8ace3369f4527a90ce.jpg",
@@ -212,6 +256,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "太さ", value: "φ31.8mm（太径）" },
       { label: "付属品", value: "座金・取付ビス一式" },
     ],
+    featureBullets: FB_STKM_URETHANE,
     galleryIds: [
       "759848de1a99945b4d90.jpg","b10994fb69518432cb40.jpg","35ec7502d69a4e5aea2b.jpg",
       "8b61a9e2e373016b634a.jpg","51f634876bc5ffff0639.jpg","ed9cafa6cf003bdf2ed1.jpg",
@@ -240,6 +285,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "太さ", value: "φ25mm" },
       { label: "付属品", value: "座金4個・取付ビス一式" },
     ],
+    featureBullets: FB_STKM_URETHANE,
     galleryIds: ["2d1043dcd7658a96e5f3.jpg"],
   },
   scroll16: {
@@ -259,6 +305,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "製法", value: "火造り鍛造" },
       { label: "納期", value: "ご注文後 3〜4週間" },
     ],
+    featureBullets: FB_MITSUROU,
     galleryIds: ["2a64ecfb5e50e78cb374.jpg"],
   },
   scroll19: {
@@ -278,6 +325,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "製法", value: "火造り鍛造" },
       { label: "納期", value: "ご注文後 4〜5週間" },
     ],
+    featureBullets: FB_MITSUROU,
     galleryIds: ["25b6438ea6a9393aa027.jpg"],
   },
   scroll22: {
@@ -297,6 +345,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "製法", value: "火造り鍛造" },
       { label: "納期", value: "ご注文後 4〜5週間" },
     ],
+    featureBullets: FB_MITSUROU,
     galleryIds: ["d09c9426e8510d2ca152.jpg"],
   },
   fabrice: {
@@ -316,6 +365,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "付属品", value: "座金2個・取付ビス一式" },
       { label: "納期", value: "ご注文後 5〜6週間" },
     ],
+    featureBullets: FB_MITSUROU,
     galleryIds: ["66a699b295bcdb8f3598.jpg"],
   },
   tsuchime: {
@@ -335,6 +385,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "付属品", value: "座金2個・取付ビス一式" },
       { label: "納期", value: "ご注文後 5〜6週間" },
     ],
+    featureBullets: FB_TSUCHIME,
     galleryIds: ["569af3ee76a1999863e7.jpg"],
   },
 }
