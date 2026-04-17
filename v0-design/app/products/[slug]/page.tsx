@@ -11,10 +11,18 @@ import { ReneDrawingModal } from "@/components/drawing-modal/rene-drawing-modal"
 import { InlineRailSimulator } from "@/components/drawing-modal/inline-rail-simulator"
 import { ZakinEditor, type ZakinState } from "@/components/drawing-modal/zakin-editor"
 import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants"
-import { getProductFull, galleryUrl } from "@/lib/products/display"
+import { getProductFull, galleryUrl, type FeatureIconName } from "@/lib/products/display"
 import { ChevronLeft, ChevronRight, X, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench } from "lucide-react"
 
 // productImages / specs は商品ごとに display.ts から取得
+
+// featureBullets の icon 名 → lucide コンポーネント対応表
+const FEATURE_ICON_MAP: Record<FeatureIconName, typeof Hammer> = {
+  Hammer,
+  Paintbrush,
+  Ruler,
+  Wrench,
+}
 
 const prefectures = [
   "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
@@ -609,20 +617,18 @@ export default function ProductDetailPage() {
               </p>
               
               <div className="grid sm:grid-cols-2 gap-4">
-                {[
-                  { icon: Hammer, title: "職人の手仕上げ", desc: "一点一点、職人が手作業で丁寧に仕上げます" },
-                  { icon: Paintbrush, title: "2液ウレタン塗装", desc: "耐久性の高い2液型ウレタン塗装で長持ち" },
-                  { icon: Ruler, title: "オーダーメイド", desc: "お好みのサイズでお作りします" },
-                  { icon: Wrench, title: "取付簡単", desc: "付属の金具で簡単に取り付け可能" },
-                ].map((feature, index) => (
-                  <div key={index} className="flex items-start gap-3 p-4 bg-secondary rounded-lg">
-                    <feature.icon className="w-6 h-6 text-gold flex-shrink-0" />
-                    <div>
-                      <h4 className="text-[14px] font-medium mb-1">{feature.title}</h4>
-                      <p className="text-[12px] text-muted-foreground">{feature.desc}</p>
+                {product.featureBullets.map((feature, index) => {
+                  const Icon = FEATURE_ICON_MAP[feature.icon]
+                  return (
+                    <div key={index} className="flex items-start gap-3 p-4 bg-secondary rounded-lg">
+                      <Icon className="w-6 h-6 text-gold flex-shrink-0" />
+                      <div>
+                        <h4 className="text-[14px] font-medium mb-1">{feature.title}</h4>
+                        <p className="text-[12px] text-muted-foreground">{feature.desc}</p>
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </section>
 
