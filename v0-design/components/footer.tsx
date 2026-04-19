@@ -29,7 +29,7 @@ const footerLinks = {
     links: [
       { label: "ご挨拶", href: "/greeting" },
       { label: "ブログ", href: "/blog" },
-      { label: "特定商取引法に基づく表記", href: "/about" },
+      { label: "特定商取引法に基づく表記", href: "/tokushoho" },
     ],
   },
 }
