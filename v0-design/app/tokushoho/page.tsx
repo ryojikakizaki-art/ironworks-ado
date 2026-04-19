@@ -9,7 +9,7 @@ export const metadata = {
 const rows: { label: string; value: React.ReactNode }[] = [
   { label: "販売業者", value: "鍛鉄工房ZEST（屋号）／IRONWORKS ado" },
   { label: "運営責任者", value: "蠣崎 良治" },
-  { label: "所在地", value: "〒265-0052 千葉県千葉市若葉区和泉町239-1" },
+  { label: "所在地", value: "〒265-0052 千葉県千葉市若葉区和泉町239-2" },
   { label: "電話番号", value: "080-5424-2221（受付時間 9:00〜18:00／土日祝休）" },
   { label: "メールアドレス", value: "ado@tantetuzest.com" },
   {
