@@ -26,7 +26,7 @@ interface Product {
 const PRODUCTS: Record<string, Product> = {
   rene:       { name: 'René ルネ',               type: '横型', basePrice: 36500, stdLengthMm: 1500, maxMm: 5000, finish: 'マットブラック', includedZakin: 3 },
   claire:     { name: 'Claire クレール',          type: '横型', basePrice: 42000, stdLengthMm: 1500, maxMm: 5000, finish: 'マットホワイト', includedZakin: 3 },
-  emile:      { name: 'Emile エミール',           type: '横型', basePrice: 45800, stdLengthMm: 1500, maxMm: 5000, finish: '鎚目仕上げ 銀古美', includedZakin: 3 },
+  emile:      { name: 'Émile エミール',           type: '横型', basePrice: 45800, stdLengthMm: 1500, maxMm: 5000, finish: '鎚目仕上げ 銀古美', includedZakin: 3 },
   marcel:     { name: 'Marcel マルセル',          type: '横型', basePrice: 36000, stdLengthMm: 1500, maxMm: 5000, finish: 'マットブラック', includedZakin: 3 },
   alexandre:  { name: 'Alexandre アレクサンドル', type: '縦型', basePrice: 32000, stdLengthMm: 1000, maxMm: 3000, finish: 'マットブラック', includedZakin: 3 },
   catherine:  { name: 'Catherine カトリーヌ',     type: '縦型', basePrice: 34500, stdLengthMm: 1000, maxMm: 3000, finish: 'マットホワイト', includedZakin: 3 },
@@ -138,6 +138,23 @@ export async function POST(request: NextRequest) {
       locale: 'ja',
       payment_intent_data: {
         description: `IRONWORKS ado — ${prod.name} ${L}mm${rushDelivery ? '（特急）' : ''}`,
+      },
+      invoice_creation: {
+        enabled: true,
+        invoice_data: {
+          description: `IRONWORKS ado — ${prod.name} 壁付け手すり ${L}mm${rushDelivery ? '（特急配送）' : ''}`,
+          footer: [
+            '発行者: 鍛鉄工房ZEST（蠣崎 良治） / IRONWORKS ado',
+            '適格請求書発行事業者登録番号: T7810771171765',
+            '〒265-0052 千葉県千葉市若葉区和泉町239-1',
+            'TEL: 080-5424-2221 / Email: ado@tantetuzest.com',
+          ].join('\n'),
+          metadata: {
+            product: productKey,
+            length_mm: String(L),
+            rush_delivery: rushDelivery ? 'true' : 'false',
+          },
+        },
       },
     });
 
