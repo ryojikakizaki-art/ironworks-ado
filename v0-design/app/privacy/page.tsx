@@ -91,7 +91,7 @@ const sections = [
         <br />
         Email: ado@tantetuzest.com
         <br />
-        TEL: 080-5424-2221
+        TEL: 070-3817-0659
       </>
     ),
   },
