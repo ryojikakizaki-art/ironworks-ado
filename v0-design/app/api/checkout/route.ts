@@ -17,6 +17,7 @@ function getStripe(): Stripe {
 interface ZakinRule {
   defaultCount?: number;
   endMinMm: number;
+  endRatioOfLen?: number;
   maxSpanMm: number;
   minLengthMm?: number;
 }
@@ -32,7 +33,7 @@ interface Product {
 }
 
 const VERTICAL_STANDARD_RULE: ZakinRule = {
-  defaultCount: 2, endMinMm: 50, maxSpanMm: 900, minLengthMm: 500,
+  defaultCount: 2, endMinMm: 50, endRatioOfLen: 0.1, maxSpanMm: 900, minLengthMm: 500,
 };
 const ANTOINE_RULE: ZakinRule = {
   defaultCount: 2, endMinMm: 250, maxSpanMm: 1200, minLengthMm: 1500,

@@ -108,11 +108,15 @@ export const DRAWING_PRODUCTS: Record<string, DrawingProductConfig> = {
 
 // 縦型商品 (シンプル schematic - shape 不要)
 // 縦型 Claude / Catherine 共通の座金ルール
-// - 基本 2 個固定 (カスタムで中央追加可)、最大ピッチ 900mm、端最小 50mm
+// - 基本 2 個固定 (カスタムで中央追加可)、最大ピッチ 900mm
+// - 端距離 = max(50, L × 0.1, (L − 900) / 2)
+//   ・短尺時 (L ≤ 1000): L × 0.1 が支配 (L=1000 で端100/ピッチ800)
+//   ・長尺時 (L ≥ 1125): (L − 900) / 2 が支配 (最大ピッチ 900 を保つ)
 // - 長さ 500〜1500mm
 const VERTICAL_STANDARD_RULE: ZakinRule = {
   defaultCount: 2,
   endMinMm: 50,
+  endRatioOfLen: 0.1,
   maxSpanMm: 900,
   minLengthMm: 500,
   maxLengthMm: 1500,

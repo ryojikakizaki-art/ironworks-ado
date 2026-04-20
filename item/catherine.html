@@ -485,7 +485,7 @@
   }
 
   function calcEndDist(L_mm) {
-    return Math.max(END_MIN_MM, (L_mm - MAX_SPAN_MM) / 2);
+    return Math.max(END_MIN_MM, L_mm * 0.1, (L_mm - MAX_SPAN_MM) / 2);
   }
 
   function calcPrice(L_mm) {

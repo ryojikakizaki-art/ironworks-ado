@@ -7,6 +7,9 @@ export interface ZakinRule {
   defaultCount?: number
   // 端からの最小距離 (mm)
   endMinMm: number
+  // 端距離を長さに比例させる係数 (例: 0.1 なら L=1000 のとき端100mm)。
+  // endMinMm と併用し、大きい方を採用。
+  endRatioOfLen?: number
   // 座金間の最大ピッチ (mm)
   maxSpanMm: number
   // 長さ入力の下限 (mm)
@@ -36,12 +39,16 @@ export function calcZakin(L_mm: number, rule?: ZakinRule): number {
   return 1 + Math.ceil(inner / maxSpan(rule))
 }
 
-// 端からの距離。縦型(defaultCount 指定)は最大ピッチを保つため動的に拡大。
+// 端からの距離。縦型(defaultCount 指定)は:
+//   max(endMinMm, L × endRatioOfLen, (L − maxSpan) / 2)
+// - L × endRatioOfLen で短尺時に端距離が L に比例
+// - (L − maxSpan) / 2 で長尺時に最大ピッチを保つため端距離が拡大
 export function calcEndDist(L_mm: number, rule?: ZakinRule): number {
-  if (rule?.defaultCount !== undefined) {
-    return Math.max(endMin(rule), (L_mm - maxSpan(rule)) / 2)
-  }
-  return endMin(rule)
+  if (rule?.defaultCount === undefined) return endMin(rule)
+  const floor = endMin(rule)
+  const byRatio = rule.endRatioOfLen ? L_mm * rule.endRatioOfLen : 0
+  const byPitchCap = (L_mm - maxSpan(rule)) / 2
+  return Math.max(floor, byRatio, byPitchCap)
 }
 
 export function getZakinPositions(L_mm: number, zakinCount: number, rule?: ZakinRule): number[] {
