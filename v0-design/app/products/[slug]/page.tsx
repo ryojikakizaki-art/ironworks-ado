@@ -109,8 +109,9 @@ export default function ProductDetailPage() {
       ? zakin.positions.length
       : calcZakin(length, zakinRule)
     const addZakin = Math.max(0, zakinCount - INCLUDED_ZAKIN) * ZAKIN_PRICE
-    // 角度加工料金 (angleDeg > 0 の場合のみ、座金数 × ANGLE_PRICE)
-    const angleCost = zakin.angleDeg > 0 ? zakinCount * ANGLE_PRICE : 0
+    // 角度加工料金 (横型のみ適用、縦型は 0 固定)
+    const isHorizontalCat = product.drawing.category === "horizontal"
+    const angleCost = isHorizontalCat && zakin.angleDeg > 0 ? zakinCount * ANGLE_PRICE : 0
     const unitPrice = BASE_PRICE + addon + addZakin + surcharge + angleCost
     const subtotal = Math.round(unitPrice) * quantity
     const expressAddon = deliveryType === "express" ? Math.round(subtotal * RUSH_RATE) : 0
@@ -384,6 +385,7 @@ export default function ProductDetailPage() {
                           state={zakin}
                           onChange={setZakin}
                           zakinRule={zakinRule}
+                          disableAngle={product.drawing.category !== "horizontal"}
                           className="mt-3"
                         />
                         <button

@@ -17,6 +17,8 @@ interface ZakinEditorProps {
   onChange: (next: ZakinState) => void
   className?: string
   zakinRule?: ZakinRule
+  /** true の場合、角度設定 UI とボタン表記を非表示 (縦型手すり用) */
+  disableAngle?: boolean
 }
 
 /**
@@ -33,6 +35,7 @@ export function ZakinEditor({
   onChange,
   className,
   zakinRule,
+  disableAngle = false,
 }: ZakinEditorProps) {
   const [open, setOpen] = useState(false)
   const ruleMaxSpan = zakinRule?.maxSpanMm ?? MAX_SPAN_MM
@@ -97,7 +100,7 @@ export function ZakinEditor({
             : "border-border text-muted-foreground hover:border-gold hover:text-gold"
         }`}
       >
-        <span>▸ 座金位置・角度を設定する{state.customMode ? "（カスタム）" : ""}</span>
+        <span>▸ 座金位置{disableAngle ? "" : "・角度"}を設定する{state.customMode ? "（カスタム）" : ""}</span>
         <span className={`transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
       </button>
 
@@ -137,7 +140,8 @@ export function ZakinEditor({
             </span>
           </div>
 
-          {/* Angle */}
+          {/* Angle (横型のみ) */}
+          {!disableAngle && (
           <div className="flex items-center gap-3 pb-3 border-b border-border flex-wrap">
             <span className="text-[12px] text-foreground min-w-[60px]">角度</span>
             <div className="flex">
@@ -186,6 +190,7 @@ export function ZakinEditor({
             <span className="text-[11px] text-muted-foreground">°</span>
             <span className="text-[10px] text-muted-foreground ml-auto">+¥2,000/座金</span>
           </div>
+          )}
 
           {/* Position list */}
           <div>

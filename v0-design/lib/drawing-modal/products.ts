@@ -51,6 +51,19 @@ const FLAT_9x32: RailShape = {
   totalProjection: 56,
 }
 
+// 縦型用: 支柱なし、壁 → 座金プレート(4.5) → バー外径
+const VERT_ROUND_25_4: RailShape = {
+  type: "round",
+  diameter: 25.4,
+  totalProjection: 29.9, // 4.5 + 25.4
+}
+
+const VERT_ROUND_31_8: RailShape = {
+  type: "round",
+  diameter: 31.8,
+  totalProjection: 36.3, // 4.5 + 31.8
+}
+
 export const DRAWING_PRODUCTS: Record<string, DrawingProductConfig> = {
   rene: {
     slug: "rene",
@@ -129,6 +142,7 @@ DRAWING_PRODUCTS.claude = {
   material: "SS400 STKM 25.4φ",
   finish: "マットブラック",
   category: "vertical",
+  shape: VERT_ROUND_25_4,
   basePrice: 30000,
   stdLengthMm: 1000,
   maxMm: 1500,
@@ -143,6 +157,7 @@ DRAWING_PRODUCTS.catherine = {
   material: "SS400 STKM 25.4φ",
   finish: "マットホワイト",
   category: "vertical",
+  shape: VERT_ROUND_25_4,
   basePrice: 34500,
   stdLengthMm: 1000,
   maxMm: 1500,
@@ -157,6 +172,7 @@ DRAWING_PRODUCTS.alexandre = {
   material: "SS400 STKM 31.8φ",
   finish: "マットブラック",
   category: "vertical",
+  shape: VERT_ROUND_31_8,
   basePrice: 32000,
   stdLengthMm: 1000,
   maxMm: 3000,
@@ -170,6 +186,7 @@ DRAWING_PRODUCTS.antoine = {
   material: "SS400 STKM 25.4φ",
   finish: "マットブラック",
   category: "vertical",
+  shape: VERT_ROUND_25_4,
   basePrice: 56000,
   stdLengthMm: 2500,
   maxMm: 3000,
