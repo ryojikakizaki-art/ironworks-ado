@@ -2,7 +2,7 @@
 // 既存 item/rene.html と同値
 export const INCLUDED_ZAKIN = 3
 export const END_DIST_MM = 100
-export const MAX_SPAN_MM = 900
+export const MAX_SPAN_MM = 850
 
 export function calcZakin(L_mm: number): number {
   if (L_mm <= 1050) return 2
