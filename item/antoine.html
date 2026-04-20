@@ -285,7 +285,7 @@
         <div class="price-section">
           <p class="price-label">価格</p>
           <p class="price">¥56,000<span style="font-size: 16px;">（税抜）</span></p>
-          <p class="price-note">消費税10%が別途加算されます<br>2300〜2500mm 限定</p>
+          <p class="price-note">消費税10%が別途加算されます<br>1500〜3000mm</p>
         </div>
 
         <div class="specs">
@@ -303,7 +303,7 @@
           </div>
           <div class="spec-item">
             <span class="spec-label">対応高さ</span>
-            <span class="spec-value">2300〜2500mm</span>
+            <span class="spec-value">1500〜3000mm</span>
           </div>
           <div class="spec-item">
             <span class="spec-label">納期</span>
@@ -317,16 +317,16 @@
           <div class="input-group">
             <div class="input-label">
               <span>ご希望の高さ</span>
-              <span class="input-hint">2300mm 〜 2500mm</span>
+              <span class="input-hint">1500mm 〜 3000mm</span>
             </div>
             <div class="length-input-wrap">
-              <input type="number" id="lengthInput" value="2400" min="2300" max="2500" step="1" oninput="onLengthChange(this.value)">
+              <input type="number" id="lengthInput" value="2000" min="1500" max="3000" step="1" oninput="onLengthChange(this.value)">
               <div class="length-unit">mm</div>
             </div>
-            <input type="range" class="length-slider" id="lengthSlider" min="2300" max="2500" step="1" value="2400" oninput="onSliderChange(this.value)">
+            <input type="range" class="length-slider" id="lengthSlider" min="1500" max="3000" step="1" value="2000" oninput="onSliderChange(this.value)">
             <div class="slider-hint">スライダーをドラッグして長さを調整</div>
             <div class="slider-labels">
-              <span>2300</span><span>2400（標準）</span><span>2500mm</span>
+              <span>1500</span><span>2000（標準）</span><span>2500</span><span>3000mm</span>
             </div>
           </div>
           <hr class="step-divider">
@@ -361,7 +361,7 @@
           <div class="step-label"><span class="step-num">3</span>納品日・配送を選ぶ</div>
           <div class="price-breakdown">
             <div class="breakdown-row">
-              <span class="breakdown-label">基本料金（2300〜2500mm）</span>
+              <span class="breakdown-label">基本料金（1500〜3000mm）</span>
               <span class="breakdown-value">¥56,000</span>
             </div>
             <div class="breakdown-row" id="rowZakin" style="display:none">
@@ -384,7 +384,7 @@
           <div class="checkout-error" id="checkoutError">⚠ エラーが発生しました。しばらく後にもう一度お試しください。</div>
           <ul class="notes">
             <li>受注生産のため、お届けまで約4〜5週間かかります</li>
-            <li>2300〜2500mmの高い空間専用モデルです</li>
+            <li>1500〜3000mmの長尺対応モデルです</li>
             <li>施工・取り付けは含まれません（別途ご相談可）</li>
             <li>サイズは指定寸法±1mm以内の精度でお届けします</li>
             <li>クレジットカード決済（Stripe）対応</li>
@@ -395,7 +395,7 @@
 
     <div class="description-section">
       <h2>Antoine について</h2>
-      <p>Antoine アントワーヌは、2300〜2500mmの高い吹き抜けに対応した縦型手すりです。通常の手すりでは対応できない高さの空間を、安全で美しく彩ります。</p>
+      <p>Antoine アントワーヌは、1500〜3000mmの長尺に対応した縦型手すりです。通常の手すりでは対応できない高さの空間を、安全で美しく彩ります。</p>
       <p>高い天井の大空間や、複層構造の玄関など、特殊な状況での安全確保に最適です。職人の技術により、長尺でも安定感のある仕上がりを実現しています。</p>
       <p>Claude クロードと同じ25.4φのパイプ素材を使用し、マットブラックの落ち着いた仕上がりで様々な空間に調和します。まずはお気軽にご相談ください。</p>
     </div>
@@ -478,17 +478,20 @@
 </script>
 <script>
   const BASE_PRICE    = 56000;
-  const MIN_LENGTH_MM = 2300;
-  const MAX_LENGTH_MM = 2500;
+  const MIN_LENGTH_MM = 1500;
+  const MAX_LENGTH_MM = 3000;
   const ZAKIN_PRICE   = 3500;
   const INCLUDED_ZAKIN= 4;
-  const END_DIST_MM   = 100;
-  const MAX_SPAN_MM   = 850;
+  const END_MIN_MM    = 250;
+  const MAX_SPAN_MM   = 1200;
   const PRODUCT_KEY   = 'antoine';
 
   function calcZakin(L_mm) {
-    const inner = L_mm - 2 * END_DIST_MM;
-    return 1 + Math.ceil(inner / MAX_SPAN_MM);
+    return 2;
+  }
+
+  function calcEndDist(L_mm) {
+    return Math.max(END_MIN_MM, (L_mm - MAX_SPAN_MM) / 2);
   }
 
   function calcPrice(L_mm) {
@@ -499,15 +502,16 @@
   }
 
   function getZakinPositions(L_mm, zakinCount) {
-    var positions = [END_DIST_MM];
+    var end = calcEndDist(L_mm);
+    var positions = [Math.round(end)];
     if (zakinCount > 2) {
-      var inner = L_mm - 2 * END_DIST_MM;
+      var inner = L_mm - 2 * end;
       var gaps = zakinCount - 1;
       for (var i = 1; i < zakinCount - 1; i++) {
-        positions.push(Math.round(END_DIST_MM + inner * i / gaps));
+        positions.push(Math.round(end + inner * i / gaps));
       }
     }
-    positions.push(L_mm - END_DIST_MM);
+    positions.push(Math.round(L_mm - end));
     return positions;
   }
 
@@ -517,7 +521,7 @@
   var drawingModalOpen = false;
 
   function openDrawingModal() {
-    var L = Number(document.getElementById('lengthInput').value) || 2400;
+    var L = Number(document.getElementById('lengthInput').value) || 2000;
     if (!zakinCustomMode) {
       var count = calcZakin(L);
       dmSetPositions(count, L);
@@ -551,7 +555,7 @@
     var newVal = Math.max(2, Math.min(10, parseInt(input.value) + delta));
     input.value = newVal;
     zakinCustomMode = true;
-    var L = Number(document.getElementById('lengthInput').value) || 2400;
+    var L = Number(document.getElementById('lengthInput').value) || 2000;
     dmSetPositions(newVal, L);
     dmRenderAll();
   }
@@ -560,14 +564,14 @@
     var val = Math.max(2, Math.min(10, parseInt(el.value) || 2));
     el.value = val;
     zakinCustomMode = true;
-    var L = Number(document.getElementById('lengthInput').value) || 2400;
+    var L = Number(document.getElementById('lengthInput').value) || 2000;
     dmSetPositions(val, L);
     dmRenderAll();
   }
 
   function dmOnPosChange(input) {
     var idx = parseInt(input.dataset.idx);
-    var L = Number(document.getElementById('lengthInput').value) || 2400;
+    var L = Number(document.getElementById('lengthInput').value) || 2000;
     var val = Math.max(0, Math.min(L, parseInt(input.value) || 0));
     zakinCustomList[idx].pos = val;
     zakinCustomMode = true;
@@ -585,7 +589,7 @@
 
   function dmReset() {
     zakinCustomMode = false;
-    var L = Number(document.getElementById('lengthInput').value) || 2400;
+    var L = Number(document.getElementById('lengthInput').value) || 2000;
     var count = calcZakin(L);
     dmSetPositions(count, L);
     document.getElementById('dmQtyInput').value = count;
@@ -600,7 +604,7 @@
   }
 
   function dmRenderPosList() {
-    var L = Number(document.getElementById('lengthInput').value) || 2400;
+    var L = Number(document.getElementById('lengthInput').value) || 2000;
     var list = document.getElementById('dmPosList');
     list.innerHTML = '';
     zakinCustomList.forEach(function(item, idx) {
@@ -648,7 +652,7 @@
     var svg = document.getElementById('drawingSvg');
     if (!svg) return;
     svg.innerHTML = '';
-    var L_mm = Number(document.getElementById('lengthInput').value) || 2400;
+    var L_mm = Number(document.getElementById('lengthInput').value) || 2000;
     var sorted = zakinCustomList.slice().sort(function(a, b) { return a.pos - b.pos; });
     var positions = sorted.map(function(item) { return item.pos; });
     var W = 500, pad = 40;
@@ -773,7 +777,7 @@
     }
   }
 
-  update(2400);
+  update(2000);
 
   // 初期状態: 発送先未選択警告
   (function() {

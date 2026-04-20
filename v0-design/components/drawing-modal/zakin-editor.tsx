@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { Minus, Plus, X, RotateCcw } from "lucide-react"
-import { calcZakin, getZakinPositions, END_DIST_MM, MAX_SPAN_MM } from "@/lib/drawing-modal/rene-constants"
+import { calcZakin, getZakinPositions, END_DIST_MM, MAX_SPAN_MM, type ZakinRule } from "@/lib/drawing-modal/rene-constants"
 
 export interface ZakinState {
   positions: number[] // mm
@@ -16,6 +16,7 @@ interface ZakinEditorProps {
   state: ZakinState
   onChange: (next: ZakinState) => void
   className?: string
+  zakinRule?: ZakinRule
 }
 
 /**
@@ -31,8 +32,11 @@ export function ZakinEditor({
   state,
   onChange,
   className,
+  zakinRule,
 }: ZakinEditorProps) {
   const [open, setOpen] = useState(false)
+  const ruleMaxSpan = zakinRule?.maxSpanMm ?? MAX_SPAN_MM
+  const ruleEndMin = zakinRule?.endMinMm ?? END_DIST_MM
 
   // 長さが変わったとき、座金を再配置する。
   // - 自動モード: calcZakin(lengthMm) で座金数を再計算して等間隔配置
@@ -41,8 +45,8 @@ export function ZakinEditor({
   useEffect(() => {
     const count = state.customMode
       ? state.positions.length
-      : calcZakin(lengthMm)
-    const positions = getZakinPositions(lengthMm, count)
+      : calcZakin(lengthMm, zakinRule)
+    const positions = getZakinPositions(lengthMm, count, zakinRule)
     onChange({ ...state, positions })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lengthMm])
@@ -55,11 +59,11 @@ export function ZakinEditor({
     return m
   }, [state.positions, lengthMm])
 
-  const warning = maxSpan > MAX_SPAN_MM
+  const warning = maxSpan > ruleMaxSpan
 
   const setCount = (count: number) => {
     const c = Math.max(2, Math.min(20, count))
-    const positions = getZakinPositions(lengthMm, c)
+    const positions = getZakinPositions(lengthMm, c, zakinRule)
     onChange({ ...state, positions, customMode: true })
   }
 
@@ -77,8 +81,8 @@ export function ZakinEditor({
   }
 
   const reset = () => {
-    const count = calcZakin(lengthMm)
-    const positions = getZakinPositions(lengthMm, count)
+    const count = calcZakin(lengthMm, zakinRule)
+    const positions = getZakinPositions(lengthMm, count, zakinRule)
     onChange({ positions, angleDeg: 0, angleDir: "left", customMode: false })
   }
 
@@ -129,7 +133,7 @@ export function ZakinEditor({
               </button>
             </div>
             <span className="text-[10px] text-muted-foreground ml-2">
-              推奨間隔 {MAX_SPAN_MM}mm 以内
+              推奨間隔 {ruleMaxSpan}mm 以内
             </span>
           </div>
 
@@ -226,14 +230,14 @@ export function ZakinEditor({
               自動配置に戻す
             </button>
             <p className="text-[10px] text-muted-foreground leading-relaxed">
-              ※ 両端から {END_DIST_MM}mm 以上の位置に配置してください
+              ※ 両端から {ruleEndMin}mm 以上の位置に配置してください
             </p>
           </div>
 
           {/* Warning */}
           {warning && (
             <div className="border border-yellow-500/40 bg-yellow-500/5 px-3 py-2 text-[11px] text-yellow-400">
-              ⚠ 座金間隔が {MAX_SPAN_MM}mm を超えています（最大 {maxSpan}mm）。強度にご注意ください。
+              ⚠ 座金間隔が {ruleMaxSpan}mm を超えています（最大 {maxSpan}mm）。強度にご注意ください。
             </div>
           )}
         </div>

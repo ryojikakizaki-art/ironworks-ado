@@ -3,7 +3,7 @@
 import { useEffect, useRef } from "react"
 import { buildRoundRailDrawingSvg } from "@/lib/drawing-modal/rene-svg"
 import { buildVerticalRailDrawingSvg } from "@/lib/drawing-modal/vertical-svg"
-import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants"
+import { calcZakin, getZakinPositions, type ZakinRule } from "@/lib/drawing-modal/rene-constants"
 import { getDrawingProduct } from "@/lib/drawing-modal/products"
 
 interface DrawingModalProps {
@@ -17,6 +17,8 @@ interface DrawingModalProps {
   angleDeg?: number
   /** 角度方向 — 横型のみ有効 */
   angleDir?: "left" | "right"
+  /** 商品固有の座金ルール (未指定なら product.zakinRule を使用) */
+  zakinRule?: ZakinRule
 }
 
 export function ReneDrawingModal({
@@ -27,9 +29,11 @@ export function ReneDrawingModal({
   positions: positionsProp,
   angleDeg = 0,
   angleDir = "left",
+  zakinRule,
 }: DrawingModalProps) {
   const svgRef = useRef<SVGSVGElement>(null)
   const product = getDrawingProduct(productSlug)
+  const effectiveRule = zakinRule ?? product?.zakinRule
 
   // モーダルが開いている間、bodyスクロールを止める
   useEffect(() => {
@@ -43,7 +47,7 @@ export function ReneDrawingModal({
   useEffect(() => {
     if (!open || !svgRef.current || !product) return
     const positions =
-      positionsProp ?? getZakinPositions(lengthMm, calcZakin(lengthMm))
+      positionsProp ?? getZakinPositions(lengthMm, calcZakin(lengthMm, effectiveRule), effectiveRule)
     if (product.category === "vertical") {
       buildVerticalRailDrawingSvg(svgRef.current, {
         L_mm: lengthMm,
@@ -62,7 +66,7 @@ export function ReneDrawingModal({
         product,
       })
     }
-  }, [open, lengthMm, product, positionsProp, angleDeg, angleDir])
+  }, [open, lengthMm, product, positionsProp, angleDeg, angleDir, effectiveRule])
 
   if (!open) return null
 
