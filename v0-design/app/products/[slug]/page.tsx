@@ -61,12 +61,17 @@ export default function ProductDetailPage() {
   const [isPrefectureOpen, setIsPrefectureOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [isDrawingOpen, setIsDrawingOpen] = useState(false)
+  // 座金ルール (商品固有。未指定は旧式=横型ルール)
+  const zakinRule = product.drawing.zakinRule
+  const minLength = zakinRule?.minLengthMm ?? 500
+  const maxLength = zakinRule?.maxLengthMm ?? product.drawing.maxMm
+
   // 簡易座金エディター state (既存 rene.html の zakinCustomList + zakinGlobalAngle 相当)
   const [zakin, setZakin] = useState<ZakinState>(() => {
     const L = product.drawing.stdLengthMm
-    const count = calcZakin(L)
+    const count = calcZakin(L, zakinRule)
     return {
-      positions: getZakinPositions(L, count),
+      positions: getZakinPositions(L, count, zakinRule),
       angleDeg: 0,
       angleDir: "left",
       customMode: false,
@@ -82,8 +87,6 @@ export default function ProductDetailPage() {
   const PRICE_PER_MM = 25
   const ZAKIN_PRICE = 3500
   const ANGLE_PRICE = 2000 // 角度加工: 座金1箇所あたり (rene.html 準拠)
-  const END_DIST = 100
-  const MAX_SPAN = 850
   const SURGE_START = 2000
   const SURGE_BASE = 1.2
   const SURGE_INTERVAL = 500
@@ -104,7 +107,7 @@ export default function ProductDetailPage() {
     // 座金数はカスタムモードなら zakin.positions.length、自動なら calcZakin
     const zakinCount = zakin.customMode
       ? zakin.positions.length
-      : (length <= 1050 ? 2 : 1 + Math.ceil((length - 2 * END_DIST) / MAX_SPAN))
+      : calcZakin(length, zakinRule)
     const addZakin = Math.max(0, zakinCount - INCLUDED_ZAKIN) * ZAKIN_PRICE
     // 角度加工料金 (angleDeg > 0 の場合のみ、座金数 × ANGLE_PRICE)
     const angleCost = zakin.angleDeg > 0 ? zakinCount * ANGLE_PRICE : 0
@@ -134,10 +137,10 @@ export default function ProductDetailPage() {
 
   // Update current step based on filled fields
   useEffect(() => {
-    if (length >= 500) setCurrentStep(Math.max(currentStep, 1))
+    if (length >= minLength) setCurrentStep(Math.max(currentStep, 1))
     if (quantity > 0 && prefecture) setCurrentStep(Math.max(currentStep, 2))
     if (deliveryType) setCurrentStep(Math.max(currentStep, 3))
-  }, [length, quantity, prefecture, deliveryType, currentStep])
+  }, [length, quantity, prefecture, deliveryType, currentStep, minLength])
 
   // Lightbox 開閉時の body スクロールロック
   useEffect(() => {
@@ -337,26 +340,26 @@ export default function ProductDetailPage() {
                           <div className="relative flex-1">
                             <input
                               type="range"
-                              min={500}
-                              max={product.drawing.maxMm}
+                              min={minLength}
+                              max={maxLength}
                               step={1}
                               value={length}
                               onChange={(e) => setLength(Number(e.target.value))}
                               className="w-full h-2 bg-muted rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-gold [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md"
                             />
                             <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-                              <span>500mm</span>
-                              <span>{product.drawing.maxMm}mm</span>
+                              <span>{minLength}mm</span>
+                              <span>{maxLength}mm</span>
                             </div>
                           </div>
                           <div className="relative">
                             <input
                               type="number"
-                              min={500}
-                              max={product.drawing.maxMm}
+                              min={minLength}
+                              max={maxLength}
                               step={1}
                               value={length}
-                              onChange={(e) => setLength(Math.min(product.drawing.maxMm, Math.max(500, Number(e.target.value))))}
+                              onChange={(e) => setLength(Math.min(maxLength, Math.max(minLength, Number(e.target.value))))}
                               className="w-28 h-12 bg-gold/10 border-2 border-gold text-center font-mono text-lg text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
                             />
                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">
@@ -370,6 +373,7 @@ export default function ProductDetailPage() {
                           positions={zakin.positions}
                           angleDeg={zakin.angleDeg}
                           angleDir={zakin.angleDir}
+                          zakinRule={zakinRule}
                           onPositionsChange={(positions) =>
                             setZakin({ ...zakin, positions, customMode: true })
                           }
@@ -379,6 +383,7 @@ export default function ProductDetailPage() {
                           lengthMm={length}
                           state={zakin}
                           onChange={setZakin}
+                          zakinRule={zakinRule}
                           className="mt-3"
                         />
                         <button
@@ -758,6 +763,7 @@ export default function ProductDetailPage() {
         positions={zakin.positions}
         angleDeg={zakin.angleDeg}
         angleDir={zakin.angleDir}
+        zakinRule={zakinRule}
       />
     </>
   )

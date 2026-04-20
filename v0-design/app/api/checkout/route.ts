@@ -13,6 +13,13 @@ function getStripe(): Stripe {
 }
 
 // ── 商品マスター（stdLengthMm: 基本料金に含まれる長さ, maxMm: 最大長さ）──
+// 座金計算ルール (縦型は product 固有、横型は未指定=旧式)
+interface ZakinRule {
+  defaultCount?: number;
+  endMinMm: number;
+  maxSpanMm: number;
+  minLengthMm?: number;
+}
 interface Product {
   name: string;
   type: string;
@@ -21,7 +28,15 @@ interface Product {
   maxMm: number;
   finish: string;
   includedZakin: number;
+  zakinRule?: ZakinRule;
 }
+
+const VERTICAL_STANDARD_RULE: ZakinRule = {
+  defaultCount: 2, endMinMm: 50, maxSpanMm: 900, minLengthMm: 500,
+};
+const ANTOINE_RULE: ZakinRule = {
+  defaultCount: 2, endMinMm: 250, maxSpanMm: 1200, minLengthMm: 1500,
+};
 
 const PRODUCTS: Record<string, Product> = {
   rene:       { name: 'René ルネ',               type: '横型', basePrice: 36500, stdLengthMm: 1500, maxMm: 5000, finish: 'マットブラック', includedZakin: 3 },
@@ -29,9 +44,9 @@ const PRODUCTS: Record<string, Product> = {
   emile:      { name: 'Émile エミール',           type: '横型', basePrice: 45800, stdLengthMm: 1500, maxMm: 5000, finish: '鎚目仕上げ 銀古美', includedZakin: 3 },
   marcel:     { name: 'Marcel マルセル',          type: '横型', basePrice: 36000, stdLengthMm: 1500, maxMm: 5000, finish: 'マットブラック', includedZakin: 3 },
   alexandre:  { name: 'Alexandre アレクサンドル', type: '縦型', basePrice: 32000, stdLengthMm: 1000, maxMm: 3000, finish: 'マットブラック', includedZakin: 3 },
-  catherine:  { name: 'Catherine カトリーヌ',     type: '縦型', basePrice: 34500, stdLengthMm: 1000, maxMm: 3000, finish: 'マットホワイト', includedZakin: 3 },
-  claude:     { name: 'Claude クロード',          type: '縦型', basePrice: 30000, stdLengthMm: 1000, maxMm: 3000, finish: 'マットブラック', includedZakin: 3 },
-  antoine:    { name: 'Antoine アントワーヌ',      type: '縦型ロング', basePrice: 56000, stdLengthMm: 2500, maxMm: 2500, finish: 'マットブラック', includedZakin: 4 },
+  catherine:  { name: 'Catherine カトリーヌ',     type: '縦型', basePrice: 34500, stdLengthMm: 1000, maxMm: 1500, finish: 'マットホワイト', includedZakin: 3, zakinRule: VERTICAL_STANDARD_RULE },
+  claude:     { name: 'Claude クロード',          type: '縦型', basePrice: 30000, stdLengthMm: 1000, maxMm: 1500, finish: 'マットブラック', includedZakin: 3, zakinRule: VERTICAL_STANDARD_RULE },
+  antoine:    { name: 'Antoine アントワーヌ',      type: '縦型ロング', basePrice: 56000, stdLengthMm: 2500, maxMm: 3000, finish: 'マットブラック', includedZakin: 4, zakinRule: ANTOINE_RULE },
   scroll16:   { name: 'Scroll スクロール 16φ',    type: '縦型', basePrice: 18000, stdLengthMm: 700,  maxMm: 700,  finish: 'ミツロウ仕上げ', includedZakin: 2 },
   scroll19:   { name: 'Scroll スクロール 19φ',    type: '縦型', basePrice: 32000, stdLengthMm: 700,  maxMm: 700,  finish: 'ミツロウ仕上げ', includedZakin: 2 },
   scroll22:   { name: 'Scroll スクロール 22φ',    type: '縦型', basePrice: 60000, stdLengthMm: 800,  maxMm: 800,  finish: 'ミツロウ仕上げ', includedZakin: 2 },
@@ -49,10 +64,13 @@ const SURGE_BASE      = 1.2;
 const SURGE_INTERVAL_MM = 500;
 const RUSH_RATE       = 0.2;
 
-function calcZakin(L_mm: number): number {
+function calcZakin(L_mm: number, rule?: ZakinRule): number {
+  if (rule?.defaultCount !== undefined) return rule.defaultCount;
   if (L_mm <= 1050) return 2;
-  const inner = L_mm - 2 * END_DIST_MM;
-  return 1 + Math.ceil(inner / MAX_SPAN_MM);
+  const end = rule?.endMinMm ?? END_DIST_MM;
+  const span = rule?.maxSpanMm ?? MAX_SPAN_MM;
+  const inner = L_mm - 2 * end;
+  return 1 + Math.ceil(inner / span);
 }
 
 function calcPrice(L_mm: number, prod: Product) {
@@ -61,7 +79,7 @@ function calcPrice(L_mm: number, prod: Product) {
                  ? Math.pow(SURGE_BASE, (L_mm - SURGE_START_MM) / SURGE_INTERVAL_MM)
                  : 1;
   const surcharge = L_mm > SURGE_START_MM ? addon * (longM - 1) : 0;
-  const zakin     = calcZakin(L_mm);
+  const zakin     = calcZakin(L_mm, prod.zakinRule);
   const addZakin  = Math.max(0, zakin - prod.includedZakin) * ZAKIN_PRICE;
   const total     = prod.basePrice + addon + addZakin + surcharge;
   return { addon, surcharge, addZakin, zakin, total };
@@ -78,7 +96,8 @@ export async function POST(request: NextRequest) {
     }
 
     const raw = body?.lengthMm || (body?.lengthCm && body.lengthCm * 10);
-    const L   = Math.max(500, Math.min(prod.maxMm, Math.round(Number(raw) || prod.stdLengthMm)));
+    const minL = prod.zakinRule?.minLengthMm ?? 500;
+    const L   = Math.max(minL, Math.min(prod.maxMm, Math.round(Number(raw) || prod.stdLengthMm)));
     const p   = calcPrice(L, prod);
 
     // 特急配送

@@ -1,6 +1,8 @@
 // 制作図モーダル用 商品マスター
 // 既存 item/*.html の制作図タイトルブロックの値を集約
 
+import type { ZakinRule } from "./rene-constants"
+
 export type RailShape =
   | {
       // 丸パイプ (例: STKM φ25.4)
@@ -32,6 +34,8 @@ export interface DrawingProductConfig {
   stdLengthMm: number
   maxMm: number
   includedZakin: number
+  // 座金計算ルール。未指定なら横型の旧式ルール (端100mm・最大ピッチ850mm・L<=1050で2個)
+  zakinRule?: ZakinRule
 }
 
 const ROUND_25_4: RailShape = {
@@ -103,6 +107,17 @@ export const DRAWING_PRODUCTS: Record<string, DrawingProductConfig> = {
 }
 
 // 縦型商品 (シンプル schematic - shape 不要)
+// 縦型 Claude / Catherine 共通の座金ルール
+// - 基本 2 個固定 (カスタムで中央追加可)、最大ピッチ 900mm、端最小 50mm
+// - 長さ 500〜1500mm
+const VERTICAL_STANDARD_RULE: ZakinRule = {
+  defaultCount: 2,
+  endMinMm: 50,
+  maxSpanMm: 900,
+  minLengthMm: 500,
+  maxLengthMm: 1500,
+}
+
 DRAWING_PRODUCTS.claude = {
   slug: "claude",
   nameJa: "Claude 縦型手すり",
@@ -112,8 +127,9 @@ DRAWING_PRODUCTS.claude = {
   category: "vertical",
   basePrice: 30000,
   stdLengthMm: 1000,
-  maxMm: 3000,
+  maxMm: 1500,
   includedZakin: 3,
+  zakinRule: VERTICAL_STANDARD_RULE,
 }
 
 DRAWING_PRODUCTS.catherine = {
@@ -125,8 +141,9 @@ DRAWING_PRODUCTS.catherine = {
   category: "vertical",
   basePrice: 34500,
   stdLengthMm: 1000,
-  maxMm: 3000,
+  maxMm: 1500,
   includedZakin: 3,
+  zakinRule: VERTICAL_STANDARD_RULE,
 }
 
 DRAWING_PRODUCTS.alexandre = {
@@ -151,8 +168,16 @@ DRAWING_PRODUCTS.antoine = {
   category: "vertical",
   basePrice: 56000,
   stdLengthMm: 2500,
-  maxMm: 2500,
+  maxMm: 3000,
   includedZakin: 4,
+  // 基本 2 個固定、最大ピッチ 1200mm、端最小 250mm、長さ 1500〜3000mm
+  zakinRule: {
+    defaultCount: 2,
+    endMinMm: 250,
+    maxSpanMm: 1200,
+    minLengthMm: 1500,
+    maxLengthMm: 3000,
+  },
 }
 
 // 固定長装飾商品 (scroll/fabrice/tsuchime) - 制作図モーダル非対応

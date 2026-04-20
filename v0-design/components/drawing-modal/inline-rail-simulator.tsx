@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { calcZakin, getZakinPositions, END_DIST_MM } from "@/lib/drawing-modal/rene-constants"
+import { calcZakin, getZakinPositions, END_DIST_MM, type ZakinRule } from "@/lib/drawing-modal/rene-constants"
 import type { DrawingProductConfig } from "@/lib/drawing-modal/products"
 
 interface InlineRailSimulatorProps {
@@ -16,6 +16,8 @@ interface InlineRailSimulatorProps {
   /** 座金をドラッグ可能にする場合、変更を受け取るコールバック */
   onPositionsChange?: (next: number[]) => void
   className?: string
+  /** 商品固有の座金ルール (未指定なら旧式 rene ルール) */
+  zakinRule?: ZakinRule
 }
 
 // SVG viewBox と layout 定数 (vertical-svg.ts と同じ)
@@ -49,8 +51,9 @@ export function InlineRailSimulator({
   angleDir = "left",
   onPositionsChange,
   className,
+  zakinRule,
 }: InlineRailSimulatorProps) {
-  const effectivePositions = positions ?? getZakinPositions(lengthMm, calcZakin(lengthMm))
+  const effectivePositions = positions ?? getZakinPositions(lengthMm, calcZakin(lengthMm, zakinRule), zakinRule)
   const sorted = [...effectivePositions]
     .map((p, i) => ({ pos: p, origIdx: i }))
     .sort((a, b) => a.pos - b.pos)
@@ -61,16 +64,17 @@ export function InlineRailSimulator({
   const tiltSign = angleDir === "left" ? -1 : 1
 
   const [draggingIdx, setDraggingIdx] = useState<number | null>(null)
+  const endMin = zakinRule?.endMinMm ?? END_DIST_MM
 
   // viewBox x → mm
   const xToMm = useCallback(
     (viewBoxX: number): number => {
       const rel = (viewBoxX - BAR_LEFT) / BAR_LEN
       const mm = Math.round(rel * lengthMm)
-      // 両端から END_DIST_MM (100mm) 以内に
-      return Math.max(END_DIST_MM, Math.min(lengthMm - END_DIST_MM, mm))
+      // 両端から endMin 以内に
+      return Math.max(endMin, Math.min(lengthMm - endMin, mm))
     },
-    [lengthMm]
+    [lengthMm, endMin]
   )
 
   // pointer event → viewBox 座標
@@ -273,7 +277,7 @@ export function InlineRailSimulator({
         </text>
       </svg>
       <div className="text-[10px] text-muted-foreground mt-1">
-        推奨座金数 {calcZakin(lengthMm)} 個（自動計算）
+        推奨座金数 {calcZakin(lengthMm, zakinRule)} 個（自動計算）
         {onPositionsChange && (
           <span className="ml-2 text-gold">・座金をドラッグで位置調整できます</span>
         )}
