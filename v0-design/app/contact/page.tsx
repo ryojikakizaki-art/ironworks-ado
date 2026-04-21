@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 
@@ -26,6 +27,7 @@ const PRODUCT_OPTIONS: { value: string; label: string }[] = [
 ]
 
 export default function ContactPage() {
+  const router = useRouter()
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -33,7 +35,7 @@ export default function ContactPage() {
     product: "",
     message: "",
   })
-  const [status, setStatus] = useState<"idle" | "sending" | "success" | "error">("idle")
+  const [status, setStatus] = useState<"idle" | "sending" | "error">("idle")
   const [errorMsg, setErrorMsg] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,8 +52,7 @@ export default function ContactPage() {
         const data = await res.json().catch(() => ({}))
         throw new Error(data.error || `送信に失敗しました (${res.status})`)
       }
-      setStatus("success")
-      setForm({ name: "", email: "", category: "product", product: "", message: "" })
+      router.push("/contact/thanks")
     } catch (err) {
       setStatus("error")
       setErrorMsg(err instanceof Error ? err.message : "送信に失敗しました")
@@ -73,19 +74,7 @@ export default function ContactPage() {
         </div>
 
         <div className="max-w-[720px] mx-auto px-4 lg:px-8 py-16">
-          {status === "success" ? (
-            <div className="border border-gold/40 bg-gold/5 p-8 text-center">
-              <h2 className="font-serif text-xl text-foreground mb-3">送信完了</h2>
-              <p className="text-[14px] text-muted-foreground leading-relaxed">
-                お問い合わせを受け付けました。
-                <br />
-                ご登録いただいたメールアドレス宛に自動返信メールをお送りしました。
-                <br />
-                1〜2 営業日以内に担当よりご返信いたします。
-              </p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-[12px] tracking-wide text-foreground mb-2">
                   お名前 <span className="text-gold">*</span>
@@ -172,8 +161,7 @@ export default function ContactPage() {
               >
                 {status === "sending" ? "送信中..." : "送信する"}
               </button>
-            </form>
-          )}
+          </form>
         </div>
       </main>
       <Footer />
