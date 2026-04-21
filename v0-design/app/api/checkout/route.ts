@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getScheduleDates, formatDateISO } from '@/lib/business-days';
+import { calcShipping, type ProductType } from '@/lib/shipping/sagawa';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -19,6 +20,7 @@ interface ZakinRule {
   endMinMm: number;
   maxSpanMm: number;
   minLengthMm?: number;
+  addWasherAboveMm?: number;
 }
 interface Product {
   name: string;
@@ -29,13 +31,16 @@ interface Product {
   finish: string;
   includedZakin: number;
   zakinRule?: ZakinRule;
+  pricePerMm?: number; // 商品別オーバーライド (未指定なら全商品共通 25)
 }
 
 const VERTICAL_STANDARD_RULE: ZakinRule = {
   defaultCount: 2, endMinMm: 50, maxSpanMm: 900, minLengthMm: 500,
 };
 const ANTOINE_RULE: ZakinRule = {
-  defaultCount: 2, endMinMm: 250, maxSpanMm: 1200, minLengthMm: 1500,
+  defaultCount: 2, endMinMm: 250, maxSpanMm: 1450, minLengthMm: 1500,
+  // L>2400 で座金 3 個に切替 (中央追加)
+  addWasherAboveMm: 2400,
 };
 
 const PRODUCTS: Record<string, Product> = {
@@ -46,7 +51,7 @@ const PRODUCTS: Record<string, Product> = {
   alexandre:  { name: 'Alexandre アレクサンドル', type: '縦型', basePrice: 32000, stdLengthMm: 1000, maxMm: 3000, finish: 'マットブラック', includedZakin: 3 },
   catherine:  { name: 'Catherine カトリーヌ',     type: '縦型', basePrice: 34500, stdLengthMm: 1000, maxMm: 1500, finish: 'マットホワイト', includedZakin: 3, zakinRule: VERTICAL_STANDARD_RULE },
   claude:     { name: 'Claude クロード',          type: '縦型', basePrice: 30000, stdLengthMm: 1000, maxMm: 1500, finish: 'マットブラック', includedZakin: 3, zakinRule: VERTICAL_STANDARD_RULE },
-  antoine:    { name: 'Antoine アントワーヌ',      type: '縦型ロング', basePrice: 56000, stdLengthMm: 2500, maxMm: 3000, finish: 'マットブラック', includedZakin: 4, zakinRule: ANTOINE_RULE },
+  antoine:    { name: 'Antoine アントワーヌ',      type: '縦型ロング', basePrice: 45000, stdLengthMm: 1500, maxMm: 3000, finish: 'マットブラック', includedZakin: 4, zakinRule: ANTOINE_RULE, pricePerMm: 30 },
   scroll16:   { name: 'Scroll スクロール 16φ',    type: '縦型', basePrice: 18000, stdLengthMm: 700,  maxMm: 700,  finish: 'ミツロウ仕上げ', includedZakin: 2 },
   scroll19:   { name: 'Scroll スクロール 19φ',    type: '縦型', basePrice: 32000, stdLengthMm: 700,  maxMm: 700,  finish: 'ミツロウ仕上げ', includedZakin: 2 },
   scroll22:   { name: 'Scroll スクロール 22φ',    type: '縦型', basePrice: 60000, stdLengthMm: 800,  maxMm: 800,  finish: 'ミツロウ仕上げ', includedZakin: 2 },
@@ -65,7 +70,13 @@ const SURGE_INTERVAL_MM = 500;
 const RUSH_RATE       = 0.2;
 
 function calcZakin(L_mm: number, rule?: ZakinRule): number {
-  if (rule?.defaultCount !== undefined) return rule.defaultCount;
+  if (rule?.defaultCount !== undefined) {
+    let count = rule.defaultCount;
+    if (rule.addWasherAboveMm !== undefined && L_mm > rule.addWasherAboveMm) {
+      count += 1;
+    }
+    return count;
+  }
   if (L_mm <= 1050) return 2;
   const end = rule?.endMinMm ?? END_DIST_MM;
   const span = rule?.maxSpanMm ?? MAX_SPAN_MM;
@@ -74,7 +85,8 @@ function calcZakin(L_mm: number, rule?: ZakinRule): number {
 }
 
 function calcPrice(L_mm: number, prod: Product) {
-  const addon    = Math.max(0, L_mm - prod.stdLengthMm) * PRICE_PER_MM;
+  const pricePerMm = prod.pricePerMm ?? PRICE_PER_MM;
+  const addon    = Math.max(0, L_mm - prod.stdLengthMm) * pricePerMm;
   const longM    = L_mm > SURGE_START_MM
                  ? Math.pow(SURGE_BASE, (L_mm - SURGE_START_MM) / SURGE_INTERVAL_MM)
                  : 1;
@@ -100,10 +112,33 @@ export async function POST(request: NextRequest) {
     const L   = Math.max(minL, Math.min(prod.maxMm, Math.round(Number(raw) || prod.stdLengthMm)));
     const p   = calcPrice(L, prod);
 
+    // 数量 (1 本基本)
+    const qty = Math.max(1, Math.min(6, parseInt(String(body?.quantity || 1), 10) || 1));
+
     // 特急配送
     const rushDelivery = !!body?.rushDelivery;
     const rushSurcharge = rushDelivery ? Math.round(p.total * RUSH_RATE) : 0;
-    const totalYen = Math.round(p.total + rushSurcharge);
+
+    // 佐川急便 送料 (prefecture 必須, inquiry 時はエラー返却)
+    const prefecture = String(body?.prefecture || '').trim();
+    const productCategory: ProductType =
+      prod.type.includes('横型') ? 'yokogata'
+      : prod.type.includes('縦型') ? 'tategata'
+      : 'fixed';
+    const shippingResult = calcShipping(L, prefecture, qty, productCategory);
+    if (shippingResult.inquiry) {
+      return NextResponse.json({
+        error: shippingResult.inquiryReason || '配送条件により別途お見積もりが必要です',
+        inquiry: true,
+      }, { status: 400 });
+    }
+    if (!prefecture) {
+      return NextResponse.json({ error: '配送先都道府県を選択してください' }, { status: 400 });
+    }
+    const shippingYen = shippingResult.shipping;
+
+    const subtotalYen = Math.round(p.total * qty + rushSurcharge);
+    const totalYen = subtotalYen + shippingYen;
 
     // 配送希望
     const preferredArrivalDate = body?.preferredArrivalDate || '';
@@ -121,19 +156,33 @@ export async function POST(request: NextRequest) {
     const host    = request.headers.get('host') || 'ironworks-ado.vercel.app';
     const baseUrl = `https://${host}`;
 
+    const unitYen = Math.round(p.total + rushSurcharge / qty);
     const session = await getStripe().checkout.sessions.create({
       payment_method_types: ['card'],
-      line_items: [{
-        price_data: {
-          currency: 'jpy',
-          product_data: {
-            name: `${prod.name} 壁付け手すり ${L}mm`,
-            description: deliveryDesc,
+      line_items: [
+        {
+          price_data: {
+            currency: 'jpy',
+            product_data: {
+              name: `${prod.name} 壁付け手すり ${L}mm`,
+              description: deliveryDesc,
+            },
+            unit_amount: unitYen,
           },
-          unit_amount: totalYen,
+          quantity: qty,
         },
-        quantity: 1,
-      }],
+        {
+          price_data: {
+            currency: 'jpy',
+            product_data: {
+              name: `送料（佐川急便・${prefecture}）`,
+              description: shippingResult.note,
+            },
+            unit_amount: shippingYen,
+          },
+          quantity: 1,
+        },
+      ],
       mode: 'payment',
       success_url: `${baseUrl}/thanks?session_id={CHECKOUT_SESSION_ID}&product=${productKey}&length=${L}&rush=${rushDelivery ? '1' : '0'}`,
       cancel_url:  `${baseUrl}/item/${productKey}`,
@@ -142,10 +191,15 @@ export async function POST(request: NextRequest) {
         product_name:           prod.name,
         type:                   prod.type,
         length_mm:              String(L),
+        quantity:               String(qty),
         zakin_count:            String(p.zakin),
         base_total_yen:         String(Math.round(p.total)),
         rush_delivery:          rushDelivery ? 'true' : 'false',
         rush_surcharge_yen:     String(rushSurcharge),
+        prefecture:             prefecture,
+        shipping_yen:           String(shippingYen),
+        shipping_note:          shippingResult.note,
+        shipping_bundles:       String(shippingResult.bundles),
         total_yen:              String(totalYen),
         preferred_arrival_date: preferredArrivalDate,
         preferred_time_slot:    preferredTimeSlot,
