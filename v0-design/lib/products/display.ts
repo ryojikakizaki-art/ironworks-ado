@@ -64,7 +64,16 @@ const FB_TSUCHIME: FeatureBullet[] = [
 // Cloudflare Images CDN
 export const CDN_BASE = "https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7"
 
+// ローカル差し替え: Cloudflare Images の元画像に代えて public/ の加工済み画像を使う
+// 元画像 ID → ローカルパス のマップ
+const LOCAL_IMAGE_OVERRIDES: Record<string, string> = {
+  // Antoine: "2.3~2.5m限定 ¥56,000" 文字を削除した加工版
+  "2d1043dcd7658a96e5f3.jpg": "/images/gallery/antoine-top.jpg",
+}
+
 export function galleryUrl(id: string, variant: string = "public"): string {
+  const local = LOCAL_IMAGE_OVERRIDES[id]
+  if (local) return local
   return `${CDN_BASE}/${id}/${variant}`
 }
 
@@ -84,7 +93,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "カラー", value: "マットブラック" },
       { label: "標準長さ", value: "〜1500mm（最大5000mm）" },
       { label: "太さ", value: "25.4φ" },
-      { label: "付属品", value: "座金3個・取付ビス一式" },
+      { label: "付属品", value: "取付ビス一式・タッチアップ材" },
     ],
     featureBullets: FB_STKM_URETHANE,
     galleryIds: [
@@ -113,7 +122,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "カラー", value: "マットホワイト" },
       { label: "標準長さ", value: "〜1500mm（最大5000mm）" },
       { label: "太さ", value: "25.4φ" },
-      { label: "付属品", value: "座金3個・取付ビス一式" },
+      { label: "付属品", value: "取付ビス一式・タッチアップ材" },
     ],
     featureBullets: FB_STKM_URETHANE,
     galleryIds: [
@@ -143,7 +152,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "カラー", value: "マットブラック" },
       { label: "標準長さ", value: "〜1500mm（最大5000mm）" },
       { label: "寸法", value: "9×32mm" },
-      { label: "付属品", value: "座金3個・取付ビス一式" },
+      { label: "付属品", value: "取付ビス一式・タッチアップ材" },
     ],
     featureBullets: FB_STKM_URETHANE,
     galleryIds: [
@@ -170,7 +179,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "カラー", value: "銀古美（シルバーアンティーク）" },
       { label: "標準長さ", value: "〜1500mm（最大5000mm）" },
       { label: "寸法", value: "9×32mm" },
-      { label: "付属品", value: "座金3個・取付ビス一式" },
+      { label: "付属品", value: "取付ビス一式・タッチアップ材" },
     ],
     featureBullets: FB_EMILE_SILVER,
     galleryIds: [
@@ -197,14 +206,14 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "カラー", value: "マットブラック" },
       { label: "標準長さ", value: "〜1000mm 一律料金（500〜1500mm）" },
       { label: "太さ", value: "25.4φ" },
-      { label: "付属品", value: "座金・取付ビス一式" },
+      { label: "付属品", value: "取付ビス一式・タッチアップ材" },
     ],
     featureBullets: FB_STKM_URETHANE,
     galleryIds: [
       "86278edb68c21957e339.jpg","4891b02ffce1786113ae.jpg","e490e7cc7493378ef896.jpg",
       "2c953ba91fe0b264c2fe.jpg","ad53ccfcea905eea06b9.jpg","3942c2d19e73235a5b7f.jpg",
       "6b720c7b85466c7359e7.jpg","7266d7bfe087d226608e.jpg","9f1e0f69a54476b5caff.jpg",
-      "82e1cc3d3168d6f46cd8.jpg","156414dbec3475dec9ae.jpg","b086a4aa3dae8339d586.jpg",
+      "82e1cc3d3168d6f46cd8.jpg","156414dbec3475dec9ae.jpg",
       "3a6e533f6dd44cfab66b.jpg","a0ac37e66b1c7989e727.jpg","156c48ab2885448a90d7.jpg",
       "88eb66165a7f2ff8773d.jpg","4d8beb3b89354bf181bf.jpg","b8fd8dbbe2b28beff3f1.jpg",
       "4380b8f100b251599f3d.jpg","8ea249f541b73524afa5.jpg","93769cb9994dc6f4c7e5.jpg",
@@ -220,12 +229,12 @@ const DISPLAY: Record<string, ProductDisplay> = {
     longDescription:
       "Catherine（カトリーヌ）は、マットホワイトで仕上げた縦型手すりです。明るく清潔感のある印象で、洗面所や玄関まわりなど、明るい空間によく馴染みます。〜1000mmまで一律料金でご提供しており、短い範囲の設置にも最適です。",
     specs: [
-      { label: "素材", value: "SS400 STKM 25.4φ" },
+      { label: "素材", value: "STKM 25.4φ" },
       { label: "仕上げ", value: "2液型ウレタン塗装" },
       { label: "カラー", value: "マットホワイト" },
       { label: "標準長さ", value: "〜1000mm 一律料金（500〜1500mm）" },
       { label: "太さ", value: "φ25mm" },
-      { label: "付属品", value: "座金・取付ビス一式" },
+      { label: "付属品", value: "取付ビス一式・タッチアップ材" },
     ],
     featureBullets: FB_STKM_URETHANE,
     galleryIds: [
@@ -233,7 +242,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       "f4a030f56d5784dc460c.jpg","dfc095e36e07842b1e1a.jpg","be8ace3369f4527a90ce.jpg",
       "340d022f48e0aee6e96b.jpg","0867afe603e501db8ede.jpg","8f88e87c208e9273ed2a.jpg",
       "99fc87f58c4321ab6a5f.jpg","dd16c6f3769ef886a8eb.jpg","82e1cc3d3168d6f46cd8.jpg",
-      "156414dbec3475dec9ae.jpg","b086a4aa3dae8339d586.jpg","c176c6746b8db4bf6b8f.jpg",
+      "156414dbec3475dec9ae.jpg","c176c6746b8db4bf6b8f.jpg",
       "d706b98edf0298cb0fde.jpg","e52b2cf97144be5b3ad9.jpg","bdac7a64dc3c49e65541.jpg",
       "4d8beb3b89354bf181bf.jpg","b8fd8dbbe2b28beff3f1.jpg","33d99fc7e30df4dc8983.jpg",
       "0c87b33aaf166d4e805e.jpg",
@@ -249,12 +258,12 @@ const DISPLAY: Record<string, ProductDisplay> = {
     longDescription:
       "Alexandre（アレクサンドル）は、標準より太いφ31.8mmの縦型手すりです。握りやすさと存在感を兼ね備え、しっかりとした安心感のある手すりをお求めの方に最適です。〜1000mmまで一律料金でご提供しています。",
     specs: [
-      { label: "素材", value: "SS400 STKM 31.8φ" },
+      { label: "素材", value: "STKM 31.8φ" },
       { label: "仕上げ", value: "2液型ウレタン塗装" },
       { label: "カラー", value: "マットブラック" },
       { label: "標準長さ", value: "〜1000mm 一律料金（最大3000mm）" },
       { label: "太さ", value: "φ31.8mm（太径）" },
-      { label: "付属品", value: "座金・取付ビス一式" },
+      { label: "付属品", value: "取付ビス一式・タッチアップ材" },
     ],
     featureBullets: FB_STKM_URETHANE,
     galleryIds: [
@@ -276,17 +285,26 @@ const DISPLAY: Record<string, ProductDisplay> = {
     subtitle: "壁付け手すり ・ 縦型ロング",
     shortDescription: "鍛冶職人制作 縦型ロング手すり φ25 マットブラック",
     longDescription:
-      "Antoine（アントワーヌ）は、1500〜3000mmに対応する縦型ロング手すりです。天井近くまで届く長尺のため、階段や吹き抜け空間など、通常の縦型手すりでは対応しきれない場所に最適です。製作期間は通常より長く、ご注文後4〜5週間となります。",
+      "Antoine（アントワーヌ）は、1500〜3000mmに対応する縦型ロング手すりです。天井近くまで届く長尺のため、階段や吹き抜け空間など、通常の縦型手すりでは対応しきれない場所に最適です。素材の厚みが、1500mmまでの長さのClaude（2.3mm）より厚い素材（3.2mm）を使用しているため、座金間を広く取れます。",
     specs: [
-      { label: "素材", value: "SS400 STKM 25.4φ" },
+      { label: "素材", value: "STKM 25.4φ" },
       { label: "仕上げ", value: "2液型ウレタン塗装" },
       { label: "カラー", value: "マットブラック" },
       { label: "標準長さ", value: "1500〜3000mm" },
       { label: "太さ", value: "φ25mm" },
-      { label: "付属品", value: "座金4個・取付ビス一式" },
+      { label: "付属品", value: "取付ビス一式・タッチアップ材" },
     ],
     featureBullets: FB_STKM_URETHANE,
-    galleryIds: ["2d1043dcd7658a96e5f3.jpg"],
+    // STORES アイテムページ (.../items/66c843839dd5030955588e20) から抽出した 20 枚
+    galleryIds: [
+      "2d1043dcd7658a96e5f3.jpg", "27028bc72ffa6bf103d8.jpg", "fbdf60c247bea8b3c486.jpg",
+      "711648a707f963c9b59a.jpg", "c5fb2dd278941bd5fd39.jpg", "97fa0e33493cacbe986a.jpg",
+      "e2bf8d7d8ad4bcaf847f.jpg", "87cea36aa852942ae05f.jpg", "724e568b9455f3a68e96.jpg",
+      "0169bd76e91e8b32d3c7.jpg", "4625e309d2e7d3f13f51.jpg", "e7989a9da84d34b0bdd6.jpg",
+      "439ff410f397b16fa4ab.jpg", "82e1cc3d3168d6f46cd8.jpg", "156414dbec3475dec9ae.jpg",
+      "4d8beb3b89354bf181bf.jpg", "b8fd8dbbe2b28beff3f1.jpg", "c44c2c4ac9b6765f2a70.jpg",
+      "8ca535d71a1edd180f5f.jpg", "59b5908472bc96a523a1.jpg",
+    ],
   },
   scroll16: {
     slug: "scroll16",
@@ -362,7 +380,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "仕上げ", value: "ミツロウ仕上げ" },
       { label: "サイズ", value: "高さ 80cm 固定" },
       { label: "製法", value: "火造り鍛造（職人手打ち）" },
-      { label: "付属品", value: "座金2個・取付ビス一式" },
+      { label: "付属品", value: "取付ビス一式・タッチアップ材" },
       { label: "納期", value: "ご注文後 5〜6週間" },
     ],
     featureBullets: FB_MITSUROU,
@@ -382,7 +400,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "仕上げ", value: "手打ち鎚目仕上げ" },
       { label: "サイズ", value: "高さ 80cm 固定" },
       { label: "製法", value: "火造り鍛造 + 手打ち加工" },
-      { label: "付属品", value: "座金2個・取付ビス一式" },
+      { label: "付属品", value: "取付ビス一式・タッチアップ材" },
       { label: "納期", value: "ご注文後 5〜6週間" },
     ],
     featureBullets: FB_TSUCHIME,
