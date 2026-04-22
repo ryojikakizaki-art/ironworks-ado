@@ -63,7 +63,7 @@ export default function ProductDetailPage() {
   const [isPrefectureOpen, setIsPrefectureOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(1)
   const [isDrawingOpen, setIsDrawingOpen] = useState(false)
-  const [washerType, setWasherType] = useState<WasherTypeId>("A")
+  const [washerType, setWasherType] = useState<WasherTypeId>(product.drawing.washerSpec?.id ?? "A")
   // 座金ルール (商品固有。未指定は旧式=横型ルール)
   const zakinRule = product.drawing.zakinRule
   const minLength = zakinRule?.minLengthMm ?? 500

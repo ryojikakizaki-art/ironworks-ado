@@ -42,13 +42,18 @@ const ANTOINE_RULE: ZakinRule = {
   // L>2400 で座金 3 個に切替 (中央追加)
   addWasherAboveMm: 2400,
 };
+// Alexandre (31.8φ 太径) — 500〜3000mm フルレンジ、L>1500 で 3 個に切替
+const ALEXANDRE_RULE: ZakinRule = {
+  defaultCount: 2, endMinMm: 50, maxSpanMm: 1500, minLengthMm: 500,
+  addWasherAboveMm: 1500,
+};
 
 const PRODUCTS: Record<string, Product> = {
   rene:       { name: 'René ルネ',               type: '横型', basePrice: 36500, stdLengthMm: 1500, maxMm: 5000, finish: 'マットブラック', includedZakin: 3 },
   claire:     { name: 'Claire クレール',          type: '横型', basePrice: 42000, stdLengthMm: 1500, maxMm: 5000, finish: 'マットホワイト', includedZakin: 3 },
   emile:      { name: 'Émile エミール',           type: '横型', basePrice: 45800, stdLengthMm: 1500, maxMm: 5000, finish: '鎚目仕上げ 銀古美', includedZakin: 3 },
   marcel:     { name: 'Marcel マルセル',          type: '横型', basePrice: 36000, stdLengthMm: 1500, maxMm: 5000, finish: 'マットブラック', includedZakin: 3 },
-  alexandre:  { name: 'Alexandre アレクサンドル', type: '縦型', basePrice: 32000, stdLengthMm: 1000, maxMm: 3000, finish: 'マットブラック', includedZakin: 3 },
+  alexandre:  { name: 'Alexandre アレクサンドル', type: '縦型', basePrice: 32000, stdLengthMm: 1000, maxMm: 3000, finish: 'マットブラック', includedZakin: 3, zakinRule: ALEXANDRE_RULE, pricePerMm: 30 },
   catherine:  { name: 'Catherine カトリーヌ',     type: '縦型', basePrice: 34500, stdLengthMm: 1000, maxMm: 1500, finish: 'マットホワイト', includedZakin: 3, zakinRule: VERTICAL_STANDARD_RULE },
   claude:     { name: 'Claude クロード',          type: '縦型', basePrice: 30000, stdLengthMm: 1000, maxMm: 1500, finish: 'マットブラック', includedZakin: 3, zakinRule: VERTICAL_STANDARD_RULE },
   antoine:    { name: 'Antoine アントワーヌ',      type: '縦型ロング', basePrice: 45000, stdLengthMm: 1500, maxMm: 3000, finish: 'マットブラック', includedZakin: 4, zakinRule: ANTOINE_RULE, pricePerMm: 30 },
