@@ -423,17 +423,20 @@ function buildWallGapDim(barTopY: number): SVGGElement {
   // 延長線 (上方向)
   g.appendChild(mkLine(x1, y, x1, y - 15, COLOR_DIM, DIM_STROKE_W * 0.7))
   g.appendChild(mkLine(x2, y, x2, y - 15, COLOR_DIM, DIM_STROKE_W * 0.7))
-  // 矢印 (水平方向に向かい合う)
-  const ah = 10
+  // 矢印 (水平・内向き): tip=端点、body は端点の外側 → ▶ at x1, ◀ at x2
+  const ah = 18
+  const ahH = 7
+  // 左矢印: tip=x1, body は x1-ah (外側・左) → 右向き ▶ = 内向き
   g.appendChild(
     mkPolygon(
-      [[x1, y], [x1 + ah, y + 3], [x1 + ah, y - 3]],
+      [[x1, y], [x1 - ah, y + ahH], [x1 - ah, y - ahH]],
       COLOR_DIM, 0, COLOR_DIM
     )
   )
+  // 右矢印: tip=x2, body は x2+ah (外側・右) → 左向き ◀ = 内向き
   g.appendChild(
     mkPolygon(
-      [[x2, y], [x2 - ah, y + 3], [x2 - ah, y - 3]],
+      [[x2, y], [x2 + ah, y + ahH], [x2 + ah, y - ahH]],
       COLOR_DIM, 0, COLOR_DIM
     )
   )
@@ -532,10 +535,11 @@ function buildVerticalDim(
   g.appendChild(mkLine(extensionFromX, yHigh, extSignedEnd, yHigh, COLOR_DIM, DIM_STROKE_W * 0.8))
   g.appendChild(mkLine(extensionFromX, yLow, extSignedEnd, yLow, COLOR_DIM, DIM_STROKE_W * 0.8))
 
-  // 矢印 (上下それぞれ)
-  const arrowLen = 10
-  const arrowHalfW = 4
-  // 上端矢印 (下向き)
+  // 矢印 (上下それぞれ・内向き)
+  // tip=端点、body は端点の外側 → 矢印が内側を向く (▽上端/△下端)
+  const arrowLen = 45
+  const arrowHalfW = 18
+  // 上端矢印: tip=yHigh, body は yHigh+arrowLen (外側・上) → 下向き ▽ = 内向き
   g.appendChild(
     mkPolygon(
       [
@@ -548,7 +552,7 @@ function buildVerticalDim(
       COLOR_DIM
     )
   )
-  // 下端矢印 (上向き)
+  // 下端矢印: tip=yLow, body は yLow-arrowLen (外側・下) → 上向き △ = 内向き
   g.appendChild(
     mkPolygon(
       [
