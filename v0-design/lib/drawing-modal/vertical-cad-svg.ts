@@ -103,24 +103,42 @@ export function buildVerticalCadDrawingSvg(
   const rightColBottom = contentTopY + 50 + RIGHT_COL_TOTAL_H
   const contentBottomY = Math.max(barBottomEdge, rightColBottom)
 
-  // A4 portrait アスペクト (W/H = 210/297 ≈ 0.707)
-  const A4_ASPECT = 210 / 297
+  // A4 アスペクト比
+  const A4_LANDSCAPE = 297 / 210  // ≈ 1.414 (横向き)
+  const A4_PORTRAIT  = 210 / 297  // ≈ 0.707 (縦向き)
+
   let VB_X = LEFT_COL_MIN_X
   let VB_Y = contentTopY
   let VB_W = RIGHT_COL_MAX_X - LEFT_COL_MIN_X // 2020
   let VB_H = contentBottomY - contentTopY
 
   const currentAspect = VB_W / VB_H
-  if (currentAspect > A4_ASPECT) {
-    // コンテンツが A4 より横長 → 下に空白追加
-    VB_H = VB_W / A4_ASPECT
+
+  if (currentAspect >= 1.0) {
+    // コンテンツが横長 → A4 横向き (297×210) に合わせる
+    if (currentAspect >= A4_LANDSCAPE) {
+      // A4 横より更に横長 → 下に余白追加
+      VB_H = VB_W / A4_LANDSCAPE
+    } else {
+      // 1.0 <= aspect < 1.414 → 左右に余白追加して横向き A4 に合わせる
+      const newW = VB_H * A4_LANDSCAPE
+      VB_X -= (newW - VB_W) / 2
+      VB_W = newW
+    }
   } else {
-    // コンテンツが A4 より縦長 → 左右に空白追加して中央寄せ
-    const targetW = VB_H * A4_ASPECT
-    VB_X -= (targetW - VB_W) / 2
-    VB_W = targetW
+    // コンテンツが縦長 → A4 縦向き (210×297)、図形は中央寄せ
+    if (currentAspect < A4_PORTRAIT) {
+      // A4 縦より更に縦長 → 左右に余白追加して中央寄せ
+      const newW = VB_H * A4_PORTRAIT
+      VB_X -= (newW - VB_W) / 2
+      VB_W = newW
+    } else {
+      // 0.707 <= aspect < 1.0 → 下に余白追加して縦向き A4 に合わせる
+      VB_H = VB_W / A4_PORTRAIT
+    }
   }
-  svg.setAttribute("viewBox", `${VB_X} ${VB_Y} ${VB_W} ${VB_H}`)
+
+  svg.setAttribute("viewBox", `${VB_X.toFixed(1)} ${VB_Y.toFixed(1)} ${VB_W.toFixed(1)} ${VB_H.toFixed(1)}`)
 
   // 右列アイテムの Y 位置 (viewBox 上端から一定距離)
   const detailTopY = contentTopY + 50
@@ -405,17 +423,20 @@ function buildWallGapDim(barTopY: number): SVGGElement {
   // 延長線 (上方向)
   g.appendChild(mkLine(x1, y, x1, y - 15, COLOR_DIM, DIM_STROKE_W * 0.7))
   g.appendChild(mkLine(x2, y, x2, y - 15, COLOR_DIM, DIM_STROKE_W * 0.7))
-  // 矢印 (水平方向に向かい合う)
-  const ah = 10
+  // 矢印 (水平・内→外向き): body=内側, tip=端点, 矢印は外を向く
+  const ah = 8
+  const ahH = 3
+  // 左矢印: tip=x1, body は x1+ah (内側・右) → 左向き ◄
   g.appendChild(
     mkPolygon(
-      [[x1, y], [x1 + ah, y + 3], [x1 + ah, y - 3]],
+      [[x1, y], [x1 + ah, y + ahH], [x1 + ah, y - ahH]],
       COLOR_DIM, 0, COLOR_DIM
     )
   )
+  // 右矢印: tip=x2, body は x2-ah (内側・左) → 右向き ►
   g.appendChild(
     mkPolygon(
-      [[x2, y], [x2 - ah, y + 3], [x2 - ah, y - 3]],
+      [[x2, y], [x2 - ah, y + ahH], [x2 - ah, y - ahH]],
       COLOR_DIM, 0, COLOR_DIM
     )
   )
@@ -514,29 +535,30 @@ function buildVerticalDim(
   g.appendChild(mkLine(extensionFromX, yHigh, extSignedEnd, yHigh, COLOR_DIM, DIM_STROKE_W * 0.8))
   g.appendChild(mkLine(extensionFromX, yLow, extSignedEnd, yLow, COLOR_DIM, DIM_STROKE_W * 0.8))
 
-  // 矢印 (上下それぞれ)
-  const arrowLen = 10
-  const arrowHalfW = 4
-  // 上端矢印 (下向き)
+  // 矢印 (上下それぞれ・内→外向き)
+  // 「測定箇所の内から外を指す」ルール: body=内側, tip=端点, 矢印は外を向く
+  const arrowLen = 14
+  const arrowHalfW = 5
+  // 上端矢印: tip=yHigh (上端), body は yHigh-arrowLen (内側・下) → 上向き △
   g.appendChild(
     mkPolygon(
       [
         [dimLineX, yHigh],
-        [dimLineX - arrowHalfW, yHigh + arrowLen],
-        [dimLineX + arrowHalfW, yHigh + arrowLen],
+        [dimLineX - arrowHalfW, yHigh - arrowLen],
+        [dimLineX + arrowHalfW, yHigh - arrowLen],
       ],
       COLOR_DIM,
       0,
       COLOR_DIM
     )
   )
-  // 下端矢印 (上向き)
+  // 下端矢印: tip=yLow (下端), body は yLow+arrowLen (内側・上) → 下向き ▽
   g.appendChild(
     mkPolygon(
       [
         [dimLineX, yLow],
-        [dimLineX - arrowHalfW, yLow - arrowLen],
-        [dimLineX + arrowHalfW, yLow - arrowLen],
+        [dimLineX - arrowHalfW, yLow + arrowLen],
+        [dimLineX + arrowHalfW, yLow + arrowLen],
       ],
       COLOR_DIM,
       0,

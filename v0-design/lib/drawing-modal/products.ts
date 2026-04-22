@@ -216,6 +216,36 @@ DRAWING_PRODUCTS.catherine = {
   zakinRule: VERTICAL_STANDARD_RULE,
 }
 
+// Alexandre (太径 31.8φ) 座金ルール:
+// - 基本 2 個、L>=2500 で 3 個 (中央追加)
+// - 端距離は段階式 (endSteps) で長さ帯ごとに固定値
+// - 最大ピッチ 1500mm
+// - 長さ 500〜3000mm フルレンジ
+const ALEXANDRE_RULE: ZakinRule = {
+  defaultCount: 2,
+  endMinMm: 50,
+  endMaxMm: 450,
+  endSteps: [
+    [500,  50],   // 500〜999
+    [1000, 100],  // 1000〜1199
+    [1200, 130],  // 1200〜1399
+    [1400, 150],  // 1400〜1499
+    [1500, 175],  // 1500〜1599
+    [1600, 200],  // 1600〜1699
+    [1700, 225],  // 1700〜1799
+    [1800, 250],  // 1800〜1899
+    [1900, 275],  // 1900〜1999
+    [2000, 300],  // 2000〜2199
+    [2200, 350],  // 2200〜2299
+    [2300, 400],  // 2300〜2499
+    [2500, 450],  // 2500〜3000 (座金3点)
+  ],
+  maxSpanMm: 1500,
+  minLengthMm: 500,
+  maxLengthMm: 3000,
+  addWasherAboveMm: 2499,
+}
+
 DRAWING_PRODUCTS.alexandre = {
   slug: "alexandre",
   nameJa: "Alexandre 縦型手すり",
@@ -227,6 +257,14 @@ DRAWING_PRODUCTS.alexandre = {
   stdLengthMm: 1000,
   maxMm: 3000,
   includedZakin: 3,
+  pricePerMm: 30, // 31.8φ 太径は Antoine(t3.2) と同率
+  zakinRule: ALEXANDRE_RULE,
+  washerSpec: WASHER_SPEC_B, // 太径用に幅広薄型 60×25mm
+  titleBlock: {
+    productName: "Alexandre",
+    color: "マットブラック",
+    material: "stkm31.8 t2.3",
+  },
 }
 
 DRAWING_PRODUCTS.antoine = {

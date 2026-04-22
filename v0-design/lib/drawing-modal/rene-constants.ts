@@ -20,6 +20,9 @@ export interface ZakinRule {
   // 端距離 anchors (線形補間用): [(L_mm, endDist), ...]。L の昇順。
   // Antoine 専用: 非線形な端距離カーブ
   endAnchors?: Array<[number, number]>
+  // 端距離 steps (段階式): [(L_threshold, endDist), ...]。L >= threshold でその値を適用。
+  // Alexandre 専用: 長さ帯ごとに固定値
+  endSteps?: Array<[number, number]>
   // この長さを超えたら座金を 1 点追加 (2→3, 3→4 等)
   // Antoine: 2400 超えで 3 点配置 (中央追加)
   addWasherAboveMm?: number
@@ -53,6 +56,17 @@ export function calcZakin(L_mm: number, rule?: ZakinRule): number {
   return 1 + Math.ceil(inner / maxSpan(rule))
 }
 
+// steps の段階ルックアップ: L >= threshold を満たす最大 threshold の値を返す
+function lookupStep(L_mm: number, steps: Array<[number, number]>): number {
+  const sorted = [...steps].sort((a, b) => a[0] - b[0])
+  let result = sorted[0][1]
+  for (const [threshold, dist] of sorted) {
+    if (L_mm >= threshold) result = dist
+    else break
+  }
+  return result
+}
+
 // anchors の線形補間
 function interpolateAnchors(L_mm: number, anchors: Array<[number, number]>): number {
   if (anchors.length === 0) return 0
@@ -76,7 +90,11 @@ function interpolateAnchors(L_mm: number, anchors: Array<[number, number]>): num
 // endAnchors 指定時は線形補間値を使用 (Antoine: 非線形カーブ)。
 export function calcEndDist(L_mm: number, rule?: ZakinRule): number {
   if (rule?.defaultCount !== undefined) {
-    // anchors 指定がある場合、それを使用 (Antoine)
+    // steps 指定がある場合、段階ルックアップ (Alexandre)
+    if (rule.endSteps && rule.endSteps.length > 0) {
+      return lookupStep(L_mm, rule.endSteps)
+    }
+    // anchors 指定がある場合、線形補間 (Antoine)
     if (rule.endAnchors && rule.endAnchors.length > 0) {
       const v = interpolateAnchors(L_mm, rule.endAnchors)
       const capped = rule.endMaxMm !== undefined ? Math.min(v, rule.endMaxMm) : v
