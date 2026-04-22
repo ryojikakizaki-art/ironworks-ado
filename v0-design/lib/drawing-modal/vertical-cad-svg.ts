@@ -43,10 +43,12 @@ const SIDE_BAR_X2 = -896.8
 // 座金プレート側面 x (DXF)
 const SIDE_PLATE_X1 = -962.2
 const SIDE_PLATE_X2 = -957.7
-// 座金プレート側面 高さ (35mm) の半分 = 17.5mm (washer center から上下)
-const PLATE_HALF_H = 17.5
 // 座金プレート厚 t=4.5mm の半分 = 2.25mm
 const PLATE_HALF_T = 2.25
+// 正面図 座金平面楕円の DXF 中心 (washer-top/bottom/middle 共通)
+// full-drawing-fragment.ts の path bbox から算出: 範囲 x=[-506.32, -451.32], y=[-667.5, -632.5] (SVG座標)
+const FRONT_WASHER_CENTER_X = -478.82
+const FRONT_WASHER_CENTER_Y_SVG = -650
 
 const COLOR_LINE = "#222"
 const COLOR_DIM = "#333"
@@ -176,7 +178,7 @@ export function buildVerticalCadDrawingSvg(
     logoTopY,
     rightColX: RIGHT_COL_X,
     rightColW: RIGHT_COL_W,
-  })
+  }, washerType)
 }
 
 function removeDynamicFromDxf(svg: SVGSVGElement): void {
@@ -217,7 +219,8 @@ function updateDynamicElements(
   L_mm: number,
   positions: number[],
   product: DrawingProductConfig,
-  rightCol: RightColLayout
+  rightCol: RightColLayout,
+  washerType: WasherTypeId
 ): void {
   const barTopY = BAR_CENTER_Y + L_mm / 2
   const barBotY = BAR_CENTER_Y - L_mm / 2
@@ -241,9 +244,10 @@ function updateDynamicElements(
     )
   }
 
-  // 上下座金平面を新しい y 位置へ平行移動
-  moveGroup(svg, "washer-top", 0, -(topWasherY - 650))
-  moveGroup(svg, "washer-bottom", 0, -(botWasherY - -150))
+  // 上下座金平面を新しい y 位置へ平行移動 (B タイプはスケールも適用)
+  // washer-top は原点 DXF y=650 (SVG y=-650)、bottom は DXF y=-150 (SVG y=150) に描画されている
+  applyWasherTransform(svg, "washer-top", topWasherY, 650, washerType)
+  applyWasherTransform(svg, "washer-bottom", botWasherY, -150, washerType)
 
   // 既存の中間座金平面を削除
   svg.querySelectorAll('[data-role^="washer-middle-"]').forEach((el) => el.remove())
@@ -252,11 +256,11 @@ function updateDynamicElements(
     const topGroup = svg.querySelector('[data-role="washer-top"]')
     if (topGroup) {
       const middleYs = washerYs.slice(1, -1)
-      // washer-top は既に translate されているので、元の DXF 位置(y=650) からの相対差分を計算
+      // washer-top は既に transform されているので、元の DXF 位置(y=650) からの相対差分を計算
       middleYs.forEach((midY, i) => {
         const cloned = topGroup.cloneNode(true) as SVGGElement
         cloned.setAttribute("data-role", `washer-middle-${i}`)
-        cloned.setAttribute("transform", `translate(0, ${-(midY - 650)})`)
+        setWasherTransform(cloned, midY, 650, washerType)
         topGroup.parentNode?.insertBefore(cloned, topGroup.nextSibling)
       })
     }
@@ -266,8 +270,8 @@ function updateDynamicElements(
   const wallHatch = buildWallHatch(barTopY, barBotY)
   svg.insertBefore(wallHatch, svg.firstChild)
 
-  // 側面図 (バー・プレート・連結線) — 全座金位置を渡す
-  const sideView = buildSideView(barTopY, barBotY, washerYs)
+  // 側面図 (バー・プレート・連結線) — 全座金位置を渡す。座金タイプで plate 高さが変わる
+  const sideView = buildSideView(barTopY, barBotY, washerYs, washerType)
   svg.appendChild(sideView)
 
   // 40mm 壁ギャップ寸法
@@ -327,13 +331,54 @@ function moveGroup(svg: SVGSVGElement, role: string, dxSvg: number, dySvg: numbe
   g.setAttribute("transform", `translate(${dxSvg.toFixed(2)}, ${dySvg.toFixed(2)})`)
 }
 
+// 正面図 座金平面グループに transform を設定
+// - A タイプ: 単純に y 方向平行移動
+// - B タイプ: 原点中心で (60/55, 25/35) に非等方スケール + 平行移動
+function setWasherTransform(
+  g: SVGGElement,
+  targetDxfY: number,
+  originDxfY: number,
+  washerType: WasherTypeId
+): void {
+  const dySvg = -(targetDxfY - originDxfY)
+  if (washerType !== "B") {
+    g.setAttribute("transform", `translate(0, ${dySvg.toFixed(3)})`)
+    return
+  }
+  // 元位置の SVG 中心
+  const cx = FRONT_WASHER_CENTER_X
+  const cySvgOrigin = -originDxfY
+  const sx = B_SCALE_X
+  const sy = B_SCALE_Y
+  // scale-around-center + 上方 translate: translate(cx*(1-sx), dy + cy*(1-sy)) scale(sx, sy)
+  const tx = cx * (1 - sx)
+  const ty = dySvg + cySvgOrigin * (1 - sy)
+  g.setAttribute(
+    "transform",
+    `translate(${tx.toFixed(3)}, ${ty.toFixed(3)}) scale(${sx.toFixed(5)}, ${sy.toFixed(5)})`
+  )
+}
+
+function applyWasherTransform(
+  svg: SVGSVGElement,
+  role: string,
+  targetDxfY: number,
+  originDxfY: number,
+  washerType: WasherTypeId
+): void {
+  const g = svg.querySelector(`[data-role="${role}"]`) as SVGGElement | null
+  if (!g) return
+  setWasherTransform(g, targetDxfY, originDxfY, washerType)
+}
+
 // ==========================================================
 // 側面図 (wall-hatch の右側にバー+プレート+連結線)
 // ==========================================================
 function buildSideView(
   barTopY: number,
   barBotY: number,
-  washerYs: number[]
+  washerYs: number[],
+  washerType: WasherTypeId
 ): SVGGElement {
   const g = document.createElementNS(SVG_NS, "g")
   g.setAttribute("data-role", "side-view")
@@ -347,13 +392,14 @@ function buildSideView(
   ]
   g.appendChild(mkPolygon(barPolyPts, COLOR_LINE, STROKE_W, FILL_BAR))
 
-  // 全座金位置のプレート側面 (35mm × 4.5mm) + 連結線
+  // 全座金位置のプレート側面 (A: 35mm × 4.5mm / B: 25mm × 4.5mm) + 連結線
+  const plateHalfH = (washerType === "B" ? WASHER_SPEC_B.plateHeight : WASHER_SPEC_A.plateHeight) / 2
   for (const washerY of washerYs) {
     const platePts = [
-      [SIDE_PLATE_X1, washerY + PLATE_HALF_H],
-      [SIDE_PLATE_X2, washerY + PLATE_HALF_H],
-      [SIDE_PLATE_X2, washerY - PLATE_HALF_H],
-      [SIDE_PLATE_X1, washerY - PLATE_HALF_H],
+      [SIDE_PLATE_X1, washerY + plateHalfH],
+      [SIDE_PLATE_X2, washerY + plateHalfH],
+      [SIDE_PLATE_X2, washerY - plateHalfH],
+      [SIDE_PLATE_X1, washerY - plateHalfH],
     ]
     g.appendChild(mkPolygon(platePts, COLOR_LINE, STROKE_W, FILL_BAR))
     for (const offsetSign of [1, -1]) {
