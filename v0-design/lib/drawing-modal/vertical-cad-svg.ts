@@ -424,8 +424,8 @@ function buildWallGapDim(barTopY: number): SVGGElement {
   g.appendChild(mkLine(x1, y, x1, y - 15, COLOR_DIM, DIM_STROKE_W * 0.7))
   g.appendChild(mkLine(x2, y, x2, y - 15, COLOR_DIM, DIM_STROKE_W * 0.7))
   // 矢印 (水平・内向き): tip=端点、body は端点の外側 → ▶ at x1, ◀ at x2
-  const ah = 18
-  const ahH = 7
+  const ah = 12
+  const ahH = 5
   // 左矢印: tip=x1, body は x1-ah (外側・左) → 右向き ▶ = 内向き
   g.appendChild(
     mkPolygon(
@@ -537,8 +537,8 @@ function buildVerticalDim(
 
   // 矢印 (上下それぞれ・内向き)
   // tip=端点、body は端点の外側 → 矢印が内側を向く (▽上端/△下端)
-  const arrowLen = 45
-  const arrowHalfW = 18
+  const arrowLen = 25
+  const arrowHalfW = 10
   // 上端矢印: tip=yHigh, body は yHigh+arrowLen (外側・上) → 下向き ▽ = 内向き
   g.appendChild(
     mkPolygon(
