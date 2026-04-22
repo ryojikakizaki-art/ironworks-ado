@@ -42,10 +42,10 @@ const ANTOINE_RULE: ZakinRule = {
   // L>2400 で座金 3 個に切替 (中央追加)
   addWasherAboveMm: 2400,
 };
-// Alexandre (31.8φ 太径) — 500〜3000mm フルレンジ、L>1500 で 3 個に切替
+// Alexandre (31.8φ 太径) — 500〜3000mm フルレンジ、L>=2500 で 3 個に切替
 const ALEXANDRE_RULE: ZakinRule = {
   defaultCount: 2, endMinMm: 50, maxSpanMm: 1500, minLengthMm: 500,
-  addWasherAboveMm: 1500,
+  addWasherAboveMm: 2499,
 };
 
 const PRODUCTS: Record<string, Product> = {
