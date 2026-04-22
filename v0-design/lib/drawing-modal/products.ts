@@ -214,6 +214,12 @@ DRAWING_PRODUCTS.catherine = {
   maxMm: 1500,
   includedZakin: 3,
   zakinRule: VERTICAL_STANDARD_RULE,
+  washerSpec: WASHER_SPEC_A,
+  titleBlock: {
+    productName: "Catherine",
+    color: "マットホワイト",
+    material: "stkm25.4 t2.3",
+  },
 }
 
 // Alexandre (太径 31.8φ) 座金ルール:
