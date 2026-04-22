@@ -97,7 +97,7 @@ export function ZakinEditor({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className={`w-full flex items-center justify-between gap-2 px-4 py-3 text-[11px] tracking-[0.1em] border transition-colors ${
+        className={`w-full flex items-center justify-between gap-2 px-4 py-3 text-[14px] font-medium tracking-[0.05em] border transition-colors ${
           open || state.customMode
             ? "border-gold text-gold bg-gold/5"
             : "border-border text-muted-foreground hover:border-gold hover:text-gold"

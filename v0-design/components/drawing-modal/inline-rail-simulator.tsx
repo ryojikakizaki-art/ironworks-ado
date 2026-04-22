@@ -128,7 +128,7 @@ export function InlineRailSimulator({
     <div
       className={`bg-card border border-border rounded-md p-4 ${className ?? ""}`}
     >
-      <div className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-2">
+      <div className="text-[12px] tracking-[0.2em] uppercase text-muted-foreground mb-2 font-medium">
         Simulator
       </div>
       <svg
@@ -143,10 +143,10 @@ export function InlineRailSimulator({
         <text
           x={(BAR_LEFT + BAR_RIGHT) / 2}
           y={DIM_Y - 3}
-          fontSize={12}
+          fontSize={16}
           fill={COLOR_TOTAL_TEXT}
           textAnchor="middle"
-          fontWeight={600}
+          fontWeight={700}
           fontFamily="sans-serif"
         >
           {lengthMm}
@@ -252,10 +252,11 @@ export function InlineRailSimulator({
               <line x1={x2} y1={SEG_Y - 3} x2={x2} y2={SEG_Y + 3} stroke={COLOR_DIM} strokeWidth={0.7} />
               <text
                 x={midX}
-                y={SEG_Y + 14}
-                fontSize={11}
+                y={SEG_Y + 16}
+                fontSize={14}
                 fill={COLOR_TEXT}
                 textAnchor="middle"
+                fontWeight={600}
                 fontFamily="sans-serif"
               >
                 {segLen}
@@ -267,20 +268,27 @@ export function InlineRailSimulator({
         {/* 座金 N 点 ラベル */}
         <text
           x={(BAR_LEFT + BAR_RIGHT) / 2}
-          y={SEG_Y + 32}
-          fontSize={10}
+          y={SEG_Y + 36}
+          fontSize={13}
           fill={COLOR_DIM}
           textAnchor="middle"
+          fontWeight={500}
           fontFamily="sans-serif"
         >
           《 座金 {sorted.length}点 》
         </text>
       </svg>
-      <div className="text-[10px] text-muted-foreground mt-1">
+      <div className="text-[14px] font-medium text-foreground mt-2 leading-relaxed">
         推奨座金数 {calcZakin(lengthMm, zakinRule)} 個（自動計算）
         {onPositionsChange && (
           <span className="ml-2 text-gold">・座金をドラッグで位置調整できます</span>
         )}
+        {(() => {
+          const maxSpan = zakinRule?.maxSpanMm ?? (product.category === "horizontal" ? 850 : undefined)
+          return maxSpan ? (
+            <span className="ml-2 text-muted-foreground">（最大推奨幅 {maxSpan}mm）</span>
+          ) : null
+        })()}
       </div>
     </div>
   )

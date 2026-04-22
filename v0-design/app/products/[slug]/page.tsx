@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
@@ -64,6 +64,11 @@ export default function ProductDetailPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [isDrawingOpen, setIsDrawingOpen] = useState(false)
   const [washerType, setWasherType] = useState<WasherTypeId>(product.drawing.washerSpec?.id ?? "A")
+  const [isCheckingOut, setIsCheckingOut] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const [isCtaInView, setIsCtaInView] = useState(false)
+  const ctaRef = useRef<HTMLDivElement | null>(null)
+  const prefectureRef = useRef<HTMLDivElement | null>(null)
   // 座金ルール (商品固有。未指定は旧式=横型ルール)
   const zakinRule = product.drawing.zakinRule
   const minLength = zakinRule?.minLengthMm ?? 500
@@ -154,6 +159,54 @@ export default function ProductDetailPage() {
       return () => { document.body.style.overflow = "" }
     }
   }, [isLightboxOpen])
+
+  // CTA領域 (Step4 合計～ボタン) のビューポート監視でフローティング価格の表示制御
+  useEffect(() => {
+    const target = ctaRef.current
+    if (!target) return
+    const obs = new IntersectionObserver(
+      ([entry]) => setIsCtaInView(entry.isIntersecting),
+      { rootMargin: "0px 0px -20% 0px", threshold: 0.05 }
+    )
+    obs.observe(target)
+    return () => obs.disconnect()
+  }, [])
+
+  // Stripe Checkout 遷移
+  const handleCheckout = async () => {
+    if (prices.shippingInquiry || isCheckingOut) return
+    if (!prefecture) {
+      setCheckoutError("配送先都道府県を選択してください")
+      prefectureRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+      setIsPrefectureOpen(true)
+      return
+    }
+    setCheckoutError(null)
+    setIsCheckingOut(true)
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product: slug,
+          lengthMm: length,
+          quantity,
+          rushDelivery: deliveryType === "express",
+          prefecture,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data?.url) {
+        setCheckoutError(data?.error ?? "購入手続きを開始できませんでした")
+        setIsCheckingOut(false)
+        return
+      }
+      window.location.href = data.url
+    } catch {
+      setCheckoutError("ネットワークエラーが発生しました。時間をおいて再度お試しください")
+      setIsCheckingOut(false)
+    }
+  }
 
   // Delivery date calculation
   const getDeliveryDate = () => {
@@ -303,16 +356,16 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* Step 1: Length */}
-                <div className="relative pl-12">
-                  <div className={`absolute left-0 top-0 w-9 h-9 flex items-center justify-center text-[14px] font-serif font-semibold transition-colors ${
+                <div className="relative pl-14">
+                  <div className={`absolute left-0 top-0 w-11 h-11 flex items-center justify-center text-[16px] font-serif font-bold rounded-full shadow-sm transition-colors ${
                     currentStep >= 1 ? "bg-gold text-white" : "bg-muted text-muted-foreground"
                   }`}>
                     01
                   </div>
-                  <div className="absolute left-[17px] top-10 bottom-0 w-px bg-border" />
+                  <div className="absolute left-[21px] top-12 bottom-0 w-px bg-border" />
 
                   <div className="space-y-4">
-                    <h3 className="font-serif text-[18px] font-medium text-foreground">
+                    <h3 className="font-serif text-[22px] font-bold text-foreground tracking-tight">
                       {product.drawing.category === "fixed" ? "サイズ" : "長さを選ぶ"}
                     </h3>
                     {product.drawing.category === "fixed" ? (
@@ -416,7 +469,7 @@ export default function ProductDetailPage() {
                         <button
                           type="button"
                           onClick={() => setIsDrawingOpen(true)}
-                          className="mt-2 inline-flex items-center gap-2 text-[12px] tracking-wider text-gold hover:text-gold/80 border border-gold/40 hover:border-gold px-4 py-2 transition-colors"
+                          className="mt-2 inline-flex items-center gap-2 text-[14px] font-medium tracking-wider text-gold hover:text-gold/80 border border-gold/40 hover:border-gold px-5 py-2.5 transition-colors"
                         >
                           制作図プレビュー ▸
                         </button>
@@ -426,22 +479,27 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* Step 2: Quantity & Prefecture */}
-                <div className="relative pl-12 pt-6">
-                  <div className={`absolute left-0 top-6 w-9 h-9 flex items-center justify-center text-[14px] font-serif font-semibold transition-colors ${
+                <div className="relative pl-14 pt-6">
+                  <div className={`absolute left-0 top-6 w-11 h-11 flex items-center justify-center text-[16px] font-serif font-bold rounded-full shadow-sm transition-colors ${
                     currentStep >= 2 ? "bg-gold text-white" : "bg-muted text-muted-foreground"
                   }`}>
                     02
                   </div>
-                  <div className="absolute left-[17px] top-16 bottom-0 w-px bg-border" />
+                  <div className="absolute left-[21px] top-[68px] bottom-0 w-px bg-border" />
 
                   <div className="space-y-4">
-                    <h3 className="font-serif text-[18px] font-medium text-foreground">数量・配送先</h3>
-                    <div className="flex flex-col sm:flex-row gap-4">
+                    <h3 className="font-serif text-[22px] font-bold text-foreground tracking-tight">
+                      数量・配送先
+                      {!prefecture && (
+                        <span className="ml-2 text-[11px] font-sans font-medium text-red-600 align-middle tracking-wider">必須</span>
+                      )}
+                    </h3>
+                    <div ref={prefectureRef} className="flex flex-col sm:flex-row gap-4">
                       {/* Quantity */}
                       <div className="flex items-center border border-border rounded-md">
                         <button
                           onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          className="w-10 h-10 flex items-center justify-center hover:bg-muted transition-colors"
+                          className="w-12 h-12 flex items-center justify-center hover:bg-muted transition-colors"
                           aria-label="数量を減らす"
                         >
                           <Minus className="w-4 h-4" />
@@ -449,23 +507,32 @@ export default function ProductDetailPage() {
                         <span className="w-12 text-center font-mono text-lg">{quantity}</span>
                         <button
                           onClick={() => setQuantity(quantity + 1)}
-                          className="w-10 h-10 flex items-center justify-center hover:bg-muted transition-colors"
+                          className="w-12 h-12 flex items-center justify-center hover:bg-muted transition-colors"
                           aria-label="数量を増やす"
                         >
                           <Plus className="w-4 h-4" />
                         </button>
                       </div>
-                      
+
                       {/* Prefecture Dropdown */}
                       <div className="relative flex-1">
                         <button
                           onClick={() => setIsPrefectureOpen(!isPrefectureOpen)}
-                          className="w-full h-10 px-4 flex items-center justify-between border border-border rounded-md text-[13px] hover:border-gold transition-colors"
+                          className={`w-full h-12 px-4 flex items-center justify-between border-2 rounded-md text-[14px] font-medium transition-colors ${
+                            prefecture
+                              ? "border-gold bg-gold/5 text-foreground"
+                              : "border-gold/60 bg-white text-foreground hover:border-gold"
+                          }`}
                         >
-                          <span className={prefecture ? "text-foreground" : "text-muted-foreground"}>
-                            {prefecture || "配送先都道府県を選択"}
+                          <span className="flex items-center gap-2">
+                            {!prefecture && (
+                              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gold/15 text-gold text-[11px] font-bold">
+                                ▼
+                              </span>
+                            )}
+                            <span>{prefecture || "配送先都道府県を選択 ▸"}</span>
                           </span>
-                          <ChevronDown className={`w-4 h-4 transition-transform ${isPrefectureOpen ? "rotate-180" : ""}`} />
+                          <ChevronDown className={`w-5 h-5 text-gold transition-transform ${isPrefectureOpen ? "rotate-180" : ""}`} />
                         </button>
                         
                         <AnimatePresence>
@@ -479,7 +546,7 @@ export default function ProductDetailPage() {
                               {prefectures.map((pref) => (
                                 <button
                                   key={pref}
-                                  onClick={() => { setPrefecture(pref); setIsPrefectureOpen(false); }}
+                                  onClick={() => { setPrefecture(pref); setIsPrefectureOpen(false); setCheckoutError(null); }}
                                   className="w-full px-4 py-2 text-left text-[13px] hover:bg-muted transition-colors flex items-center justify-between"
                                 >
                                   {pref}
@@ -495,16 +562,16 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* Step 3: Delivery */}
-                <div className="relative pl-12 pt-6">
-                  <div className={`absolute left-0 top-6 w-9 h-9 flex items-center justify-center text-[14px] font-serif font-semibold transition-colors ${
+                <div className="relative pl-14 pt-6">
+                  <div className={`absolute left-0 top-6 w-11 h-11 flex items-center justify-center text-[16px] font-serif font-bold rounded-full shadow-sm transition-colors ${
                     currentStep >= 3 ? "bg-gold text-white" : "bg-muted text-muted-foreground"
                   }`}>
                     03
                   </div>
-                  <div className="absolute left-[17px] top-16 bottom-0 w-px bg-border" />
+                  <div className="absolute left-[21px] top-[68px] bottom-0 w-px bg-border" />
 
                   <div className="space-y-4">
-                    <h3 className="font-serif text-[18px] font-medium text-foreground">納品日・配送を選ぶ</h3>
+                    <h3 className="font-serif text-[22px] font-bold text-foreground tracking-tight">納品日・配送を選ぶ</h3>
                     <div className="flex gap-3">
                       <button
                         onClick={() => setDeliveryType("normal")}
@@ -536,15 +603,15 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* Step 4: Confirm & Purchase */}
-                <div className="relative pl-12 pt-6">
-                  <div className={`absolute left-0 top-6 w-9 h-9 flex items-center justify-center text-[14px] font-serif font-semibold transition-colors ${
+                <div ref={ctaRef} className="relative pl-14 pt-6">
+                  <div className={`absolute left-0 top-6 w-11 h-11 flex items-center justify-center text-[16px] font-serif font-bold rounded-full shadow-sm transition-colors ${
                     currentStep >= 4 ? "bg-gold text-white" : "bg-muted text-muted-foreground"
                   }`}>
                     04
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="font-serif text-[18px] font-medium text-foreground">確認して購入</h3>
+                    <h3 className="font-serif text-[22px] font-bold text-foreground tracking-tight">確認して購入</h3>
                     
                     {/* Price Breakdown (詳細内訳) */}
                     <div className="bg-muted/50 rounded-lg p-5 space-y-2.5">
@@ -641,26 +708,41 @@ export default function ProductDetailPage() {
 
                     {/* CTA Buttons */}
                     <div className="space-y-3">
+                      {checkoutError && (
+                        <div className="border-2 border-red-500/60 bg-red-50 rounded-md p-3 text-[13px] text-red-700">
+                          {checkoutError}
+                        </div>
+                      )}
                       <motion.button
-                        whileHover={{ scale: prices.shippingInquiry ? 1 : 1.02 }}
-                        whileTap={{ scale: prices.shippingInquiry ? 1 : 0.98 }}
-                        disabled={prices.shippingInquiry}
-                        className={`w-full py-5 font-serif text-[17px] font-medium rounded-md relative overflow-hidden group ${
+                        onClick={handleCheckout}
+                        whileHover={{ scale: prices.shippingInquiry || isCheckingOut ? 1 : 1.02 }}
+                        whileTap={{ scale: prices.shippingInquiry || isCheckingOut ? 1 : 0.98 }}
+                        disabled={prices.shippingInquiry || isCheckingOut}
+                        className={`w-full py-5 font-serif text-[17px] font-bold rounded-md relative overflow-hidden group ${
                           prices.shippingInquiry
                             ? "bg-muted text-muted-foreground cursor-not-allowed"
-                            : "bg-gold text-white"
+                            : isCheckingOut
+                              ? "bg-gold/70 text-white cursor-wait"
+                              : "bg-gold text-white"
                         }`}
                       >
                         <span className="relative z-10">
-                          {prices.shippingInquiry ? "要問い合わせ（別途見積もり）" : "カートに追加 — 購入手続きへ"}
+                          {prices.shippingInquiry
+                            ? "要問い合わせ（別途見積もり）"
+                            : isCheckingOut
+                              ? "購入ページへ移動中…"
+                              : "購入手続きへ進む ▸"}
                         </span>
-                        {!prices.shippingInquiry && (
+                        {!prices.shippingInquiry && !isCheckingOut && (
                           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
                         )}
                       </motion.button>
-                      <button className="w-full py-4 border border-border text-foreground text-[15px] font-medium rounded-md hover:border-gold hover:text-gold transition-colors">
+                      <Link
+                        href="/contact"
+                        className="block w-full py-4 border border-border text-foreground text-[15px] font-medium rounded-md hover:border-gold hover:text-gold transition-colors text-center"
+                      >
                         見積もりを取る
-                      </button>
+                      </Link>
                     </div>
                   </div>
                 </div>
@@ -755,6 +837,38 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </main>
+
+      {/* Floating Price Bar (Step4 CTA が画面外の時だけ表示) */}
+      <AnimatePresence>
+        {!isCtaInView && !prices.shippingInquiry && (
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
+            transition={{ duration: 0.25 }}
+            className="fixed bottom-4 right-4 left-4 sm:left-auto sm:bottom-6 sm:right-6 z-40 max-w-md sm:max-w-sm"
+          >
+            <div className="bg-white border-2 border-gold shadow-2xl rounded-xl p-4 flex items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground">合計（税込）</div>
+                <div className="font-serif text-[22px] font-bold text-foreground leading-tight">
+                  ¥{prices.total.toLocaleString()}
+                </div>
+                <div className="text-[10px] text-muted-foreground truncate">
+                  {length}mm · {quantity}本{prefecture ? ` · ${prefecture}` : " · 配送先未選択"}
+                </div>
+              </div>
+              <button
+                onClick={handleCheckout}
+                disabled={isCheckingOut}
+                className="shrink-0 bg-gold hover:bg-gold/90 disabled:bg-gold/70 text-white font-serif font-bold text-[14px] px-4 py-3 rounded-md transition-colors whitespace-nowrap"
+              >
+                {isCheckingOut ? "移動中…" : "購入手続き ▸"}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <Footer />
 
