@@ -122,7 +122,9 @@ export default function ProductDetailPage() {
     const expressAddon = deliveryType === "express" ? Math.round(subtotal * RUSH_RATE) : 0
     const shippingResult = calcShipping(length, prefecture, quantity, productType)
     const shipping = shippingResult.shipping
-    const total = subtotal + expressAddon + shipping
+    // 送料は外税 → 消費税 10% を上乗せ
+    const shippingTax = Math.round(shipping * 0.1)
+    const total = subtotal + expressAddon + shipping + shippingTax
     return {
       basePrice: BASE_PRICE,
       addon: Math.round(addon),
@@ -133,6 +135,7 @@ export default function ProductDetailPage() {
       subtotal,
       expressAddon,
       shipping,
+      shippingTax,
       shippingNote: shippingResult.note,
       shippingInquiry: shippingResult.inquiry,
       shippingInquiryReason: shippingResult.inquiryReason,
@@ -670,8 +673,12 @@ export default function ProductDetailPage() {
                       {prices.shipping > 0 && !prices.shippingInquiry && (
                         <div className="pt-2 border-t border-border/60 space-y-1">
                           <div className="flex justify-between text-[15px]">
-                            <span className="text-muted-foreground">送料（{prefecture}・佐川急便）</span>
+                            <span className="text-muted-foreground">送料（{prefecture}・佐川急便・税抜）</span>
                             <span className="font-mono">+¥{prices.shipping.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between text-[15px]">
+                            <span className="text-muted-foreground">送料消費税（10%）</span>
+                            <span className="font-mono">+¥{prices.shippingTax.toLocaleString()}</span>
                           </div>
                           {prices.shippingNote && (
                             <p className="text-[12px] text-muted-foreground">{prices.shippingNote}</p>

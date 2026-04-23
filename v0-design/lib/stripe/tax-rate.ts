@@ -1,53 +1,65 @@
 import type Stripe from 'stripe'
 
-// Stripe Tax Rate ID のサーバー側キャッシュ (cold start ごとに 1 回だけ API 呼び出し)
-let cachedTaxRateId: string | null = null
+// inclusive / exclusive 別に cold start 単位でキャッシュ
+const cache: Record<'inclusive' | 'exclusive', string | null> = {
+  inclusive: null,
+  exclusive: null,
+}
 
 /**
- * 日本の消費税 10% (税込) の Tax Rate を取得。
- * 既に Stripe アカウントに存在する (inclusive, percentage=10, country=JP) を探し、
- * 無ければ作成してキャッシュする。
+ * 日本の消費税 10% の Tax Rate を取得 (無ければ作成)。
+ * - inclusive=true: 税込 (本体価格表示用)
+ * - inclusive=false: 税抜 (送料など、税を上乗せ表示したい項目用)
  *
- * 失敗時は null を返し、呼び出し側は tax_rates を付与しない (決済は通る)。
+ * 失敗時は null を返し、呼び出し側は tax_rates を付与しない (決済は継続)。
  */
 export async function getOrCreateConsumptionTaxRate(
-  stripe: Stripe
+  stripe: Stripe,
+  inclusive: boolean = true
 ): Promise<string | null> {
-  if (cachedTaxRateId) return cachedTaxRateId
+  const key = inclusive ? 'inclusive' : 'exclusive'
+  if (cache[key]) return cache[key]
 
   // 明示指定があればそれを使う (後方互換)
-  const envOverride = process.env.STRIPE_TAX_RATE_ID?.trim()
+  const envOverride = inclusive
+    ? process.env.STRIPE_TAX_RATE_ID_INCLUSIVE?.trim() ||
+      process.env.STRIPE_TAX_RATE_ID?.trim()
+    : process.env.STRIPE_TAX_RATE_ID_EXCLUSIVE?.trim()
   if (envOverride) {
-    cachedTaxRateId = envOverride
+    cache[key] = envOverride
     return envOverride
   }
 
   try {
-    // 既存検索
     const existing = await stripe.taxRates.list({ active: true, limit: 100 })
     const match = existing.data.find(
-      (r) => r.percentage === 10 && r.inclusive === true && r.country === 'JP'
+      (r) =>
+        r.percentage === 10 && r.inclusive === inclusive && r.country === 'JP'
     )
     if (match) {
-      cachedTaxRateId = match.id
+      cache[key] = match.id
       return match.id
     }
 
-    // 無ければ作成
     const created = await stripe.taxRates.create({
       display_name: '消費税',
-      description: '日本の消費税 10%（税込価格）',
+      description: inclusive
+        ? '日本の消費税 10%（税込価格）'
+        : '日本の消費税 10%（税抜価格）',
       percentage: 10,
-      inclusive: true,
+      inclusive,
       country: 'JP',
       tax_type: 'jct',
       jurisdiction: 'JP',
     })
-    cachedTaxRateId = created.id
+    cache[key] = created.id
     return created.id
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err)
-    console.warn('[stripe/tax-rate] 消費税率の取得/作成に失敗:', msg)
+    console.warn(
+      `[stripe/tax-rate] 消費税率 (${inclusive ? 'inclusive' : 'exclusive'}) の取得/作成に失敗:`,
+      msg
+    )
     return null
   }
 }
