@@ -141,10 +141,12 @@ export async function POST(request: NextRequest) {
     if (!prefecture) {
       return NextResponse.json({ error: '配送先都道府県を選択してください' }, { status: 400 });
     }
+    // 送料は外税 (佐川急便レートは税抜). 請求時に消費税 10% を上乗せ
     const shippingYen = shippingResult.shipping;
+    const shippingTaxYen = Math.round(shippingYen * 0.1);
 
     const subtotalYen = Math.round(p.total * qty + rushSurcharge);
-    const totalYen = subtotalYen + shippingYen;
+    const totalYen = subtotalYen + shippingYen + shippingTaxYen;
 
     // 配送希望
     const preferredArrivalDate = body?.preferredArrivalDate || '';
@@ -164,11 +166,14 @@ export async function POST(request: NextRequest) {
 
     const unitYen = Math.round(p.total + rushSurcharge / qty);
 
-    // 消費税 10%（税込価格）の Tax Rate を取得または自動作成
-    // 決済画面・領収書PDFに「内消費税 ¥X,XXX」の内訳を表示するため line_items に attach
+    // 消費税 10% の Tax Rate を取得または自動作成
+    // - 本体: 税込 (inclusive) → 決済画面に「内消費税」内訳表示
+    // - 送料: 税抜 (exclusive) → 決済画面に「消費税 (送料)」として上乗せ表示
     const stripeClient = getStripe();
-    const taxRateId = await getOrCreateConsumptionTaxRate(stripeClient);
-    const taxRatesField = taxRateId ? { tax_rates: [taxRateId] } : {};
+    const taxInclusiveId = await getOrCreateConsumptionTaxRate(stripeClient, true);
+    const taxExclusiveId = await getOrCreateConsumptionTaxRate(stripeClient, false);
+    const inclusiveTaxRates = taxInclusiveId ? { tax_rates: [taxInclusiveId] } : {};
+    const exclusiveTaxRates = taxExclusiveId ? { tax_rates: [taxExclusiveId] } : {};
 
     const session = await stripeClient.checkout.sessions.create({
       payment_method_types: ['card'],
@@ -184,7 +189,7 @@ export async function POST(request: NextRequest) {
             tax_behavior: 'inclusive',
           },
           quantity: qty,
-          ...taxRatesField,
+          ...inclusiveTaxRates,
         },
         {
           price_data: {
@@ -194,10 +199,10 @@ export async function POST(request: NextRequest) {
               description: shippingResult.note,
             },
             unit_amount: shippingYen,
-            tax_behavior: 'inclusive',
+            tax_behavior: 'exclusive',
           },
           quantity: 1,
-          ...taxRatesField,
+          ...exclusiveTaxRates,
         },
       ],
       mode: 'payment',
@@ -215,6 +220,7 @@ export async function POST(request: NextRequest) {
         rush_surcharge_yen:     String(rushSurcharge),
         prefecture:             prefecture,
         shipping_yen:           String(shippingYen),
+        shipping_tax_yen:       String(shippingTaxYen),
         shipping_note:          shippingResult.note,
         shipping_bundles:       String(shippingResult.bundles),
         total_yen:              String(totalYen),
