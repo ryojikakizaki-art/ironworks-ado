@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { getScheduleDates, formatDateISO } from '@/lib/business-days';
 import { calcShipping, type ProductType } from '@/lib/shipping/sagawa';
+import { getOrCreateConsumptionTaxRate } from '@/lib/stripe/tax-rate';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -163,13 +164,13 @@ export async function POST(request: NextRequest) {
 
     const unitYen = Math.round(p.total + rushSurcharge / qty);
 
-    // 消費税 10%（税込価格）表示設定
-    // Dashboard で Tax Rate (inclusive=true, percentage=10, display_name=消費税) を作成後、
-    // Vercel 環境変数 STRIPE_TAX_RATE_ID=txr_... を設定することで決済画面・領収書PDFに「内消費税」内訳を表示
-    const TAX_RATE_ID = process.env.STRIPE_TAX_RATE_ID?.trim();
-    const taxRatesField = TAX_RATE_ID ? { tax_rates: [TAX_RATE_ID] } : {};
+    // 消費税 10%（税込価格）の Tax Rate を取得または自動作成
+    // 決済画面・領収書PDFに「内消費税 ¥X,XXX」の内訳を表示するため line_items に attach
+    const stripeClient = getStripe();
+    const taxRateId = await getOrCreateConsumptionTaxRate(stripeClient);
+    const taxRatesField = taxRateId ? { tax_rates: [taxRateId] } : {};
 
-    const session = await getStripe().checkout.sessions.create({
+    const session = await stripeClient.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {
