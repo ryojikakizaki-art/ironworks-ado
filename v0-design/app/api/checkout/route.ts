@@ -162,6 +162,13 @@ export async function POST(request: NextRequest) {
     const baseUrl = `https://${host}`;
 
     const unitYen = Math.round(p.total + rushSurcharge / qty);
+
+    // 消費税 10%（税込価格）表示設定
+    // Dashboard で Tax Rate (inclusive=true, percentage=10, display_name=消費税) を作成後、
+    // Vercel 環境変数 STRIPE_TAX_RATE_ID=txr_... を設定することで決済画面・領収書PDFに「内消費税」内訳を表示
+    const TAX_RATE_ID = process.env.STRIPE_TAX_RATE_ID?.trim();
+    const taxRatesField = TAX_RATE_ID ? { tax_rates: [TAX_RATE_ID] } : {};
+
     const session = await getStripe().checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -173,8 +180,10 @@ export async function POST(request: NextRequest) {
               description: deliveryDesc,
             },
             unit_amount: unitYen,
+            tax_behavior: 'inclusive',
           },
           quantity: qty,
+          ...taxRatesField,
         },
         {
           price_data: {
@@ -184,8 +193,10 @@ export async function POST(request: NextRequest) {
               description: shippingResult.note,
             },
             unit_amount: shippingYen,
+            tax_behavior: 'inclusive',
           },
           quantity: 1,
+          ...taxRatesField,
         },
       ],
       mode: 'payment',
@@ -227,6 +238,10 @@ export async function POST(request: NextRequest) {
             '〒265-0052 千葉県千葉市若葉区和泉町239-2',
             'TEL: 070-3817-0659 / Email: ado@tantetuzest.com',
           ].join('\n'),
+          // 領収書PDFに「内消費税 ¥X,XXX」を明示表示 (適格請求書要件)
+          rendering_options: {
+            amount_tax_display: 'include_inclusive_tax',
+          },
           metadata: {
             product: productKey,
             length_mm: String(L),
