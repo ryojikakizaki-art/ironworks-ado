@@ -1,2 +1,12 @@
 .claude/
 .vercel
+
+# Google サービスアカウント鍵
+ironworks-ado-calendar-*.json
+
+# 素材フォルダ
+ロゴ/
+作業動画/
+手すり参考図/
+焼き肌画像/
+磨き材と黒皮の比較/
