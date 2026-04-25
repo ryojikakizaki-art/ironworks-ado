@@ -3,8 +3,9 @@
 import { useEffect, useRef } from "react"
 import { buildRoundRailDrawingSvg } from "@/lib/drawing-modal/rene-svg"
 import { buildVerticalRailDrawingSvg } from "@/lib/drawing-modal/vertical-svg"
-import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants"
-import { getDrawingProduct } from "@/lib/drawing-modal/products"
+import { buildVerticalCadDrawingSvg } from "@/lib/drawing-modal/vertical-cad-svg"
+import { calcZakin, getZakinPositions, type ZakinRule } from "@/lib/drawing-modal/rene-constants"
+import { getDrawingProduct, type WasherTypeId } from "@/lib/drawing-modal/products"
 
 interface DrawingModalProps {
   open: boolean
@@ -17,6 +18,10 @@ interface DrawingModalProps {
   angleDeg?: number
   /** 角度方向 — 横型のみ有効 */
   angleDir?: "left" | "right"
+  /** 商品固有の座金ルール (未指定なら product.zakinRule を使用) */
+  zakinRule?: ZakinRule
+  /** 座金タイプ (A=55×35 / B=60×25)。縦型CAD精密図のみ有効 */
+  washerType?: WasherTypeId
 }
 
 export function ReneDrawingModal({
@@ -27,9 +32,12 @@ export function ReneDrawingModal({
   positions: positionsProp,
   angleDeg = 0,
   angleDir = "left",
+  zakinRule,
+  washerType = "A",
 }: DrawingModalProps) {
   const svgRef = useRef<SVGSVGElement>(null)
   const product = getDrawingProduct(productSlug)
+  const effectiveRule = zakinRule ?? product?.zakinRule
 
   // モーダルが開いている間、bodyスクロールを止める
   useEffect(() => {
@@ -39,19 +47,29 @@ export function ReneDrawingModal({
     }
   }, [open])
 
-  // SVGを再描画 (category で横型/縦型を分岐)
+  // SVGを再描画 (category で横型/縦型を分岐、washerType も依存)
   useEffect(() => {
     if (!open || !svgRef.current || !product) return
     const positions =
-      positionsProp ?? getZakinPositions(lengthMm, calcZakin(lengthMm))
+      positionsProp ?? getZakinPositions(lengthMm, calcZakin(lengthMm, effectiveRule), effectiveRule)
     if (product.category === "vertical") {
-      buildVerticalRailDrawingSvg(svgRef.current, {
-        L_mm: lengthMm,
-        positions,
-        product,
-        angleDeg,
-        angleDir,
-      })
+      // washerSpec + titleBlock がある商品 (Claude) はCAD精密図、それ以外は旧シンプル schematic
+      if (product.washerSpec && product.titleBlock) {
+        buildVerticalCadDrawingSvg(svgRef.current, {
+          L_mm: lengthMm,
+          positions,
+          product,
+          washerType,
+        })
+      } else {
+        buildVerticalRailDrawingSvg(svgRef.current, {
+          L_mm: lengthMm,
+          positions,
+          product,
+          angleDeg,
+          angleDir,
+        })
+      }
     } else {
       if (!product.shape) return
       buildRoundRailDrawingSvg(svgRef.current, {
@@ -62,7 +80,7 @@ export function ReneDrawingModal({
         product,
       })
     }
-  }, [open, lengthMm, product, positionsProp, angleDeg, angleDir])
+  }, [open, lengthMm, product, positionsProp, angleDeg, angleDir, effectiveRule, washerType])
 
   if (!open) return null
 
@@ -88,8 +106,14 @@ export function ReneDrawingModal({
     )
   }
 
-  // カテゴリに応じて viewBox を切り替え (縦型は小さい schematic)
-  const viewBox = product.category === "vertical" ? "0 0 500 130" : "0 0 840 400"
+  // viewBox 切替: 縦型CAD精密図 (DXF抽出, builder 側で再設定) / 旧縦型schematic / 横型
+  // CAD精密図モードでは buildVerticalCadDrawingSvg が viewBox を上書きする
+  const viewBox =
+    product.category === "vertical"
+      ? product.washerSpec && product.titleBlock
+        ? "-1200 -835 2020 1790"
+        : "0 0 500 130"
+      : "0 0 840 400"
 
   return (
     <div

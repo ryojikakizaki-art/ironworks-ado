@@ -322,16 +322,16 @@
           <div class="input-group">
             <div class="input-label">
               <span>ご希望の高さ</span>
-              <span class="input-hint">500mm 〜 3000mm</span>
+              <span class="input-hint">500mm 〜 1500mm</span>
             </div>
             <div class="length-input-wrap">
-              <input type="number" id="lengthInput" value="1000" min="500" max="3000" step="1" oninput="onLengthChange(this.value)">
+              <input type="number" id="lengthInput" value="1000" min="500" max="1500" step="1" oninput="onLengthChange(this.value)">
               <div class="length-unit">mm</div>
             </div>
-            <input type="range" class="length-slider" id="lengthSlider" min="500" max="3000" step="1" value="1000" oninput="onSliderChange(this.value)">
+            <input type="range" class="length-slider" id="lengthSlider" min="500" max="1500" step="1" value="1000" oninput="onSliderChange(this.value)">
             <div class="slider-hint">スライダーをドラッグして長さを調整</div>
             <div class="slider-labels">
-              <span>500</span><span>1000（標準）</span><span>2000（長尺）</span><span>3000mm</span>
+              <span>500</span><span>1000（標準）</span><span>1500mm</span>
             </div>
           </div>
           <hr class="step-divider">
@@ -471,18 +471,21 @@
   const PRICE_PER_MM  = 25;
   const ZAKIN_PRICE   = 3500;
   const INCLUDED_ZAKIN= 3;
-  const END_DIST_MM   = 100;
-  const MAX_SPAN_MM   = 850;
+  const END_MIN_MM    = 50;
+  const MAX_SPAN_MM   = 900;
   const SURGE_START_MM= 2000;
   const SURGE_BASE    = 1.2;
   const SURGE_INTERVAL_MM= 500;
-  const MAX_LENGTH_MM = 3000;
+  const MIN_LENGTH_MM = 500;
+  const MAX_LENGTH_MM = 1500;
   const PRODUCT_KEY   = 'catherine';
 
   function calcZakin(L_mm) {
-    if (L_mm <= 1050) return 2;
-    const inner = L_mm - 2 * END_DIST_MM;
-    return 1 + Math.ceil(inner / MAX_SPAN_MM);
+    return 2;
+  }
+
+  function calcEndDist(L_mm) {
+    return Math.max(END_MIN_MM, (L_mm - MAX_SPAN_MM) / 2);
   }
 
   function calcPrice(L_mm) {
@@ -496,15 +499,16 @@
   }
 
   function getZakinPositions(L_mm, zakinCount) {
-    var positions = [END_DIST_MM];
+    var end = calcEndDist(L_mm);
+    var positions = [Math.round(end)];
     if (zakinCount > 2) {
-      var inner = L_mm - 2 * END_DIST_MM;
+      var inner = L_mm - 2 * end;
       var gaps = zakinCount - 1;
       for (var i = 1; i < zakinCount - 1; i++) {
-        positions.push(Math.round(END_DIST_MM + inner * i / gaps));
+        positions.push(Math.round(end + inner * i / gaps));
       }
     }
-    positions.push(L_mm - END_DIST_MM);
+    positions.push(Math.round(L_mm - end));
     return positions;
   }
 

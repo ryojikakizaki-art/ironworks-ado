@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { calcZakin, getZakinPositions, END_DIST_MM } from "@/lib/drawing-modal/rene-constants"
+import { calcZakin, getZakinPositions, END_DIST_MM, type ZakinRule } from "@/lib/drawing-modal/rene-constants"
 import type { DrawingProductConfig } from "@/lib/drawing-modal/products"
 
 interface InlineRailSimulatorProps {
@@ -16,6 +16,8 @@ interface InlineRailSimulatorProps {
   /** 座金をドラッグ可能にする場合、変更を受け取るコールバック */
   onPositionsChange?: (next: number[]) => void
   className?: string
+  /** 商品固有の座金ルール (未指定なら旧式 rene ルール) */
+  zakinRule?: ZakinRule
 }
 
 // SVG viewBox と layout 定数 (vertical-svg.ts と同じ)
@@ -49,8 +51,9 @@ export function InlineRailSimulator({
   angleDir = "left",
   onPositionsChange,
   className,
+  zakinRule,
 }: InlineRailSimulatorProps) {
-  const effectivePositions = positions ?? getZakinPositions(lengthMm, calcZakin(lengthMm))
+  const effectivePositions = positions ?? getZakinPositions(lengthMm, calcZakin(lengthMm, zakinRule), zakinRule)
   const sorted = [...effectivePositions]
     .map((p, i) => ({ pos: p, origIdx: i }))
     .sort((a, b) => a.pos - b.pos)
@@ -61,16 +64,17 @@ export function InlineRailSimulator({
   const tiltSign = angleDir === "left" ? -1 : 1
 
   const [draggingIdx, setDraggingIdx] = useState<number | null>(null)
+  const endMin = zakinRule?.endMinMm ?? END_DIST_MM
 
   // viewBox x → mm
   const xToMm = useCallback(
     (viewBoxX: number): number => {
       const rel = (viewBoxX - BAR_LEFT) / BAR_LEN
       const mm = Math.round(rel * lengthMm)
-      // 両端から END_DIST_MM (100mm) 以内に
-      return Math.max(END_DIST_MM, Math.min(lengthMm - END_DIST_MM, mm))
+      // 両端から endMin 以内に
+      return Math.max(endMin, Math.min(lengthMm - endMin, mm))
     },
-    [lengthMm]
+    [lengthMm, endMin]
   )
 
   // pointer event → viewBox 座標
@@ -124,7 +128,7 @@ export function InlineRailSimulator({
     <div
       className={`bg-card border border-border rounded-md p-4 ${className ?? ""}`}
     >
-      <div className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground mb-2">
+      <div className="text-[12px] tracking-[0.2em] uppercase text-muted-foreground mb-2 font-medium">
         Simulator
       </div>
       <svg
@@ -139,10 +143,10 @@ export function InlineRailSimulator({
         <text
           x={(BAR_LEFT + BAR_RIGHT) / 2}
           y={DIM_Y - 3}
-          fontSize={12}
+          fontSize={16}
           fill={COLOR_TOTAL_TEXT}
           textAnchor="middle"
-          fontWeight={600}
+          fontWeight={700}
           fontFamily="sans-serif"
         >
           {lengthMm}
@@ -248,10 +252,11 @@ export function InlineRailSimulator({
               <line x1={x2} y1={SEG_Y - 3} x2={x2} y2={SEG_Y + 3} stroke={COLOR_DIM} strokeWidth={0.7} />
               <text
                 x={midX}
-                y={SEG_Y + 14}
-                fontSize={11}
+                y={SEG_Y + 16}
+                fontSize={14}
                 fill={COLOR_TEXT}
                 textAnchor="middle"
+                fontWeight={600}
                 fontFamily="sans-serif"
               >
                 {segLen}
@@ -263,20 +268,27 @@ export function InlineRailSimulator({
         {/* 座金 N 点 ラベル */}
         <text
           x={(BAR_LEFT + BAR_RIGHT) / 2}
-          y={SEG_Y + 32}
-          fontSize={10}
+          y={SEG_Y + 36}
+          fontSize={13}
           fill={COLOR_DIM}
           textAnchor="middle"
+          fontWeight={500}
           fontFamily="sans-serif"
         >
           《 座金 {sorted.length}点 》
         </text>
       </svg>
-      <div className="text-[10px] text-muted-foreground mt-1">
-        推奨座金数 {calcZakin(lengthMm)} 個（自動計算）
+      <div className="text-[14px] font-medium text-foreground mt-2 leading-relaxed">
+        推奨座金数 {calcZakin(lengthMm, zakinRule)} 個（自動計算）
         {onPositionsChange && (
           <span className="ml-2 text-gold">・座金をドラッグで位置調整できます</span>
         )}
+        {(() => {
+          const maxSpan = zakinRule?.maxSpanMm ?? (product.category === "horizontal" ? 850 : undefined)
+          return maxSpan ? (
+            <span className="ml-2 text-muted-foreground">（最大推奨幅 {maxSpan}mm）</span>
+          ) : null
+        })()}
       </div>
     </div>
   )

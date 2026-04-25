@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { Minus, Plus, X, RotateCcw } from "lucide-react"
-import { calcZakin, getZakinPositions, END_DIST_MM, MAX_SPAN_MM } from "@/lib/drawing-modal/rene-constants"
+import { calcZakin, getZakinPositions, END_DIST_MM, MAX_SPAN_MM, type ZakinRule } from "@/lib/drawing-modal/rene-constants"
 
 export interface ZakinState {
   positions: number[] // mm
-  angleDeg: number // 0-60
+  angleDeg: number // 0-60 (横型のみ使用、縦型は常に0)
   angleDir: "left" | "right"
   customMode: boolean // false = auto, true = manually edited
 }
@@ -16,6 +16,11 @@ interface ZakinEditorProps {
   state: ZakinState
   onChange: (next: ZakinState) => void
   className?: string
+  zakinRule?: ZakinRule
+  /** 角度UIを隠す (縦型商品用) */
+  disableAngle?: boolean
+  /** 座金数の上限 (縦型 Claude は3、横型は20) */
+  maxCount?: number
 }
 
 /**
@@ -31,8 +36,13 @@ export function ZakinEditor({
   state,
   onChange,
   className,
+  zakinRule,
+  disableAngle = false,
+  maxCount = 20,
 }: ZakinEditorProps) {
   const [open, setOpen] = useState(false)
+  const ruleMaxSpan = zakinRule?.maxSpanMm ?? MAX_SPAN_MM
+  const ruleEndMin = zakinRule?.endMinMm ?? END_DIST_MM
 
   // 長さが変わったとき、座金を再配置する。
   // - 自動モード: calcZakin(lengthMm) で座金数を再計算して等間隔配置
@@ -41,8 +51,8 @@ export function ZakinEditor({
   useEffect(() => {
     const count = state.customMode
       ? state.positions.length
-      : calcZakin(lengthMm)
-    const positions = getZakinPositions(lengthMm, count)
+      : calcZakin(lengthMm, zakinRule)
+    const positions = getZakinPositions(lengthMm, count, zakinRule)
     onChange({ ...state, positions })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lengthMm])
@@ -55,11 +65,11 @@ export function ZakinEditor({
     return m
   }, [state.positions, lengthMm])
 
-  const warning = maxSpan > MAX_SPAN_MM
+  const warning = maxSpan > ruleMaxSpan
 
   const setCount = (count: number) => {
-    const c = Math.max(2, Math.min(20, count))
-    const positions = getZakinPositions(lengthMm, c)
+    const c = Math.max(2, Math.min(maxCount, count))
+    const positions = getZakinPositions(lengthMm, c, zakinRule)
     onChange({ ...state, positions, customMode: true })
   }
 
@@ -77,8 +87,8 @@ export function ZakinEditor({
   }
 
   const reset = () => {
-    const count = calcZakin(lengthMm)
-    const positions = getZakinPositions(lengthMm, count)
+    const count = calcZakin(lengthMm, zakinRule)
+    const positions = getZakinPositions(lengthMm, count, zakinRule)
     onChange({ positions, angleDeg: 0, angleDir: "left", customMode: false })
   }
 
@@ -87,13 +97,13 @@ export function ZakinEditor({
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        className={`w-full flex items-center justify-between gap-2 px-4 py-3 text-[11px] tracking-[0.1em] border transition-colors ${
+        className={`w-full flex items-center justify-between gap-2 px-4 py-3 text-[14px] font-medium tracking-[0.05em] border transition-colors ${
           open || state.customMode
             ? "border-gold text-gold bg-gold/5"
             : "border-border text-muted-foreground hover:border-gold hover:text-gold"
         }`}
       >
-        <span>▸ 座金位置・角度を設定する{state.customMode ? "（カスタム）" : ""}</span>
+        <span>▸ 座金{disableAngle ? "位置" : "位置・角度"}を設定する{state.customMode ? "（カスタム）" : ""}</span>
         <span className={`transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
       </button>
 
@@ -114,7 +124,7 @@ export function ZakinEditor({
               <input
                 type="number"
                 min={2}
-                max={20}
+                max={maxCount}
                 value={state.positions.length}
                 onChange={(e) => setCount(parseInt(e.target.value) || 2)}
                 className="w-12 h-8 bg-background border-y border-border text-center text-foreground text-[13px] font-mono"
@@ -129,59 +139,61 @@ export function ZakinEditor({
               </button>
             </div>
             <span className="text-[10px] text-muted-foreground ml-2">
-              推奨間隔 {MAX_SPAN_MM}mm 以内
+              推奨間隔 {ruleMaxSpan}mm 以内
             </span>
           </div>
 
-          {/* Angle */}
-          <div className="flex items-center gap-3 pb-3 border-b border-border flex-wrap">
-            <span className="text-[12px] text-foreground min-w-[60px]">角度</span>
-            <div className="flex">
-              <button
-                type="button"
-                onClick={() =>
-                  onChange({ ...state, angleDir: "left", customMode: true })
+          {/* Angle (縦型は非表示) */}
+          {!disableAngle && (
+            <div className="flex items-center gap-3 pb-3 border-b border-border flex-wrap">
+              <span className="text-[12px] text-foreground min-w-[60px]">角度</span>
+              <div className="flex">
+                <button
+                  type="button"
+                  onClick={() =>
+                    onChange({ ...state, angleDir: "left", customMode: true })
+                  }
+                  className={`px-3 py-1 text-[11px] border transition-colors rounded-l-md ${
+                    state.angleDir === "left"
+                      ? "bg-gold text-dark border-gold font-semibold"
+                      : "border-border text-muted-foreground hover:border-gold"
+                  }`}
+                >
+                  左
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    onChange({ ...state, angleDir: "right", customMode: true })
+                  }
+                  className={`px-3 py-1 text-[11px] border-y border-r transition-colors rounded-r-md ${
+                    state.angleDir === "right"
+                      ? "bg-gold text-dark border-gold font-semibold"
+                      : "border-border text-muted-foreground hover:border-gold"
+                  }`}
+                >
+                  右
+                </button>
+              </div>
+              <input
+                type="number"
+                min={0}
+                max={60}
+                step={1}
+                value={state.angleDeg}
+                onChange={(e) =>
+                  onChange({
+                    ...state,
+                    angleDeg: Math.max(0, Math.min(60, parseInt(e.target.value) || 0)),
+                    customMode: true,
+                  })
                 }
-                className={`px-3 py-1 text-[11px] border transition-colors rounded-l-md ${
-                  state.angleDir === "left"
-                    ? "bg-gold text-dark border-gold font-semibold"
-                    : "border-border text-muted-foreground hover:border-gold"
-                }`}
-              >
-                左
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  onChange({ ...state, angleDir: "right", customMode: true })
-                }
-                className={`px-3 py-1 text-[11px] border-y border-r transition-colors rounded-r-md ${
-                  state.angleDir === "right"
-                    ? "bg-gold text-dark border-gold font-semibold"
-                    : "border-border text-muted-foreground hover:border-gold"
-                }`}
-              >
-                右
-              </button>
+                className="w-16 h-8 bg-background border border-border text-center text-foreground text-[13px]"
+              />
+              <span className="text-[11px] text-muted-foreground">°</span>
+              <span className="text-[10px] text-muted-foreground ml-auto">+¥2,000/座金</span>
             </div>
-            <input
-              type="number"
-              min={0}
-              max={60}
-              step={1}
-              value={state.angleDeg}
-              onChange={(e) =>
-                onChange({
-                  ...state,
-                  angleDeg: Math.max(0, Math.min(60, parseInt(e.target.value) || 0)),
-                  customMode: true,
-                })
-              }
-              className="w-16 h-8 bg-background border border-border text-center text-foreground text-[13px]"
-            />
-            <span className="text-[11px] text-muted-foreground">°</span>
-            <span className="text-[10px] text-muted-foreground ml-auto">+¥2,000/座金</span>
-          </div>
+          )}
 
           {/* Position list */}
           <div>
@@ -226,14 +238,14 @@ export function ZakinEditor({
               自動配置に戻す
             </button>
             <p className="text-[10px] text-muted-foreground leading-relaxed">
-              ※ 両端から {END_DIST_MM}mm 以上の位置に配置してください
+              ※ 両端から {ruleEndMin}mm 以上の位置に配置してください
             </p>
           </div>
 
           {/* Warning */}
           {warning && (
             <div className="border border-yellow-500/40 bg-yellow-500/5 px-3 py-2 text-[11px] text-yellow-400">
-              ⚠ 座金間隔が {MAX_SPAN_MM}mm を超えています（最大 {maxSpan}mm）。強度にご注意ください。
+              ⚠ 座金間隔が {ruleMaxSpan}mm を超えています（最大 {maxSpan}mm）。強度にご注意ください。
             </div>
           )}
         </div>
