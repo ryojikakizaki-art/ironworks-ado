@@ -84,7 +84,7 @@ export function RankingSection() {
   }
 
   return (
-    <section id="ranking" ref={ref} className="py-20 md:py-28 bg-secondary overflow-hidden">
+    <section id="ranking" ref={ref} className="py-20 md:py-28 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <div className="px-6 flex items-end justify-between mb-10">

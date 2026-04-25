@@ -147,53 +147,6 @@ export function BlogSection() {
           </div>
         </motion.div>
 
-        {/* Blog Grid — 記事カード */}
-        <div className="grid md:grid-cols-3 gap-8">
-          {blogPosts.map((post, index) => (
-            <motion.article
-              key={post.id}
-              initial={{ opacity: 0, y: 50, rotateY: -15 }}
-              animate={isInView ? { opacity: 1, y: 0, rotateY: 0 } : {}}
-              transition={{ duration: 0.6, delay: 0.1 * index }}
-              className="group cursor-pointer"
-            >
-              <div className="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border-l-4 border-transparent hover:border-gold hover:-translate-y-2">
-                {/* Image with grayscale to color transition */}
-                <div className="relative aspect-[4/3] overflow-hidden">
-                  <Image
-                    src={post.image}
-                    alt={post.title}
-                    fill
-                    className="object-cover transition-all duration-700 group-hover:scale-105 grayscale group-hover:grayscale-0"
-                  />
-                  {/* Category Badge */}
-                  <span className="absolute top-4 left-4 px-3 py-1 bg-white/90 backdrop-blur-sm text-dark text-xs rounded-full">
-                    {post.category}
-                  </span>
-                </div>
-
-                {/* Content */}
-                <div className="p-6">
-                  <time className="text-xs text-muted-foreground">{post.date}</time>
-                  <h3 className="font-serif text-lg text-dark mt-2 mb-3 group-hover:text-gold transition-colors duration-300 line-clamp-2">
-                    {post.title}
-                  </h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed line-clamp-2 mb-4">
-                    {post.excerpt}
-                  </p>
-
-                  <span className="inline-flex items-center gap-2 text-sm text-dark group-hover:text-gold transition-colors duration-300">
-                    <span className="relative">
-                      READ
-                      <span className="absolute bottom-0 left-0 w-0 h-px bg-gold group-hover:w-full transition-all duration-300" />
-                    </span>
-                    <ArrowRight className="w-4 h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
-                  </span>
-                </div>
-              </div>
-            </motion.article>
-          ))}
-        </div>
       </div>
 
       {/* Fullscreen Video Modal — 音声付き再生 */}
