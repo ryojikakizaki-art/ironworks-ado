@@ -19,8 +19,8 @@ const categories = [
       { name: "Claire", sub: "25φ 白", img: "0a0c0c78f9f636cca733", href: "/products/claire" },
       { name: "Marcel", sub: "FB 黒", img: "939d0690971c550c1dd9", href: "/products/marcel" },
       { name: "Émile", sub: "FB 鎚目", img: "fa95f550baa05216d291", href: "/products/emile" },
-      { name: "Élisabeth", sub: "ロート 22φ", img: "9a24b2c661dea08ef6f4", href: "https://ironworks-ado.stores.jp/items/63ea2bfd34e01709f8fa4ac9", external: true },
-      { name: "Clémence", sub: "L型 22φ", img: "9c1e7cf67204880a41e2", href: "https://ironworks-ado.stores.jp/items/68f839882fa52af95b4e403e", external: true },
+      { name: "Élisabeth", sub: "ロート 22φ", img: "9a24b2c661dea08ef6f4", href: "/products/elisabeth" },
+      { name: "Clémence", sub: "L型 22φ", img: "9c1e7cf67204880a41e2", href: "/products/clemence" },
     ],
   },
   {
@@ -54,9 +54,9 @@ const categories = [
     nameJp: "階段",
     heroImg: "7a3358b5d7a86318eda1",
     products: [
-      { name: "直線階段", sub: "オーダー", img: "7a3358b5d7a86318eda1", href: "https://ironworks-ado.stores.jp/items/6458a2646e44950030b06a70", external: true },
-      { name: "廻り階段", sub: "力桁1本型", img: "853fb7dae26475eee4a0", href: "https://ironworks-ado.stores.jp/items/645b965813edcc003101fec5", external: true },
-      { name: "外階段", sub: "かね折れ", img: "6957d69de71788107932", href: "https://ironworks-ado.stores.jp/items/6460dfe3418fdf00312349c1", external: true },
+      { name: "直線階段", sub: "オーダー", img: "7a3358b5d7a86318eda1", href: "/products/stair-straight" },
+      { name: "廻り階段", sub: "力桁1本型", img: "853fb7dae26475eee4a0", href: "/products/stair-spiral" },
+      { name: "外階段", sub: "かね折れ", img: "6957d69de71788107932", href: "/products/stair-outdoor" },
     ],
   },
   {
@@ -65,9 +65,9 @@ const categories = [
     nameJp: "フェンス",
     heroImg: "1aaca5578d6e1f890e31",
     products: [
-      { name: "吹き抜けフェンス", sub: "オーダー", img: "1aaca5578d6e1f890e31", href: "https://ironworks-ado.stores.jp/items/63eaf4431c151869487fdc83", external: true },
-      { name: "屋外フェンス", sub: "zigzag", img: "ff214d4dd6a4e6f0b3b1", href: "https://ironworks-ado.stores.jp/items/645882ac32510f002d97ec96", external: true },
-      { name: "面格子", sub: "防犯", img: "9a7ccb077d6627266f13", href: "https://ironworks-ado.stores.jp/items/67959f99ce75b203a869f649", external: true },
+      { name: "吹き抜けフェンス", sub: "オーダー", img: "1aaca5578d6e1f890e31", href: "/products/fence-fukinuke" },
+      { name: "屋外フェンス", sub: "zigzag", img: "ff214d4dd6a4e6f0b3b1", href: "/products/fence-zigzag" },
+      { name: "面格子", sub: "防犯", img: "9a7ccb077d6627266f13", href: "/products/mengoshi" },
     ],
   },
   {
@@ -76,9 +76,9 @@ const categories = [
     nameJp: "ゲート・ドア",
     heroImg: "ef8821265072eeb099dc",
     products: [
-      { name: "Barn Door", sub: "スライド", img: "ef8821265072eeb099dc", href: "https://ironworks-ado.stores.jp/items/689dc80a62bb05fe83b69ed0", external: true },
-      { name: "Arabesque", sub: "室内扉", img: "b8269f71f7c7462e47a1", href: "https://ironworks-ado.stores.jp/items/67bd6f532a10e40a2e61cc20", external: true },
-      { name: "ドッグゲート", sub: "H95cm", img: "f91ef98ec5690d2f9562", href: "https://ironworks-ado.stores.jp/items/645a32986ebf640035c692b3", external: true },
+      { name: "Barn Door", sub: "スライド", img: "ef8821265072eeb099dc", href: "/products/barn-door" },
+      { name: "Arabesque", sub: "室内扉", img: "b8269f71f7c7462e47a1", href: "/products/arabesque" },
+      { name: "ドッグゲート", sub: "H95cm", img: "f91ef98ec5690d2f9562", href: "/products/dog-gate" },
     ],
   },
   {
@@ -87,9 +87,9 @@ const categories = [
     nameJp: "アプローチ",
     heroImg: "579e79e794eed28d9ac7",
     products: [
-      { name: "Simple 黒", sub: "FB", img: "579e79e794eed28d9ac7", href: "https://ironworks-ado.stores.jp/items/678f8682c6500803fc924386", external: true },
-      { name: "Simple 白", sub: "FB", img: "ef1a6b4999d530d6fb67", href: "https://ironworks-ado.stores.jp/items/64585625559798002e8072e2", external: true },
-      { name: "蔦", sub: "亜鉛メッキ", img: "051b216ddd9e64d0ae37", href: "https://ironworks-ado.stores.jp/items/64584887edfbca00302b343f", external: true },
+      { name: "Simple 黒", sub: "FB", img: "579e79e794eed28d9ac7", href: "/products/simple-black" },
+      { name: "Simple 白", sub: "FB", img: "ef1a6b4999d530d6fb67", href: "/products/simple-white" },
+      { name: "蔦", sub: "亜鉛メッキ", img: "051b216ddd9e64d0ae37", href: "/products/tsuta" },
     ],
   },
   {
@@ -98,9 +98,9 @@ const categories = [
     nameJp: "家具・什器",
     heroImg: "720c42cc222961d0c4f7",
     products: [
-      { name: "テーブル脚", sub: "サイズオーダー", img: "720c42cc222961d0c4f7", href: "https://ironworks-ado.stores.jp/items/64cc5d6bf55a3000329bb450", external: true },
-      { name: "パーテーション", sub: "アクリル", img: "162201d592318f444a98", href: "https://ironworks-ado.stores.jp/items/645b851613edcc002b021dc9", external: true },
-      { name: "アイアンラック", sub: "棚・什器", img: "2aecc4e6b289986d9859", href: "https://ironworks-ado.stores.jp/items/64be2861d397ae002db004cd", external: true },
+      { name: "テーブル脚", sub: "サイズオーダー", img: "720c42cc222961d0c4f7", href: "/products/table-leg" },
+      { name: "パーテーション", sub: "アクリル", img: "162201d592318f444a98", href: "/products/partition" },
+      { name: "アイアンラック", sub: "棚・什器", img: "2aecc4e6b289986d9859", href: "/products/iron-rack" },
     ],
   },
 ]
