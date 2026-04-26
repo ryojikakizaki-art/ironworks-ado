@@ -44,7 +44,7 @@ export function PhilosophySection() {
           transition={{ duration: 0.8, delay: 0.5 }}
           className="text-muted-foreground text-sm md:text-base leading-loose max-w-2xl mx-auto"
         >
-          IRONWORKS adoは、福岡県の工房で一本一本手作りで手摺を製作しています。
+          IRONWORKS adoは、千葉県の工房で一本一本手作りで手摺を製作しています。
           機械では出せない温かみと、使い込むほどに馴染む質感。
           それは、職人の手仕事でしか生み出せない価値です。
           お客様の暮らしに寄り添い、何世代にも受け継がれる手摺をお届けします。

@@ -101,7 +101,7 @@ export function CraftsmanshipStorySection() {
               transition={{ duration: 0.6, delay: 1 }}
               className="text-[14px] text-white/70 leading-loose mb-8"
             >
-              福岡の工房で、15年以上にわたり鉄と向き合ってきました。
+              千葉の工房で、15年以上にわたり鉄と向き合ってきました。
               一本一本、火と鉄と向き合い、心を込めて打ち出す。
               機械では出せない、手仕事ならではの温かみと風合い。
               お客様の暮らしに寄り添う、世界に一つだけの手すりをお届けします。
