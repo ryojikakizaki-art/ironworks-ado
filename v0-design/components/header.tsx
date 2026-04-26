@@ -7,13 +7,21 @@ import { Menu, X, ShoppingBag } from "lucide-react"
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
+  // ヒーローエリア（高さ200vh）の上にいるかどうか。背景が暗いので文字色を白に。
+  const [overHero, setOverHero] = useState(true)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50)
+      const y = window.scrollY
+      const vh = window.innerHeight
+      // 「手仕事と、暮らそう。」が線に沈み始める頃（≒50vh）にヘッダーを出す
+      setIsScrolled(y > vh * 0.5)
+      // ヒーロー（500vh）を抜けたら濃いテキスト色へ
+      setOverHero(y < vh * 5 - 80)
     }
-    window.addEventListener("scroll", handleScroll)
+    handleScroll()
+    window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
@@ -27,13 +35,14 @@ export function Header() {
   return (
     <>
       <motion.header
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.6, ease: "easeOut" }}
-        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-500 ${
-          isScrolled 
-            ? "bg-white/95 backdrop-blur-md shadow-sm" 
-            : "bg-white/80 backdrop-blur-sm"
+        initial={false}
+        animate={{
+          y: isScrolled ? 0 : -100,
+          opacity: isScrolled ? 1 : 0,
+        }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        className={`fixed top-0 left-0 right-0 z-40 bg-transparent transition-colors duration-500 ${
+          isScrolled ? "pointer-events-auto" : "pointer-events-none"
         }`}
       >
         <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
@@ -41,15 +50,21 @@ export function Header() {
             {/* Logo - Left */}
             <Link href="/" className="group flex items-center gap-2 shrink-0">
               <div className="relative">
-                <div className="w-8 h-8 lg:w-9 lg:h-9 rounded-full bg-dark flex items-center justify-center group-hover:bg-gold transition-colors duration-300">
+                <div className={`w-8 h-8 lg:w-9 lg:h-9 rounded-full flex items-center justify-center group-hover:bg-gold transition-colors duration-300 ${
+                  overHero ? "bg-white/15 backdrop-blur-sm border border-white/40" : "bg-dark"
+                }`}>
                   <span className="text-white font-serif text-sm lg:text-base">鍛</span>
                 </div>
               </div>
               <div className="flex flex-col leading-tight">
-                <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
+                <span className={`text-[10px] tracking-[0.2em] uppercase transition-colors duration-500 ${
+                  overHero ? "text-white/70" : "text-muted-foreground"
+                }`}>
                   IRONWORKS
                 </span>
-                <span className="font-serif text-lg lg:text-xl tracking-wider text-dark">
+                <span className={`font-serif text-lg lg:text-xl tracking-wider transition-colors duration-500 ${
+                  overHero ? "text-white" : "text-dark"
+                }`}>
                   ado
                 </span>
               </div>
@@ -61,10 +76,16 @@ export function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="relative text-[13px] tracking-wide text-dark/80 hover:text-dark transition-colors duration-300 group py-2"
+                  className={`relative text-[13px] tracking-wide transition-colors duration-300 group py-2 ${
+                    overHero
+                      ? "text-white/85 hover:text-white"
+                      : "text-dark/80 hover:text-dark"
+                  }`}
                 >
                   {item.label}
-                  <span className="absolute bottom-0 left-0 w-0 h-[1px] bg-dark transition-all duration-300 group-hover:w-full" />
+                  <span className={`absolute bottom-0 left-0 w-0 h-[1px] transition-all duration-300 group-hover:w-full ${
+                    overHero ? "bg-white" : "bg-dark"
+                  }`} />
                 </Link>
               ))}
             </nav>
@@ -72,8 +93,12 @@ export function Header() {
             {/* Right Actions */}
             <div className="flex items-center gap-3">
               {/* Cart Icon */}
-              <button 
-                className="p-2 rounded-full transition-all duration-300 hover:bg-muted relative text-dark"
+              <button
+                className={`p-2 rounded-full transition-all duration-300 relative ${
+                  overHero
+                    ? "text-white hover:bg-white/10"
+                    : "text-dark hover:bg-muted"
+                }`}
                 aria-label="カート"
               >
                 <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
@@ -81,11 +106,15 @@ export function Header() {
                   0
                 </span>
               </button>
-              
+
               {/* Hamburger Menu */}
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="p-2 rounded-full transition-all duration-300 hover:bg-muted text-dark flex items-center gap-2"
+                className={`p-2 rounded-full transition-all duration-300 flex items-center gap-2 ${
+                  overHero
+                    ? "text-white hover:bg-white/10"
+                    : "text-dark hover:bg-muted"
+                }`}
                 aria-label="メニューを開く"
               >
                 <Menu className="w-5 h-5" strokeWidth={1.5} />

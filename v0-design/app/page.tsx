@@ -18,13 +18,10 @@ export default function HomePage() {
     <main className="relative">
       <Header />
 
-      {/* ── ヒーロー（固定背景 + コンテンツ） ── */}
+      {/* ── ヒーロー（固定背景 + スクロール駆動テキスト） ── */}
       <div id="hero">
         <HeroSection />
       </div>
-
-      {/* ── 透明スペーサー：ヒーロー画像が再び見える ── */}
-      <div className="h-48 md:h-64" />
 
       {/* ── コンテンツセクション（白背景で固定ヒーローを隠す） ── */}
       <div className="relative z-10 bg-white">
