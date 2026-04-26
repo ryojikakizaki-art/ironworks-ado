@@ -8,6 +8,7 @@ import { ChevronLeft, ChevronRight, Mail, MessageSquare } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import type { SimpleProduct } from "@/lib/products/simple"
+import { galleryUrl } from "@/lib/products/display"
 
 /**
  * シンプルな商品詳細ページ（手すり以外の 17 商品向け）
@@ -22,10 +23,8 @@ import type { SimpleProduct } from "@/lib/products/simple"
 export function SimpleProductPage({ product }: { product: SimpleProduct }) {
   const [selectedImage, setSelectedImage] = useState(0)
 
-  // 画像 URL を構築：/public/images/products/{slug}/{filename}
-  const imageUrls = product.images.map(
-    (filename) => `/images/products/${product.slug}/${filename}`,
-  )
+  // 画像 URL を構築：STORES CDN から id を解決
+  const imageUrls = product.images.map((id) => galleryUrl(id))
 
   const goNext = () => setSelectedImage((i) => (i + 1) % imageUrls.length)
   const goPrev = () => setSelectedImage((i) => (i - 1 + imageUrls.length) % imageUrls.length)
