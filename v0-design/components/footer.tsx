@@ -3,7 +3,7 @@
 import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
 import Link from "next/link"
-import { Instagram, Facebook, Youtube, Mail } from "lucide-react"
+import { Instagram, Facebook, Mail } from "lucide-react"
 
 const footerLinks = {
   products: {
@@ -37,7 +37,6 @@ const footerLinks = {
 const socialLinks = [
   { icon: Instagram, href: "https://www.instagram.com/ironworks_ado/", label: "Instagram" },
   { icon: Facebook, href: "https://www.facebook.com/profile.php?id=61556286998274", label: "Facebook" },
-  { icon: Youtube, href: "https://youtube.com", label: "YouTube" },
   { icon: Mail, href: "mailto:ado@tantetuzest.com", label: "メール" },
 ]
 
@@ -66,7 +65,7 @@ export function Footer() {
               </div>
             </div>
             <p className="text-white/60 text-sm leading-relaxed mb-6">
-              福岡の工房から、
+              千葉の工房から、
               <br />
               心を込めた手摺をお届けします。
             </p>
