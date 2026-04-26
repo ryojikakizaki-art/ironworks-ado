@@ -79,9 +79,9 @@ export function CtaBanner() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="text-white/70 text-sm md:text-base max-w-xl mx-auto mb-10 leading-relaxed"
         >
-          お気軽にご相談ください。
+          千葉の工房から、ひとつずつ手仕事で仕上げます。
           <br className="hidden md:block" />
-          専門スタッフが丁寧にお答えいたします。
+          図面・現場写真・ご相談、お気軽にお寄せください。
         </motion.p>
 
         <motion.div
@@ -114,16 +114,31 @@ export function CtaBanner() {
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="mt-12 pt-10 border-t border-white/10"
+          className="mt-12 pt-10 border-t border-white/10 grid gap-8 md:grid-cols-2 max-w-2xl mx-auto text-left md:text-center"
         >
-          <p className="text-white/50 text-xs mb-2">お電話でのお問い合わせ</p>
-          <a 
-            href="tel:0120-XXX-XXX" 
-            className="text-2xl md:text-3xl text-white font-light tracking-wider hover:text-gold transition-colors duration-300"
-          >
-            0120-XXX-XXX
-          </a>
-          <p className="text-white/50 text-xs mt-2">受付時間: 平日 9:00〜18:00</p>
+          {/* メール（推奨） */}
+          <div>
+            <p className="text-white/50 text-xs mb-2 tracking-wider">メールでのお問い合わせ</p>
+            <a
+              href="mailto:ado@tantetuzest.com"
+              className="text-lg md:text-xl text-white font-light tracking-wider hover:text-gold transition-colors duration-300 break-all"
+            >
+              ado@tantetuzest.com
+            </a>
+            <p className="text-white/50 text-xs mt-2">通常2営業日以内にご返信いたします</p>
+          </div>
+
+          {/* 電話（サブ） */}
+          <div>
+            <p className="text-white/50 text-xs mb-2 tracking-wider">お電話でのお問い合わせ</p>
+            <a
+              href="tel:07038170659"
+              className="text-lg md:text-xl text-white font-light tracking-wider hover:text-gold transition-colors duration-300"
+            >
+              070-3817-0659
+            </a>
+            <p className="text-white/50 text-xs mt-2">平日 9:00〜17:00（作業中は折り返しになります）</p>
+          </div>
         </motion.div>
       </div>
     </section>

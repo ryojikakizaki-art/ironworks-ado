@@ -22,6 +22,7 @@ import { galleryUrl } from "@/lib/products/display"
  */
 export function SimpleProductPage({ product }: { product: SimpleProduct }) {
   const [selectedImage, setSelectedImage] = useState(0)
+  const [hoveredImage, setHoveredImage] = useState<number | null>(null)
 
   // 画像 URL を構築：STORES CDN から id を解決
   const imageUrls = product.images.map((id) => galleryUrl(id))
@@ -55,12 +56,12 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
           {/* ── 左：画像ギャラリー ── */}
           <div>
-            {/* メイン画像 */}
+            {/* メイン画像（サムネイルにホバー中はホバー画像を優先表示） */}
             <div className="relative aspect-square bg-secondary rounded-xl overflow-hidden mb-3">
               <Image
-                key={imageUrls[selectedImage]}
-                src={imageUrls[selectedImage]}
-                alt={`${product.nameEn} ${selectedImage + 1}`}
+                key={imageUrls[hoveredImage ?? selectedImage]}
+                src={imageUrls[hoveredImage ?? selectedImage]}
+                alt={`${product.nameEn} ${(hoveredImage ?? selectedImage) + 1}`}
                 fill
                 className="object-cover"
                 priority={selectedImage === 0}
@@ -94,13 +95,17 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
               )}
             </div>
 
-            {/* サムネイル */}
+            {/* サムネイル（ホバーでメイン画像にプレビュー、クリックで選択固定） */}
             {imageUrls.length > 1 && (
-              <div className="grid grid-cols-5 gap-2">
+              <div
+                className="grid grid-cols-5 gap-2"
+                onMouseLeave={() => setHoveredImage(null)}
+              >
                 {imageUrls.map((url, i) => (
                   <button
                     key={url}
                     onClick={() => setSelectedImage(i)}
+                    onMouseEnter={() => setHoveredImage(i)}
                     className={`relative aspect-square bg-secondary rounded-md overflow-hidden border-2 transition-colors ${
                       selectedImage === i ? "border-gold" : "border-transparent hover:border-muted"
                     }`}
