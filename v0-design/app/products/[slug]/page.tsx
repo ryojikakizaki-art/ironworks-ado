@@ -12,6 +12,8 @@ import { InlineRailSimulator } from "@/components/drawing-modal/inline-rail-simu
 import { ZakinEditor, type ZakinState } from "@/components/drawing-modal/zakin-editor"
 import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants"
 import { getProductFull, galleryUrl, type FeatureIconName } from "@/lib/products/display"
+import { getSimpleProduct } from "@/lib/products/simple"
+import { SimpleProductPage } from "@/components/simple-product-page"
 import { calcShipping, type ProductType } from "@/lib/shipping/sagawa"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
 import { ChevronLeft, ChevronRight, X, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench } from "lucide-react"
@@ -45,6 +47,14 @@ const relatedProducts = [
 export default function ProductDetailPage() {
   const routeParams = useParams<{ slug: string }>()
   const slug = routeParams?.slug ?? "rene"
+
+  // シンプル商品（手すり以外）はシンプルテンプレートで表示
+  const simple = getSimpleProduct(slug)
+  if (simple) {
+    return <SimpleProductPage product={simple} />
+  }
+
+  // 手すり商品（既存）— 寸法計算・座金エディタ等の複雑なフロー
   // 商品マスターから表示情報 + 価格パラメータを取得 (未登録商品は rene にフォールバック)
   const product = getProductFull(slug) ?? getProductFull("rene")!
   const specs = product.specs

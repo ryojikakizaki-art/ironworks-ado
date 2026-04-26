@@ -18,7 +18,6 @@ const nextConfig = {
   // 新 Next.js ルートへの 301 リダイレクト。
   // Google 等に既存インデックスがある可能性があるため SEO 引継ぎ目的で設定。
   async redirects() {
-    const storesBase = "https://ironworks-ado.stores.jp/items"
     return [
       // ルート HTML ページ
       { source: "/index.html", destination: "/", permanent: true },
@@ -55,17 +54,9 @@ const nextConfig = {
       { source: "/item/fabrice.html", destination: "/products/fabrice", permanent: true },
       { source: "/item/tsuchime.html", destination: "/products/tsuchime", permanent: true },
 
-      // 外部 STORES へ誘導する旧 URL (v0-design 内に詳細ページ無し)
-      {
-        source: "/item/elisabeth.html",
-        destination: `${storesBase}/63ea2bfd34e01709f8fa4ac9`,
-        permanent: true,
-      },
-      {
-        source: "/item/clemence.html",
-        destination: `${storesBase}/68f839882fa52af95b4e403e`,
-        permanent: true,
-      },
+      // 旧 STORES 外部リンクだった商品 → 新規内部詳細ページへ
+      { source: "/item/elisabeth.html", destination: "/products/elisabeth", permanent: true },
+      { source: "/item/clemence.html", destination: "/products/clemence", permanent: true },
 
       // 旧デモ・開発用ページ
       { source: "/item/zakin-angle.html", destination: "/#lineup", permanent: true },
