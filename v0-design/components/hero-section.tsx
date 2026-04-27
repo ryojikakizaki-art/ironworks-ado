@@ -1,6 +1,6 @@
 "use client"
 
-import { motion, useScroll, useSpring, useTransform } from "framer-motion"
+import { motion, useScroll, useTransform } from "framer-motion"
 import Image from "next/image"
 import { useRef, useState, useEffect, useCallback } from "react"
 
@@ -58,92 +58,74 @@ export function HeroSection() {
     return () => clearTimeout(timer)
   }, [currentSlide, nextSlide])
 
-  // 動画スライドに切り替わったら即再生（非アクティブ時は CPU 節約のため停止）
+  // 動画スライドに切り替わったら即再生
   useEffect(() => {
     const current = heroMedia[currentSlide]
-    if (!videoRef.current) return
-    if (current.type === "video") {
+    if (current.type === "video" && videoRef.current) {
       videoRef.current.currentTime = 0
       videoRef.current.play().catch(() => {
         setTimeout(nextSlide, 100)
       })
-    } else {
-      videoRef.current.pause()
     }
   }, [currentSlide, nextSlide])
+
+  const current = heroMedia[currentSlide]
 
   // ── スクロール駆動アニメーション（セクション内 progress = 0..1） ──
   const { scrollYProgress } = useScroll({
     target: sectionRef,
     offset: ["start start", "end end"],
   })
-  // useSpring で平滑化：トラックパッドの慣性スクロールでもなめらかに追従
-  const smoothProgress = useSpring(scrollYProgress, {
-    stiffness: 120,
-    damping: 30,
-    mass: 0.4,
-  })
 
   // Phase 1（スクロール駆動）: 文字が下降、線は維持しつつ後半でフェード
-  // ※ width ではなく scaleX で動かしてレイアウトを発生させない（カクつき対策）
-  const p1Y = useTransform(smoothProgress, [0.04, 0.16], ["0%", "110%"])
-  const p1LineScaleX = useTransform(smoothProgress, [0.04, 0.16], [1, 0])
-  const p1LineOpacity = useTransform(smoothProgress, [0.04, 0.16], [1, 0])
+  // 入場完了時点で「文字 y=0%／線 width=70% opacity=1」と一致する初期値を持つ
+  const p1Y = useTransform(scrollYProgress, [0.17, 0.30], ["0%", "110%"])
+  const p1LineWidth = useTransform(scrollYProgress, [0.17, 0.30], ["70%", "0%"])
+  const p1LineOpacity = useTransform(scrollYProgress, [0.17, 0.30], [1, 0])
 
   // Phase 2: 80vh → -80vh（画面下→画面上、止まらず通過）
-  const p2Y = useTransform(smoothProgress, [0.20, 0.50], ["80vh", "-80vh"])
+  const p2Y = useTransform(scrollYProgress, [0.20, 0.65], ["80vh", "-80vh"])
 
-  // Phase 3: リード + 本文を一緒に通過させる（行数が多いので長めに動かす）
-  const p3Y = useTransform(smoothProgress, [0.50, 0.95], ["100vh", "-120vh"])
+  // Phase 3: 110vh → -90vh（行数多いので初期位置をさらに下に）
+  const p3Y = useTransform(scrollYProgress, [0.55, 1.0], ["110vh", "-90vh"])
 
   // スクロール誘導は最初の数十%でフェードアウト
-  const scrollIndicatorOpacity = useTransform(smoothProgress, [0, 0.08], [1, 0])
+  const scrollIndicatorOpacity = useTransform(scrollYProgress, [0, 0.08], [1, 0])
 
   return (
     <section
       ref={sectionRef}
       className="relative"
-      style={{ height: "450vh" }}
+      style={{ height: "500vh" }}
     >
-      {/* ── 固定背景：カルーセル（全スライドを重ねて opacity で切替・隙間なし） ── */}
+      {/* ── 固定背景：カルーセル（動画 + 画像5枚、フェードなし即時切替） ── */}
       <div
         className="fixed inset-0 z-0 overflow-hidden"
         style={{ willChange: "transform", transform: "translateZ(0)" }}
       >
-        {heroMedia.map((media, idx) => {
-          const isActive = idx === currentSlide
-          if (media.type === "video") {
-            return (
-              <video
-                key={`video-${idx}`}
-                ref={videoRef}
-                src={media.src}
-                muted
-                playsInline
-                preload="auto"
-                className="absolute inset-0 w-full h-full object-cover transition-opacity duration-[800ms] ease-in-out"
-                style={{ opacity: isActive ? 1 : 0 }}
-                onEnded={isActive ? nextSlide : undefined}
-              />
-            )
-          }
-          return (
-            <div
-              key={`image-${idx}`}
-              className="absolute inset-0 transition-opacity duration-[800ms] ease-in-out"
-              style={{ opacity: isActive ? 1 : 0 }}
-            >
-              <Image
-                src={media.src}
-                alt={media.alt}
-                fill
-                priority={idx === 0 || idx === 1}
-                sizes="100vw"
-                className="object-cover"
-              />
-            </div>
-          )
-        })}
+        <div key={currentSlide} className="absolute inset-0">
+          {current.type === "video" ? (
+            <video
+              ref={videoRef}
+              src={current.src}
+              autoPlay
+              muted
+              playsInline
+              preload="auto"
+              className="absolute inset-0 w-full h-full object-cover"
+              onEnded={nextSlide}
+            />
+          ) : (
+            <Image
+              src={current.src}
+              alt={current.alt}
+              fill
+              priority={currentSlide === 0}
+              sizes="100vw"
+              className="object-cover"
+            />
+          )}
+        </div>
         {/* 文字の可読性を保つための暗幕（やや濃いめ） */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/40 to-black/65" />
       </div>
@@ -157,7 +139,7 @@ export function HeroSection() {
             <div className="overflow-hidden">
               {entranceDone ? (
                 <motion.h1
-                  style={{ y: p1Y, willChange: "transform" }}
+                  style={{ y: p1Y }}
                   className="font-serif text-3xl md:text-5xl lg:text-6xl text-white tracking-[0.05em] md:tracking-[0.15em] leading-snug whitespace-nowrap"
                 >
                   手仕事と、暮らそう。
@@ -175,19 +157,17 @@ export function HeroSection() {
               )}
             </div>
             {/* 金色の固定ライン（水面）：入場時に左右に伸びて出現 → 入場完了後は維持 → 沈降終わりにフェード */}
-            {/* ※ scaleX/opacity のみで動かす（width はレイアウトを発生させてカクつくため） */}
             {entranceDone ? (
               <motion.div
-                style={{ scaleX: p1LineScaleX, opacity: p1LineOpacity, width: "70%" }}
-                className="absolute left-1/2 -translate-x-1/2 top-full h-px bg-gradient-to-r from-transparent via-gold to-transparent origin-center"
+                style={{ width: p1LineWidth, opacity: p1LineOpacity }}
+                className="absolute left-1/2 -translate-x-1/2 top-full h-px bg-gradient-to-r from-transparent via-gold to-transparent"
               />
             ) : (
               <motion.div
-                initial={{ scaleX: 0, opacity: 0 }}
-                animate={{ scaleX: 1, opacity: 1 }}
+                initial={{ width: "0%", opacity: 0 }}
+                animate={{ width: "70%", opacity: 1 }}
                 transition={{ delay: 0.3, duration: 0.8, ease: "easeOut" }}
-                style={{ width: "70%" }}
-                className="absolute left-1/2 -translate-x-1/2 top-full h-px bg-gradient-to-r from-transparent via-gold to-transparent origin-center"
+                className="absolute left-1/2 -translate-x-1/2 top-full h-px bg-gradient-to-r from-transparent via-gold to-transparent"
               />
             )}
           </div>
@@ -196,7 +176,7 @@ export function HeroSection() {
         {/* ─ Phase 2：画面下→画面上を通過 ─ */}
         <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 px-6">
           <div className="max-w-3xl mx-auto text-center">
-            <motion.div style={{ y: p2Y, willChange: "transform" }}>
+            <motion.div style={{ y: p2Y }}>
               <h2 className="font-serif text-xl md:text-3xl lg:text-4xl text-white leading-loose tracking-wider">
                 鍛冶職人が一本ずつ仕上げる、
                 <br />
@@ -206,19 +186,19 @@ export function HeroSection() {
           </div>
         </div>
 
-        {/* ─ Phase 3：リード + 本文（マニフェスト） ─ */}
+        {/* ─ Phase 3：同じ動き / 改行追加で倍の行数・文字大きめ・行間広く ─ */}
         <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 px-6">
           <div className="max-w-3xl mx-auto text-center">
-            <motion.div style={{ y: p3Y, willChange: "transform" }}>
+            <motion.div style={{ y: p3Y }}>
               <div className="font-serif text-white tracking-wide">
                 {/* リード文 */}
-                <p className="text-2xl md:text-3xl lg:text-4xl leading-loose mb-12 md:mb-16">
+                <p className="text-2xl md:text-3xl lg:text-4xl leading-loose mb-16 md:mb-24">
                   メイド・イン・ジャパンの
                   <br />
                   「ものづくり」を追求して。
                 </p>
-                {/* 本文 */}
-                <div className="space-y-8">
+                {/* 本文（段落間は space-y-10 を維持） */}
+                <div className="space-y-10">
                   <p className="text-base md:text-lg lg:text-xl text-white/90 leading-loose">
                     千葉の工房で、
                     <br />
