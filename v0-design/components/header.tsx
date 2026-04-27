@@ -17,8 +17,8 @@ export function Header() {
       const vh = window.innerHeight
       // 「手仕事と、暮らそう。」が線に沈み始める頃（≒50vh）にヘッダーを出す
       setIsScrolled(y > vh * 0.5)
-      // ヒーロー（500vh）を抜けたら濃いテキスト色へ
-      setOverHero(y < vh * 5 - 80)
+      // ヒーロー（450vh）を抜けたら濃いテキスト色へ
+      setOverHero(y < vh * 4.5 - 80)
     }
     handleScroll()
     window.addEventListener("scroll", handleScroll, { passive: true })
