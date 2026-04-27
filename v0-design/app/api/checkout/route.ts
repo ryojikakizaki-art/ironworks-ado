@@ -114,9 +114,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Scroll 16/19/22 のみ「右向き / 左向き」選択 (価格変更なし、表記のみ)
+    // トップ画像サムネイルが左向きのため、既定値も「左向き」
     const hasOrientation = productKey.startsWith('scroll');
-    const rawOrientation = String(body?.orientation || 'right').toLowerCase();
-    const orientation: 'right' | 'left' = rawOrientation === 'left' ? 'left' : 'right';
+    const rawOrientation = String(body?.orientation || 'left').toLowerCase();
+    const orientation: 'right' | 'left' = rawOrientation === 'right' ? 'right' : 'left';
     const orientationLabel = hasOrientation
       ? (orientation === 'left' ? '左向き' : '右向き')
       : '';

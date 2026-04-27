@@ -75,8 +75,9 @@ export default function ProductDetailPage() {
   const [isDrawingOpen, setIsDrawingOpen] = useState(false)
   const [washerType, setWasherType] = useState<WasherTypeId>(product.drawing.washerSpec?.id ?? "A")
   // Scroll 16/19/22 のみ向きの選択 (左右で価格変更なし)
+  // トップ画像サムネイルが左向きのため、デフォルトは「左向き」に合わせる
   const hasOrientation = slug.startsWith("scroll")
-  const [orientation, setOrientation] = useState<"right" | "left">("right")
+  const [orientation, setOrientation] = useState<"right" | "left">("left")
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [isCtaInView, setIsCtaInView] = useState(false)
