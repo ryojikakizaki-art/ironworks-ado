@@ -140,6 +140,10 @@
   }
   html {
     scroll-behavior: smooth;
+    /* framer-motion useScroll は document.scrollingElement (=<html>) を
+       コンテナとして測定する。static のままだと scroll offset が不正確に
+       なり警告が出るため relative を付与 */
+    position: relative;
   }
 }
 
