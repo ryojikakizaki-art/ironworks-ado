@@ -113,6 +113,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `不明な商品: ${productKey}` }, { status: 400 });
     }
 
+    // Scroll 16/19/22 のみ「右向き / 左向き」選択 (価格変更なし、表記のみ)
+    const hasOrientation = productKey.startsWith('scroll');
+    const rawOrientation = String(body?.orientation || 'right').toLowerCase();
+    const orientation: 'right' | 'left' = rawOrientation === 'left' ? 'left' : 'right';
+    const orientationLabel = hasOrientation
+      ? (orientation === 'left' ? '左向き' : '右向き')
+      : '';
+
     const raw = body?.lengthMm || (body?.lengthCm && body.lengthCm * 10);
     const minL = prod.zakinRule?.minLengthMm ?? 500;
     const L   = Math.max(minL, Math.min(prod.maxMm, Math.round(Number(raw) || prod.stdLengthMm)));
@@ -182,7 +190,7 @@ export async function POST(request: NextRequest) {
           price_data: {
             currency: 'jpy',
             product_data: {
-              name: `${prod.name} 壁付け手すり ${L}mm`,
+              name: `${prod.name} 壁付け手すり ${L}mm${orientationLabel ? ` ${orientationLabel}` : ''}`,
               description: deliveryDesc,
             },
             unit_amount: unitYen,
@@ -230,15 +238,16 @@ export async function POST(request: NextRequest) {
         production_complete:    formatDateISO(schedule.productionComplete),
         shipping_date:          formatDateISO(schedule.shippingDate),
         arrival_estimate:       formatDateISO(schedule.arrivalDate),
+        ...(hasOrientation ? { orientation } : {}),
       },
       locale: 'ja',
       payment_intent_data: {
-        description: `IRONWORKS ado — ${prod.name} ${L}mm${rushDelivery ? '（特急）' : ''}`,
+        description: `IRONWORKS ado — ${prod.name} ${L}mm${orientationLabel ? ` ${orientationLabel}` : ''}${rushDelivery ? '（特急）' : ''}`,
       },
       invoice_creation: {
         enabled: true,
         invoice_data: {
-          description: `IRONWORKS ado — ${prod.name} 壁付け手すり ${L}mm${rushDelivery ? '（特急配送）' : ''}`,
+          description: `IRONWORKS ado — ${prod.name} 壁付け手すり ${L}mm${orientationLabel ? ` ${orientationLabel}` : ''}${rushDelivery ? '（特急配送）' : ''}`,
           footer: [
             '発行者: 鍛鉄工房ZEST（蠣崎 良治） / IRONWORKS ado',
             '適格請求書発行事業者登録番号: T7810771171765',
@@ -253,6 +262,7 @@ export async function POST(request: NextRequest) {
             product: productKey,
             length_mm: String(L),
             rush_delivery: rushDelivery ? 'true' : 'false',
+            ...(hasOrientation ? { orientation } : {}),
           },
         },
       },
