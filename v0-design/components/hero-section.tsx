@@ -58,18 +58,32 @@ export function HeroSection() {
     return () => clearTimeout(timer)
   }, [currentSlide, nextSlide])
 
-  // 動画スライドに切り替わったら即再生
+  // 動画スライドの再生制御
+  // - 動画スライド表示中: 先頭から再生（戻ってきた場合も含む）
+  // - それ以外のスライド表示中: pause（背後で進行しない）
+  // - autoplay ブロック等で play() が失敗したら次のスライドへ送る（fallback）
   useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
     const current = heroMedia[currentSlide]
-    if (current.type === "video" && videoRef.current) {
-      videoRef.current.currentTime = 0
-      videoRef.current.play().catch(() => {
-        setTimeout(nextSlide, 100)
-      })
+    if (current.type !== "video") {
+      v.pause()
+      return
+    }
+    let cancelled = false
+    let fallbackTimer: ReturnType<typeof setTimeout> | null = null
+    v.currentTime = 0
+    v.play().catch(() => {
+      if (cancelled) return
+      fallbackTimer = setTimeout(() => {
+        if (!cancelled) nextSlide()
+      }, 200)
+    })
+    return () => {
+      cancelled = true
+      if (fallbackTimer) clearTimeout(fallbackTimer)
     }
   }, [currentSlide, nextSlide])
-
-  const current = heroMedia[currentSlide]
 
   // ── スクロール駆動アニメーション（セクション内 progress = 0..1） ──
   const { scrollYProgress } = useScroll({
@@ -98,34 +112,41 @@ export function HeroSection() {
       className="relative"
       style={{ height: "500vh" }}
     >
-      {/* ── 固定背景：カルーセル（動画 + 画像5枚、フェードなし即時切替） ── */}
+      {/* ── 固定背景：カルーセル（動画 + 画像5枚、全スライドを常時マウントしopacityでクロスフェード） ── */}
       <div
         className="fixed inset-0 z-0 overflow-hidden"
         style={{ willChange: "transform", transform: "translateZ(0)" }}
       >
-        <div key={currentSlide} className="absolute inset-0">
-          {current.type === "video" ? (
-            <video
-              ref={videoRef}
-              src={current.src}
-              autoPlay
-              muted
-              playsInline
-              preload="auto"
-              className="absolute inset-0 w-full h-full object-cover"
-              onEnded={nextSlide}
-            />
-          ) : (
-            <Image
-              src={current.src}
-              alt={current.alt}
-              fill
-              priority={currentSlide === 0}
-              sizes="100vw"
-              className="object-cover"
-            />
-          )}
-        </div>
+        {heroMedia.map((media, idx) => (
+          <div
+            key={idx}
+            className="absolute inset-0 transition-opacity duration-700 ease-out"
+            style={{ opacity: idx === currentSlide ? 1 : 0 }}
+            aria-hidden={idx !== currentSlide}
+          >
+            {media.type === "video" ? (
+              <video
+                ref={videoRef}
+                src={media.src}
+                autoPlay
+                muted
+                playsInline
+                preload="auto"
+                className="absolute inset-0 w-full h-full object-cover"
+                onEnded={nextSlide}
+              />
+            ) : (
+              <Image
+                src={media.src}
+                alt={media.alt}
+                fill
+                priority={idx === 0}
+                sizes="100vw"
+                className="object-cover"
+              />
+            )}
+          </div>
+        ))}
         {/* 文字の可読性を保つための暗幕（やや濃いめ） */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/40 to-black/65" />
       </div>
