@@ -93,24 +93,25 @@ export function HeroSection() {
 
   // Phase 1（スクロール駆動）: 文字が下降、線は維持しつつ後半でフェード
   // 入場完了時点で「文字 y=0%／線 width=70% opacity=1」と一致する初期値を持つ
-  const p1Y = useTransform(scrollYProgress, [0.17, 0.30], ["0%", "110%"])
-  const p1LineWidth = useTransform(scrollYProgress, [0.17, 0.30], ["70%", "0%"])
-  const p1LineOpacity = useTransform(scrollYProgress, [0.17, 0.30], [1, 0])
+  // ※ ユーザー要望で「沈むまで沢山スクロール必要」の体感を解消するため早めの開始に
+  const p1Y = useTransform(scrollYProgress, [0.05, 0.18], ["0%", "110%"])
+  const p1LineWidth = useTransform(scrollYProgress, [0.05, 0.18], ["70%", "0%"])
+  const p1LineOpacity = useTransform(scrollYProgress, [0.05, 0.18], [1, 0])
 
   // Phase 2: 80vh → -80vh（画面下→画面上、止まらず通過）
-  const p2Y = useTransform(scrollYProgress, [0.20, 0.65], ["80vh", "-80vh"])
+  const p2Y = useTransform(scrollYProgress, [0.18, 0.55], ["80vh", "-80vh"])
 
   // Phase 3: 110vh → -90vh（行数多いので初期位置をさらに下に）
-  const p3Y = useTransform(scrollYProgress, [0.55, 1.0], ["110vh", "-90vh"])
+  const p3Y = useTransform(scrollYProgress, [0.50, 0.95], ["110vh", "-90vh"])
 
   // スクロール誘導は最初の数十%でフェードアウト
-  const scrollIndicatorOpacity = useTransform(scrollYProgress, [0, 0.08], [1, 0])
+  const scrollIndicatorOpacity = useTransform(scrollYProgress, [0, 0.05], [1, 0])
 
   return (
     <section
       ref={sectionRef}
       className="relative"
-      style={{ height: "500vh" }}
+      style={{ height: "350vh" }}
     >
       {/* ── 固定背景：カルーセル（動画 + 画像5枚、全スライドを常時マウントしopacityでクロスフェード） ── */}
       <div
@@ -120,7 +121,7 @@ export function HeroSection() {
         {heroMedia.map((media, idx) => (
           <div
             key={idx}
-            className="absolute inset-0 transition-opacity duration-700 ease-out"
+            className="absolute inset-0 transition-opacity duration-500 ease-out"
             style={{ opacity: idx === currentSlide ? 1 : 0 }}
             aria-hidden={idx !== currentSlide}
           >
