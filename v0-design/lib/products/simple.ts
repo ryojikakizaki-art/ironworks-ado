@@ -236,16 +236,21 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
   "fence-zigzag": {
     slug: "fence-zigzag",
     nameEn: "Zigzag Fence",
-    nameJa: "屋外フェンス zigzag",
+    nameJa: "屋外アイアンフェンス zigzag",
     category: "アイアンフェンス",
-    subtitle: "外構 オーダーメイド",
-    shortDescription: "ジグザグデザインの屋外用アイアンフェンス",
+    subtitle: "外構 溶融亜鉛メッキ仕上げ",
+    shortDescription: "屋外でも安心の溶融亜鉛メッキ仕上げ シンプル外構フェンス",
     longDescription:
-      "外構・敷地境界用のアイアンフェンスです。ジグザグ柄のデザインで、目隠し性とデザイン性を両立。サイズ・パターンともにオーダーメイド対応。",
+      "シンプルな外構フェンスです。錆止め効果に優れた溶融亜鉛メッキ処理を施しているので、屋外でも安心してお使いいただけます。\n\nサイズについて：1cm 単位でサイズを自由にご指定いただけます。商品ページ下部の［このアイテムについて問い合わせる］から、ご希望のサイズ・施工の有無・施工場所エリア等をお送りいただければお見積もりさせていただきます。\n\nIRONWORKS ado の施工エリアは千葉県全域・神奈川（一部エリア）・東京都（一部エリア）・埼玉県（一部エリア）です。運搬・施工費は別途お見積もりとなりますので、まずはお問い合わせください。",
     specs: [
-      { label: "素材", value: "鋼鉄" },
-      { label: "仕上げ", value: "焼付塗装 / 亜鉛メッキ" },
-      { label: "用途", value: "外構・境界フェンス" },
+      { label: "素材", value: "鉄" },
+      { label: "フラットバー", value: "12×32mm / 9×25mm" },
+      { label: "丸棒", value: "9φ" },
+      { label: "仕上げ", value: "溶融亜鉛メッキ + 2液型ウレタン艶消し黒塗装" },
+      { label: "付属品", value: "タッチアップ剤" },
+      { label: "サイズ指定", value: "1cm 単位で自由指定可" },
+      { label: "用途", value: "外構・境界フェンス（屋外）" },
+      { label: "施工エリア", value: "千葉県全域・神奈川/東京/埼玉（一部）" },
     ],
     images: [
       "ff214d4dd6a4e6f0b3b1.jpg",
