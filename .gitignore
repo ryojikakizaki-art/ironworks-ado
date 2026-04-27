@@ -10,3 +10,19 @@ ironworks-ado-calendar-*.json
 手すり参考図/
 焼き肌画像/
 磨き材と黒皮の比較/
+
+# Node / Next.js
+node_modules/
+**/node_modules/
+.next/
+**/.next/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# 大型メディアフォルダ（リポジトリ外で管理）
+メッキバリ取り塗装/
+HP画像/
+お客様の声スライド要/
+トップページ画像/
