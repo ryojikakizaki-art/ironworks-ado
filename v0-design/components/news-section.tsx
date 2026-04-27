@@ -4,7 +4,7 @@ import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
-import { NEWS } from "@/lib/news"
+import { NEWS, shouldShowNewBadge } from "@/lib/news"
 
 // トップページでは最新 4 件のみ表示
 const news = NEWS.slice(0, 4)
@@ -51,7 +51,7 @@ export function NewsSection() {
                 <span className="text-[13px] text-muted-foreground tabular-nums">
                   {item.date}
                 </span>
-                {item.isNew && (
+                {shouldShowNewBadge(item) && (
                   <motion.span 
                     animate={{ 
                       scale: [1, 1.1, 1],
