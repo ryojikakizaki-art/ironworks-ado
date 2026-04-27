@@ -69,6 +69,8 @@ export const CDN_BASE = "https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0
 const LOCAL_IMAGE_OVERRIDES: Record<string, string> = {
   // Antoine: "2.3~2.5m限定 ¥56,000" 文字を削除した加工版
   "2d1043dcd7658a96e5f3.jpg": "/images/gallery/antoine-top.jpg",
+  // Catherine: 旧画像の値段表記が古かったため ¥34,500 表記の正画像に差し替え
+  "8775cfcb40298257834a.jpg": "/images/gallery/catherine-top.jpg",
 }
 
 export function galleryUrl(id: string, variant: string = "public"): string {
