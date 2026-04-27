@@ -813,7 +813,7 @@ export default function ProductDetailPage() {
             {/* Product Description */}
             <section className="max-w-3xl">
               <h2 className="font-serif text-3xl lg:text-4xl mb-8">製品について</h2>
-              <p className="text-[17px] leading-relaxed text-foreground mb-10">
+              <p className="text-[17px] leading-relaxed text-foreground mb-10 whitespace-pre-line">
                 {product.longDescription}
               </p>
 
