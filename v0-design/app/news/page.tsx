@@ -1,7 +1,7 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import Link from "next/link"
-import { NEWS } from "@/lib/news"
+import { NEWS, shouldShowNewBadge } from "@/lib/news"
 
 export const metadata = {
   title: "お知らせ | IRONWORKS ado",
@@ -40,7 +40,7 @@ export default function NewsPage() {
                     <span className="text-[13px] text-muted-foreground tabular-nums">
                       {item.date}
                     </span>
-                    {item.isNew && (
+                    {shouldShowNewBadge(item) && (
                       <span className="px-2 py-0.5 bg-gold text-white text-[10px] rounded font-medium">
                         New
                       </span>
