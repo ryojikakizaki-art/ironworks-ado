@@ -1,7 +1,7 @@
 "use client"
 
 import { motion, useInView, AnimatePresence } from "framer-motion"
-import { useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ArrowRight, ExternalLink } from "lucide-react"
@@ -112,6 +112,15 @@ export function LineupSection() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-50px" })
   const [expandedId, setExpandedId] = useState<string | null>(null)
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)")
+    const update = () => setIsMobile(mq.matches)
+    update()
+    mq.addEventListener("change", update)
+    return () => mq.removeEventListener("change", update)
+  }, [])
 
   return (
     <section id="lineup" ref={ref} className="py-20 md:py-28 bg-white overflow-hidden">
@@ -154,7 +163,7 @@ export function LineupSection() {
               >
                 {/* Hero Image — ホバーで縮小 */}
                 <motion.div
-                  animate={{ height: isExpanded ? 120 : 280 }}
+                  animate={{ height: isExpanded ? (isMobile ? 80 : 120) : (isMobile ? 180 : 280) }}
                   transition={{ duration: 0.35, ease: "easeInOut" }}
                   className="relative overflow-hidden bg-secondary rounded-xl cursor-pointer"
                 >

@@ -130,7 +130,7 @@ export function BlogSection() {
                 <span className="inline-block px-3 py-1 bg-gold/10 text-gold text-xs rounded-full mb-4 tracking-wide">
                   施工動画
                 </span>
-                <h3 className="font-serif text-2xl md:text-3xl text-white mb-4 leading-snug">
+                <h3 className="font-serif text-2xl md:text-3xl text-white mb-4 leading-snug [word-break:keep-all]">
                   階段手すりのオーダー制作例
                 </h3>
                 <p className="text-white/60 text-sm leading-relaxed mb-6">
