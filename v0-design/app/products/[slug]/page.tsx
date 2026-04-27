@@ -74,6 +74,9 @@ export default function ProductDetailPage() {
   const [currentStep, setCurrentStep] = useState(1)
   const [isDrawingOpen, setIsDrawingOpen] = useState(false)
   const [washerType, setWasherType] = useState<WasherTypeId>(product.drawing.washerSpec?.id ?? "A")
+  // Scroll 16/19/22 のみ向きの選択 (左右で価格変更なし)
+  const hasOrientation = slug.startsWith("scroll")
+  const [orientation, setOrientation] = useState<"right" | "left">("right")
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [isCtaInView, setIsCtaInView] = useState(false)
@@ -206,6 +209,7 @@ export default function ProductDetailPage() {
           quantity,
           rushDelivery: deliveryType === "express",
           prefecture,
+          ...(hasOrientation ? { orientation } : {}),
         }),
       })
       const data = await res.json()
@@ -382,14 +386,51 @@ export default function ProductDetailPage() {
                       {product.drawing.category === "fixed" ? "サイズ" : "長さを選ぶ"}
                     </h3>
                     {product.drawing.category === "fixed" ? (
-                      <div className="flex items-center gap-4">
-                        <div className="flex-1 px-4 py-4 bg-secondary border border-border text-[14px] text-foreground">
-                          高さ {product.drawing.stdLengthMm}mm 固定サイズ
-                          <span className="text-[11px] text-muted-foreground ml-2">
-                            （長さ調整不可）
-                          </span>
+                      <>
+                        <div className="flex items-center gap-4">
+                          <div className="flex-1 px-4 py-4 bg-secondary border border-border text-[14px] text-foreground">
+                            高さ {product.drawing.stdLengthMm}mm 固定サイズ
+                            <span className="text-[11px] text-muted-foreground ml-2">
+                              （長さ調整不可）
+                            </span>
+                          </div>
                         </div>
-                      </div>
+                        {/* Scroll 16/19/22 のみ向き選択 (左右で価格変更なし) */}
+                        {hasOrientation && (
+                          <div className="mt-3 border border-border bg-card p-4">
+                            <div className="flex items-center gap-3">
+                              <span className="font-serif text-[15px] font-medium text-foreground min-w-[80px]">向き</span>
+                              <div className="flex flex-1 gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setOrientation("right")}
+                                  className={`flex-1 py-2.5 px-3 rounded-md border-2 transition-all text-center ${
+                                    orientation === "right"
+                                      ? "border-gold bg-gold/5"
+                                      : "border-border hover:border-gold/50"
+                                  }`}
+                                >
+                                  <div className="font-serif text-[14px] font-medium">右向き</div>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setOrientation("left")}
+                                  className={`flex-1 py-2.5 px-3 rounded-md border-2 transition-all text-center ${
+                                    orientation === "left"
+                                      ? "border-gold bg-gold/5"
+                                      : "border-border hover:border-gold/50"
+                                  }`}
+                                >
+                                  <div className="font-serif text-[14px] font-medium">左向き</div>
+                                </button>
+                              </div>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground mt-2">
+                              壁に取り付けたときの装飾の向きをお選びください（価格は同じ）
+                            </p>
+                          </div>
+                        )}
+                      </>
                     ) : (
                       <>
                         <div className="flex items-center gap-4">
