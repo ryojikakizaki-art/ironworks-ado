@@ -22,9 +22,15 @@ const inter = Inter({
 // 本番公開時に Vercel 環境変数 SITE_INDEXABLE=true を設定する
 const isIndexable = process.env.SITE_INDEXABLE === 'true'
 
+const SITE_URL = 'https://ado.tantetuzest.com'
+const SITE_TITLE = 'IRONWORKS ado | 鍛冶職人が手掛けるアイアン手摺'
+const SITE_DESCRIPTION = '一本一本、鍛冶職人が心を込めて手作りするアイアン手摺。伝統の技と現代のデザインが融合した、唯一無二の手摺をお届けします。'
+const OG_IMAGE = `${SITE_URL}/images/hero/loft-staircase.jpg`
+
 export const metadata: Metadata = {
-  title: 'IRONWORKS ado | 鍛冶職人が手掛けるアイアン手摺',
-  description: '一本一本、鍛冶職人が心を込めて手作りするアイアン手摺。伝統の技と現代のデザインが融合した、唯一無二の手摺をお届けします。',
+  metadataBase: new URL(SITE_URL),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
   generator: 'v0.app',
   robots: isIndexable
     ? { index: true, follow: true }
@@ -36,6 +42,28 @@ export const metadata: Metadata = {
         noimageindex: true,
         googleBot: { index: false, follow: false, noimageindex: true },
       },
+  openGraph: {
+    type: 'website',
+    url: SITE_URL,
+    siteName: 'IRONWORKS ado',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    locale: 'ja_JP',
+    images: [
+      {
+        url: OG_IMAGE,
+        width: 1200,
+        height: 630,
+        alt: 'IRONWORKS ado — 鍛冶職人が手掛けるアイアン手摺',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    images: [OG_IMAGE],
+  },
   icons: {
     icon: [
       {
