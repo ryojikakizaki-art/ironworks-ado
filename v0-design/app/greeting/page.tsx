@@ -1,6 +1,7 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import Link from "next/link"
+import Image from "next/image"
 
 export const metadata = {
   title: "ごあいさつ | IRONWORKS ado",
@@ -8,20 +9,67 @@ export const metadata = {
     "IRONWORKS ado 代表 蠣崎良治からのごあいさつ。鍛冶職人としての経歴と製品への想いをご紹介します。",
 }
 
-const paragraphs = [
-  "はじめまして、IRONWORKS ado 代表 蠣崎良治（カキザキリョウジ）と申します。",
-  "当ショップの商品に興味を持っていただき、数あるショップの中から訪れていただきありがとうございます。私は鉄の美しさ、可能性に惹かれ、本格ロートアイアンの工房『鍛鉄工房ZEST』として、フルオーダーを中心に鉄のインテリアやエクステリアを制作してまいりました。ロートアイアンは、古典技法を用いて工芸や美術的要素も取り入れ一点ものでデザインし形にするため、高額になり少し敷居が高くなってしまいます。そこで、これまでに培い磨いてきた感性と技術を用いて、規格化しお求めやすい価格でご提供できればきっと喜んでいただけると感じておりました。そうした想いから、セミオーダーでご注文をいただくセカンドブランドの【IRONWORKS ado】を立ち上げることにいたしました。",
-  "個人の小さな工房ですが、だからこそできること、私にしかできないことがあると考えております。私の強みは一般的な鉄職人にはない、有数な修行経験から得た『用の美』への意識だと考えております。",
-  "10年ほど勤めた機械製造会社で板金技術（いわゆる一般的な鉄工所の職人の技術）を身につけた後、より深い鉄の工芸、芸術の世界に魅せられ、西洋鍛冶（ロートアイアン）の世界へと進みました。",
-  "弟子入り修行させていただいた国内有数のロートアイアン工房では、古典的な鍛冶技術を用いながら自由な造形で『大胆に繊細に』作り上げるをテーマに、今まで見たことのない力強く美しい鉄のインテリア・エクステリア、オブジェの制作を経験しました。そこでそれぞれに素晴らしい感性の兄弟子たちにも恵まれたこともあり、それまで希薄だったものづくりへの美意識を急速に学ぶことができました。",
-  "2023年夏にはイタリアで行われた鉄のビエンナーレでは、その兄弟子たちと共に日本を代表し海を渡り、オブジェ制作を依頼される作り手として光栄な機会にも恵まれました。",
-  "無垢の鉄を叩き作り、『火造り鍛造』とも言われるロートアイアンは、日本では歴史が浅く建築にも文化がありませんので、鉄を型に溶かして作る『鋳物（イモノ）』とよく間違えられます。日本で見る豪華そうに見える門扉やフェンスでアイアン製と認識されているものは、ほぼこの鋳物によるロートアイアンを模した物です。（イタリアでは鋳物もアルミの物もほとんど見かけませんでした）",
-  "IRONWORKS ado はこれまで見てきた鉄の世界での経験を活かし、使い続けるほど好きに、本物と言っていただけるような商品を提案してまいります。",
-  "当ショップはアイアン製品の販売ショップとしてはアイテム数はまだ多くはございませんが、一つひとつの品質には自信を持っております。アイアン製品をお探しでご縁のあったお客様にとって、必ず最適な選択となり喜んでいただけるよう手間や技術を惜しまず、誠実な説明と仕事を心がけ、作り手として『良い物を遺す』『喜ばれる』ことを信条に制作しております。",
-  "業者様のまとまった量のご依頼にも、一点一点誠実な仕事でお応えいたします。",
-  "私生活では二人の息子と書籍のデザインをしている妻との4人暮らし。自然、映画、焚き火、ウイスキー、ギター、猫、蕎麦、が好きです。",
-  "長く暮らすこだわりの住まいだからこそ、良いものを。",
-  "お問い合わせを心よりお待ちしております。",
+type SectionImage = { src: string; alt: string; aspect: "video" | "square" | "portrait" }
+
+const sections: {
+  eyebrow: string
+  title: string
+  paragraphs: string[]
+  image?: SectionImage
+}[] = [
+  {
+    eyebrow: "About",
+    title: "IRONWORKS ado について",
+    paragraphs: [
+      "はじめまして、IRONWORKS ado 代表 蠣崎良治（カキザキリョウジ）と申します。当ショップの商品に興味を持っていただき、数あるショップの中から訪れていただきありがとうございます。",
+      "私は鉄の美しさと可能性に惹かれ、本格ロートアイアンの工房『鍛鉄工房ZEST』として、フルオーダーを中心に鉄のインテリアやエクステリアを制作してまいりました。",
+      "ロートアイアンは古典技法を用い、工芸・美術的な要素を取り入れた一点ものでデザインから形にしていくため、価格帯としてはどうしても限られた方へのご提供となります。これまで培い磨いてきた感性と技術をセミオーダーへと規格化し、お求めやすい価格で提供することで、より多くの方に本物の鉄を届けたい——そうした想いから、セカンドブランドの【IRONWORKS ado】を立ち上げました。",
+    ],
+  },
+  {
+    eyebrow: "Career",
+    title: "これまでの歩み",
+    image: {
+      src: "/images/greeting-career.jpg",
+      alt: "イタリア・鉄のビエンナーレでの鍛造制作",
+      aspect: "video",
+    },
+    paragraphs: [
+      "個人工房だからこそ、ひとつひとつの仕事に正面から向き合えること、私にしかできないことがあります。私の強みは、一般的な鉄職人にはない、有数の修行経験から得た『用の美』への意識です。",
+      "10年ほど勤めた機械製造会社で板金技術を身につけた後、より深い鉄の工芸・芸術の世界に魅せられ、西洋鍛冶（ロートアイアン）の世界へと進みました。",
+      "弟子入りさせていただいた国内有数のロートアイアン工房では、古典的な鍛冶技術を用いながら自由な造形で『大胆に繊細に』作り上げるをテーマに、力強く美しい鉄のインテリア・エクステリア、オブジェの制作を経験しました。素晴らしい感性の兄弟子たちにも恵まれ、ものづくりへの美意識を磨かせていただきました。",
+      "2023年夏にはイタリアで開催された鉄のビエンナーレに、その兄弟子たちと共に日本を代表して参加し、オブジェ制作を依頼される作り手として光栄な機会にも恵まれました。",
+    ],
+  },
+  {
+    eyebrow: "Craft",
+    title: "ロートアイアンという技術",
+    image: {
+      src: "/images/greeting-craft.jpg",
+      alt: "火造り鍛造によるアイアンディテール",
+      aspect: "square",
+    },
+    paragraphs: [
+      "無垢の鉄を叩いて成形する『火造り鍛造』とも呼ばれるロートアイアンは、日本ではまだ歴史が浅く広く知られていないため、鉄を型に溶かして作る『鋳物（イモノ）』としばしば混同されます。日本で見かける豪華なアイアン製の門扉やフェンスの多くは、実は鋳物でロートアイアンを模したものです。（イタリアでは鋳物・アルミ製のものはほとんど見かけませんでした）",
+      "IRONWORKS ado はこれまで見てきた鉄の世界での経験を活かし、使い続けるほど愛着が増し、本物と言っていただけるような商品を提案してまいります。",
+    ],
+  },
+  {
+    eyebrow: "Promise",
+    title: "お客様への約束",
+    paragraphs: [
+      "一つひとつの品質には自信を持っております。アイアン製品をお探しでご縁のあったお客様にとって最適な選択となり、喜んでいただけるよう、手間や技術を惜しまず、誠実な説明と仕事を心がけてまいります。作り手として『良い物を遺す』『喜ばれる』ことを信条に制作しております。",
+      "業者様のまとまった量のご依頼にも、一点一点誠実な仕事でお応えいたします。",
+    ],
+  },
+  {
+    eyebrow: "Personal",
+    title: "私の暮らし",
+    paragraphs: [
+      "私生活では、二人の息子と、書籍デザイナーの妻との4人暮らし。自然、映画、焚き火、ウイスキー、ギター、猫、蕎麦が好きです。",
+      "長く暮らすこだわりの住まいだからこそ、良いものを。お問い合わせを心よりお待ちしております。",
+    ],
+  },
 ]
 
 export default function GreetingPage() {
@@ -37,17 +85,65 @@ export default function GreetingPage() {
         </div>
 
         <div className="max-w-[800px] mx-auto px-4 lg:px-8 py-16">
-          <div className="space-y-6">
-            {paragraphs.map((p, i) => (
-              <p key={i} className="text-[14px] leading-[1.9] text-muted-foreground">
-                {p}
-              </p>
+          {/* 代表ポートレート */}
+          <div className="mb-14 flex justify-center">
+            <div className="relative w-[260px] sm:w-[300px] aspect-square overflow-hidden rounded-full bg-secondary shadow-sm">
+              <Image
+                src="/images/greeting-portrait.jpg"
+                alt="IRONWORKS ado 代表 蠣崎良治"
+                fill
+                sizes="(max-width: 640px) 260px, 300px"
+                className="object-cover"
+                priority
+              />
+            </div>
+          </div>
+
+          <div className="space-y-14">
+            {sections.map((section, i) => (
+              <section key={i}>
+                <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">
+                  {section.eyebrow}
+                </p>
+                <h2 className="font-serif text-xl lg:text-2xl text-foreground mb-6 pb-3 border-b border-border">
+                  {section.title}
+                </h2>
+                {section.image && (
+                  <div
+                    className={`relative w-full mb-7 overflow-hidden rounded-md bg-secondary ${
+                      section.image.aspect === "square"
+                        ? "aspect-square sm:aspect-[4/3]"
+                        : section.image.aspect === "portrait"
+                        ? "aspect-[3/4]"
+                        : "aspect-[3/2]"
+                    }`}
+                  >
+                    <Image
+                      src={section.image.src}
+                      alt={section.image.alt}
+                      fill
+                      sizes="(max-width: 800px) 100vw, 800px"
+                      className="object-cover"
+                    />
+                  </div>
+                )}
+                <div className="space-y-5">
+                  {section.paragraphs.map((p, j) => (
+                    <p key={j} className="text-[14px] leading-[2] text-foreground/80">
+                      {p}
+                    </p>
+                  ))}
+                </div>
+              </section>
             ))}
           </div>
 
           <div className="mt-14 pt-8 border-t border-border text-right">
             <p className="text-[12px] tracking-wide text-muted-foreground mb-1">
               IRONWORKS ado 代表
+            </p>
+            <p className="text-[11px] tracking-wide text-muted-foreground mb-2">
+              （鍛鉄工房ZEST）
             </p>
             <p className="font-serif text-lg text-foreground">蠣崎 良治</p>
           </div>
