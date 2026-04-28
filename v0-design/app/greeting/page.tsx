@@ -6,7 +6,7 @@ import Image from "next/image"
 export const metadata = {
   title: "ごあいさつ | IRONWORKS ado",
   description:
-    "IRONWORKS ado 代表 蠣崎良治からのごあいさつ。鍛冶職人としての経歴と製品への想いをご紹介します。",
+    "IRONWORKS ado 代表 蠣﨑良治からのごあいさつ。鍛冶職人としての経歴と製品への想いをご紹介します。",
 }
 
 type SectionImage = { src: string; alt: string; aspect: "video" | "square" | "portrait" }
@@ -21,7 +21,7 @@ const sections: {
     eyebrow: "About",
     title: "IRONWORKS ado について",
     paragraphs: [
-      "はじめまして、IRONWORKS ado 代表 蠣崎良治（カキザキリョウジ）と申します。当ショップの商品に興味を持っていただき、数あるショップの中から訪れていただきありがとうございます。",
+      "はじめまして、IRONWORKS ado 代表 蠣﨑良治（カキザキリョウジ）と申します。当ショップの商品に興味を持っていただき、数あるショップの中から訪れていただきありがとうございます。",
       "私は鉄の美しさと可能性に惹かれ、本格ロートアイアンの工房『鍛鉄工房ZEST』として、フルオーダーを中心に鉄のインテリアやエクステリアを制作してまいりました。",
       "ロートアイアンは古典技法を用い、工芸・美術的な要素を取り入れた一点ものでデザインから形にしていくため、価格帯としてはどうしても限られた方へのご提供となります。これまで培い磨いてきた感性と技術をセミオーダーへと規格化し、お求めやすい価格で提供することで、より多くの方に本物の鉄を届けたい——そうした想いから、セカンドブランドの【IRONWORKS ado】を立ち上げました。",
     ],
@@ -90,7 +90,7 @@ export default function GreetingPage() {
             <div className="relative w-[260px] sm:w-[300px] aspect-square overflow-hidden rounded-full bg-secondary shadow-sm">
               <Image
                 src="/images/greeting-portrait.jpg"
-                alt="IRONWORKS ado 代表 蠣崎良治"
+                alt="IRONWORKS ado 代表 蠣﨑良治"
                 fill
                 sizes="(max-width: 640px) 260px, 300px"
                 className="object-cover"
@@ -145,7 +145,7 @@ export default function GreetingPage() {
             <p className="text-[11px] tracking-wide text-muted-foreground mb-2">
               （鍛鉄工房ZEST）
             </p>
-            <p className="font-serif text-lg text-foreground">蠣崎 良治</p>
+            <p className="font-serif text-lg text-foreground">蠣﨑 良治</p>
           </div>
 
           <div className="mt-12 text-center">

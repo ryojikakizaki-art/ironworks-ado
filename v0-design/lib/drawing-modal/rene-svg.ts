@@ -476,7 +476,7 @@ export function buildRoundRailDrawingSvg(
     ["材質", product.material, false],
     ["仕上げ", product.finish, false],
     ["尺度", "1:20", false],
-    ["設計", "蠣崎 良治", false],
+    ["設計", "蠣﨑 良治", false],
     ["座金", zakinInfo, false],
   ]
 

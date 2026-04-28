@@ -128,7 +128,7 @@ ${isRush ? `<div class="row"><span class="label">特急割増</span><span class=
 <p style="font-size:11px;color:#aaa;">注文番号: ${esc(session.id)}</p>
 </div>
 <div class="footer">
-<p>鍛鉄工房ZEST（蠣崎 良治） / IRONWORKS <span>ado</span></p>
+<p>鍛鉄工房ZEST（蠣﨑 良治） / IRONWORKS <span>ado</span></p>
 <p>〒265-0052 千葉県千葉市若葉区和泉町239-2 / TEL 070-3817-0659</p>
 <p>適格請求書発行事業者登録番号: T7810771171765</p>
 </div>
@@ -230,7 +230,7 @@ async function sendSimpleOrderEmail(session: Stripe.Checkout.Session) {
 <p style="font-size:11px;color:#aaa;">注文番号: ${esc(session.id)}</p>
 </div>
 <div class="footer">
-<p>鍛鉄工房ZEST（蠣崎 良治） / IRONWORKS <span>ado</span></p>
+<p>鍛鉄工房ZEST（蠣﨑 良治） / IRONWORKS <span>ado</span></p>
 <p>〒265-0052 千葉県千葉市若葉区和泉町239-2 / TEL 070-3817-0659</p>
 <p>適格請求書発行事業者登録番号: T7810771171765</p>
 </div>

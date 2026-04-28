@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
         invoice_data: {
           description: `IRONWORKS ado — ${prod.nameJa}（送料込み）× ${qty}`,
           footer: [
-            '発行者: 鍛鉄工房ZEST（蠣崎 良治） / IRONWORKS ado',
+            '発行者: 鍛鉄工房ZEST（蠣﨑 良治） / IRONWORKS ado',
             '適格請求書発行事業者登録番号: T7810771171765',
             '〒265-0052 千葉県千葉市若葉区和泉町239-2',
             'TEL: 070-3817-0659 / Email: ado@tantetuzest.com',
