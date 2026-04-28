@@ -26,11 +26,12 @@ type HeroMedia =
 
 const heroMedia: HeroMedia[] = [
   { type: "video", src: "/videos/hero-reel.mp4" },
-  { type: "image", src: "/images/_1140304.jpg", alt: "アイアン手すり 主要カット" },
-  { type: "image", src: "/images/DSCF1995.JPG", alt: "アイアン手すり施工例 1" },
-  { type: "image", src: "/images/DSCF6186.JPG", alt: "アイアン手すり施工例 2" },
-  { type: "image", src: "/images/DSCF6234.JPG", alt: "アイアン手すり施工例 3" },
-  { type: "image", src: "/images/DSCF6699.JPG", alt: "アイアン手すり施工例 4" },
+  { type: "image", src: "/images/hero/1140304.jpg", alt: "アイアン手すり 主要カット" },
+  { type: "image", src: "/images/hero/dscf1995.jpg", alt: "アイアン手すり施工例 1" },
+  { type: "image", src: "/images/hero/dscf6186.jpg", alt: "アイアン手すり施工例 2" },
+  { type: "image", src: "/images/hero/dscf6234.jpg", alt: "アイアン手すり施工例 3" },
+  { type: "image", src: "/images/hero/dscf6699.jpg", alt: "アイアン手すり施工例 4" },
+  { type: "image", src: "/images/hero/loft-staircase.jpg", alt: "鉄製手すり付き階段のあるロフトリビング" },
 ]
 
 export function HeroSection() {
