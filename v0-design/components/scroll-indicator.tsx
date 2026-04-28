@@ -21,23 +21,42 @@ export function ScrollIndicator() {
   const scaleY = useSpring(scrollYProgress, { stiffness: 100, damping: 30 })
 
   useEffect(() => {
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY + window.innerHeight / 2
-
-      sections.forEach((section, index) => {
-        const element = document.getElementById(section.id)
-        if (element) {
-          const { offsetTop, offsetHeight } = element
-          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
-            setActiveSection(index)
-          }
-        }
-      })
+    // section の位置はスクロール毎に変わらないのでキャッシュ。リサイズ時のみ再計算。
+    let bounds: { id: string; top: number; bottom: number }[] = []
+    const measure = () => {
+      bounds = sections
+        .map((s) => {
+          const el = document.getElementById(s.id)
+          if (!el) return null
+          return { id: s.id, top: el.offsetTop, bottom: el.offsetTop + el.offsetHeight }
+        })
+        .filter((b): b is { id: string; top: number; bottom: number } => b !== null)
     }
 
+    let rafId: number | null = null
+    const update = () => {
+      rafId = null
+      const probe = window.scrollY + window.innerHeight / 2
+      for (let i = 0; i < bounds.length; i++) {
+        if (probe >= bounds[i].top && probe < bounds[i].bottom) {
+          setActiveSection(sections.findIndex((s) => s.id === bounds[i].id))
+          return
+        }
+      }
+    }
+    const handleScroll = () => {
+      if (rafId === null) rafId = requestAnimationFrame(update)
+    }
+
+    measure()
+    update()
     window.addEventListener("scroll", handleScroll, { passive: true })
-    handleScroll()
-    return () => window.removeEventListener("scroll", handleScroll)
+    window.addEventListener("resize", measure, { passive: true })
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      window.removeEventListener("resize", measure)
+      if (rafId !== null) cancelAnimationFrame(rafId)
+    }
   }, [])
 
   const scrollToSection = (id: string) => {

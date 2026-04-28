@@ -12,7 +12,12 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    unoptimized: true,
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+    remotePatterns: [
+      { protocol: "https", hostname: "imagedelivery.net" },
+      { protocol: "https", hostname: "ironworks-ado.stores.jp" },
+    ],
   },
   // 旧 HTML サイト (repo ルートの index.html / item/*.html 等) から
   // 新 Next.js ルートへの 301 リダイレクト。
