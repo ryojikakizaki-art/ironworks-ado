@@ -68,6 +68,7 @@ export async function POST(request: NextRequest) {
       success_url: `${baseUrl}/thanks?session_id={CHECKOUT_SESSION_ID}&product=${productKey}`,
       cancel_url:  `${baseUrl}/products/${productKey}`,
       metadata: {
+        product_type:     'simple',
         product:          productKey,
         product_name:     `${prod.nameJa} (${prod.nameEn})`,
         quantity:         String(qty),
