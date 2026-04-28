@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils"
  * @variant dark       - セカンダリ CTA（黒背景・白文字・シマー）
  * @variant outline    - 軽量 CTA（黒枠・黒文字・hover で塗り）
  * @variant ghost-light - 暗い背景（ヒーロー等）の上で使う薄い枠 CTA
+ * @variant line       - LINE 公式アカウントへ誘導する CTA（LINE 公式グリーン）
  *
  * @size lg - 主要 CTA（py-5 text-[17px] font-bold）
  * @size md - セクション末尾の遷移ボタン（py-4 text-[14px] medium）
@@ -26,7 +27,7 @@ import { cn } from "@/lib/utils"
  * 左に Lucide アイコンを足したい場合は icon プロップに渡す。
  */
 
-type CTAVariant = "gold" | "dark" | "outline" | "ghost-light" | "purchase"
+type CTAVariant = "gold" | "dark" | "outline" | "ghost-light" | "purchase" | "line"
 type CTASize = "lg" | "md" | "sm"
 
 const baseStyles =
@@ -39,6 +40,8 @@ const variantStyles: Record<CTAVariant, string> = {
     "border-2 border-dark text-dark bg-white shadow-sm hover:bg-dark hover:text-white hover:shadow-lg",
   "ghost-light":
     "border-2 border-white/40 text-white bg-white/5 hover:bg-white hover:text-dark hover:border-white",
+  // LINE 公式アカウントへの誘導専用 — LINE ブランドカラー (#06C755)
+  line: "bg-[#06C755] text-white shadow-lg hover:bg-[#05B048] hover:shadow-xl",
   /**
    * 購入確定ボタン専用 — 内側ハイライト/シャドウと多重ベース影を重ねた「本物の金属ボタン」表現。
    * 商品ページの「購入手続きへ進む」とフローティング CTA バーだけに使う。
@@ -127,7 +130,11 @@ function CTAInner({
   variant: CTAVariant
   children: React.ReactNode
 }) {
-  const isSolid = variant === "gold" || variant === "dark" || variant === "purchase"
+  const isSolid =
+    variant === "gold" ||
+    variant === "dark" ||
+    variant === "purchase" ||
+    variant === "line"
   return (
     <>
       <span className="relative z-10 inline-flex items-center justify-center gap-2">

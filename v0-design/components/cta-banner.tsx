@@ -3,6 +3,7 @@
 import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
+import { LineIcon } from "@/components/ui/line-icon"
 
 export function CtaBanner() {
   const ref = useRef(null)
@@ -104,9 +105,24 @@ export function CtaBanner() {
           initial={{ opacity: 0 }}
           animate={isInView ? { opacity: 1 } : {}}
           transition={{ duration: 0.6, delay: 0.6 }}
-          className="mt-12 pt-10 border-t border-white/10 grid gap-8 md:grid-cols-2 max-w-2xl mx-auto text-left md:text-center"
+          className="mt-12 pt-10 border-t border-white/10 grid gap-8 md:grid-cols-3 max-w-4xl mx-auto text-left md:text-center"
         >
-          {/* メール（推奨） */}
+          {/* LINE（個人情報なし・気軽に） */}
+          <div>
+            <p className="text-white/50 text-xs mb-2 tracking-wider">LINEでのお問い合わせ</p>
+            <a
+              href="https://lin.ee/Tnjukrf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-lg md:text-xl text-[#06C755] font-light tracking-wider hover:text-white transition-colors duration-300"
+            >
+              <LineIcon className="w-6 h-6 md:w-7 md:h-7" />
+              LINEで友だち追加
+            </a>
+            <p className="text-white/50 text-xs mt-2">個人情報なしで気軽にご相談いただけます</p>
+          </div>
+
+          {/* メール */}
           <div>
             <p className="text-white/50 text-xs mb-2 tracking-wider">メールでのお問い合わせ</p>
             <a
@@ -118,7 +134,7 @@ export function CtaBanner() {
             <p className="text-white/50 text-xs mt-2">通常2営業日以内にご返信いたします</p>
           </div>
 
-          {/* 電話（サブ） */}
+          {/* 電話 */}
           <div>
             <p className="text-white/50 text-xs mb-2 tracking-wider">お電話でのお問い合わせ</p>
             <a

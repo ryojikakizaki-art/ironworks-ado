@@ -2,7 +2,8 @@
 
 import { motion, useInView } from "framer-motion"
 import { useRef, useState, useCallback } from "react"
-import { Hammer, Ruler, Truck, MessageCircle, CreditCard, ChevronLeft, ChevronRight } from "lucide-react"
+import { Hammer, Ruler, Truck, CreditCard, ChevronLeft, ChevronRight, ArrowUpRight } from "lucide-react"
+import { LineIcon } from "@/components/ui/line-icon"
 
 const services = [
   {
@@ -27,11 +28,12 @@ const services = [
     backDescription: "専用の梱包で破損を防止。30,000円以上で送料無料。設置サービスも対応可能。",
   },
   {
-    icon: MessageCircle,
+    icon: LineIcon,
     title: "LINEで簡単相談",
-    description: "ご質問やご相談はLINEでお気軽に。",
-    backTitle: "職人が直接回答",
-    backDescription: "写真を送るだけで無料見積もり。平均回答時間は2時間以内。",
+    description: "個人情報の入力なしで、写真と一言から無料見積もり。職人が直接ご返答いたします。",
+    backTitle: "",
+    backDescription: "",
+    href: "https://lin.ee/Tnjukrf",
   },
   {
     icon: CreditCard,
@@ -152,6 +154,49 @@ export function LimitedServiceSection() {
           >
             {services.map((service, index) => {
               const Icon = service.icon
+
+              // Special case: LINE card is a direct external link, no flip
+              if ("href" in service && service.href) {
+                return (
+                  <motion.a
+                    key={service.title}
+                    href={service.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    initial={{ opacity: 0, x: 40 }}
+                    animate={isInView ? { opacity: 1, x: 0 } : {}}
+                    transition={{ duration: 0.5, delay: 0.15 + index * 0.08 }}
+                    className="group flex-shrink-0 w-[260px] md:w-[280px] snap-start"
+                  >
+                    <div className="relative h-[220px] bg-[#f9f7f4] rounded-2xl p-6 border border-transparent hover:border-[#06C755]/40 transition-all duration-300 overflow-hidden">
+                      {/* Number Badge */}
+                      <span className="absolute top-4 right-4 text-[48px] font-serif text-foreground/5 leading-none select-none">
+                        {String(index + 1).padStart(2, "0")}
+                      </span>
+
+                      {/* Icon — LINE green accent */}
+                      <div className="w-14 h-14 rounded-full bg-[#06C755] flex items-center justify-center mb-5 shadow-sm">
+                        <Icon className="w-7 h-7 text-white" />
+                      </div>
+
+                      {/* Content */}
+                      <h3 className="font-serif text-lg text-foreground mb-3">
+                        {service.title}
+                      </h3>
+                      <p className="text-[13px] text-muted-foreground leading-[1.8]">
+                        {service.description}
+                      </p>
+
+                      {/* External link hint */}
+                      <span className="absolute bottom-4 right-4 inline-flex items-center gap-1 text-[11px] text-[#06C755] font-medium">
+                        友だち追加
+                        <ArrowUpRight className="w-3 h-3 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                      </span>
+                    </div>
+                  </motion.a>
+                )
+              }
+
               const isFlipped = flippedCards.has(index)
               return (
                 <motion.div
@@ -170,7 +215,7 @@ export function LimitedServiceSection() {
                     className="relative h-[220px]"
                   >
                     {/* Front Side */}
-                    <div 
+                    <div
                       className="absolute inset-0 bg-[#f9f7f4] rounded-2xl p-6 border border-transparent hover:border-gold/20 transition-all duration-300"
                       style={{ backfaceVisibility: "hidden" }}
                     >
@@ -178,7 +223,7 @@ export function LimitedServiceSection() {
                       <span className="absolute top-4 right-4 text-[48px] font-serif text-foreground/5 leading-none select-none">
                         {String(index + 1).padStart(2, "0")}
                       </span>
-                      
+
                       {/* Icon */}
                       <div className="w-14 h-14 rounded-full bg-white flex items-center justify-center mb-5 shadow-sm">
                         <Icon className="w-6 h-6 text-gold" strokeWidth={1.5} />
@@ -191,7 +236,7 @@ export function LimitedServiceSection() {
                       <p className="text-[13px] text-muted-foreground leading-[1.8]">
                         {service.description}
                       </p>
-                      
+
                       {/* Flip hint */}
                       <span className="absolute bottom-4 right-4 text-[10px] text-muted-foreground/50">
                         tap to flip
@@ -199,7 +244,7 @@ export function LimitedServiceSection() {
                     </div>
 
                     {/* Back Side */}
-                    <div 
+                    <div
                       className="absolute inset-0 bg-dark rounded-2xl p-6 text-white"
                       style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
                     >
