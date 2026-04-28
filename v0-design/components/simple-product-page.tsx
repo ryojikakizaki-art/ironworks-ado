@@ -4,9 +4,10 @@ import { useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { ChevronLeft, ChevronRight, Mail, MessageSquare } from "lucide-react"
+import { ChevronLeft, ChevronRight, Mail, MessageSquare, ShoppingBag, Minus, Plus } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { PrimaryCTA } from "@/components/ui/primary-cta"
 import type { SimpleProduct } from "@/lib/products/simple"
 import { galleryUrl } from "@/lib/products/display"
 
@@ -31,6 +32,31 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
   const goPrev = () => setSelectedImage((i) => (i - 1 + imageUrls.length) % imageUrls.length)
 
   const isQuoteOnly = product.basePrice === 0
+  // 送料込・固定価格の小物は Stripe 直接決済が可能
+  const isDirectCheckout = !isQuoteOnly && product.shippingIncluded === true
+  const [quantity, setQuantity] = useState(1)
+  const [isCheckingOut, setIsCheckingOut] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
+
+  const handleDirectCheckout = async () => {
+    setIsCheckingOut(true)
+    setCheckoutError(null)
+    try {
+      const res = await fetch("/api/checkout/simple", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ product: product.slug, quantity }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.url) {
+        throw new Error(data?.error || "セッションの作成に失敗しました")
+      }
+      window.location.href = data.url
+    } catch (err) {
+      setCheckoutError(err instanceof Error ? err.message : "セッションの作成に失敗しました")
+      setIsCheckingOut(false)
+    }
+  }
 
   return (
     <main className="min-h-screen bg-white">
@@ -140,7 +166,9 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
                 <p className="text-xs text-muted-foreground mb-1 tracking-wider">PRICE</p>
                 <p className="font-serif text-3xl text-dark">
                   ¥{product.basePrice.toLocaleString()}
-                  <span className="text-sm text-muted-foreground ml-2">（税込・送料別）</span>
+                  <span className="text-sm text-muted-foreground ml-2">
+                    {product.shippingIncluded ? "（税込・送料込）" : "（税込・送料別）"}
+                  </span>
                 </p>
               </div>
             )}
@@ -178,23 +206,80 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
               className="flex flex-col gap-3"
             >
               {isQuoteOnly ? (
-                <Link
+                <PrimaryCTA
                   href={`/contact?product=${encodeURIComponent(product.slug)}&category=size`}
-                  className="group flex items-center justify-center gap-3 px-8 py-4 bg-dark text-white rounded-full hover:bg-gold transition-colors duration-300"
+                  variant="dark"
+                  size="lg"
+                  icon={<MessageSquare className="w-4 h-4" />}
+                  withArrow
                 >
-                  <MessageSquare className="w-4 h-4" />
-                  <span className="text-sm tracking-wider">お見積もり・ご相談はこちら</span>
-                </Link>
+                  お見積もり・ご相談はこちら
+                </PrimaryCTA>
+              ) : isDirectCheckout ? (
+                <>
+                  {/* 数量セレクタ — 立体感のあるカード */}
+                  <div className="flex items-center justify-between border-2 border-border bg-card rounded-md px-5 py-4 mb-2 shadow-sm">
+                    <span className="font-serif text-[15px] font-medium text-foreground">数量</span>
+                    <div className="flex items-center gap-4">
+                      <button
+                        type="button"
+                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                        disabled={isCheckingOut || quantity <= 1}
+                        className="w-9 h-9 flex items-center justify-center rounded-full border border-border bg-white shadow-sm hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        aria-label="数量を減らす"
+                      >
+                        <Minus className="w-3.5 h-3.5" />
+                      </button>
+                      <span className="font-serif text-[18px] font-bold min-w-[2ch] text-center text-foreground">
+                        {quantity}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setQuantity((q) => Math.min(10, q + 1))}
+                        disabled={isCheckingOut || quantity >= 10}
+                        className="w-9 h-9 flex items-center justify-center rounded-full border border-border bg-white shadow-sm hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        aria-label="数量を増やす"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                  {checkoutError && (
+                    <div className="border-2 border-red-500/60 bg-red-50 rounded-md p-3 text-[13px] text-red-700">
+                      {checkoutError}
+                    </div>
+                  )}
+                  <div className="flex justify-center">
+                    <PrimaryCTA
+                      onClick={handleDirectCheckout}
+                      disabled={isCheckingOut}
+                      variant="purchase"
+                      size="lg"
+                      icon={<ShoppingBag className="w-4 h-4" />}
+                      withArrow
+                      className={isCheckingOut ? "cursor-wait" : ""}
+                    >
+                      {isCheckingOut
+                        ? "決済ページへ移動中…"
+                        : `ご注文（合計 ¥${(product.basePrice * quantity).toLocaleString()}）`}
+                    </PrimaryCTA>
+                  </div>
+                  <p className="text-xs text-muted-foreground text-center leading-loose">
+                    クリックポストで発送（送料込）。Stripe 決済画面に進みます。
+                  </p>
+                </>
               ) : (
                 <>
-                  {/* 価格付き商品：Stripe 決済は追って実装。現状はお問い合わせフォームで承る */}
-                  <Link
+                  {/* 送料計算が必要な商品はお問い合わせフォーム経由 */}
+                  <PrimaryCTA
                     href={`/contact?product=${encodeURIComponent(product.slug)}&category=order`}
-                    className="group flex items-center justify-center gap-3 px-8 py-4 bg-gold text-white rounded-full hover:bg-dark transition-colors duration-300"
+                    variant="gold"
+                    size="lg"
+                    icon={<Mail className="w-4 h-4" />}
+                    withArrow
                   >
-                    <Mail className="w-4 h-4" />
-                    <span className="text-sm tracking-wider font-medium">ご注文・お問い合わせ</span>
-                  </Link>
+                    ご注文・お問い合わせ
+                  </PrimaryCTA>
                   <p className="text-xs text-muted-foreground text-center leading-loose">
                     ご注文確認後、見積書（送料込）をお送りいたします。
                     <br />
@@ -203,17 +288,6 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
                 </>
               )}
 
-              {/* STORES への補助リンク（移行期間中の保険） */}
-              {product.storesUrl && (
-                <a
-                  href={product.storesUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-muted-foreground text-center hover:text-dark transition-colors mt-2"
-                >
-                  STORES のページを見る ↗
-                </a>
-              )}
             </motion.div>
           </div>
         </div>

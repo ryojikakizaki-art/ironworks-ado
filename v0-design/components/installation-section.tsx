@@ -4,6 +4,7 @@ import { motion, useInView, useScroll, useTransform } from "framer-motion"
 import { useRef } from "react"
 import Image from "next/image"
 import { Check } from "lucide-react"
+import { PrimaryCTA } from "@/components/ui/primary-cta"
 
 const installationFeatures = [
   "専門スタッフによる丁寧な施工",
@@ -67,9 +68,10 @@ export function InstallationSection() {
               ))}
             </ul>
 
-            <button className="group px-8 py-4 bg-dark text-white rounded-full transition-all duration-300 hover:bg-gold hover:shadow-lg">
-              <span className="text-sm tracking-wide">施工について詳しく</span>
-            </button>
+            {/* TODO: 元々 onClick 無しの非機能ボタン。遷移先が決まったら href を指定 */}
+            <PrimaryCTA variant="dark" size="md">
+              施工について詳しく
+            </PrimaryCTA>
           </motion.div>
 
           {/* Image Side */}

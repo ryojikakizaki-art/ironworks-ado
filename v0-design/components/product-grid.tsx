@@ -3,7 +3,7 @@
 import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
 import Image from "next/image"
-import { ArrowRight } from "lucide-react"
+import { PrimaryCTA } from "@/components/ui/primary-cta"
 
 const products = [
   {
@@ -155,10 +155,9 @@ export function ProductGrid() {
           transition={{ duration: 0.6, delay: 0.8 }}
           className="text-center mt-12"
         >
-          <button className="group inline-flex items-center gap-3 px-8 py-4 border-2 border-dark text-dark rounded-full transition-all duration-300 hover:bg-dark hover:text-white hover:gap-4">
-            <span className="text-sm tracking-wide">すべての製品を見る</span>
-            <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-          </button>
+          <PrimaryCTA href="/products" variant="outline" size="md">
+            すべての製品を見る
+          </PrimaryCTA>
         </motion.div>
       </div>
     </section>
