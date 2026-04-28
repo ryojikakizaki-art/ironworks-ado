@@ -20,7 +20,7 @@ ironworks-ado/
 ├── CLAUDE.md
 ├── index.html
 ├── v0-design/          ← 本番コード（Next.js）
-├── item/               ← 旧版（編集不可）
+├── item/               ← 旧版（原則編集不可。例外: 戸籍正字「蠣﨑」統一など、明示的にユーザーが許可した場合のみ更新可）
 ├── images/
 └── item/images/
 
