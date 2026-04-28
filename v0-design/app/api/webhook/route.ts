@@ -23,6 +23,36 @@ function formatJpDate(iso: string | undefined | null): string {
   return `${d.getFullYear()}年${d.getMonth() + 1}月${d.getDate()}日`;
 }
 
+function addBusinessDays(from: Date, days: number): Date {
+  const d = new Date(from);
+  let added = 0;
+  while (added < days) {
+    d.setDate(d.getDate() + 1);
+    const dow = d.getDay();
+    if (dow !== 0 && dow !== 6) added++;
+  }
+  return d;
+}
+
+function toIsoDate(d: Date): string {
+  return d.toISOString().split('T')[0];
+}
+
+type StripeAddress = {
+  postal_code?: string | null;
+  state?: string | null;
+  city?: string | null;
+  line1?: string | null;
+  line2?: string | null;
+};
+
+function formatJpAddress(addr: StripeAddress | null | undefined): string {
+  if (!addr) return '—';
+  const postal = addr.postal_code ? `〒${addr.postal_code} ` : '';
+  const parts = [addr.state, addr.city, addr.line1, addr.line2].filter(Boolean).join('');
+  return `${postal}${parts}` || '—';
+}
+
 async function sendOrderConfirmationEmail(session: Stripe.Checkout.Session) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -124,6 +154,108 @@ ${isRush ? `<div class="row"><span class="label">特急割増</span><span class=
   console.log('[webhook] Order confirmation email sent to', email);
 }
 
+async function sendSimpleOrderEmail(session: Stripe.Checkout.Session) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.log('[webhook] RESEND_API_KEY not configured, skipping order email');
+    return;
+  }
+
+  const email = session.customer_details?.email;
+  if (!email) {
+    console.warn('[webhook] No customer email on session, skipping order email');
+    return;
+  }
+
+  const meta = session.metadata || {};
+  const name = session.customer_details?.name || 'お客様';
+  const productLabel = String(meta.product_name || meta.product || 'ご注文商品');
+  const qty = Number(meta.quantity || 1);
+  const unitYen = Number(meta.unit_yen || 0);
+  const totalYen = Number(meta.total_yen || session.amount_total || 0);
+  const shippingMethod = String(meta.shipping_method || 'クリックポスト（送料込）');
+  const shipDate = toIsoDate(addBusinessDays(new Date(), 3));
+
+  const shipping = (session as unknown as { shipping_details?: { address?: StripeAddress; name?: string } }).shipping_details;
+  const addr = shipping?.address || (session.customer_details?.address as StripeAddress | undefined);
+  const recipientName = shipping?.name || name;
+
+  const fromAddress = process.env.CONTACT_FROM || 'IRONWORKS ado <noreply@tantetuzest.com>';
+
+  const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+<style>body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f9f9f9;color:#333;margin:0;padding:0;}
+.wrap{max-width:600px;margin:40px auto;background:#fff;border:1px solid #e0e0e0;}
+.header{background:#0e0e0e;color:#f5f5f5;padding:24px 32px;}
+.header h1{font-size:13px;letter-spacing:0.3em;text-transform:uppercase;margin:0;font-weight:400;}
+.header span{color:#c8a96e;}.body{padding:32px;font-size:14px;line-height:1.9;color:#444;}
+.body p{margin:0 0 16px;}.divider{border:none;border-top:1px solid #e0e0e0;margin:24px 0;}
+.section-title{font-size:12px;letter-spacing:0.2em;color:#888;text-transform:uppercase;margin:24px 0 12px;}
+.summary{background:#f9f9f9;border-left:3px solid #c8a96e;padding:16px 20px;font-size:13px;color:#555;}
+.row{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #f0f0f0;}
+.row:last-child{border-bottom:none;}
+.label{color:#888;font-size:12px;min-width:130px;}
+.value{color:#222;font-size:13px;flex:1;}
+.total{font-size:18px;color:#0e0e0e;font-weight:600;text-align:right;padding:16px 0;border-top:2px solid #0e0e0e;margin-top:12px;}
+.footer{background:#0e0e0e;padding:20px 32px;text-align:center;}
+.footer p{font-size:11px;color:#999;letter-spacing:0.1em;margin:0 0 6px;line-height:1.8;}
+.footer span{color:#c8a96e;}</style>
+</head><body><div class="wrap">
+<div class="header"><h1>IRONWORKS <span>ado</span> — ご注文ありがとうございます</h1></div>
+<div class="body">
+<p>${esc(name)} 様</p>
+<p>この度は IRONWORKS ado をご利用いただき、誠にありがとうございます。<br>下記の内容でご注文を承りました。</p>
+
+<div class="section-title">ご注文内容</div>
+<div class="summary">
+<div class="row"><span class="label">商品</span><span class="value">${esc(productLabel)}</span></div>
+<div class="row"><span class="label">数量</span><span class="value">${qty}個</span></div>
+<div class="row"><span class="label">単価</span><span class="value">¥${unitYen.toLocaleString()}（税込・送料込）</span></div>
+<div class="row"><span class="label">配送方法</span><span class="value">${esc(shippingMethod)}</span></div>
+<div class="total">合計: ¥${totalYen.toLocaleString()}（税込）</div>
+</div>
+
+<div class="section-title">お届け先</div>
+<div class="summary">
+<div class="row"><span class="label">お名前</span><span class="value">${esc(recipientName)} 様</span></div>
+<div class="row"><span class="label">ご住所</span><span class="value">${esc(formatJpAddress(addr))}</span></div>
+<div class="row"><span class="label">発送予定</span><span class="value">${formatJpDate(shipDate)}頃（${esc(shippingMethod)}）</span></div>
+</div>
+
+<hr class="divider">
+<p style="font-size:12px;color:#888;">
+クリックポストは投函配達のため、お届け日時のご指定はできません。発送後 2〜3 日でお届け予定です。<br>
+適格請求書（領収書PDF）は別途 Stripe よりメールにてお送りいたします。<br>
+ご不明点はお気軽にお問い合わせください: <a href="mailto:ado@tantetuzest.com" style="color:#c8a96e;">ado@tantetuzest.com</a>
+</p>
+<p style="font-size:11px;color:#aaa;">注文番号: ${esc(session.id)}</p>
+</div>
+<div class="footer">
+<p>鍛鉄工房ZEST（蠣崎 良治） / IRONWORKS <span>ado</span></p>
+<p>〒265-0052 千葉県千葉市若葉区和泉町239-2 / TEL 070-3817-0659</p>
+<p>適格請求書発行事業者登録番号: T7810771171765</p>
+</div>
+</div></body></html>`;
+
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: fromAddress,
+      to: [email],
+      bcc: ['ado@tantetuzest.com'],
+      subject: `【IRONWORKS ado】ご注文を承りました — ${productLabel} × ${qty}`,
+      html,
+    }),
+  });
+
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error((e as { message?: string }).message || 'order email failed');
+  }
+
+  console.log('[webhook] Simple order confirmation email sent to', email);
+}
+
 async function createCalendarEvents(session: Stripe.Checkout.Session) {
   // Google Calendar API（環境変数が設定されている場合のみ）
   if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY || !process.env.GOOGLE_CALENDAR_ID) {
@@ -182,6 +314,55 @@ async function createCalendarEvents(session: Stripe.Checkout.Session) {
   console.log('[webhook] Created ' + events.length + ' calendar events for ' + productLabel);
 }
 
+async function createSimpleCalendarEvent(session: Stripe.Checkout.Session) {
+  if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY || !process.env.GOOGLE_CALENDAR_ID) {
+    console.log('[webhook] Google Calendar not configured, skipping');
+    return;
+  }
+
+  const { google } = await import('googleapis');
+  const meta = session.metadata || {};
+  const email = session.customer_details?.email || '不明';
+  const name = session.customer_details?.name || '—';
+
+  const shipping = (session as unknown as { shipping_details?: { address?: StripeAddress; name?: string } }).shipping_details;
+  const addr = shipping?.address || (session.customer_details?.address as StripeAddress | undefined);
+  const recipientName = shipping?.name || name;
+
+  const productLabel = String(meta.product_name || meta.product || 'ご注文商品');
+  const qty = Number(meta.quantity || 1);
+  const totalYen = Number(meta.total_yen || session.amount_total || 0);
+  const shippingMethod = String(meta.shipping_method || 'クリックポスト（送料込）');
+  const shipDate = toIsoDate(addBusinessDays(new Date(), 3));
+
+  const auth = new google.auth.GoogleAuth({
+    credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY),
+    scopes: ['https://www.googleapis.com/auth/calendar'],
+  });
+  const calendar = google.calendar({ version: 'v3', auth });
+
+  const description = [
+    `商品: ${productLabel} × ${qty}`,
+    `合計: ¥${totalYen.toLocaleString()}（税込・送料込）`,
+    `配送: ${shippingMethod}`,
+    `お客様: ${recipientName} <${email}>`,
+    `住所: ${formatJpAddress(addr)}`,
+    `\nStripe Session: ${session.id}`,
+  ].filter(Boolean).join('\n');
+
+  await calendar.events.insert({
+    calendarId: process.env.GOOGLE_CALENDAR_ID,
+    requestBody: {
+      summary: `発送TODO — ${productLabel} × ${qty}`,
+      description,
+      start: { date: shipDate },
+      end: { date: shipDate },
+    },
+  });
+
+  console.log('[webhook] Created shipping TODO calendar event for ' + productLabel + ' on ' + shipDate);
+}
+
 export async function POST(request: NextRequest) {
   const sig = request.headers.get('stripe-signature');
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -211,10 +392,20 @@ export async function POST(request: NextRequest) {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
-    console.log('[webhook] checkout.session.completed for', session.metadata?.product_name);
+    const meta = session.metadata || {};
+    const isSimpleProduct = meta.product_type === 'simple';
+    console.log(
+      '[webhook] checkout.session.completed for',
+      meta.product_name,
+      isSimpleProduct ? '[SimpleProduct]' : '[手すり]'
+    );
 
     try {
-      await createCalendarEvents(session);
+      if (isSimpleProduct) {
+        await createSimpleCalendarEvent(session);
+      } else {
+        await createCalendarEvents(session);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       console.error('[webhook] Calendar error:', message);
@@ -222,7 +413,11 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      await sendOrderConfirmationEmail(session);
+      if (isSimpleProduct) {
+        await sendSimpleOrderEmail(session);
+      } else {
+        await sendOrderConfirmationEmail(session);
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       console.error('[webhook] Order email error:', message);
