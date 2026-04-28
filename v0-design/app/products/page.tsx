@@ -9,6 +9,7 @@ import { Footer } from "@/components/footer"
 import { CATALOG_PRODUCTS, CATEGORIES, type CategoryKey } from "@/lib/products/catalog"
 import { galleryUrl } from "@/lib/products/display"
 import { ExternalLink } from "lucide-react"
+import { PrimaryCTA } from "@/components/ui/primary-cta"
 
 type FilterKey = CategoryKey | "all"
 
@@ -121,12 +122,9 @@ export default function ProductListPage() {
                 掲載製品以外のデザイン・サイズ・仕様にも対応します。まずはお気軽にお問い合わせください。
               </p>
             </div>
-            <a
-              href="/contact"
-              className="inline-block px-6 py-3 border border-gold text-gold text-[10px] tracking-[0.2em] uppercase rounded-full hover:bg-gold hover:text-dark transition-colors whitespace-nowrap text-center"
-            >
+            <PrimaryCTA href="/contact" variant="gold" size="md" withShimmer={true}>
               お問い合わせ
-            </a>
+            </PrimaryCTA>
           </div>
         </div>
       </main>

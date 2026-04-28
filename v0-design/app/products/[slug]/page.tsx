@@ -7,6 +7,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { PrimaryCTA } from "@/components/ui/primary-cta"
 import { ReneDrawingModal } from "@/components/drawing-modal/rene-drawing-modal"
 import { InlineRailSimulator } from "@/components/drawing-modal/inline-rail-simulator"
 import { ZakinEditor, type ZakinState } from "@/components/drawing-modal/zakin-editor"
@@ -772,30 +773,27 @@ export default function ProductDetailPage() {
                           {checkoutError}
                         </div>
                       )}
-                      <motion.button
-                        onClick={handleCheckout}
-                        whileHover={{ scale: prices.shippingInquiry || isCheckingOut ? 1 : 1.02 }}
-                        whileTap={{ scale: prices.shippingInquiry || isCheckingOut ? 1 : 0.98 }}
-                        disabled={prices.shippingInquiry || isCheckingOut}
-                        className={`w-full py-5 font-serif text-[17px] font-bold rounded-md relative overflow-hidden group ${
-                          prices.shippingInquiry
-                            ? "bg-muted text-muted-foreground cursor-not-allowed"
-                            : isCheckingOut
-                              ? "bg-gold/70 text-white cursor-wait"
-                              : "bg-gold text-white"
-                        }`}
-                      >
-                        <span className="relative z-10">
-                          {prices.shippingInquiry
-                            ? "要問い合わせ（別途見積もり）"
-                            : isCheckingOut
-                              ? "購入ページへ移動中…"
-                              : "購入手続きへ進む ▸"}
-                        </span>
-                        {!prices.shippingInquiry && !isCheckingOut && (
-                          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                        )}
-                      </motion.button>
+                      {prices.shippingInquiry ? (
+                        <button
+                          disabled
+                          className="w-full py-5 font-serif text-[17px] font-bold rounded-md bg-muted text-muted-foreground cursor-not-allowed"
+                        >
+                          要問い合わせ（別途見積もり）
+                        </button>
+                      ) : (
+                        <div className="flex justify-center">
+                          <PrimaryCTA
+                            onClick={handleCheckout}
+                            disabled={isCheckingOut}
+                            variant="purchase"
+                            size="lg"
+                            withArrow
+                            className={isCheckingOut ? "cursor-wait" : ""}
+                          >
+                            {isCheckingOut ? "購入ページへ移動中…" : "購入手続きへ進む"}
+                          </PrimaryCTA>
+                        </div>
+                      )}
                       <Link
                         href="/contact"
                         className="block w-full py-4 border border-border text-foreground text-[15px] font-medium rounded-md hover:border-gold hover:text-gold transition-colors text-center"
@@ -917,13 +915,16 @@ export default function ProductDetailPage() {
                   {length}mm · {quantity}本{prefecture ? ` · ${prefecture}` : " · 配送先未選択"}
                 </div>
               </div>
-              <button
+              <PrimaryCTA
                 onClick={handleCheckout}
                 disabled={isCheckingOut}
-                className="shrink-0 bg-gold hover:bg-gold/90 disabled:bg-gold/70 text-white font-serif font-bold text-[14px] px-4 py-3 rounded-md transition-colors whitespace-nowrap"
+                variant="purchase"
+                size="md"
+                withArrow
+                className="shrink-0 whitespace-nowrap"
               >
-                {isCheckingOut ? "移動中…" : "購入手続き ▸"}
-              </button>
+                {isCheckingOut ? "移動中…" : "購入手続き"}
+              </PrimaryCTA>
             </div>
           </motion.div>
         )}

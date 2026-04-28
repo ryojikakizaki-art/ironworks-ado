@@ -17,6 +17,8 @@ export interface SimpleProduct {
   /** 画像ファイル名（/public/images/products/{slug}/{filename} に配置） */
   images: string[]
   basePrice: number // 0 = 要見積もり
+  /** true なら価格表示を「税込・送料込」に切り替え（小物・定形外配送商品向け） */
+  shippingIncluded?: boolean
   badge?: string
   /** 旧 STORES URL（参考・移行期間中の補助リンク） */
   storesUrl?: string
@@ -650,6 +652,42 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
     ],
     basePrice: 0,
     storesUrl: "https://ironworks-ado.stores.jp/items/64be2861d397ae002db004cd",
+  },
+  "range-hood-hook": {
+    slug: "range-hood-hook",
+    nameEn: "Range Hood Hook",
+    nameJa: "レンジフードフック",
+    category: "アイアン雑貨",
+    subtitle: "レンジフードフック ・ 全長 7.5cm ・ 黒皮蜜蝋仕上げ",
+    shortDescription: "レンジフードのヘリに引っ掛けるだけ。鍛冶職人による鍛造アイアンフック",
+    longDescription:
+      "レンジフードのヘリに、引っ掛けるだけで使える鍛造アイアンフックです。穴あけや金具の追加は一切不要。賃貸住宅でも気兼ねなくお使いいただけます。\n\n鍛冶職人がフラットバーを一本ずつ火造りで成形しており、上部はレンジフードの厚みにぴったり合うよう Ｃ字に巻き、下部は鍋やフライパンの取手・吊り下げ穴を確実に受け止めるよう小さな返しを付けています。指で曲げ角度の微調整も可能です。\n\n素材は無垢鉄。鍛造後の表面に残る黒皮の質感に、蜜蝋（ミツロウ）を熱して焼き付けてコーティングしています。塗装にはない、しっとりとした鉄本来の表情が楽しめます。深いブラックの鍛造アイアンが、毎日の調理空間を引き締めてくれます。\n\n全長 7.5cm・重さ 29g の手のひらサイズ。クリックポストでお届けします（送料込み）。\n\n● 取付方法\nレンジフード下端のヘリに、上部 C 字部分を引っ掛けるだけ。工具不要。\n\n● 使用上の注意\n・直火やコンロの真上、油の飛沫が直接かかる位置への取付は避けてください。\n・湿度の高い環境での長時間使用はおすすめできません（蜜蝋仕上げのため）。\n・万が一錆が出てきた場合は、乾いた布で拭き取り、食用オイルを薄く塗布することで進行を抑えられます。\n\n角やひっかかる危ない箇所がないよう丁寧に仕上げておりますので、安心してお使いいただけます。これから毎日お使いいただく方の心豊かな暮らしを思い、制作しております。",
+    specs: [
+      { label: "タイプ", value: "レンジフード用 引っ掛けフック" },
+      { label: "素材", value: "無垢鉄（フラットバー・火造り鍛造）" },
+      { label: "仕上げ", value: "黒皮蜜蝋仕上げ" },
+      { label: "全長", value: "7.5cm" },
+      { label: "重量", value: "29g" },
+      { label: "取付", value: "工具不要・穴あけ不要（レンジフードのヘリに掛けるだけ）" },
+      { label: "用途", value: "鍋・フライパン・調理小物の吊り下げ収納" },
+      { label: "配送", value: "クリックポスト（送料込み）" },
+      { label: "注意", value: "直火・コンロ真上・油はね位置への取付不可" },
+    ],
+    images: [
+      "/images/products/range-hood-hook/01.jpg",
+      "/images/products/range-hood-hook/02.jpg",
+      "/images/products/range-hood-hook/03.jpg",
+      "/images/products/range-hood-hook/04.jpg",
+      "/images/products/range-hood-hook/05.jpg",
+      "/images/products/range-hood-hook/06.jpg",
+      "/images/products/range-hood-hook/07.jpg",
+      "/images/products/range-hood-hook/08.jpg",
+      "/images/products/range-hood-hook/09.jpg",
+      "/images/products/range-hood-hook/10.jpg",
+    ],
+    basePrice: 2200,
+    shippingIncluded: true,
+    storesUrl: "https://ironworks-ado.stores.jp/items/607d8989da019c1a3aab0de4",
   },
 }
 

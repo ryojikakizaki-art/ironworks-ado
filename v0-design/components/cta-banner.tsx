@@ -2,7 +2,7 @@
 
 import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
-import { ArrowRight } from "lucide-react"
+import { PrimaryCTA } from "@/components/ui/primary-cta"
 
 export function CtaBanner() {
   const ref = useRef(null)
@@ -90,23 +90,13 @@ export function CtaBanner() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="flex flex-col sm:flex-row gap-4 justify-center"
         >
-          {/* Gold Pill Button with Shimmer */}
-          <a href="/contact" className="group relative px-10 py-4 bg-gold text-white rounded-full overflow-hidden transition-all duration-300 hover:shadow-[0_0_40px_rgba(184,134,11,0.5)] inline-block">
-            <span className="relative z-10 flex items-center justify-center gap-2 text-sm tracking-wide font-medium">
-              お問い合わせ
-              <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-            </span>
-            {/* Shimmer effect */}
-            <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-              animate={{ x: ["-100%", "200%"] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear", repeatDelay: 1 }}
-            />
-          </a>
+          <PrimaryCTA href="/contact" variant="gold" size="lg">
+            お問い合わせ
+          </PrimaryCTA>
 
-          <a href="/#lineup" className="group px-10 py-4 border border-white/30 text-white rounded-full transition-all duration-300 hover:bg-white hover:text-dark hover:border-white inline-block">
-            <span className="text-sm tracking-wide">製品を見る</span>
-          </a>
+          <PrimaryCTA href="/#lineup" variant="ghost-light" size="lg" withArrow={false}>
+            製品を見る
+          </PrimaryCTA>
         </motion.div>
 
         {/* Contact Info */}
