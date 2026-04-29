@@ -774,6 +774,72 @@ export default function GalvanizingPage() {
           </div>
         </section>
 
+        {/* ════════════ Section 02.5 — Atelier (real production footage) ════════════ */}
+        <section id="atelier" className="bg-dark text-white py-20 lg:py-28">
+          <div className="max-w-[1200px] mx-auto px-5 lg:px-8 grid lg:grid-cols-12 gap-8 lg:gap-12">
+            <aside className="lg:col-span-3">
+              <div className="lg:sticky lg:top-24">
+                <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Atelier</p>
+                <h2 className="font-serif text-3xl lg:text-5xl text-white leading-none">制作風景</h2>
+                <p className="text-[12px] text-white/50 mt-3">千葉の工房・実映像</p>
+              </div>
+            </aside>
+            <div className="lg:col-span-9 scroll-mt-24">
+              <p className="text-[15px] leading-[1.95] text-white/80 mb-8 max-w-2xl">
+                ado の屋外用手すりが、千葉の工房で 1 本ずつ手作業で生まれていく様子。
+                製作・素地調整・塗装の各工程を、実際の動画と作業写真でご覧いただけます。
+              </p>
+
+              {/* Digest video — autoplay, muted, looped */}
+              <div className="relative w-full aspect-video overflow-hidden rounded-md bg-secondary mb-8">
+                <video
+                  src="/videos/galvanizing-digest.mp4"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              </div>
+
+              {/* 6-still gallery — production process */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
+                {[
+                  { src: "P1700603", caption: "アングルグラインダーで素地調整" },
+                  { src: "P1700610", caption: "防塵マスクでの塗装作業" },
+                  { src: "P1700608", caption: "完成直前の手すり枠" },
+                  { src: "P1700611", caption: "スプレーガンで均一に吹き付け" },
+                  { src: "P1700609", caption: "鉄の馬と作業台" },
+                  { src: "P1700600", caption: "メッキ仕上げ面のテクスチャ" },
+                ].map((still) => (
+                  <div
+                    key={still.src}
+                    className="relative aspect-[4/3] overflow-hidden rounded-sm bg-black"
+                  >
+                    <Image
+                      src={`/images/process/galvanizing-stills/${still.src}.jpg`}
+                      alt={still.caption}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 33vw"
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2 lg:p-3">
+                      <p className="text-[10px] lg:text-[11px] text-white/90 leading-tight">
+                        {still.caption}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[11px] text-white/50 mt-4 leading-relaxed">
+                ※ 千葉の工房での実際の制作工程動画より抜粋。
+                すべての屋外用手すりはこの工程を経て、溶融亜鉛メッキ後にお届けします。
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* ════════════ Section 03 — Stories ════════════ */}
         <section id="stories" className="border-y border-border bg-card/30 py-20 lg:py-28">
           <div className="max-w-[1200px] mx-auto px-5 lg:px-8 grid lg:grid-cols-12 gap-8 lg:gap-12">
