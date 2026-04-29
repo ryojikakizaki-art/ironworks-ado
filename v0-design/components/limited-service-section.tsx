@@ -22,10 +22,10 @@ const services = [
   },
   {
     icon: Truck,
-    title: "全国配送",
-    description: "北海道から沖縄まで、全国どこでも丁寧にお届け。",
-    backTitle: "安心の配送",
-    backDescription: "専用の梱包で破損を防止。30,000円以上で送料無料。設置サービスも対応可能。",
+    title: "送料見積り",
+    description: "北海道から沖縄まで、ご希望の配送先までお届けいたします。",
+    backTitle: "ご依頼に合わせた個別見積もり",
+    backDescription: "送料はサイズ・配送先により変動するため、ご依頼内容に応じて個別にお見積もりいたします。設置をご希望の場合は施工費を別途ご案内します。",
   },
   {
     icon: LineIcon,
