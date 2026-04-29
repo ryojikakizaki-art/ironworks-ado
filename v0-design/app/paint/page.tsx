@@ -18,30 +18,25 @@ const stats = [
   { value: "自動車", unit: "仕様", label: "プロ塗装グレード", desc: "工業製品と同じグレード" },
 ]
 
-const processSteps = [
+// 写真の 3 段階（PREP / MIX / SPRAY）に合わせた工程説明
+const processStages = [
   {
     no: "01",
-    title: "素地調整",
-    desc: "脱脂・研磨でサビと油分を除去",
-    icon: "polish",
+    label: "PREP",
+    titleJa: "素地調整",
+    desc: "サンドペーパーで脱脂・研磨。塗料の密着性を左右する最も重要な土台づくり。サビや油分を残したまま塗ると、どれだけ良い塗料でも数年で剥がれてしまいます。",
   },
   {
     no: "02",
-    title: "下塗り（プライマー）",
-    desc: "鉄素地と上塗りを密着させる橋渡し",
-    icon: "primer",
+    label: "MIX",
+    titleJa: "主剤と硬化剤の調合",
+    desc: "主剤（ポリオール樹脂）と硬化剤（イソシアネート）を正確な比率で混合。混合した瞬間から化学反応が始まり、可使時間内に塗り切る必要があります。",
   },
   {
     no: "03",
-    title: "上塗り（2 液ウレタン）",
-    desc: "主剤＋硬化剤を調合し化学硬化",
-    icon: "spray",
-  },
-  {
-    no: "04",
-    title: "仕上げ検品",
-    desc: "ムラ・タレを目視確認し納品",
-    icon: "inspect",
+    label: "SPRAY",
+    titleJa: "塗装（スプレーガン）",
+    desc: "プロ仕様のスプレーガンで均一に吹き付け。プライマー → 中塗り → 上塗りと層を重ね、厚く強靭な塗膜を形成します。",
   },
 ] as const
 
@@ -224,59 +219,6 @@ function FilmCrossSectionDiagram() {
       <text x="400" y="312" textAnchor="middle" fill="#666" fontSize="10">
         ado は自動車塗装と同じ 2 液型ウレタンを採用
       </text>
-    </svg>
-  )
-}
-
-// ════════════ プロセスアイコン (素地→プライマー→ウレタン→検品) ════════════
-function ProcessIcon({ kind }: { kind: "polish" | "primer" | "spray" | "inspect" }) {
-  if (kind === "polish") {
-    // 素地調整: 鉄板 + サンドペーパー
-    return (
-      <svg viewBox="0 0 80 80" className="w-full h-full">
-        <rect x="14" y="42" width="52" height="22" fill="#666" stroke="#999" strokeWidth="1.2" />
-        <rect x="20" y="28" width="40" height="14" rx="2" fill="#b8860b" stroke="#8a6c0d" strokeWidth="1" transform="rotate(-12 40 35)" />
-        <line x1="22" y1="44" x2="58" y2="44" stroke="#999" strokeWidth="0.6" strokeDasharray="2 2" />
-        <line x1="22" y1="50" x2="58" y2="50" stroke="#999" strokeWidth="0.6" strokeDasharray="2 2" />
-        <line x1="22" y1="56" x2="58" y2="56" stroke="#999" strokeWidth="0.6" strokeDasharray="2 2" />
-      </svg>
-    )
-  }
-  if (kind === "primer") {
-    // プライマー: 刷毛
-    return (
-      <svg viewBox="0 0 80 80" className="w-full h-full">
-        <rect x="20" y="46" width="44" height="14" rx="2" fill="#b8b8b8" stroke="#888" strokeWidth="1.2" />
-        <rect x="14" y="40" width="14" height="26" rx="2" fill="#8a6c0d" stroke="#6a4f10" strokeWidth="1" />
-        <path d="M14,40 L8,32 L14,32 Z" fill="#6a4f10" />
-        <line x1="40" y1="60" x2="40" y2="70" stroke="#b8b8b8" strokeWidth="0.6" />
-        <line x1="48" y1="60" x2="48" y2="70" stroke="#b8b8b8" strokeWidth="0.6" />
-        <line x1="56" y1="60" x2="56" y2="70" stroke="#b8b8b8" strokeWidth="0.6" />
-      </svg>
-    )
-  }
-  if (kind === "spray") {
-    // 上塗り: スプレーガン
-    return (
-      <svg viewBox="0 0 80 80" className="w-full h-full">
-        <rect x="14" y="34" width="32" height="14" rx="3" fill="#888" stroke="#555" strokeWidth="1.2" />
-        <rect x="20" y="48" width="10" height="16" rx="2" fill="#888" stroke="#555" strokeWidth="1.2" />
-        <circle cx="22" cy="40" r="6" fill="#b8860b" stroke="#8a6c0d" strokeWidth="1" />
-        <line x1="46" y1="41" x2="56" y2="38" stroke="#b8860b" strokeWidth="1.5" />
-        <line x1="46" y1="41" x2="58" y2="42" stroke="#b8860b" strokeWidth="1.5" />
-        <line x1="46" y1="41" x2="56" y2="46" stroke="#b8860b" strokeWidth="1.5" />
-        <circle cx="62" cy="38" r="1.2" fill="#b8860b" />
-        <circle cx="64" cy="44" r="1.2" fill="#b8860b" />
-        <circle cx="60" cy="48" r="1.2" fill="#b8860b" />
-      </svg>
-    )
-  }
-  // inspect: ルーペ + チェックマーク
-  return (
-    <svg viewBox="0 0 80 80" className="w-full h-full">
-      <circle cx="34" cy="36" r="14" fill="none" stroke="#666" strokeWidth="2" />
-      <line x1="44" y1="46" x2="58" y2="60" stroke="#666" strokeWidth="3" strokeLinecap="round" />
-      <path d="M28,36 L33,42 L42,30" fill="none" stroke="#b8860b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -479,21 +421,12 @@ export default function PaintPage() {
         </section>
 
         <div className="max-w-[880px] mx-auto px-4 lg:px-8 py-16 space-y-16">
-          {/*
-            Hero image slot
-            ───────────────
-            ChatGPT 等で生成した画像を v0-design/public/images/process/hero-paint.jpg
-            に配置し、下の src を差し替えてください。プロンプト例:
-            "鍛冶職人が鉄製ハンドレールに 2 液型ウレタン塗装をスプレーガンで吹き付けている、
-             プロ仕様のワークショップ、暖色系ライティング、黒×ゴールドのトーン、
-             16:9、フォトリアリスティック"
-            現在は既存の greeting-craft.jpg をプレースホルダーとして使用。
-          */}
+          {/* Hero image — 鉄手すりへスプレーガンで 2 液型ウレタン塗装中 */}
           <section>
-            <div className="relative w-full aspect-[16/9] overflow-hidden rounded-md bg-secondary">
+            <div className="relative w-full aspect-[3/2] overflow-hidden rounded-md bg-secondary">
               <Image
-                src="/images/greeting-craft.jpg"
-                alt="鍛冶職人による塗装工程"
+                src="/images/process/hero-paint-spray.jpg"
+                alt="鉄手すりにスプレーガンで 2 液型ウレタン塗装を施している様子"
                 fill
                 sizes="(max-width: 880px) 100vw, 880px"
                 priority
@@ -518,30 +451,50 @@ export default function PaintPage() {
             </div>
           </section>
 
-          {/* Process Steps with arrows */}
+          {/* Process Steps — 写真ベース PREP / MIX / SPRAY */}
           <section>
-            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-6">塗装工程</h2>
-            <div className="grid md:grid-cols-4 gap-4 md:gap-2">
-              {processSteps.map((s, i) => (
-                <div key={s.no} className="relative flex flex-col items-center text-center md:text-left md:items-start">
-                  <div className="w-16 h-16 mb-3 rounded-full border border-gold/30 bg-card flex items-center justify-center text-gold">
-                    <ProcessIcon kind={s.icon} />
+            <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Process</p>
+            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-4 pb-3 border-b border-border">
+              塗装工程
+            </h2>
+            <p className="text-[14px] leading-[2] text-foreground/80 mb-6">
+              職人がすべて手作業で行う 3 つの主要工程と、最後の検品です。
+            </p>
+
+            {/* 3-step photo */}
+            <div className="relative w-full aspect-[3/2] overflow-hidden rounded-md bg-secondary mb-6">
+              <Image
+                src="/images/process/paint-process-3step.jpg"
+                alt="塗装工程 PREP / MIX / SPRAY の 3 段階"
+                fill
+                sizes="(max-width: 880px) 100vw, 880px"
+                className="object-cover"
+              />
+            </div>
+
+            {/* 3 stage descriptions */}
+            <div className="grid md:grid-cols-3 gap-4 mb-6">
+              {processStages.map((s) => (
+                <div
+                  key={s.label}
+                  className="border border-border bg-card rounded-md p-5"
+                >
+                  <div className="flex items-baseline gap-2 mb-2">
+                    <span className="font-serif text-2xl text-gold leading-none">{s.no}</span>
+                    <span className="text-[10px] tracking-[0.2em] uppercase text-gold">{s.label}</span>
                   </div>
-                  <span className="text-[10px] tracking-[0.2em] text-gold mb-1">STEP {s.no}</span>
-                  <h3 className="font-serif text-base text-foreground mb-2">{s.title}</h3>
-                  <p className="text-[12px] leading-[1.7] text-muted-foreground">{s.desc}</p>
-                  {i < processSteps.length - 1 && (
-                    <div
-                      aria-hidden="true"
-                      className="hidden md:block absolute top-7 -right-2 text-gold"
-                    >
-                      <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor">
-                        <polygon points="0,0 10,5 0,10" />
-                      </svg>
-                    </div>
-                  )}
+                  <h3 className="font-serif text-base text-foreground mb-2">{s.titleJa}</h3>
+                  <p className="text-[12px] leading-[1.85] text-muted-foreground">{s.desc}</p>
                 </div>
               ))}
+            </div>
+
+            {/* 4th step inline note */}
+            <div className="flex items-start gap-3 px-4 py-3 border-l-2 border-gold bg-secondary/30 rounded-r-md">
+              <span className="text-[10px] tracking-[0.2em] uppercase text-gold mt-1 shrink-0">STEP 04</span>
+              <p className="text-[12px] leading-[1.85] text-foreground/80">
+                <strong className="text-foreground">仕上げ検品</strong> — 塗装後、ムラ・タレを目視確認のうえで納品します。微細な傷や色ムラがあれば、職人の手で再仕上げを行います。
+              </p>
             </div>
           </section>
 
