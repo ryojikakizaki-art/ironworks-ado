@@ -787,8 +787,19 @@ export default function GalvanizingPage() {
             <div className="lg:col-span-9 scroll-mt-24">
               <p className="text-[15px] leading-[1.95] text-white/80 mb-8 max-w-2xl">
                 ado の屋外用手すりが、千葉の工房で 1 本ずつ手作業で生まれていく様子。
-                製作・素地調整・塗装の各工程を、実際の動画と作業写真でご覧いただけます。
+                製作 → メッキ工場 → 戻し作業 → 塗装の各工程を、実際の動画と作業写真でご覧いただけます。
               </p>
+
+              {/* Craft note — post-galvanizing grinding technique */}
+              <div className="border-l-2 border-gold pl-5 lg:pl-6 py-1 mb-8 max-w-2xl">
+                <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">Craft Note</p>
+                <p className="text-[13px] lg:text-[14px] leading-[1.95] text-white/75">
+                  動画のグラインダー作業は、<strong className="text-white">メッキ工場から戻ってきた直後</strong>の手すりを仕上げる工程です。
+                  亜鉛メッキ後はどうしてもバリや表面の凹凸が残るため、
+                  <strong className="text-gold">メッキ層を削りすぎないよう注意しながら</strong>平らに整えています。
+                  一見地味ですが、塗装の密着と仕上がりの美しさを左右する繊細な作業です。
+                </p>
+              </div>
 
               {/* Digest video — autoplay, muted, looped */}
               <div className="relative w-full aspect-video overflow-hidden rounded-md bg-secondary mb-8">
@@ -806,7 +817,7 @@ export default function GalvanizingPage() {
               {/* 6-still gallery — production process */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
                 {[
-                  { src: "P1700603", caption: "アングルグラインダーで素地調整" },
+                  { src: "P1700603", caption: "メッキ後のバリ取り・表面平滑化（メッキ層を削りすぎないよう注意）" },
                   { src: "P1700610", caption: "防塵マスクでの塗装作業" },
                   { src: "P1700608", caption: "完成直前の手すり枠" },
                   { src: "P1700611", caption: "スプレーガンで均一に吹き付け" },
