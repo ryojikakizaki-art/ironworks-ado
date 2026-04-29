@@ -216,7 +216,7 @@ export async function POST(request: NextRequest) {
       ],
       mode: 'payment',
       success_url: `${baseUrl}/thanks?session_id={CHECKOUT_SESSION_ID}&product=${productKey}&length=${L}&rush=${rushDelivery ? '1' : '0'}`,
-      cancel_url:  `${baseUrl}/item/${productKey}`,
+      cancel_url:  `${baseUrl}/products/${productKey}`,
       metadata: {
         product:                productKey,
         product_name:           prod.name,
