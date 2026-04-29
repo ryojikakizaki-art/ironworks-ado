@@ -18,10 +18,59 @@ const productLabels: Record<string, string> = {
   other: 'その他・複数',
 };
 
+// ── 添付ファイル制約 ──
+const MAX_FILES = 5;
+const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB / file
+const MAX_TOTAL_BYTES = 25 * 1024 * 1024; // 25 MB total
+const ALLOWED_FILE_TYPES = new Set([
+  'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif',
+  'application/pdf',
+]);
+
+interface ResendAttachment {
+  filename: string;
+  content: string; // base64
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { name, name_kana, email, category, product, message } = body || {};
+    let name = '', name_kana = '', email = '', category = '', product = '', message = '';
+    const attachments: ResendAttachment[] = [];
+
+    const ct = request.headers.get('content-type') || '';
+    if (ct.startsWith('multipart/form-data')) {
+      const fd = await request.formData();
+      name = String(fd.get('name') || '');
+      name_kana = String(fd.get('name_kana') || '');
+      email = String(fd.get('email') || '');
+      category = String(fd.get('category') || '');
+      product = String(fd.get('product') || '');
+      message = String(fd.get('message') || '');
+
+      const fileEntries = fd.getAll('attachments').filter((v): v is File => v instanceof File);
+      if (fileEntries.length > MAX_FILES) {
+        return NextResponse.json({ error: `添付ファイルは最大 ${MAX_FILES} 件までです` }, { status: 400 });
+      }
+      let total = 0;
+      for (const f of fileEntries) {
+        if (!ALLOWED_FILE_TYPES.has(f.type)) {
+          return NextResponse.json({ error: `「${f.name}」はサポート外の形式です` }, { status: 400 });
+        }
+        if (f.size > MAX_FILE_BYTES) {
+          return NextResponse.json({ error: `「${f.name}」は容量上限を超えています` }, { status: 400 });
+        }
+        total += f.size;
+        if (total > MAX_TOTAL_BYTES) {
+          return NextResponse.json({ error: `添付ファイルの合計サイズが上限を超えています` }, { status: 400 });
+        }
+        const buf = Buffer.from(await f.arrayBuffer());
+        attachments.push({ filename: f.name, content: buf.toString('base64') });
+      }
+    } else {
+      // 互換: 旧 JSON クライアント（添付なし）
+      const body = await request.json();
+      ({ name, name_kana, email, category, product, message } = body || {});
+    }
 
     if (!name || !email || !category || !message) {
       return NextResponse.json({ error: '必須項目が不足しています' }, { status: 400 });
@@ -54,6 +103,7 @@ export async function POST(request: NextRequest) {
 <div class="row"><span class="label">種別</span><span class="value">${esc(categoryLabel)}</span></div>
 <div class="row"><span class="label">対象製品</span><span class="value">${esc(productLabel)}</span></div>
 <div class="row"><span class="label">内容</span><span class="value"><div class="msg">${esc(message)}</div></span></div>
+${attachments.length > 0 ? `<div class="row"><span class="label">添付ファイル</span><span class="value">${attachments.length} 件 — ${attachments.map(a => esc(a.filename)).join(', ')}</span></div>` : ''}
 </div>
 <div class="footer">送信日時: ${new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })} JST</div>
 </div></body></html>`;
@@ -80,6 +130,7 @@ export async function POST(request: NextRequest) {
 <div class="summary">
 <p><strong>種別：</strong>${esc(categoryLabel)}</p>
 <p><strong>対象製品：</strong>${esc(productLabel)}</p>
+${attachments.length > 0 ? `<p><strong>添付ファイル：</strong>${attachments.length} 件（${attachments.map(a => esc(a.filename)).join(', ')}）</p>` : ''}
 <p style="margin-top:12px;white-space:pre-wrap;">${esc(message)}</p>
 </div>
 <hr class="divider">
@@ -92,13 +143,19 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.RESEND_API_KEY;
     if (!apiKey) throw new Error('RESEND_API_KEY not set');
 
+    const notifyPayload: Record<string, unknown> = {
+      from: fromAddress,
+      to: [toAddress],
+      reply_to: email,
+      subject: `[お問い合わせ] ${categoryLabel} — ${name} 様${attachments.length > 0 ? `（添付${attachments.length}件）` : ''}`,
+      html: notifyHtml,
+    };
+    if (attachments.length > 0) notifyPayload.attachments = attachments;
+
     const r1 = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        from: fromAddress, to: [toAddress], reply_to: email,
-        subject: `[お問い合わせ] ${categoryLabel} — ${name} 様`, html: notifyHtml,
-      }),
+      body: JSON.stringify(notifyPayload),
     });
     if (!r1.ok) {
       const e = await r1.json().catch(() => ({}));
