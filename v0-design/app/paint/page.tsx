@@ -1,154 +1,667 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import Link from "next/link"
+import Image from "next/image"
+import { PrimaryCTA } from "@/components/ui/primary-cta"
+import { galleryUrl } from "@/lib/products/display"
 
 export const metadata = {
   title: "塗装について | IRONWORKS ado",
   description:
-    "IRONWORKS ado の塗装工程と、プロ仕様の 2液型ウレタン塗装を採用する理由をご紹介します。",
+    "ado の手すりは自動車塗装と同じ 2 液型ウレタン塗装を標準採用。1 液型・焼付塗装との性能比較、工程、よくあるご質問を図解で詳しく解説します。",
 }
 
-const steps = [
+const stats = [
+  { value: "2", unit: "液型", label: "主剤＋硬化剤", desc: "化学反応で硬く強靭に" },
+  { value: "10", unit: "年+", label: "美観持続", desc: "1 液型のおおよそ 2〜3 倍" },
+  { value: "3〜5", unit: "倍", label: "材料費", desc: "1 液型対比 — それでも採用" },
+  { value: "自動車", unit: "仕様", label: "プロ塗装グレード", desc: "工業製品と同じグレード" },
+]
+
+const processSteps = [
   {
     no: "01",
     title: "素地調整",
-    desc: "溶接跡の研磨、脱脂、サビ止め処理。塗料の密着性を高める最も重要な工程です。",
+    desc: "脱脂・研磨でサビと油分を除去",
+    icon: "polish",
   },
   {
     no: "02",
     title: "下塗り（プライマー）",
-    desc: "防錆効果のあるプライマーを塗布。鉄素地と上塗り塗膜の橋渡しとなり、密着性と耐久性を向上させます。",
+    desc: "鉄素地と上塗りを密着させる橋渡し",
+    icon: "primer",
   },
   {
     no: "03",
-    title: "上塗り（2液ウレタン）",
-    desc: "主剤と硬化剤を正確な比率で調合し塗布。化学反応による硬化で、強靭で美しい塗膜を形成します。",
+    title: "上塗り（2 液ウレタン）",
+    desc: "主剤＋硬化剤を調合し化学硬化",
+    icon: "spray",
+  },
+  {
+    no: "04",
+    title: "仕上げ検品",
+    desc: "ムラ・タレを目視確認し納品",
+    icon: "inspect",
+  },
+] as const
+
+type CompRow = {
+  label: string
+  a: string
+  b: string
+  c: string
+  aLevel?: number
+  bLevel?: number
+  cLevel?: number
+}
+
+const comparison: CompRow[] = [
+  { label: "硬化方式", a: "溶剤の蒸発（自然乾燥）", b: "化学反応（架橋硬化）", c: "加熱硬化（150〜200℃）" },
+  { label: "耐久性", a: "1〜3 年で劣化", b: "10 年以上の美観", c: "10 年以上の美観", aLevel: 2, bLevel: 5, cLevel: 5 },
+  { label: "耐薬品性", a: "弱い", b: "強い", c: "極めて強い", aLevel: 2, bLevel: 4, cLevel: 5 },
+  { label: "密着性", a: "中程度", b: "極めて高い", c: "極めて高い", aLevel: 3, bLevel: 5, cLevel: 5 },
+  { label: "仕上がり", a: "薄く、ムラが出やすい", b: "厚く均一・美しい光沢", c: "均一で硬い塗膜", aLevel: 2, bLevel: 5, cLevel: 5 },
+  { label: "施工の手軽さ", a: "簡単（そのまま塗布）", b: "要技術（調合・可使時間）", c: "専用焼付炉が必要", aLevel: 5, bLevel: 3, cLevel: 1 },
+  { label: "現場補修", a: "可", b: "可", c: "不可（炉が必要）" },
+  { label: "主な用途", a: "DIY・仮塗装・補修", b: "自動車・工業製品・建築", c: "家電・自動車部品・量産" },
+]
+
+const faq = [
+  {
+    q: "塗装はどのくらいもちますか？",
+    a: "屋内・軒下・室内階段で 10 年以上美観を保てます。屋外（雨ざらし・直射日光）の場合でも、ado の 2 液型ウレタンなら 5〜8 年は綺麗な状態が続きます。雨ざらしになる屋外設置にはさらに溶融亜鉛メッキを重ねた二重防錆処理（10 年以上の耐久）をおすすめしています。",
+  },
+  {
+    q: "ホームセンターの塗料と何が違いますか？",
+    a: "ホームセンターで売られているのは 1 液型（ラッカーや水性塗料）が中心で、屋外設置だと 1〜3 年ほどで錆や色褪せが目立ってきます。ado は自動車塗装と同じ 2 液型ウレタン塗料を主剤＋硬化剤の比率で正確に調合し、化学反応で硬化させているため、塗膜の強さ・厚み・光沢がまったく違います。",
+  },
+  {
+    q: "タッチアップや塗り直しはできますか？",
+    a: "はい。設置時に初期補修用のタッチアップ剤をお付けしておりますので、設置直後の小さな傷はご自身で補修いただけます。塗料の性質上、開封後しばらくすると硬化して使えなくなりますので、その場合は新しいタッチアップ剤を改めてお送りいたします。再塗装でのお預かり対応も承っておりますので、傷が大きくなった場合はお気軽にお問い合わせください。",
+  },
+  {
+    q: "色のオーダーはできますか？",
+    a: "標準色（マットブラック / マットホワイト）以外もご相談いただけます。お打ち合わせの際にイメージや色見本をお送りいただければ、可能な範囲で調色いたします。なお、調色の有無や色の難易度によって追加費用が発生する場合がございますので、見積もり時にご案内いたします。",
+  },
+  {
+    q: "子どもやペットがいる家庭でも安全ですか？",
+    a: "完全硬化後の塗膜は化学的に安定し、塗料成分が表面に出てくることはありません。引き渡しは塗装後しばらく置いて完全硬化を確認したうえで行いますので、お子さまやペットが触れても問題ありません。施工直後に独特のにおいを感じる場合がありますが、数日で気にならなくなります。",
+  },
+  {
+    q: "メンテナンスは必要ですか？",
+    a: "屋内設置であれば、特別なメンテナンスは基本的に不要です。汚れが気になる場合は、固く絞った布で水拭きしていただくだけで十分です。研磨剤入りの洗剤や有機溶剤での清掃は塗膜を傷める可能性があるため避けてください。",
   },
 ]
 
-const comparison = [
-  { label: "硬化方式", a: "溶剤の蒸発（自然乾燥）", b: "化学反応（架橋硬化）", c: "加熱硬化（150〜200℃）" },
-  { label: "耐久性", a: "★★☆☆☆", b: "★★★★★", c: "★★★★★" },
-  { label: "耐薬品性", a: "★★☆☆☆", b: "★★★★☆", c: "★★★★★" },
-  { label: "密着性", a: "★★★☆☆", b: "★★★★★", c: "★★★★★" },
-  { label: "仕上がり", a: "薄い塗膜、ムラが出やすい", b: "厚く均一、美しい光沢", c: "均一で硬い塗膜" },
-  { label: "施工性", a: "簡単（そのまま塗れる）", b: "要技術（調合・可使時間あり）", c: "専用焼付炉が必要" },
-  { label: "コスト", a: "安価", b: "高価（材料費 約3〜5倍）", c: "非常に高価（設備費）" },
-  { label: "現場補修", a: "可能", b: "可能", c: "不可（炉が必要）" },
-  { label: "主な用途", a: "DIY、仮塗装、補修", b: "自動車、工業製品、建築", c: "家電、自動車部品、量産品" },
+type ProductCard = {
+  slug: string
+  title: string
+  subtitle: string
+  imgId: string
+}
+
+const products: ProductCard[] = [
+  {
+    slug: "rene",
+    title: "René ルネ",
+    subtitle: "壁付け 横型 / 25φ マットブラック",
+    imgId: "d0f5f0e83d40a4d29044",
+  },
+  {
+    slug: "claude",
+    title: "Claude クロード",
+    subtitle: "壁付け 縦型 / 25φ マットブラック",
+    imgId: "86278edb68c21957e339",
+  },
+  {
+    slug: "marcel",
+    title: "Marcel マルセル",
+    subtitle: "壁付け 横型 / フラットバー マットブラック",
+    imgId: "939d0690971c550c1dd9",
+  },
 ]
+
+// ════════════ SVG: 主剤＋硬化剤 → 強靭な塗膜 ════════════
+function TwoComponentDiagram() {
+  return (
+    <svg viewBox="0 0 800 260" className="w-full h-auto">
+      <defs>
+        <marker id="paint-arrow" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+          <path d="M0,0 L10,5 L0,10 Z" fill="#b8860b" />
+        </marker>
+        <linearGradient id="result-gradient" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="rgba(184,134,11,0.18)" />
+          <stop offset="100%" stopColor="rgba(184,134,11,0.05)" />
+        </linearGradient>
+      </defs>
+
+      {/* 主剤 */}
+      <rect x="40" y="60" width="180" height="140" rx="14" fill="#fdfaf0" stroke="#b8860b" strokeWidth="2" />
+      <text x="130" y="105" textAnchor="middle" fill="#1a1a1a" fontSize="20" fontWeight="500">主剤</text>
+      <text x="130" y="135" textAnchor="middle" fill="#666" fontSize="13">ポリオール樹脂</text>
+      <text x="130" y="160" textAnchor="middle" fill="#888" fontSize="11">（ベース成分 / 色を決める）</text>
+
+      {/* + */}
+      <text x="265" y="142" textAnchor="middle" fill="#b8860b" fontSize="40" fontWeight="300">+</text>
+
+      {/* 硬化剤 */}
+      <rect x="310" y="60" width="180" height="140" rx="14" fill="#fdfaf0" stroke="#b8860b" strokeWidth="2" />
+      <text x="400" y="105" textAnchor="middle" fill="#1a1a1a" fontSize="20" fontWeight="500">硬化剤</text>
+      <text x="400" y="135" textAnchor="middle" fill="#666" fontSize="13">イソシアネート</text>
+      <text x="400" y="160" textAnchor="middle" fill="#888" fontSize="11">（反応成分 / 強度を生む）</text>
+
+      {/* 矢印 */}
+      <line x1="510" y1="130" x2="595" y2="130" stroke="#b8860b" strokeWidth="2.5" markerEnd="url(#paint-arrow)" />
+      <text x="552" y="115" textAnchor="middle" fill="#888" fontSize="11">化学反応</text>
+      <text x="552" y="158" textAnchor="middle" fill="#888" fontSize="11">（架橋反応）</text>
+
+      {/* 結果 */}
+      <rect x="610" y="60" width="160" height="140" rx="14" fill="url(#result-gradient)" stroke="#b8860b" strokeWidth="2.5" />
+      <text x="690" y="100" textAnchor="middle" fill="#b8860b" fontSize="18" fontWeight="600">強靭な塗膜</text>
+      <text x="690" y="125" textAnchor="middle" fill="#1a1a1a" fontSize="12">高耐久・高光沢</text>
+      <text x="690" y="145" textAnchor="middle" fill="#1a1a1a" fontSize="12">耐薬品・耐候性</text>
+      <text x="690" y="165" textAnchor="middle" fill="#1a1a1a" fontSize="12">優れた密着性</text>
+      <text x="690" y="185" textAnchor="middle" fill="#888" fontSize="11">— 自動車塗装と同等</text>
+    </svg>
+  )
+}
+
+// ════════════ SVG: 塗膜断面比較 1液 vs 2液 vs 焼付 ════════════
+function FilmCrossSectionDiagram() {
+  return (
+    <svg viewBox="0 0 800 320" className="w-full h-auto">
+      <defs>
+        <linearGradient id="film-1k" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#cfcfcf" />
+          <stop offset="100%" stopColor="#9d9d9d" />
+        </linearGradient>
+        <linearGradient id="film-2k" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#e6c878" />
+          <stop offset="100%" stopColor="#b8860b" />
+        </linearGradient>
+        <linearGradient id="film-baked" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#ef5b5b" />
+          <stop offset="100%" stopColor="#a82a2a" />
+        </linearGradient>
+      </defs>
+
+      {/* タイトル */}
+      <text x="400" y="28" textAnchor="middle" fill="#1a1a1a" fontSize="14" fontWeight="500">
+        塗膜断面イメージ — 厚みと密着の違い
+      </text>
+
+      {/* === 左：1液型 === */}
+      <text x="135" y="62" textAnchor="middle" fill="#666" fontSize="14" fontWeight="700">1 液型</text>
+      <text x="135" y="80" textAnchor="middle" fill="#888" fontSize="11">ホームセンター塗料</text>
+      <rect x="40" y="180" width="190" height="60" fill="#4a4a4a" stroke="#666" />
+      <text x="135" y="218" textAnchor="middle" fill="#bbb" fontSize="13" letterSpacing="0.2em">鉄  素  地</text>
+      <rect x="40" y="170" width="190" height="10" fill="url(#film-1k)" />
+      <text x="135" y="160" textAnchor="middle" fill="#666" fontSize="11" fontWeight="500">塗膜（薄め・ムラ）</text>
+      <text x="135" y="270" textAnchor="middle" fill="#666" fontSize="11" fontWeight="500">屋外で 1〜3 年で劣化</text>
+
+      {/* === 中央：2液ウレタン === */}
+      <text x="400" y="62" textAnchor="middle" fill="#b8860b" fontSize="14" fontWeight="700">2 液ウレタン</text>
+      <text x="400" y="80" textAnchor="middle" fill="#b8860b" fontSize="11" fontWeight="600">ado 標準採用</text>
+      <rect x="305" y="180" width="190" height="60" fill="#4a4a4a" stroke="#666" />
+      <text x="400" y="218" textAnchor="middle" fill="#bbb" fontSize="13" letterSpacing="0.2em">鉄  素  地</text>
+      <rect x="305" y="170" width="190" height="10" fill="#b8b8b8" />
+      <text x="400" y="167" textAnchor="middle" fill="#666" fontSize="9">プライマー</text>
+      <rect x="305" y="150" width="190" height="20" fill="url(#film-2k)" />
+      <text x="400" y="138" textAnchor="middle" fill="#b8860b" fontSize="11" fontWeight="600">2 液ウレタン上塗り（厚膜）</text>
+      <text x="400" y="270" textAnchor="middle" fill="#b8860b" fontSize="11" fontWeight="600">屋内 10 年以上美観持続</text>
+
+      {/* === 右：焼付塗装 === */}
+      <text x="665" y="62" textAnchor="middle" fill="#c33" fontSize="14" fontWeight="700">焼付塗装</text>
+      <text x="665" y="80" textAnchor="middle" fill="#c33" fontSize="11">家電・量産品</text>
+      <rect x="570" y="180" width="190" height="60" fill="#4a4a4a" stroke="#666" />
+      <text x="665" y="218" textAnchor="middle" fill="#bbb" fontSize="13" letterSpacing="0.2em">鉄  素  地</text>
+      <rect x="570" y="160" width="190" height="20" fill="url(#film-baked)" />
+      <text x="665" y="150" textAnchor="middle" fill="#c33" fontSize="11" fontWeight="500">焼付塗膜（極薄・極硬）</text>
+      <text x="665" y="270" textAnchor="middle" fill="#c33" fontSize="11" fontWeight="500">専用炉が必要・現場補修不可</text>
+
+      {/* ベースライン */}
+      <line x1="40" y1="295" x2="760" y2="295" stroke="#444" strokeWidth="0.5" strokeDasharray="3 3" />
+      <text x="400" y="312" textAnchor="middle" fill="#666" fontSize="10">
+        ado は自動車塗装と同じ 2 液型ウレタンを採用
+      </text>
+    </svg>
+  )
+}
+
+// ════════════ プロセスアイコン (素地→プライマー→ウレタン→検品) ════════════
+function ProcessIcon({ kind }: { kind: "polish" | "primer" | "spray" | "inspect" }) {
+  if (kind === "polish") {
+    // 素地調整: 鉄板 + サンドペーパー
+    return (
+      <svg viewBox="0 0 80 80" className="w-full h-full">
+        <rect x="14" y="42" width="52" height="22" fill="#666" stroke="#999" strokeWidth="1.2" />
+        <rect x="20" y="28" width="40" height="14" rx="2" fill="#b8860b" stroke="#8a6c0d" strokeWidth="1" transform="rotate(-12 40 35)" />
+        <line x1="22" y1="44" x2="58" y2="44" stroke="#999" strokeWidth="0.6" strokeDasharray="2 2" />
+        <line x1="22" y1="50" x2="58" y2="50" stroke="#999" strokeWidth="0.6" strokeDasharray="2 2" />
+        <line x1="22" y1="56" x2="58" y2="56" stroke="#999" strokeWidth="0.6" strokeDasharray="2 2" />
+      </svg>
+    )
+  }
+  if (kind === "primer") {
+    // プライマー: 刷毛
+    return (
+      <svg viewBox="0 0 80 80" className="w-full h-full">
+        <rect x="20" y="46" width="44" height="14" rx="2" fill="#b8b8b8" stroke="#888" strokeWidth="1.2" />
+        <rect x="14" y="40" width="14" height="26" rx="2" fill="#8a6c0d" stroke="#6a4f10" strokeWidth="1" />
+        <path d="M14,40 L8,32 L14,32 Z" fill="#6a4f10" />
+        <line x1="40" y1="60" x2="40" y2="70" stroke="#b8b8b8" strokeWidth="0.6" />
+        <line x1="48" y1="60" x2="48" y2="70" stroke="#b8b8b8" strokeWidth="0.6" />
+        <line x1="56" y1="60" x2="56" y2="70" stroke="#b8b8b8" strokeWidth="0.6" />
+      </svg>
+    )
+  }
+  if (kind === "spray") {
+    // 上塗り: スプレーガン
+    return (
+      <svg viewBox="0 0 80 80" className="w-full h-full">
+        <rect x="14" y="34" width="32" height="14" rx="3" fill="#888" stroke="#555" strokeWidth="1.2" />
+        <rect x="20" y="48" width="10" height="16" rx="2" fill="#888" stroke="#555" strokeWidth="1.2" />
+        <circle cx="22" cy="40" r="6" fill="#b8860b" stroke="#8a6c0d" strokeWidth="1" />
+        <line x1="46" y1="41" x2="56" y2="38" stroke="#b8860b" strokeWidth="1.5" />
+        <line x1="46" y1="41" x2="58" y2="42" stroke="#b8860b" strokeWidth="1.5" />
+        <line x1="46" y1="41" x2="56" y2="46" stroke="#b8860b" strokeWidth="1.5" />
+        <circle cx="62" cy="38" r="1.2" fill="#b8860b" />
+        <circle cx="64" cy="44" r="1.2" fill="#b8860b" />
+        <circle cx="60" cy="48" r="1.2" fill="#b8860b" />
+      </svg>
+    )
+  }
+  // inspect: ルーペ + チェックマーク
+  return (
+    <svg viewBox="0 0 80 80" className="w-full h-full">
+      <circle cx="34" cy="36" r="14" fill="none" stroke="#666" strokeWidth="2" />
+      <line x1="44" y1="46" x2="58" y2="60" stroke="#666" strokeWidth="3" strokeLinecap="round" />
+      <path d="M28,36 L33,42 L42,30" fill="none" stroke="#b8860b" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
+// ════════════ タイムライン: 1液 vs 2液の経年変化 ════════════
+function FilmDurabilityTimeline() {
+  // 0年 ── 3年 ── 5年 ── 8年 ── 10年
+  const years = [0, 1, 3, 5, 8, 10]
+  const xFor = (y: number) => 60 + (y / 10) * 660
+  return (
+    <svg viewBox="0 0 800 260" className="w-full h-auto">
+      <defs>
+        <linearGradient id="bar-1k" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#9d9d9d" />
+          <stop offset="40%" stopColor="#cfcfcf" />
+          <stop offset="60%" stopColor="#a44" stopOpacity="0.6" />
+          <stop offset="100%" stopColor="#5a2a2a" stopOpacity="0.7" />
+        </linearGradient>
+        <linearGradient id="bar-2k" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stopColor="#e6c878" />
+          <stop offset="60%" stopColor="#d4a84b" />
+          <stop offset="90%" stopColor="#b8860b" />
+          <stop offset="100%" stopColor="#8a6c0d" />
+        </linearGradient>
+      </defs>
+
+      <text x="400" y="26" textAnchor="middle" fill="#1a1a1a" fontSize="13" fontWeight="500">
+        経年変化イメージ — 屋外設置の場合
+      </text>
+
+      {/* 1液型 行 */}
+      <text x="50" y="80" textAnchor="end" fill="#666" fontSize="13" fontWeight="700">1液型</text>
+      <rect x={xFor(0)} y="60" width={xFor(3) - xFor(0)} height="30" fill="url(#bar-1k)" rx="3" />
+      <text x={(xFor(0) + xFor(3)) / 2} y="80" textAnchor="middle" fill="#fff" fontSize="11" fontWeight="500">1〜3 年で劣化</text>
+
+      {/* 2液ウレタン 行 */}
+      <text x="50" y="135" textAnchor="end" fill="#b8860b" fontSize="13" fontWeight="700">2液ウレタン</text>
+      <rect x={xFor(0)} y="115" width={xFor(8) - xFor(0)} height="30" fill="url(#bar-2k)" rx="3" />
+      <text x={(xFor(0) + xFor(8)) / 2} y="135" textAnchor="middle" fill="#fff" fontSize="11" fontWeight="500">5〜8 年は美観維持</text>
+
+      {/* 2液+メッキ */}
+      <text x="50" y="190" textAnchor="end" fill="#b8860b" fontSize="13" fontWeight="700">2液 ＋ メッキ</text>
+      <rect x={xFor(0)} y="170" width={xFor(10) - xFor(0)} height="30" fill="url(#bar-2k)" rx="3" />
+      <text x={(xFor(0) + xFor(10)) / 2} y="190" textAnchor="middle" fill="#fff" fontSize="11" fontWeight="500">10 年以上の耐久</text>
+
+      {/* 軸 */}
+      <line x1="60" y1="220" x2="720" y2="220" stroke="#888" strokeWidth="1" />
+      {years.map((y) => (
+        <g key={y}>
+          <line x1={xFor(y)} y1="220" x2={xFor(y)} y2="226" stroke="#888" strokeWidth="1" />
+          <text x={xFor(y)} y="240" textAnchor="middle" fill="#888" fontSize="10">
+            {y}年
+          </text>
+        </g>
+      ))}
+    </svg>
+  )
+}
+
+// ════════════ レーダーチャート 5軸 ════════════
+function PaintRadar() {
+  // 5 軸: 耐久性, 耐薬品性, 光沢/仕上がり, 施工の手軽さ, 密着性
+  const axes = ["耐久性", "耐薬品性", "光沢・仕上がり", "施工の手軽さ", "密着性"]
+  const data = {
+    "1液": [2, 2, 3, 5, 3],
+    "2液ウレタン": [5, 4, 5, 3, 5],
+    "焼付塗装": [5, 5, 4, 1, 5],
+  }
+  const center = { x: 200, y: 200 }
+  const radius = 150
+  const angleFor = (i: number) => (Math.PI * 2 * i) / 5 - Math.PI / 2
+  const pointFor = (i: number, level: number) => {
+    const r = (radius * level) / 5
+    const a = angleFor(i)
+    return [center.x + Math.cos(a) * r, center.y + Math.sin(a) * r] as const
+  }
+  const polygon = (levels: number[]) =>
+    levels.map((l, i) => pointFor(i, l).join(",")).join(" ")
+  const labelPos = (i: number) => {
+    const a = angleFor(i)
+    const r = radius + 28
+    return [center.x + Math.cos(a) * r, center.y + Math.sin(a) * r] as const
+  }
+  return (
+    <svg viewBox="0 0 400 400" className="w-full h-auto">
+      {/* グリッド */}
+      {[1, 2, 3, 4, 5].map((g) => (
+        <polygon
+          key={g}
+          fill="none"
+          stroke={g === 5 ? "#cccccc" : "#e5e5e5"}
+          strokeWidth="1"
+          points={[0, 1, 2, 3, 4]
+            .map((i) => pointFor(i, g).join(","))
+            .join(" ")}
+        />
+      ))}
+      {/* 軸 */}
+      {[0, 1, 2, 3, 4].map((i) => {
+        const [x, y] = pointFor(i, 5)
+        return <line key={i} x1={center.x} y1={center.y} x2={x} y2={y} stroke="#d4d4d4" strokeWidth="1" />
+      })}
+
+      {/* 1液 (gray) */}
+      <polygon
+        fill="rgba(140,140,140,0.18)"
+        stroke="#888"
+        strokeWidth="1.5"
+        points={polygon(data["1液"])}
+      />
+      {/* 焼付塗装 (red dashed) */}
+      <polygon
+        fill="rgba(220,38,38,0.10)"
+        stroke="#dc2626"
+        strokeWidth="1.5"
+        strokeDasharray="6,3"
+        points={polygon(data["焼付塗装"])}
+      />
+      {/* 2液 (gold solid) */}
+      <polygon
+        fill="rgba(184,134,11,0.22)"
+        stroke="#b8860b"
+        strokeWidth="2"
+        points={polygon(data["2液ウレタン"])}
+      />
+      {/* 2液 のデータ点 */}
+      {data["2液ウレタン"].map((l, i) => {
+        const [x, y] = pointFor(i, l)
+        return <circle key={i} cx={x} cy={y} r="4" fill="#b8860b" />
+      })}
+
+      {/* 軸ラベル */}
+      {axes.map((ax, i) => {
+        const [x, y] = labelPos(i)
+        return (
+          <text key={ax} x={x} y={y} textAnchor="middle" fill="#1a1a1a" fontSize="13" dominantBaseline="middle">
+            {ax}
+          </text>
+        )
+      })}
+    </svg>
+  )
+}
+
+function StarBar({ level, color }: { level: number; color: "muted" | "gold" }) {
+  return (
+    <span className="inline-flex items-center gap-0.5" aria-label={`評価 ${level}/5`}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <span
+          key={n}
+          className={
+            n <= level
+              ? color === "gold"
+                ? "text-gold"
+                : "text-foreground/70"
+              : "text-foreground/15"
+          }
+        >
+          ●
+        </span>
+      ))}
+    </span>
+  )
+}
 
 export default function PaintPage() {
   return (
     <>
       <Header />
       <main className="pt-20 lg:pt-24 pb-20 bg-background">
-        {/* Hero */}
+        {/* Title */}
         <div className="border-b border-border">
-          <div className="max-w-[1200px] mx-auto px-4 lg:px-8 py-12 lg:py-20">
+          <div className="max-w-[1200px] mx-auto px-4 lg:px-8 py-12 lg:py-16">
             <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-3">Finishing</p>
-            <h1 className="font-serif text-3xl lg:text-5xl text-foreground mb-4">
+            <h1 className="font-serif text-3xl lg:text-5xl text-foreground mb-2">
               IRONWORKS ado の『塗装』
             </h1>
             <p className="text-[14px] text-muted-foreground">
-              良い状態で永く使っていただきたい
+              良い状態で永く使っていただきたい — だから自動車塗装と同じ 2 液型ウレタンを使う
             </p>
           </div>
         </div>
 
+        {/* Stats */}
+        <section className="border-b border-border bg-card/40">
+          <div className="max-w-[1200px] mx-auto px-4 lg:px-8 py-10">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {stats.map((s) => (
+                <div key={s.label} className="text-center md:text-left">
+                  <div className="flex items-baseline justify-center md:justify-start gap-1">
+                    <span className="font-serif text-3xl lg:text-4xl text-gold">{s.value}</span>
+                    <span className="text-[12px] text-gold/80">{s.unit}</span>
+                  </div>
+                  <p className="text-[12px] font-medium text-foreground mt-1">{s.label}</p>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{s.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         <div className="max-w-[880px] mx-auto px-4 lg:px-8 py-16 space-y-16">
-          {/* Intro */}
-          <section className="space-y-4">
-            <h2 className="font-serif text-xl lg:text-2xl text-foreground">
-              毎日手にするものだから、手触りのいいものを。
-            </h2>
-            <p className="text-[14px] leading-[1.9] text-muted-foreground">
-              当工房はオーダーから制作・発送までを一貫して行っているため、スピーディー・ハイクオリティ・リーズナブルにお届けいたします。
-            </p>
-            <p className="text-[14px] leading-[1.9] text-muted-foreground">
-              塗装においても妥協せず、素地調整から下塗り、仕上げ塗装まで、すべての工程を丁寧に手作業で行っています。一般的な1液型塗料ではなく、プロ仕様の 2液型ウレタン塗装を標準採用することで、長く美しい状態を保てる仕上がりを実現しています。
-            </p>
+          {/*
+            Hero image slot
+            ───────────────
+            ChatGPT 等で生成した画像を v0-design/public/images/process/hero-paint.jpg
+            に配置し、下の src を差し替えてください。プロンプト例:
+            "鍛冶職人が鉄製ハンドレールに 2 液型ウレタン塗装をスプレーガンで吹き付けている、
+             プロ仕様のワークショップ、暖色系ライティング、黒×ゴールドのトーン、
+             16:9、フォトリアリスティック"
+            現在は既存の greeting-craft.jpg をプレースホルダーとして使用。
+          */}
+          <section>
+            <div className="relative w-full aspect-[16/9] overflow-hidden rounded-md bg-secondary">
+              <Image
+                src="/images/greeting-craft.jpg"
+                alt="鍛冶職人による塗装工程"
+                fill
+                sizes="(max-width: 880px) 100vw, 880px"
+                priority
+                className="object-cover"
+              />
+            </div>
           </section>
 
-          {/* 3 Steps */}
+          {/* Intro */}
           <section>
-            <h2 className="font-serif text-xl lg:text-2xl text-foreground mb-6">
-              塗装工程
+            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-6">
+              毎日手にするものだから、手触りのいいものを。
             </h2>
-            <div className="grid md:grid-cols-3 gap-4">
-              {steps.map((s) => (
-                <div key={s.no} className="border border-border bg-card p-6">
-                  <div className="font-mono text-xl text-gold mb-3">{s.no}</div>
-                  <h3 className="text-[14px] font-medium text-foreground mb-3">
-                    {s.title}
-                  </h3>
-                  <p className="text-[12px] leading-relaxed text-muted-foreground">
-                    {s.desc}
-                  </p>
+            <div className="space-y-5">
+              <p className="text-[14px] leading-[2] text-foreground/80">
+                当工房はオーダーから制作・発送までを一貫して行っているため、スピーディー・ハイクオリティ・リーズナブルにお届けいたします。
+              </p>
+              <p className="text-[14px] leading-[2] text-foreground/80">
+                塗装においても妥協せず、素地調整から下塗り、仕上げ塗装まで、すべての工程を丁寧に手作業で行っています。一般的な 1 液型塗料ではなく、プロ仕様の{" "}
+                <strong className="text-gold">2 液型ウレタン塗装</strong>を標準採用することで、長く美しい状態を保てる仕上がりを実現しています。
+              </p>
+            </div>
+          </section>
+
+          {/* Process Steps with arrows */}
+          <section>
+            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-6">塗装工程</h2>
+            <div className="grid md:grid-cols-4 gap-4 md:gap-2">
+              {processSteps.map((s, i) => (
+                <div key={s.no} className="relative flex flex-col items-center text-center md:text-left md:items-start">
+                  <div className="w-16 h-16 mb-3 rounded-full border border-gold/30 bg-card flex items-center justify-center text-gold">
+                    <ProcessIcon kind={s.icon} />
+                  </div>
+                  <span className="text-[10px] tracking-[0.2em] text-gold mb-1">STEP {s.no}</span>
+                  <h3 className="font-serif text-base text-foreground mb-2">{s.title}</h3>
+                  <p className="text-[12px] leading-[1.7] text-muted-foreground">{s.desc}</p>
+                  {i < processSteps.length - 1 && (
+                    <div
+                      aria-hidden="true"
+                      className="hidden md:block absolute top-7 -right-2 text-gold"
+                    >
+                      <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor">
+                        <polygon points="0,0 10,5 0,10" />
+                      </svg>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
           </section>
 
-          {/* 2液型ウレタン */}
-          <section className="space-y-4">
-            <p className="text-[10px] tracking-[0.3em] uppercase text-gold">
-              2-Component Urethane
-            </p>
-            <h2 className="font-serif text-xl lg:text-2xl text-foreground">
-              2液型ウレタン塗装とは？
+          {/* 2-Component diagram */}
+          <section>
+            <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">2-Component Urethane</p>
+            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-6 pb-3 border-b border-border">
+              2 液型ウレタン塗装とは？
             </h2>
-            <p className="text-[14px] leading-[1.9] text-muted-foreground">
-              2液型ウレタン塗装は、主剤と硬化剤の 2つの液を使用直前に混合して塗る塗装方法です。混合後に化学反応（架橋反応）が始まり、乾燥とともに非常に強靭な塗膜を形成します。
-            </p>
-            <p className="text-[14px] leading-[1.9] text-muted-foreground">
-              自動車の塗装や工業製品にも使われるプロ仕様の塗装で、一般的な DIY 向け1液型塗料とは性能が大きく異なります。
-            </p>
-            <div className="border border-border bg-card p-6 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-              <div>
-                <p className="text-[10px] tracking-[0.2em] uppercase text-gold mb-1">主剤</p>
-                <p className="text-[13px] text-foreground">ポリオール樹脂</p>
-                <p className="text-[10px] text-muted-foreground">（ベース成分）</p>
-              </div>
-              <div>
-                <p className="text-[10px] tracking-[0.2em] uppercase text-gold mb-1">硬化剤</p>
-                <p className="text-[13px] text-foreground">イソシアネート</p>
-                <p className="text-[10px] text-muted-foreground">（反応成分）</p>
-              </div>
-              <div>
-                <p className="text-[10px] tracking-[0.2em] uppercase text-gold mb-1">結果</p>
-                <p className="text-[13px] text-foreground">強靭な塗膜</p>
-                <p className="text-[10px] text-muted-foreground">高耐久・高光沢・耐候性</p>
-              </div>
+            <div className="space-y-5 mb-8">
+              <p className="text-[14px] leading-[2] text-foreground/80">
+                2 液型ウレタン塗装は、<strong className="text-foreground">主剤</strong>と
+                <strong className="text-foreground">硬化剤</strong>の 2 つの液を使用直前に混合して塗る塗装方法です。混合後に化学反応（架橋反応）が始まり、乾燥とともに非常に強靭な塗膜を形成します。
+              </p>
+              <p className="text-[14px] leading-[2] text-foreground/80">
+                自動車の塗装や工業製品にも使われるプロ仕様の塗装で、一般的な DIY 向け 1 液型塗料とは性能が大きく異なります。
+              </p>
+            </div>
+            <div className="border border-border bg-secondary/30 rounded-md p-6 lg:p-10">
+              <TwoComponentDiagram />
+              <p className="text-[11px] text-muted-foreground mt-4 text-center tracking-wide">
+                2 液型ウレタン塗装の硬化メカニズム
+              </p>
             </div>
           </section>
 
-          {/* Comparison Table */}
+          {/* Cross-section comparison */}
           <section>
-            <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">Comparison</p>
-            <h2 className="font-serif text-xl lg:text-2xl text-foreground mb-4">
-              1液型と 2液型の違い
+            <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Film Thickness</p>
+            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-6 pb-3 border-b border-border">
+              塗膜の厚みと密着の違い
             </h2>
-            <p className="text-[14px] leading-[1.9] text-muted-foreground mb-6">
-              ホームセンターで手に入る1液型塗料と、ado が使用する2液型ウレタン塗料。同じ「塗装」でも、性能と仕上がりには大きな差があります。
+            <p className="text-[14px] leading-[2] text-foreground/80 mb-6">
+              同じ「塗装」でも、塗料の種類によって塗膜の厚み・密着・耐久性は大きく異なります。ado は屋内製品にもプロ仕様の 2 液型ウレタンを採用し、十分な厚膜と密着力で長く美しい仕上がりを実現します。
             </p>
+            <div className="border border-border bg-secondary/30 rounded-md p-6 lg:p-8">
+              <FilmCrossSectionDiagram />
+            </div>
+          </section>
+
+          {/* Durability timeline */}
+          <section>
+            <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Timeline</p>
+            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-6 pb-3 border-b border-border">
+              経年変化イメージ
+            </h2>
+            <p className="text-[14px] leading-[2] text-foreground/80 mb-6">
+              ホームセンター塗料（1 液型）は屋外で 1〜3 年で劣化が目立ちますが、ado の 2 液型ウレタンは美観を長く維持します。屋外設置にはさらに溶融亜鉛メッキを重ねることで、10 年以上の耐久性を実現できます。
+            </p>
+            <div className="border border-border bg-secondary/30 rounded-md p-6 lg:p-8">
+              <FilmDurabilityTimeline />
+            </div>
+          </section>
+
+          {/* Radar + Comparison */}
+          <section>
+            <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Comparison</p>
+            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-6 pb-3 border-b border-border">
+              1 液型 / 2 液ウレタン / 焼付塗装 の比較
+            </h2>
+            <p className="text-[14px] leading-[2] text-foreground/80 mb-6">
+              5 軸での性能比較と、9 項目の詳細比較表でご紹介します。色の薄い 1 液型は施工の手軽さ以外で大きく劣り、ado の採用する 2 液ウレタンは焼付塗装に近い耐久性能を、現場補修可能な扱いやすさで実現しています。
+            </p>
+
+            <div className="mb-10 max-w-[520px] mx-auto">
+              <PaintRadar />
+              <div className="flex flex-wrap gap-x-6 gap-y-2 justify-center mt-5 text-[13px] font-bold">
+                <span className="inline-flex items-center gap-2 text-[#666]">
+                  <span className="inline-block w-3 h-3 border border-[#888] bg-[#88888830]"></span>
+                  1 液型
+                </span>
+                <span className="inline-flex items-center gap-2 text-gold">
+                  <span className="inline-block w-3 h-3 border border-gold bg-gold/20"></span>
+                  2 液ウレタン（ado 採用）
+                </span>
+                <span className="inline-flex items-center gap-2 text-[#dc2626]">
+                  <span className="inline-block w-3 h-3 border border-[#dc2626] bg-[#dc262620]"></span>
+                  焼付塗装
+                </span>
+              </div>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-[12px]">
                 <thead>
-                  <tr className="border-b border-border">
+                  <tr className="border-b-2 border-gold">
                     <th className="text-left p-3 text-muted-foreground font-normal">項目</th>
-                    <th className="text-left p-3 text-muted-foreground font-normal">1液型（ラッカー等）</th>
-                    <th className="text-left p-3 text-gold font-normal">2液型ウレタン</th>
-                    <th className="text-left p-3 text-muted-foreground font-normal">焼付塗装</th>
+                    <th className="text-left p-3 text-[#666] font-bold">1 液型</th>
+                    <th className="text-left p-3 text-gold font-bold bg-gold/[0.08]">2 液ウレタン</th>
+                    <th className="text-left p-3 text-[#dc2626] font-bold">焼付塗装</th>
                   </tr>
                 </thead>
                 <tbody>
                   {comparison.map((row) => (
-                    <tr key={row.label} className="border-b border-border/50">
-                      <td className="p-3 text-muted-foreground">{row.label}</td>
-                      <td className="p-3 text-foreground">{row.a}</td>
-                      <td className="p-3 text-foreground bg-gold/5">{row.b}</td>
-                      <td className="p-3 text-foreground">{row.c}</td>
+                    <tr key={row.label} className="border-b border-border/50 align-top">
+                      <td className="p-3 text-foreground font-medium whitespace-nowrap">{row.label}</td>
+                      <td className="p-3 text-muted-foreground">
+                        <div>{row.a}</div>
+                        {row.aLevel != null && (
+                          <div className="mt-1">
+                            <StarBar level={row.aLevel} color="muted" />
+                          </div>
+                        )}
+                      </td>
+                      <td className="p-3 text-foreground bg-gold/[0.08]">
+                        <div>{row.b}</div>
+                        {row.bLevel != null && (
+                          <div className="mt-1">
+                            <StarBar level={row.bLevel} color="gold" />
+                          </div>
+                        )}
+                      </td>
+                      <td className="p-3 text-muted-foreground">
+                        <div>{row.c}</div>
+                        {row.cLevel != null && (
+                          <div className="mt-1">
+                            <StarBar level={row.cLevel} color="muted" />
+                          </div>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -157,34 +670,119 @@ export default function PaintPage() {
           </section>
 
           {/* Philosophy */}
-          <section className="space-y-4">
-            <p className="text-[10px] tracking-[0.3em] uppercase text-gold">
-              Our Philosophy
-            </p>
-            <h2 className="font-serif text-xl lg:text-2xl text-foreground">
-              なぜ ado は 2液型を選ぶのか
+          <section>
+            <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Our Philosophy</p>
+            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-6 pb-3 border-b border-border">
+              なぜ ado は 2 液型を選ぶのか
             </h2>
-            <blockquote className="border-l-2 border-gold pl-6 italic text-muted-foreground text-[14px] leading-[1.9]">
-              手間もコストもかかります。それでも 2液型を選ぶのは、お客様に「10年後も変わらない美しさ」を届けたいから。
-              <footer className="mt-3 not-italic text-[11px] text-gold">
-                — IRONWORKS ado 鍛冶職人
-              </footer>
+            <blockquote className="border-l-2 border-gold pl-6 py-5 mb-7 bg-secondary/30">
+              <p className="font-serif text-base lg:text-lg leading-[1.85] text-foreground mb-3">
+                手間もコストもかかります。
+                <br />
+                それでも 2 液型を選ぶのは、
+                <br />
+                お客様に「10 年後も変わらない美しさ」を届けたいから。
+              </p>
+              <footer className="text-[11px] text-gold tracking-wider">— IRONWORKS ado 鍛冶職人</footer>
             </blockquote>
-            <p className="text-[14px] leading-[1.9] text-muted-foreground">
-              2液型ウレタン塗装は、主剤と硬化剤を正確な比率で混合する必要があり、混合後は数時間以内に使い切らなければなりません。材料費も 1液型の 3〜5 倍。決して「効率的」とは言えない塗装方法です。
+            <div className="space-y-5">
+              <p className="text-[14px] leading-[2] text-foreground/80">
+                2 液型ウレタン塗装は、主剤と硬化剤を正確な比率で混合する必要があり、混合後は数時間以内に使い切らなければなりません。材料費も 1 液型の 3〜5 倍。決して「効率的」とは言えない塗装方法です。
+              </p>
+              <p className="text-[14px] leading-[2] text-foreground/80">
+                しかし、毎日手に触れる手すりだからこそ、塗膜の強さ・手触りの良さ・美しさにこだわりたい。1 液型では実現できない
+                <strong className="text-gold">「触って気持ちいい、見て美しい」</strong>仕上がりが、2 液型ウレタンにはあります。素地調整から最終仕上げまで、すべての工程に手を抜かない。それが IRONWORKS ado の塗装です。
+              </p>
+            </div>
+          </section>
+
+          {/*
+            Section image slot
+            ──────────────────
+            完成品の塗装面クローズアップ（光沢・色味のリアリティ）。
+            ChatGPT 等で生成 / 撮影画像を v0-design/public/images/process/finish-closeup.jpg
+            に配置し、下の src を差し替えてください。プロンプト例:
+            "アイアン手すりのマットブラック塗装面のクローズアップ、滑らかで均一な質感、
+             プロ仕上げの光沢、温かい木目背景に取り付け済み、3:1 ワイド"
+            現在は既存 hero/loft-staircase.jpg をプレースホルダーとして使用。
+          */}
+          <section>
+            <div className="relative w-full aspect-[3/1] overflow-hidden rounded-md bg-secondary">
+              <Image
+                src="/images/hero/loft-staircase.jpg"
+                alt="2 液型ウレタン塗装の仕上がり質感"
+                fill
+                sizes="(max-width: 880px) 100vw, 880px"
+                className="object-cover"
+              />
+            </div>
+          </section>
+
+          {/* FAQ */}
+          <section>
+            <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">FAQ</p>
+            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-6 pb-3 border-b border-border">
+              よくあるご質問
+            </h2>
+            <div className="space-y-3">
+              {faq.map((item) => (
+                <details
+                  key={item.q}
+                  className="group border border-border bg-card rounded-md overflow-hidden"
+                >
+                  <summary className="cursor-pointer list-none p-5 flex items-start gap-4 hover:bg-secondary/30 transition-colors">
+                    <span className="text-gold font-serif text-base mt-0.5 shrink-0">Q.</span>
+                    <span className="flex-1 text-[14px] font-medium text-foreground">{item.q}</span>
+                    <span className="text-gold text-xl leading-none transition-transform group-open:rotate-45 shrink-0">＋</span>
+                  </summary>
+                  <div className="px-5 pb-5 pt-2 flex items-start gap-4 border-t border-border/40">
+                    <span className="text-muted-foreground font-serif text-base mt-0.5 shrink-0">A.</span>
+                    <p className="flex-1 text-[13px] leading-[1.95] text-foreground/75">{item.a}</p>
+                  </div>
+                </details>
+              ))}
+            </div>
+          </section>
+
+          {/* Applicable products */}
+          <section>
+            <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Products</p>
+            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-6 pb-3 border-b border-border">
+              主な対応製品（屋内用）
+            </h2>
+            <p className="text-[14px] leading-[2] text-foreground/80 mb-8">
+              屋内設置の手すりは 2 液型ウレタン塗装で仕上げます。屋外設置の場合は溶融亜鉛メッキ＋塗装の二重防錆処理を施しています。
             </p>
-            <p className="text-[14px] leading-[1.9] text-muted-foreground">
-              しかし、毎日手に触れる手すりだからこそ、塗膜の強さ・手触りの良さ・美しさにこだわりたい。1液型では実現できない「触って気持ちいい、見て美しい」仕上がりが、2液型ウレタンにはあります。素地調整から最終仕上げまで、すべての工程に手を抜かない。それが IRONWORKS ado の塗装です。
-            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {products.map((p) => (
+                <Link
+                  key={p.slug}
+                  href={`/products/${p.slug}`}
+                  className="group block border border-border bg-card overflow-hidden transition-all duration-300 hover:border-gold hover:-translate-y-1"
+                >
+                  <div className="relative aspect-square bg-secondary overflow-hidden">
+                    <Image
+                      src={galleryUrl(`${p.imgId}.jpg`)}
+                      alt={p.title}
+                      fill
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-[13px] font-medium text-foreground mb-1">{p.title}</h3>
+                    <p className="text-[12px] text-muted-foreground">{p.subtitle}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
           </section>
 
           {/* Outdoor CTA */}
           <section className="border border-border bg-card p-6 lg:p-8">
-            <h3 className="font-serif text-lg text-foreground mb-3">
-              屋外で使用する場合の仕上げ
-            </h3>
-            <p className="text-[13px] leading-relaxed text-muted-foreground mb-4">
-              屋外設置のアイアン製品には、溶融亜鉛メッキ ＋ 塗装の二重防錆処理を施しています。
+            <h3 className="font-serif text-lg text-foreground mb-3">屋外で使用する場合の仕上げ</h3>
+            <p className="text-[13px] leading-[1.95] text-foreground/75 mb-4">
+              屋外設置のアイアン製品には、溶融亜鉛メッキ ＋ 2 液型ウレタン塗装の二重防錆処理を施しています。
             </p>
             <Link
               href="/galvanizing"
@@ -193,14 +791,17 @@ export default function PaintPage() {
               亜鉛メッキについて →
             </Link>
           </section>
+        </div>
 
-          <div className="pt-8 border-t border-border text-center">
-            <Link
-              href="/contact"
-              className="inline-block px-8 py-4 border border-gold text-gold text-[10px] tracking-[0.3em] uppercase hover:bg-gold hover:text-dark transition-colors"
-            >
+        {/* Bottom Contact CTA */}
+        <div className="max-w-[880px] mx-auto px-4 lg:px-8 pb-16">
+          <div className="pt-10 border-t border-border text-center">
+            <p className="text-[12px] text-muted-foreground mb-5">
+              色のご相談・サイズ・取付環境について、お気軽にお問い合わせください。
+            </p>
+            <PrimaryCTA href="/contact" variant="gold" size="md">
               お問い合わせする
-            </Link>
+            </PrimaryCTA>
           </div>
         </div>
       </main>
