@@ -116,51 +116,6 @@ const products: ProductCard[] = [
   },
 ]
 
-// ════════════ SVG: 主剤＋硬化剤 → 強靭な塗膜 ════════════
-function TwoComponentDiagram() {
-  return (
-    <svg viewBox="0 0 800 260" className="w-full h-auto">
-      <defs>
-        <marker id="paint-arrow" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
-          <path d="M0,0 L10,5 L0,10 Z" fill="#b8860b" />
-        </marker>
-        <linearGradient id="result-gradient" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="rgba(184,134,11,0.18)" />
-          <stop offset="100%" stopColor="rgba(184,134,11,0.05)" />
-        </linearGradient>
-      </defs>
-
-      {/* 主剤 */}
-      <rect x="40" y="60" width="180" height="140" rx="14" fill="#fdfaf0" stroke="#b8860b" strokeWidth="2" />
-      <text x="130" y="105" textAnchor="middle" fill="#1a1a1a" fontSize="20" fontWeight="500">主剤</text>
-      <text x="130" y="135" textAnchor="middle" fill="#666" fontSize="13">ポリオール樹脂</text>
-      <text x="130" y="160" textAnchor="middle" fill="#888" fontSize="11">（ベース成分 / 色を決める）</text>
-
-      {/* + */}
-      <text x="265" y="142" textAnchor="middle" fill="#b8860b" fontSize="40" fontWeight="300">+</text>
-
-      {/* 硬化剤 */}
-      <rect x="310" y="60" width="180" height="140" rx="14" fill="#fdfaf0" stroke="#b8860b" strokeWidth="2" />
-      <text x="400" y="105" textAnchor="middle" fill="#1a1a1a" fontSize="20" fontWeight="500">硬化剤</text>
-      <text x="400" y="135" textAnchor="middle" fill="#666" fontSize="13">イソシアネート</text>
-      <text x="400" y="160" textAnchor="middle" fill="#888" fontSize="11">（反応成分 / 強度を生む）</text>
-
-      {/* 矢印 */}
-      <line x1="510" y1="130" x2="595" y2="130" stroke="#b8860b" strokeWidth="2.5" markerEnd="url(#paint-arrow)" />
-      <text x="552" y="115" textAnchor="middle" fill="#888" fontSize="11">化学反応</text>
-      <text x="552" y="158" textAnchor="middle" fill="#888" fontSize="11">（架橋反応）</text>
-
-      {/* 結果 */}
-      <rect x="610" y="60" width="160" height="140" rx="14" fill="url(#result-gradient)" stroke="#b8860b" strokeWidth="2.5" />
-      <text x="690" y="100" textAnchor="middle" fill="#b8860b" fontSize="18" fontWeight="600">強靭な塗膜</text>
-      <text x="690" y="125" textAnchor="middle" fill="#1a1a1a" fontSize="12">高耐久・高光沢</text>
-      <text x="690" y="145" textAnchor="middle" fill="#1a1a1a" fontSize="12">耐薬品・耐候性</text>
-      <text x="690" y="165" textAnchor="middle" fill="#1a1a1a" fontSize="12">優れた密着性</text>
-      <text x="690" y="185" textAnchor="middle" fill="#888" fontSize="11">— 自動車塗装と同等</text>
-    </svg>
-  )
-}
-
 // ════════════ SVG: 塗膜断面比較 1液 vs 2液 vs 焼付 ════════════
 function FilmCrossSectionDiagram() {
   return (
@@ -513,12 +468,31 @@ export default function PaintPage() {
                 自動車の塗装や工業製品にも使われるプロ仕様の塗装で、一般的な DIY 向け 1 液型塗料とは性能が大きく異なります。
               </p>
             </div>
-            <div className="border border-border bg-secondary/30 rounded-md p-6 lg:p-10">
-              <TwoComponentDiagram />
-              <p className="text-[11px] text-muted-foreground mt-4 text-center tracking-wide">
-                2 液型ウレタン塗装の硬化メカニズム
-              </p>
+            {/*
+              主剤+硬化剤 → 強靭な塗膜の実品写真風画像
+              ─────────────────────────────────────
+              生成プロンプト（ChatGPT/DALL-E 3 推奨）:
+              "2 液型ウレタン塗料のセットアップを写真風に：左にラベル付き
+               主剤の塗料缶（"ポリオール樹脂"）、右にラベル付き硬化剤の缶
+               （"イソシアネート"）、中央に計量・混合カップと攪拌棒、奥に
+               光沢のある黒い完成塗膜サンプル。プロの工房作業台、暖色照明、
+               木目の作業台、フォトリアリスティック、3:2、暗めトーン"
+              生成後、v0-design/public/images/process/two-component-paint.jpg
+              に上書き保存すれば即反映されます。
+              ※ 現在は paint-process-3step.jpg のコピーをプレースホルダー
+            */}
+            <div className="relative w-full aspect-[3/2] overflow-hidden rounded-md border border-border">
+              <Image
+                src="/images/process/two-component-paint.jpg"
+                alt="2 液型ウレタン塗料の主剤・硬化剤と完成塗膜"
+                fill
+                sizes="(max-width: 880px) 100vw, 880px"
+                className="object-cover"
+              />
             </div>
+            <p className="text-[11px] text-muted-foreground mt-3 text-center tracking-wide">
+              主剤と硬化剤を正確な比率で混合 → 化学反応で強靭な塗膜が形成される
+            </p>
           </section>
 
           {/* Cross-section comparison */}
@@ -530,9 +504,44 @@ export default function PaintPage() {
             <p className="text-[14px] leading-[2] text-foreground/80 mb-6">
               同じ「塗装」でも、塗料の種類によって塗膜の厚み・密着・耐久性は大きく異なります。ado は屋内製品にもプロ仕様の 2 液型ウレタンを採用し、十分な厚膜と密着力で長く美しい仕上がりを実現します。
             </p>
-            <div className="border border-border bg-secondary/30 rounded-md p-6 lg:p-8">
-              <FilmCrossSectionDiagram />
+
+            {/*
+              塗膜断面 3D レンダリング画像
+              ─────────────────────────
+              生成プロンプト（ChatGPT/DALL-E 3 推奨）:
+              "3 種類の塗料の塗膜断面を比較した 3D レンダリング、横並びの
+               比較図：左『1液型』薄く不均一なグレー塗膜（約 20μm）にひび、
+               中央『2液ウレタン』厚く均一な光沢塗膜（約 60μm）にプライマー
+               下層、右『焼付塗装』極薄極硬の塗膜（約 10μm）。それぞれ鉄の
+               素地（暗グレー鋼材）の上に乗っている断面ビュー。
+               スタジオライティング、上左から光、暗いワークショップ背景、
+               16:9、フォトリアリスティック、工業デザインイラスト"
+              生成後、v0-design/public/images/process/film-cross-section.jpg
+              に上書き保存。
+              ※ 現状はプレースホルダー
+            */}
+            <div className="relative w-full aspect-[16/9] overflow-hidden rounded-md border border-border mb-6">
+              <Image
+                src="/images/process/film-cross-section.jpg"
+                alt="1 液型 / 2 液ウレタン / 焼付塗装の塗膜断面比較"
+                fill
+                sizes="(max-width: 880px) 100vw, 880px"
+                className="object-cover"
+              />
             </div>
+
+            {/* 補足: 数値情報を補強する SVG */}
+            <details className="group border border-border bg-card rounded-md overflow-hidden">
+              <summary className="cursor-pointer list-none px-5 py-3 flex items-center justify-between hover:bg-secondary/30 transition-colors">
+                <span className="text-[12px] tracking-wider text-foreground">
+                  簡易図解で見る塗膜厚と耐久性
+                </span>
+                <span className="text-gold text-lg leading-none transition-transform group-open:rotate-45">＋</span>
+              </summary>
+              <div className="border-t border-border/40 p-4 lg:p-6 bg-secondary/30">
+                <FilmCrossSectionDiagram />
+              </div>
+            </details>
           </section>
 
           {/* Durability timeline */}
@@ -544,6 +553,33 @@ export default function PaintPage() {
             <p className="text-[14px] leading-[2] text-foreground/80 mb-6">
               ホームセンター塗料（1 液型）は屋外で 1〜3 年で劣化が目立ちますが、ado の 2 液型ウレタンは美観を長く維持します。屋外設置にはさらに溶融亜鉛メッキを重ねることで、10 年以上の耐久性を実現できます。
             </p>
+
+            {/*
+              経年変化 4 段階写真風画像
+              ────────────────────────
+              生成プロンプト（ChatGPT/DALL-E 3 推奨）:
+              "屋外設置のアイアン手すり 4 つを横並びに比較したフォトリアル
+               な合成画像：①新品（光沢のある完璧な黒）②1年経過（ほぼ同じ、
+               わずかに艶引け）③5年経過（軽い艶引け、まだ綺麗）④10年経過
+               （微細な傷あり、まだ十分美しい）。すべて同じ角度・同じ
+               ライティング・同じアングル、屋外日中、自然光、3:1 ワイド、
+               下部に各段階のラベル『新品/1年/5年/10年』。
+               2 液ウレタン塗装の長期耐久性を伝える比較ビジュアル"
+              生成後、v0-design/public/images/process/paint-aging-timeline.jpg
+              に上書き保存。
+              ※ 現状はプレースホルダー
+            */}
+            <div className="relative w-full aspect-[3/1] overflow-hidden rounded-md border border-border mb-6">
+              <Image
+                src="/images/process/paint-aging-timeline.jpg"
+                alt="新品 / 1 年 / 5 年 / 10 年経過した手すりの経年変化"
+                fill
+                sizes="(max-width: 880px) 100vw, 880px"
+                className="object-cover"
+              />
+            </div>
+
+            {/* 数値棒グラフ — 写真の補足として */}
             <div className="border border-border bg-secondary/30 rounded-md p-6 lg:p-8">
               <FilmDurabilityTimeline />
             </div>
