@@ -119,6 +119,47 @@ const products: ProductCard[] = [
   },
 ]
 
+// 顧客の声ケーススタディ — 屋外設置の悩みに応える
+const voiceCases = [
+  {
+    label: "Case 01",
+    customerType: "沿岸部にお住まいの方",
+    quote: "潮風で他社の手すりが 1 年で錆びました。",
+    advice:
+      "沿岸部の塩害環境では、塗装だけでは長期耐久が難しい場合があります。溶融亜鉛メッキ＋塗装の二重防錆処理なら、犠牲防食で塩害にも耐え、10 年以上美観を維持できます。",
+    link: "/contact",
+    linkLabel: "屋外設置のご相談",
+  },
+  {
+    label: "Case 02",
+    customerType: "アプローチ手すりをお考えの方",
+    quote: "玄関アプローチに置く手すり、雨ざらしで本当に大丈夫？",
+    advice:
+      "ado のアプローチ手すり（Simple-black 等）はすべて二重防錆処理が標準仕様です。橋梁・鉄塔・ガードレールと同じ技術なので、住宅用途では十分すぎる耐久性があります。",
+    link: "/products/simple-black",
+    linkLabel: "Simple -black- を見る",
+  },
+]
+
+// ご注文の流れ — 屋外用製品向け
+const flowSteps = [
+  {
+    no: "Step 01",
+    title: "オンラインでお見積もり依頼",
+    desc: "サイズ・取付環境（屋外/屋内）・設置場所の写真などをお問い合わせフォームでご相談ください。2 営業日以内にご返信します。",
+  },
+  {
+    no: "Step 02",
+    title: "現場確認・お打ち合わせ",
+    desc: "千葉県および周辺エリアは現場採寸も承ります。設置環境（沿岸部・直射日光・雨ざらし等）に応じて最適な防錆仕様をご提案します。",
+  },
+  {
+    no: "Step 03",
+    title: "制作 → メッキ → 塗装 → お届け",
+    desc: "鍛冶職人が製作 → 専用工場で溶融亜鉛メッキ → 素地調整 → 2 液型ウレタン塗装 → 配送・設置（ご希望の場合）。標準納期 10 営業日。",
+  },
+]
+
 // ════════════ SVG: 犠牲防食の仕組み ════════════
 function SacrificialProtectionDiagram() {
   return (
@@ -570,338 +611,560 @@ function StarBar({ level, color }: { level: number; color: "muted" | "gold" }) {
   )
 }
 
+
 export default function GalvanizingPage() {
   return (
     <>
       <Header />
-      <main className="pt-20 lg:pt-24 pb-20 bg-background">
-        {/* ════════════ Hero ════════════ */}
+      <main className="pt-16 lg:pt-20 pb-20 bg-background">
+        {/* ════════════ Hero — Asymmetric ════════════ */}
         <section className="border-b border-border">
-          <div className="max-w-[1200px] mx-auto px-4 lg:px-8 py-16 lg:py-24">
-            <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-4">
-              Hot-Dip Galvanizing
-            </p>
-            <h1 className="font-serif text-3xl lg:text-5xl text-foreground mb-6 leading-tight">
-              雨ざらしでも、錆びずに 10 年。
-              <br />
-              <span className="text-gold">屋外用アイアンの「鎧」。</span>
-            </h1>
-            <p className="text-[14px] lg:text-[15px] text-foreground/80 leading-[1.9] max-w-[640px]">
-              ado の屋外用手すり・フェンスには、橋や鉄塔と同じ「溶融亜鉛メッキ」で錆対策をしています。塗装の下に隠れた一層が、見えないところで鉄を守り続けます。
-            </p>
+          <div className="grid lg:grid-cols-12 lg:min-h-[60vh]">
+            {/* Left: Text */}
+            <div className="lg:col-span-5 px-5 lg:px-12 py-12 lg:py-20 flex flex-col justify-center">
+              <p className="text-[10px] tracking-[0.5em] uppercase text-gold mb-5">Hot-Dip Galvanizing</p>
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl xl:text-6xl text-foreground leading-[1.15] mb-3">
+                屋外用アイアンの<br />
+                『亜鉛メッキ』
+              </h1>
+              <p className="font-serif text-[14px] lg:text-base text-foreground/70 mb-8">
+                Double Anti-Rust Treatment
+              </p>
+              <p className="text-[14px] lg:text-[15px] leading-[1.95] text-foreground/80 max-w-md">
+                450℃ の亜鉛浴に浸して鉄を化学的に守る、橋梁・鉄塔と同じ防錆技術。
+                ado の屋外製品はすべて 2 液型ウレタン塗装と組み合わせた
+                二重防錆処理で、10 年以上の耐久性を実現します。
+              </p>
+            </div>
+            {/* Right: Hero photo (placeholder until ChatGPT image arrives) */}
+            <div className="lg:col-span-7 relative aspect-[3/2] lg:aspect-auto bg-secondary">
+              <Image
+                src="/images/process/galvanizing-hero.jpg"
+                alt="450℃ の亜鉛浴に鉄製手すりを浸漬している様子"
+                fill
+                sizes="(max-width: 1024px) 100vw, 60vw"
+                priority
+                className="object-cover"
+              />
+            </div>
           </div>
         </section>
 
-        {/* ════════════ 数値で見る品質 ════════════ */}
-        <section className="border-b border-border bg-card/40">
-          <div className="max-w-[1100px] mx-auto px-4 lg:px-8 py-10 lg:py-14">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-y-8">
-              {stats.map((s, i) => (
-                <div
-                  key={i}
-                  className={`text-center px-4 ${
-                    i < stats.length - 1 ? "md:border-r border-border/40" : ""
-                  }`}
-                >
-                  <div className="font-serif text-gold leading-none">
-                    <span className="text-4xl lg:text-6xl">{s.value}</span>
-                    <span className="text-xl lg:text-2xl ml-1">{s.unit}</span>
+        {/* ════════════ Stats banner ════════════ */}
+        <section className="border-b border-border bg-card/30">
+          <div className="max-w-[1200px] mx-auto px-5 lg:px-8 py-10 lg:py-12">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8">
+              {stats.map((s) => {
+                const isWord = /[぀-ヿ一-鿿A-Z]/.test(s.value)
+                return (
+                  <div key={s.label} className="text-center md:text-left">
+                    <div className="flex items-baseline justify-center md:justify-start gap-1">
+                      <span className={`font-serif text-gold ${isWord ? "text-xl lg:text-2xl" : "text-3xl lg:text-4xl"}`}>
+                        {s.value}
+                      </span>
+                      <span className="text-[12px] text-gold/80">{s.unit}</span>
+                    </div>
+                    <p className="text-[12px] font-medium text-foreground mt-1">{s.label}</p>
+                    <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{s.desc}</p>
                   </div>
-                  <p className="mt-3 text-[11px] tracking-[0.2em] uppercase text-foreground">
-                    {s.label}
+                )
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* ════════════ Sub-hero centered statement ════════════ */}
+        <section className="relative max-w-[880px] mx-auto px-5 lg:px-8 py-20 lg:py-32 text-center overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] max-w-[600px] aspect-square rounded-full bg-gold/[0.03] pointer-events-none" />
+          <p className="relative font-serif text-base lg:text-2xl leading-[2.2] lg:leading-[2.4] text-foreground/90">
+            屋外でも、塩害でも、紫外線でも、
+            <br />
+            錆びない手すりを。
+            <br />
+            <span className="text-gold">メッキ ＋ 塗装の二重防錆</span>で、
+            <br />
+            10 年以上の安心をお届けします。
+          </p>
+        </section>
+
+        {/* ════════════ Section 01 — Outline ════════════ */}
+        <section id="outline" className="border-y border-border bg-card/20 py-20 lg:py-28">
+          <div className="max-w-[1200px] mx-auto px-5 lg:px-8 grid lg:grid-cols-12 gap-8 lg:gap-12">
+            <aside className="lg:col-span-3">
+              <div className="lg:sticky lg:top-24">
+                <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Section 01</p>
+                <h2 className="font-serif text-3xl lg:text-5xl text-foreground leading-none">Outline</h2>
+                <p className="text-[12px] text-muted-foreground mt-3">溶融亜鉛メッキとは</p>
+              </div>
+            </aside>
+            <div className="lg:col-span-9 scroll-mt-24">
+              <h3 className="font-serif text-xl lg:text-3xl text-foreground mb-6 leading-snug">
+                亜鉛が鉄と化学結合し、<br className="hidden lg:block" />
+                犠牲防食で守り続ける。
+              </h3>
+              <div className="space-y-5 mb-10 max-w-2xl">
+                <p className="text-[15px] leading-[1.95] text-foreground/80">
+                  溶融亜鉛メッキ（ドブ漬けメッキ）は、約 450℃ に溶かした亜鉛の浴槽に
+                  鉄製品を丸ごと浸漬する処理です。鉄表面に
+                  <strong className="text-gold">亜鉛と鉄の合金層</strong>が形成され、
+                  化学結合により剥がれにくく耐久性に優れます。
+                </p>
+                <p className="text-[15px] leading-[1.95] text-foreground/80">
+                  単なる塗装と異なり、傷がついても周囲の亜鉛が先に溶けて鉄を守る
+                  <strong className="text-gold">「犠牲防食」</strong>が働きます。
+                  橋梁・鉄塔・ガードレールなど、屋外インフラで広く採用されている信頼性の高い技術です。
+                </p>
+              </div>
+              <div className="border border-border bg-secondary/30 rounded-md p-5 lg:p-8 mb-6">
+                <SacrificialProtectionDiagram />
+                <p className="text-[11px] text-muted-foreground mt-3 text-center tracking-wide">
+                  犠牲防食のしくみ — 傷がついても亜鉛が鉄を守り続けます
+                </p>
+              </div>
+              <div className="border border-border bg-secondary/30 rounded-md p-5 lg:p-8">
+                <CrossSectionDiagram />
+                <p className="text-[11px] text-muted-foreground mt-3 text-center tracking-wide">
+                  ado の二重防錆 — 4 層構造で長期耐久を実現
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ════════════ Section 02 — Process ════════════ */}
+        <section id="process" className="py-20 lg:py-28">
+          <div className="max-w-[1200px] mx-auto px-5 lg:px-8 grid lg:grid-cols-12 gap-8 lg:gap-12">
+            <aside className="lg:col-span-3">
+              <div className="lg:sticky lg:top-24">
+                <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Section 02</p>
+                <h2 className="font-serif text-3xl lg:text-5xl text-foreground leading-none">Process</h2>
+                <p className="text-[12px] text-muted-foreground mt-3">二重防錆の 4 工程</p>
+              </div>
+            </aside>
+            <div className="lg:col-span-9 scroll-mt-24">
+              <h3 className="font-serif text-xl lg:text-3xl text-foreground mb-6 leading-snug">
+                製作からお届けまで、<br className="hidden lg:block" />
+                すべて一貫して行います。
+              </h3>
+              <p className="text-[15px] leading-[1.95] text-foreground/80 mb-8 max-w-2xl">
+                鍛冶職人が一点ずつ手作業で製作した手すりを、専用工場で溶融亜鉛メッキ処理。
+                その上から 2 液型ウレタン塗装で美しく仕上げます。
+              </p>
+
+              {/* Process stage rows */}
+              <div className="space-y-0">
+                {processSteps.map((s) => (
+                  <div key={s.no} className="grid grid-cols-12 gap-3 lg:gap-6 py-5 border-t border-border first:border-t-0">
+                    <div className="col-span-2 lg:col-span-2">
+                      <p className="text-[10px] tracking-[0.3em] text-muted-foreground">{`STEP ${s.no}`}</p>
+                    </div>
+                    <div className="col-span-7 lg:col-span-7">
+                      <h4 className="font-serif text-base lg:text-xl text-foreground mb-1.5 leading-snug">{s.title}</h4>
+                      <p className="text-[13px] lg:text-[14px] leading-[1.85] text-muted-foreground">{s.desc}</p>
+                    </div>
+                    <div className="col-span-3 lg:col-span-3 flex items-center justify-end">
+                      <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-full border border-gold/30 bg-card flex items-center justify-center text-gold">
+                        <ProcessIcon kind={s.icon} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ════════════ Section 02.5 — Atelier (real production footage) ════════════ */}
+        <section id="atelier" className="bg-dark text-white py-20 lg:py-28">
+          <div className="max-w-[1200px] mx-auto px-5 lg:px-8 grid lg:grid-cols-12 gap-8 lg:gap-12">
+            <aside className="lg:col-span-3">
+              <div className="lg:sticky lg:top-24">
+                <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Atelier</p>
+                <h2 className="font-serif text-3xl lg:text-5xl text-white leading-none">制作風景</h2>
+                <p className="text-[12px] text-white/50 mt-3">千葉の工房・実映像</p>
+              </div>
+            </aside>
+            <div className="lg:col-span-9 scroll-mt-24">
+              <p className="text-[15px] leading-[1.95] text-white/80 mb-8 max-w-2xl">
+                ado の屋外用手すりが、千葉の工房で 1 本ずつ手作業で生まれていく様子。
+                製作 → メッキ工場 → 戻し作業 → 塗装の各工程を、実際の動画と作業写真でご覧いただけます。
+              </p>
+
+              {/* Craft notes — post-galvanizing grinding technique + primer application */}
+              <div className="space-y-5 mb-8 max-w-2xl">
+                <div className="border-l-2 border-gold pl-5 lg:pl-6 py-1">
+                  <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">Craft Note 01 — グラインダー</p>
+                  <p className="text-[13px] lg:text-[14px] leading-[1.95] text-white/75">
+                    動画のグラインダー作業は、<strong className="text-white">メッキ工場から戻ってきた直後</strong>の手すりを仕上げる工程です。
+                    亜鉛メッキ後はどうしてもバリや表面の凹凸が残るため、
+                    <strong className="text-gold">メッキ層を削りすぎないよう注意しながら</strong>平らに整えています。
+                    一見地味ですが、塗装の密着と仕上がりの美しさを左右する繊細な作業です。
                   </p>
-                  <p className="mt-1 text-[11px] text-muted-foreground">{s.desc}</p>
+                </div>
+                <div className="border-l-2 border-gold pl-5 lg:pl-6 py-1">
+                  <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">Craft Note 02 — 密着剤</p>
+                  <p className="text-[13px] lg:text-[14px] leading-[1.95] text-white/75">
+                    動画でスプレーガンから吹き付けている<strong className="text-white">無色の液体は「密着剤」</strong>です。
+                    亜鉛メッキの表面と上塗りウレタン塗膜の橋渡しとなる下処理で、
+                    <strong className="text-gold">メッキ層と塗装の密着性を高め</strong>、屋外での長期耐久を確保します。
+                    色がつかないため一見何をしているか分かりにくいですが、二重防錆処理の要になる工程です。
+                  </p>
+                </div>
+              </div>
+
+              {/* Digest video — autoplay, muted, looped */}
+              <div className="relative w-full aspect-video overflow-hidden rounded-md bg-secondary mb-8">
+                <video
+                  src="/videos/galvanizing-digest.mp4"
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  preload="metadata"
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              </div>
+
+              {/* 6-still gallery — production process */}
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
+                {[
+                  { src: "P1700603", caption: "メッキ後のバリ取り・表面平滑化（メッキ層を削りすぎないよう注意）" },
+                  { src: "P1700610", caption: "防塵マスクで密着剤を塗布" },
+                  { src: "P1700608", caption: "完成直前の手すり枠" },
+                  { src: "P1700611", caption: "無色の密着剤をスプレーガンで均一に吹き付け" },
+                  { src: "P1700609", caption: "鉄の馬と作業台" },
+                  { src: "P1700600", caption: "メッキ仕上げ面のテクスチャ" },
+                ].map((still) => (
+                  <div
+                    key={still.src}
+                    className="relative aspect-[4/3] overflow-hidden rounded-sm bg-black"
+                  >
+                    <Image
+                      src={`/images/process/galvanizing-stills/${still.src}.jpg`}
+                      alt={still.caption}
+                      fill
+                      sizes="(max-width: 768px) 50vw, 33vw"
+                      className="object-cover"
+                    />
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2 lg:p-3">
+                      <p className="text-[10px] lg:text-[11px] text-white/90 leading-tight">
+                        {still.caption}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-[11px] text-white/50 mt-4 leading-relaxed">
+                ※ 千葉の工房での実際の制作工程動画より抜粋。
+                すべての屋外用手すりはこの工程を経て、溶融亜鉛メッキ後にお届けします。
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* ════════════ Section 03 — Stories ════════════ */}
+        <section id="stories" className="border-y border-border bg-card/30 py-20 lg:py-28">
+          <div className="max-w-[1200px] mx-auto px-5 lg:px-8 grid lg:grid-cols-12 gap-8 lg:gap-12">
+            <aside className="lg:col-span-3">
+              <div className="lg:sticky lg:top-24">
+                <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Section 03</p>
+                <h2 className="font-serif text-3xl lg:text-5xl text-foreground leading-none">Stories</h2>
+                <p className="text-[12px] text-muted-foreground mt-3">屋外設置のお悩みに応えます</p>
+              </div>
+            </aside>
+            <div className="lg:col-span-9 scroll-mt-24 space-y-12">
+              {voiceCases.map((c) => (
+                <div key={c.label}>
+                  <div className="flex items-center gap-3 mb-5">
+                    <span className="text-[12px] tracking-[0.3em] text-muted-foreground">{c.label}</span>
+                    <span className="flex-1 h-px bg-border" />
+                    <span className="text-[11px] text-muted-foreground">{c.customerType}</span>
+                  </div>
+                  <div className="relative bg-background border border-border rounded-2xl px-6 lg:px-10 py-7 lg:py-9 mb-6">
+                    <p className="font-serif text-base lg:text-2xl leading-relaxed text-foreground/90 text-center">
+                      "{c.quote}"
+                    </p>
+                    <div className="absolute left-1/2 -translate-x-1/2 -bottom-3 w-6 h-6 rotate-45 bg-background border-r border-b border-border" />
+                  </div>
+                  <div className="bg-background/50 border border-border rounded-md p-5 lg:p-6">
+                    <div className="flex items-start gap-3 mb-3">
+                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-gold/40 text-gold text-xs">
+                        ado
+                      </span>
+                      <p className="text-[12px] tracking-[0.2em] text-gold mt-1">職人からのアドバイス</p>
+                    </div>
+                    <p className="text-[14px] leading-[1.95] text-foreground/80 mb-4">{c.advice}</p>
+                    <Link
+                      href={c.link}
+                      className="inline-flex items-center gap-2 text-[12px] tracking-[0.2em] uppercase text-gold border-b border-gold pb-1 hover:opacity-70 transition-opacity"
+                    >
+                      {c.linkLabel} →
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        <div className="max-w-[1000px] mx-auto px-4 lg:px-8 py-16 lg:py-20 space-y-20 lg:space-y-24">
-          {/* ════════════ 1. 仕組み（犠牲防食） ════════════ */}
-          <section>
-            <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-3">How it works</p>
-            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-6">
-              「メッキ」って何が違うの？
-            </h2>
-            <p className="text-[14px] leading-[1.9] text-foreground/80 mb-10 max-w-[760px]">
-              塗装の上から傷がついたとき、塗装だけだと水が入って錆びてしまいます。でも、メッキの下地があると、亜鉛が鉄の身代わりになって溶けてくれる ─ それが「犠牲防食（ぎせいぼうしょく）」のしくみです。
-            </p>
+        {/* ════════════ Section 04 — Compare ════════════ */}
+        <section id="compare" className="py-20 lg:py-28">
+          <div className="max-w-[1200px] mx-auto px-5 lg:px-8 grid lg:grid-cols-12 gap-8 lg:gap-12">
+            <aside className="lg:col-span-3">
+              <div className="lg:sticky lg:top-24">
+                <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Section 04</p>
+                <h2 className="font-serif text-3xl lg:text-5xl text-foreground leading-none">Compare</h2>
+                <p className="text-[12px] text-muted-foreground mt-3">屋外耐久・塩害・紫外線</p>
+              </div>
+            </aside>
+            <div className="lg:col-span-9 scroll-mt-24">
+              <h3 className="font-serif text-xl lg:text-3xl text-foreground mb-6 leading-snug">
+                塗装のみでは屋外で 1〜3 年。<br className="hidden lg:block" />
+                メッキ ＋ 塗装で 10 年以上。
+              </h3>
+              <p className="text-[15px] leading-[1.95] text-foreground/80 mb-10 max-w-2xl">
+                沿岸部の塩害、強い紫外線、雨ざらしの環境でも、
+                ado の二重防錆処理なら長期にわたって美観と強度を保ちます。
+              </p>
 
-            <div className="border border-border bg-card/60 p-6 lg:p-8 rounded-sm">
-              <SacrificialProtectionDiagram />
-            </div>
-          </section>
+              {/* Timeline */}
+              <div className="mb-10">
+                <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">経年変化イメージ</p>
+                <div className="border border-border bg-secondary/30 rounded-md p-6 lg:p-8">
+                  <DurabilityTimeline />
+                </div>
+              </div>
 
-          {/* ════════════ 2. 二重防錆の構造 ════════════ */}
-          <section>
-            <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-3">Double Protection</p>
-            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-6">
-              ado の二重防錆 ─ 4 層構造
-            </h2>
-            <p className="text-[14px] leading-[1.9] text-foreground/80 mb-8 max-w-[760px]">
-              亜鉛メッキ層が「鉄を錆から守る鎧」、その上の 2 液型ウレタン塗装が「鎧を美しく保つコーティング」。両方を重ねて、屋外でも長く美しく、をかなえます。
-            </p>
-
-            <div className="border border-border bg-card/60 p-6 lg:p-8 rounded-sm">
-              <CrossSectionDiagram />
-            </div>
-
-            <blockquote className="mt-10 border-l-2 border-gold pl-6 py-2 italic text-foreground/85 text-[14px] lg:text-[15px] leading-[1.95] max-w-[680px]">
-              メッキだけでも、塗装だけでもない。両方を重ねることで、屋外でも 10 年以上の耐久性を実現しています。
-              <footer className="mt-3 not-italic text-[11px] text-gold tracking-wider">
-                — IRONWORKS ado 鍛冶職人
-              </footer>
-            </blockquote>
-          </section>
-
-          {/* ════════════ 3. 工程 ════════════ */}
-          <section>
-            <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-3">Process</p>
-            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-6">
-              4 つの工程で仕上げます
-            </h2>
-            <p className="text-[14px] leading-[1.9] text-foreground/80 mb-10 max-w-[760px]">
-              制作から仕上げまで、すべて一貫して職人が手を入れます。
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {processSteps.map((s, i) => (
-                <div
-                  key={s.no}
-                  className="border border-border bg-card/60 p-6 rounded-sm relative"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <ProcessIcon kind={s.icon} />
-                    <span className="font-mono text-[11px] tracking-[0.2em] text-gold/80">
-                      {s.no}
+              {/* Radar */}
+              <div className="mb-10">
+                <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">5 軸性能チャート</p>
+                <div className="max-w-[520px] mx-auto">
+                  <PerformanceRadar />
+                  <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center mt-5 text-[12px] md:text-[13px] font-bold">
+                    <span className="inline-flex items-center gap-1.5 text-[#666]">
+                      <span className="inline-block w-3 h-3 border border-[#888] bg-[#88888830]" />
+                      塗装のみ（1液）
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-foreground/70">
+                      <span className="inline-block w-3 h-3 border border-foreground/40 bg-foreground/[0.08]" />
+                      塗装のみ（2液）
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-gold">
+                      <span className="inline-block w-3 h-3 border border-gold bg-gold/20" />
+                      メッキ＋塗装
                     </span>
                   </div>
-                  <h3 className="font-serif text-base text-foreground mb-2">{s.title}</h3>
-                  <p className="text-[12px] leading-[1.8] text-foreground/70">{s.desc}</p>
-
-                  {/* 矢印（次のステップへ） */}
-                  {i < processSteps.length - 1 && (
-                    <span
-                      aria-hidden
-                      className="hidden lg:block absolute top-1/2 -right-3 -translate-y-1/2 text-gold/50 text-lg"
-                    >
-                      →
-                    </span>
-                  )}
                 </div>
-              ))}
+              </div>
+
+              {/* Comparison table */}
+              <div>
+                <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">屋外性能 6 項目比較</p>
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse text-[12px] min-w-[560px]">
+                    <thead>
+                      <tr className="border-b-2 border-gold">
+                        <th className="text-left p-2 md:p-3 text-muted-foreground font-normal whitespace-nowrap">項目</th>
+                        <th className="text-left p-2 md:p-3 text-[#666] font-bold whitespace-nowrap">塗装のみ（1液）</th>
+                        <th className="text-left p-2 md:p-3 text-foreground/70 font-bold whitespace-nowrap">塗装のみ（2液）</th>
+                        <th className="text-left p-2 md:p-3 text-gold font-bold bg-gold/[0.08] whitespace-nowrap">メッキ＋塗装</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {comparison.map((row) => (
+                        <tr key={row.label} className="border-b border-border/50 align-top">
+                          <td className="p-2 md:p-3 text-foreground font-medium whitespace-nowrap">{row.label}</td>
+                          <td className="p-2 md:p-3 text-muted-foreground">
+                            <div>{row.a}</div>
+                            {row.aLevel != null && (
+                              <div className="mt-1">
+                                <StarBar level={row.aLevel} color="muted" />
+                              </div>
+                            )}
+                          </td>
+                          <td className="p-2 md:p-3 text-foreground/80">
+                            <div>{row.b}</div>
+                            {row.bLevel != null && (
+                              <div className="mt-1">
+                                <StarBar level={row.bLevel} color="muted" />
+                              </div>
+                            )}
+                          </td>
+                          <td className="p-2 md:p-3 text-foreground bg-gold/[0.08]">
+                            <div>{row.c}</div>
+                            {row.cLevel != null && (
+                              <div className="mt-1">
+                                <StarBar level={row.cLevel} color="gold" />
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* ════════════ 4. タイムライン ════════════ */}
-          <section>
-            <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-3">Timeline</p>
-            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-6">
-              10 年後、20 年後はどうなる？
-            </h2>
-            <p className="text-[14px] leading-[1.9] text-foreground/80 mb-10 max-w-[760px]">
-              塗装のみと、ado の二重防錆では、屋外での経年変化がまったく違ってきます。
-            </p>
-
-            <div className="border border-border bg-card/60 p-6 lg:p-8 rounded-sm">
-              <DurabilityTimeline />
+        {/* ════════════ Section 05 — Flow ════════════ */}
+        <section id="flow" className="border-y border-border bg-card/20 py-20 lg:py-28">
+          <div className="max-w-[1200px] mx-auto px-5 lg:px-8 grid lg:grid-cols-12 gap-8 lg:gap-12">
+            <aside className="lg:col-span-3">
+              <div className="lg:sticky lg:top-24">
+                <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Section 05</p>
+                <h2 className="font-serif text-3xl lg:text-5xl text-foreground leading-none">Flow</h2>
+                <p className="text-[12px] text-muted-foreground mt-3">ご注文から設置までの 3 ステップ</p>
+              </div>
+            </aside>
+            <div className="lg:col-span-9 scroll-mt-24">
+              <div className="space-y-0">
+                {flowSteps.map((s, i) => (
+                  <div
+                    key={s.no}
+                    className="grid grid-cols-12 gap-4 lg:gap-8 items-start py-8 border-t border-border first:border-t-0"
+                  >
+                    <div className="col-span-3 lg:col-span-2">
+                      <p className="text-[12px] tracking-[0.3em] text-muted-foreground">{s.no}</p>
+                    </div>
+                    <div className="col-span-9 lg:col-span-7">
+                      <h3 className="font-serif text-lg lg:text-2xl text-foreground mb-3 leading-snug">
+                        {s.title}
+                      </h3>
+                      <p className="text-[14px] lg:text-[15px] leading-[1.95] text-foreground/75">
+                        {s.desc}
+                      </p>
+                    </div>
+                    <div className="col-span-12 lg:col-span-3 flex justify-center lg:justify-end">
+                      <div className="w-20 h-20 lg:w-28 lg:h-28 rounded-full bg-card border border-gold/20 flex items-center justify-center">
+                        <span className="font-serif text-3xl lg:text-5xl text-gold/40 leading-none">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-12 text-center">
+                <PrimaryCTA href="/contact" variant="gold" size="lg">
+                  屋外手すりのお見積もり
+                </PrimaryCTA>
+              </div>
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* ════════════ 5. レーダー比較 ════════════ */}
-          <section className="grid lg:grid-cols-[1fr_1fr] gap-10 lg:gap-16 items-center">
-            <div>
-              <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-3">
-                Performance
-              </p>
-              <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-6">
-                5 つの軸で見る、屋内 vs 屋外仕様。
-              </h2>
-              <p className="text-[14px] leading-[1.9] text-foreground/80 mb-6">
-                ado の塗装はもともとプロ仕様の 2 液型ウレタンなので、屋内・軒下なら塗装のみでもしっかり長持ちします。屋外で雨ざらしになる場所では、亜鉛メッキ層を加えることで、塩害・紫外線・傷からの保護がぐっと底上げされます。
-              </p>
-              <ul className="space-y-2 text-[13px] text-foreground/75">
-                <li>● 沿岸部の塩害環境にも対応（メッキ層追加で）</li>
-                <li>● 紫外線で塗膜が薄くなっても、メッキ層が下で保護継続</li>
-                <li>● 屋外用途のメンテナンスは「ほぼ不要」、長期トータルで経済的</li>
-              </ul>
-            </div>
-            <div className="border border-border bg-card/60 p-4 lg:p-6 rounded-sm">
-              <PerformanceRadar />
-            </div>
-          </section>
-
-          {/* ════════════ 6. 比較テーブル ════════════ */}
-          <section>
-            <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-3">Comparison</p>
-            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-4">
-              塗装の種類で、こんなに変わります
-            </h2>
-            <p className="text-[14px] leading-[1.9] text-foreground/80 mb-8 max-w-[760px]">
-              ado の屋内用は <strong className="text-foreground">2 液型ウレタン塗装</strong>（自動車塗装と同じグレード）を標準採用しているので、塗装のみでも軒下や室内階段ならしっかり長持ちします。屋外にがっつり雨ざらしになる場所では、さらに <strong className="text-foreground">亜鉛メッキ</strong> を重ねて 10 年以上の耐久性をかなえています。
-            </p>
-
-            <div className="overflow-x-auto border border-border rounded-sm">
-              <table className="w-full text-[12px] lg:text-[13px]">
-                <thead>
-                  <tr className="border-b border-border bg-card/40">
-                    <th className="text-left p-4 text-muted-foreground font-normal w-[22%]">項目</th>
-                    <th className="text-left p-4 text-muted-foreground font-normal">
-                      <div className="font-medium text-foreground/80">1 液型のみ</div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5">DIY・ホームセンター</div>
-                    </th>
-                    <th className="text-left p-4 text-foreground font-normal">
-                      <div className="font-medium text-foreground">2 液型ウレタンのみ</div>
-                      <div className="text-[10px] text-muted-foreground mt-0.5">ado 屋内・軒下標準</div>
-                    </th>
-                    <th className="text-left p-4 text-gold font-normal bg-gold/5">
-                      <div className="font-medium">2 液型 ＋ 亜鉛メッキ</div>
-                      <div className="text-[10px] text-gold/70 mt-0.5">ado 屋外標準</div>
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {comparison.map((row) => (
-                    <tr key={row.label} className="border-b border-border/40 last:border-b-0">
-                      <td className="p-4 text-foreground/85">{row.label}</td>
-                      <td className="p-4 text-foreground/65">
-                        <div>{row.a}</div>
-                        {row.aLevel !== undefined && (
-                          <div className="mt-1.5">
-                            <StarBar level={row.aLevel} color="muted" />
-                          </div>
-                        )}
-                      </td>
-                      <td className="p-4 text-foreground/85">
-                        <div>{row.b}</div>
-                        {row.bLevel !== undefined && (
-                          <div className="mt-1.5">
-                            <StarBar level={row.bLevel} color="muted" />
-                          </div>
-                        )}
-                      </td>
-                      <td className="p-4 text-foreground bg-gold/5">
-                        <div>{row.c}</div>
-                        {row.cLevel !== undefined && (
-                          <div className="mt-1.5">
-                            <StarBar level={row.cLevel} color="gold" />
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="mt-4 text-[12px] text-muted-foreground">
-              ※ 1 液型と 2 液型の違いの詳細は{" "}
-              <Link href="/paint" className="text-gold border-b border-gold/40 hover:border-gold transition-colors">
-                塗装ページ
-              </Link>{" "}
-              をご覧ください。
-            </p>
-          </section>
-
-          {/* ════════════ 7. FAQ ════════════ */}
-          <section>
-            <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-3">FAQ</p>
-            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-6">
-              よくいただくご質問
-            </h2>
-
-            <div className="border-t border-border">
-              {faq.map((item, i) => (
+        {/* ════════════ FAQ ════════════ */}
+        <section id="faq" className="py-20 lg:py-28">
+          <div className="max-w-[1200px] mx-auto px-5 lg:px-8 grid lg:grid-cols-12 gap-8 lg:gap-12">
+            <aside className="lg:col-span-3">
+              <div className="lg:sticky lg:top-24">
+                <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">FAQ</p>
+                <h2 className="font-serif text-3xl lg:text-5xl text-foreground leading-none">Q&A</h2>
+                <p className="text-[12px] text-muted-foreground mt-3">よくあるご質問</p>
+              </div>
+            </aside>
+            <div className="lg:col-span-9 scroll-mt-24 space-y-3">
+              {faq.map((item) => (
                 <details
-                  key={i}
-                  className="group border-b border-border [&_summary::-webkit-details-marker]:hidden"
+                  key={item.q}
+                  className="group border border-border bg-card rounded-md overflow-hidden"
                 >
-                  <summary className="flex justify-between items-start gap-4 cursor-pointer py-5 text-foreground/90 hover:text-gold transition-colors list-none">
-                    <span className="text-[14px] leading-[1.7]">
-                      <span className="text-gold font-mono mr-3">Q.</span>
+                  <summary className="cursor-pointer list-none p-5 flex items-start gap-4 hover:bg-secondary/30 transition-colors">
+                    <span className="text-gold font-serif text-base mt-0.5 shrink-0">Q.</span>
+                    <span className="flex-1 text-[14px] lg:text-[15px] font-medium text-foreground">
                       {item.q}
                     </span>
-                    <span className="text-gold text-sm flex-none mt-1 transition-transform group-open:rotate-180">
-                      ▼
+                    <span className="text-gold text-xl leading-none transition-transform group-open:rotate-45 shrink-0">
+                      ＋
                     </span>
                   </summary>
-                  <div className="pb-6 pl-7 pr-2 text-[13px] leading-[2] text-foreground/75">
-                    <span className="text-gold/70 font-mono mr-2">A.</span>
-                    {item.a}
+                  <div className="px-5 pb-5 pt-2 flex items-start gap-4 border-t border-border/40">
+                    <span className="text-muted-foreground font-serif text-base mt-0.5 shrink-0">A.</span>
+                    <p className="flex-1 text-[13px] lg:text-[14px] leading-[1.95] text-foreground/75">
+                      {item.a}
+                    </p>
                   </div>
                 </details>
               ))}
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* ════════════ 8. 対応製品 ════════════ */}
-          <section>
-            <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-3">Products</p>
-            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-6">
-              亜鉛メッキ仕上げの製品
-            </h2>
-            <p className="text-[14px] leading-[1.9] text-foreground/80 mb-10 max-w-[760px]">
-              ado の屋外設置製品はすべて二重防錆処理を標準装備。代表的なモデルをご紹介します。
-            </p>
-
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {products.map((p) => (
-                <Link
-                  key={p.slug}
-                  href={`/products/${p.slug}`}
-                  className="group block border border-border hover:border-gold transition-colors rounded-sm overflow-hidden bg-card/60"
-                >
-                  <div className="relative aspect-[4/3] bg-card overflow-hidden">
-                    <Image
-                      src={galleryUrl(`${p.imgId}.jpg`)}
-                      alt={p.title}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    />
-                  </div>
-                  <div className="p-5">
-                    <p className="text-[10px] tracking-[0.2em] uppercase text-gold mb-1">
-                      Outdoor Handrail
-                    </p>
-                    <h3 className="font-serif text-base text-foreground mb-1">{p.title}</h3>
-                    <p className="text-[12px] text-foreground/65">{p.subtitle}</p>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
-
-          {/* ════════════ 9. 屋内向けへの導線 ════════════ */}
-          <section className="border border-border bg-card/40 p-6 lg:p-8 rounded-sm flex flex-col lg:flex-row lg:items-center gap-5 justify-between">
-            <div>
-              <p className="text-[10px] tracking-[0.2em] uppercase text-gold mb-1">Indoor</p>
-              <h3 className="font-serif text-lg text-foreground mb-1">屋内用の塗装について</h3>
-              <p className="text-[13px] text-foreground/70">
-                屋内設置のアイアン製品は、2 液型ウレタン塗装で美しく仕上げています。
+        {/* ════════════ Section 06 — Products ════════════ */}
+        <section id="products" className="border-y border-border bg-card/20 py-20 lg:py-28">
+          <div className="max-w-[1200px] mx-auto px-5 lg:px-8 grid lg:grid-cols-12 gap-8 lg:gap-12">
+            <aside className="lg:col-span-3">
+              <div className="lg:sticky lg:top-24">
+                <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Section 06</p>
+                <h2 className="font-serif text-3xl lg:text-5xl text-foreground leading-none">Products</h2>
+                <p className="text-[12px] text-muted-foreground mt-3">二重防錆処理 採用製品</p>
+              </div>
+            </aside>
+            <div className="lg:col-span-9 scroll-mt-24">
+              <p className="text-[15px] leading-[1.95] text-foreground/80 mb-8 max-w-2xl">
+                屋外設置のアイアン製品には、溶融亜鉛メッキ ＋ 2 液型ウレタン塗装の二重防錆処理を施しています。
               </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+                {products.map((p) => (
+                  <Link
+                    key={p.slug}
+                    href={`/products/${p.slug}`}
+                    className="group block border border-border bg-card overflow-hidden transition-all duration-300 hover:border-gold hover:-translate-y-1"
+                  >
+                    <div className="relative aspect-square bg-secondary overflow-hidden">
+                      <Image
+                        src={galleryUrl(`${p.imgId}.jpg`)}
+                        alt={p.title}
+                        fill
+                        sizes="(max-width: 640px) 100vw, 33vw"
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-[13px] font-medium text-foreground mb-1">{p.title}</h3>
+                      <p className="text-[12px] text-muted-foreground">{p.subtitle}</p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              {/* Indoor cross-link */}
+              <div className="border border-border bg-card p-6 lg:p-8 rounded-md">
+                <h3 className="font-serif text-base lg:text-lg text-foreground mb-2">
+                  屋内用製品の塗装について
+                </h3>
+                <p className="text-[13px] leading-[1.95] text-foreground/75 mb-4">
+                  屋内設置の手すりは 2 液型ウレタン塗装で仕上げています。
+                </p>
+                <Link
+                  href="/paint"
+                  className="inline-block text-[11px] tracking-[0.2em] uppercase text-gold border-b border-gold hover:opacity-70 transition-opacity"
+                >
+                  2 液型ウレタン塗装について →
+                </Link>
+              </div>
             </div>
-            <Link
-              href="/paint"
-              className="inline-block text-[11px] tracking-[0.2em] uppercase text-gold border-b border-gold hover:opacity-70 transition-opacity self-start lg:self-auto"
-            >
-              2 液型ウレタン塗装について →
-            </Link>
-          </section>
+          </div>
+        </section>
 
-          {/* ════════════ 10. CTA ════════════ */}
-          <section className="text-center pt-10 border-t border-border">
-            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-4">
-              屋外設置のご相談はこちらから。
+        {/* ════════════ Footer Banner CTA ════════════ */}
+        <section className="py-16 lg:py-24 bg-dark text-white">
+          <div className="max-w-[880px] mx-auto px-5 lg:px-8 text-center">
+            <p className="text-[10px] tracking-[0.5em] uppercase text-gold mb-5">Get Started</p>
+            <h2 className="font-serif text-2xl lg:text-4xl mb-6 leading-snug">
+              屋外でも、塩害でも、<br />
+              10 年以上の安心を。
             </h2>
-            <p className="text-[14px] text-foreground/75 leading-[1.9] mb-8 max-w-[560px] mx-auto">
-              設置場所・サイズ・色味のご希望を教えてください。図面・お見積りを無料でご提案いたします。
+            <p className="text-[14px] lg:text-[15px] leading-[1.95] text-white/70 mb-10 max-w-xl mx-auto">
+              設置場所・サイズ・現状のお悩みについて、お気軽にお問い合わせください。
+              職人が直接ご返答いたします。
             </p>
-            <PrimaryCTA href="/contact" variant="gold" size="lg" withShimmer={true}>
+            <PrimaryCTA href="/contact" variant="gold" size="lg">
               お問い合わせする
             </PrimaryCTA>
-          </section>
-        </div>
+          </div>
+        </section>
       </main>
       <Footer />
     </>
