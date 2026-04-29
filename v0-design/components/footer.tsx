@@ -3,6 +3,7 @@
 import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Instagram, Facebook, Mail } from "lucide-react"
 import { LineIcon } from "@/components/ui/line-icon"
 
@@ -57,15 +58,21 @@ export function Footer() {
             transition={{ duration: 0.6 }}
             className="lg:col-span-1"
           >
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-full bg-gold flex items-center justify-center">
-                <span className="text-white font-serif text-lg">鍛</span>
+            <Link
+              href="/"
+              aria-label="IRONWORKS ado トップへ"
+              className="inline-block mb-6 group"
+            >
+              <div className="relative w-12 h-14 transition-opacity duration-300 group-hover:opacity-70">
+                <Image
+                  src="/images/ado_logo_W.png"
+                  alt="IRONWORKS ado"
+                  fill
+                  sizes="48px"
+                  className="object-contain object-left"
+                />
               </div>
-              <div className="flex flex-col">
-                <span className="text-xs tracking-[0.3em] text-white/50 uppercase">IRONWORKS</span>
-                <span className="font-serif text-xl tracking-wider">ado</span>
-              </div>
-            </div>
+            </Link>
             <p className="text-white/60 text-sm leading-relaxed mb-6">
               千葉の工房から、
               <br />
