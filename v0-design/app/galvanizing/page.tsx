@@ -790,15 +790,26 @@ export default function GalvanizingPage() {
                 製作 → メッキ工場 → 戻し作業 → 塗装の各工程を、実際の動画と作業写真でご覧いただけます。
               </p>
 
-              {/* Craft note — post-galvanizing grinding technique */}
-              <div className="border-l-2 border-gold pl-5 lg:pl-6 py-1 mb-8 max-w-2xl">
-                <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">Craft Note</p>
-                <p className="text-[13px] lg:text-[14px] leading-[1.95] text-white/75">
-                  動画のグラインダー作業は、<strong className="text-white">メッキ工場から戻ってきた直後</strong>の手すりを仕上げる工程です。
-                  亜鉛メッキ後はどうしてもバリや表面の凹凸が残るため、
-                  <strong className="text-gold">メッキ層を削りすぎないよう注意しながら</strong>平らに整えています。
-                  一見地味ですが、塗装の密着と仕上がりの美しさを左右する繊細な作業です。
-                </p>
+              {/* Craft notes — post-galvanizing grinding technique + primer application */}
+              <div className="space-y-5 mb-8 max-w-2xl">
+                <div className="border-l-2 border-gold pl-5 lg:pl-6 py-1">
+                  <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">Craft Note 01 — グラインダー</p>
+                  <p className="text-[13px] lg:text-[14px] leading-[1.95] text-white/75">
+                    動画のグラインダー作業は、<strong className="text-white">メッキ工場から戻ってきた直後</strong>の手すりを仕上げる工程です。
+                    亜鉛メッキ後はどうしてもバリや表面の凹凸が残るため、
+                    <strong className="text-gold">メッキ層を削りすぎないよう注意しながら</strong>平らに整えています。
+                    一見地味ですが、塗装の密着と仕上がりの美しさを左右する繊細な作業です。
+                  </p>
+                </div>
+                <div className="border-l-2 border-gold pl-5 lg:pl-6 py-1">
+                  <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">Craft Note 02 — 密着剤</p>
+                  <p className="text-[13px] lg:text-[14px] leading-[1.95] text-white/75">
+                    動画でスプレーガンから吹き付けている<strong className="text-white">無色の液体は「密着剤」</strong>です。
+                    亜鉛メッキの表面と上塗りウレタン塗膜の橋渡しとなる下処理で、
+                    <strong className="text-gold">メッキ層と塗装の密着性を高め</strong>、屋外での長期耐久を確保します。
+                    色がつかないため一見何をしているか分かりにくいですが、二重防錆処理の要になる工程です。
+                  </p>
+                </div>
               </div>
 
               {/* Digest video — autoplay, muted, looped */}
@@ -818,9 +829,9 @@ export default function GalvanizingPage() {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-3">
                 {[
                   { src: "P1700603", caption: "メッキ後のバリ取り・表面平滑化（メッキ層を削りすぎないよう注意）" },
-                  { src: "P1700610", caption: "防塵マスクでの塗装作業" },
+                  { src: "P1700610", caption: "防塵マスクで密着剤を塗布" },
                   { src: "P1700608", caption: "完成直前の手すり枠" },
-                  { src: "P1700611", caption: "スプレーガンで均一に吹き付け" },
+                  { src: "P1700611", caption: "無色の密着剤をスプレーガンで均一に吹き付け" },
                   { src: "P1700609", caption: "鉄の馬と作業台" },
                   { src: "P1700600", caption: "メッキ仕上げ面のテクスチャ" },
                 ].map((still) => (
