@@ -11,7 +11,7 @@ const services = [
     title: "職人手作り",
     description: "一本一本、熟練の鍛冶職人が丹精込めて手作り。",
     backTitle: "こだわりの技術",
-    backDescription: "機械では出せない温かみと個性。40年以上の経験を持つ職人が、伝統の技法で仕上げます。",
+    backDescription: "機械では出せない温かみと個性。熟練の職人が伝統の技法で一本ずつ仕上げます。",
   },
   {
     icon: Ruler,
@@ -24,8 +24,8 @@ const services = [
     icon: Truck,
     title: "送料見積り",
     description: "北海道から沖縄まで、ご希望の配送先までお届けいたします。",
-    backTitle: "ご依頼に合わせた個別見積もり",
-    backDescription: "送料はサイズ・配送先により変動するため、ご依頼内容に応じて個別にお見積もりいたします。設置をご希望の場合は施工費を別途ご案内します。",
+    backTitle: "個別にお見積もり",
+    backDescription: "サイズ・配送先により送料が変動するため、ご依頼内容に応じて個別にご案内します。",
   },
   {
     icon: LineIcon,

@@ -112,7 +112,7 @@ export function HeroSection() {
     <section
       ref={sectionRef}
       className="relative"
-      style={{ height: "350vh" }}
+      style={{ height: "500vh" }}
     >
       {/* ── 固定背景：カルーセル（動画 + 画像5枚、全スライドを常時マウントしopacityでクロスフェード） ── */}
       <div

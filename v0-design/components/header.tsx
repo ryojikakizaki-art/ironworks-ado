@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
+import Image from "next/image"
 import { Menu, X, ShoppingBag } from "lucide-react"
 
 export function Header() {
@@ -48,25 +49,16 @@ export function Header() {
         <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo - Left */}
-            <Link href="/" className="group flex items-center gap-2 shrink-0">
-              <div className="relative">
-                <div className={`w-8 h-8 lg:w-9 lg:h-9 rounded-full flex items-center justify-center group-hover:bg-gold transition-colors duration-300 ${
-                  overHero ? "bg-white/15 backdrop-blur-sm border border-white/40" : "bg-dark"
-                }`}>
-                  <span className="text-white font-serif text-sm lg:text-base">鍛</span>
-                </div>
-              </div>
-              <div className="flex flex-col leading-tight">
-                <span className={`text-[10px] tracking-[0.2em] uppercase transition-colors duration-500 ${
-                  overHero ? "text-white/70" : "text-muted-foreground"
-                }`}>
-                  IRONWORKS
-                </span>
-                <span className={`font-serif text-lg lg:text-xl tracking-wider transition-colors duration-500 ${
-                  overHero ? "text-white" : "text-dark"
-                }`}>
-                  ado
-                </span>
+            <Link href="/" className="group shrink-0 flex items-center" aria-label="IRONWORKS ado トップへ">
+              <div className="relative w-10 h-12 lg:w-12 lg:h-14 transition-opacity duration-300 group-hover:opacity-80">
+                <Image
+                  src={overHero ? "/images/ado_logo_W.png" : "/images/ado_logo_K.png"}
+                  alt="IRONWORKS ado"
+                  fill
+                  priority
+                  sizes="(min-width: 1024px) 48px, 40px"
+                  className="object-contain object-left"
+                />
               </div>
             </Link>
 
@@ -210,15 +202,22 @@ export function Header() {
                 
                 {/* Menu Footer */}
                 <div className="p-6 border-t border-border bg-muted/30">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-dark flex items-center justify-center">
-                      <span className="text-white font-serif text-sm">鍛</span>
+                  <Link
+                    href="/"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="inline-block"
+                    aria-label="IRONWORKS ado トップへ"
+                  >
+                    <div className="relative w-10 h-12">
+                      <Image
+                        src="/images/ado_logo_K.png"
+                        alt="IRONWORKS ado"
+                        fill
+                        sizes="40px"
+                        className="object-contain object-left"
+                      />
                     </div>
-                    <div className="flex flex-col leading-tight">
-                      <span className="text-[9px] tracking-[0.2em] uppercase text-muted-foreground">IRONWORKS</span>
-                      <span className="font-serif text-base tracking-wider text-dark">ado</span>
-                    </div>
-                  </div>
+                  </Link>
                 </div>
               </div>
             </motion.div>
