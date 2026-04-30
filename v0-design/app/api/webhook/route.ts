@@ -390,12 +390,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object as Stripe.Checkout.Session;
+  // 入金確定後の本処理（カレンダー登録 + 確認メール送信）。
+  // - カード: checkout.session.completed が `paid` で届く → 即実行
+  // - コンビニ等の非同期決済: completed は `unpaid` で届く（支払指示の発行のみ）→
+  //   実際の入金は checkout.session.async_payment_succeeded で通知される → そこで実行
+  async function runPostPaymentFlow(session: Stripe.Checkout.Session, source: string) {
     const meta = session.metadata || {};
     const isSimpleProduct = meta.product_type === 'simple';
     console.log(
-      '[webhook] checkout.session.completed for',
+      `[webhook] runPostPaymentFlow (${source}) for`,
       meta.product_name,
       isSimpleProduct ? '[SimpleProduct]' : '[手すり]'
     );
@@ -409,7 +412,6 @@ export async function POST(request: NextRequest) {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       console.error('[webhook] Calendar error:', message);
-      // カレンダーエラーでもwebhookは成功応答を返す
     }
 
     try {
@@ -421,8 +423,42 @@ export async function POST(request: NextRequest) {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       console.error('[webhook] Order email error:', message);
-      // メール送信エラーでもwebhookは成功応答を返す
     }
+  }
+
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as Stripe.Checkout.Session;
+    const meta = session.metadata || {};
+    const paymentStatus = session.payment_status;
+    console.log(
+      '[webhook] checkout.session.completed',
+      `payment_status=${paymentStatus}`,
+      meta.product_name
+    );
+
+    if (paymentStatus === 'paid') {
+      // カード等の即時決済 — そのまま本処理
+      await runPostPaymentFlow(session, 'completed/paid');
+    } else {
+      // コンビニ決済等で支払指示のみ発行された段階。
+      // Stripe が顧客にコンビニ番号メールを自動送信するため、こちらは入金待機。
+      // 入金確定は async_payment_succeeded で通知される。
+      console.log(
+        '[webhook] Async payment pending (likely konbini). Awaiting async_payment_succeeded.'
+      );
+    }
+  } else if (event.type === 'checkout.session.async_payment_succeeded') {
+    const session = event.data.object as Stripe.Checkout.Session;
+    await runPostPaymentFlow(session, 'async_payment_succeeded');
+  } else if (event.type === 'checkout.session.async_payment_failed') {
+    const session = event.data.object as Stripe.Checkout.Session;
+    const meta = session.metadata || {};
+    console.warn(
+      '[webhook] Async payment failed (konbini expired/cancelled) for',
+      meta.product_name,
+      session.id
+    );
+    // 期限切れは Stripe 側で顧客にメール通知される。サーバ側は記録のみ。
   }
 
   return NextResponse.json({ received: true });

@@ -48,7 +48,12 @@ export async function POST(request: NextRequest) {
     const inclusiveTaxRates = taxInclusiveId ? { tax_rates: [taxInclusiveId] } : {};
 
     const session = await stripeClient.checkout.sessions.create({
-      payment_method_types: ['card'],
+      payment_method_types: ['card', 'konbini'],
+      payment_method_options: {
+        konbini: {
+          expires_after_days: 3,
+        },
+      },
       line_items: [
         {
           price_data: {

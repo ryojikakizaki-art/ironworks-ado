@@ -184,8 +184,17 @@ export async function POST(request: NextRequest) {
     const inclusiveTaxRates = taxInclusiveId ? { tax_rates: [taxInclusiveId] } : {};
     const exclusiveTaxRates = taxExclusiveId ? { tax_rates: [taxExclusiveId] } : {};
 
+    // 手すりは ¥18,000〜（コンビニ決済の上限 ¥300,000 を超える商品もあるため、
+    // Stripe 側が決済額に応じて konbini を自動で表示/非表示する）
     const session = await stripeClient.checkout.sessions.create({
-      payment_method_types: ['card'],
+      payment_method_types: ['card', 'konbini'],
+      payment_method_options: {
+        konbini: {
+          // 注文番号発行から支払期限まで 3 日（Stripe 既定 7 日）
+          // 制作開始を遅らせないため短めに設定
+          expires_after_days: 3,
+        },
+      },
       line_items: [
         {
           price_data: {
