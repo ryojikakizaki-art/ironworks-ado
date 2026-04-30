@@ -61,6 +61,7 @@ function buildItem(item: FeedItem): string {
     `      <g:brand>${escapeXml(SHOP_NAME)}</g:brand>`,
     `      <g:identifier_exists>false</g:identifier_exists>`,
     `      <g:product_type>${escapeXml(item.productType)}</g:product_type>`,
+    `      <g:custom_label_0>ado</g:custom_label_0>`,
     `      <g:shipping><g:country>JP</g:country><g:service>佐川急便</g:service><g:price>0 JPY</g:price></g:shipping>`,
     "    </item>",
   ].join("\n")
