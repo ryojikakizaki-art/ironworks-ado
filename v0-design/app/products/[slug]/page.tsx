@@ -14,6 +14,7 @@ import { ZakinEditor, type ZakinState } from "@/components/drawing-modal/zakin-e
 import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants"
 import { getProductFull, galleryUrl, type FeatureIconName } from "@/lib/products/display"
 import { getSimpleProduct } from "@/lib/products/simple"
+import { getProductStructuredData } from "@/lib/products/structured-data"
 import { SimpleProductPage } from "@/components/simple-product-page"
 import { calcShipping, type ProductType } from "@/lib/shipping/sagawa"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
@@ -243,8 +244,16 @@ export default function ProductDetailPage() {
     setSelectedImage((prev) => (prev - 1 + productImages.length) % productImages.length)
   }
 
+  const structuredData = getProductStructuredData(slug)
+
   return (
     <>
+      {structuredData && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+      )}
       <Header />
       
       <main className="pt-20 lg:pt-24 pb-20 bg-background">
