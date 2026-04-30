@@ -5,10 +5,9 @@
 商品ページで価格計算・SVG生成・Stripe決済を行う。
 
 ## 技術スタック
-- HTML / CSS / バニラJS のみ（item/*.html）
-- v0-design/ は Next.js（本番コード）
-- フレームワーク・npm・ビルドツールは一切追加しない
-- 完全静的サイト
+- 本番: v0-design/ (Next.js)
+- API: api/ (Vercel Functions / Stripe / Google Calendar / Resend)
+- 旧版: item/, _archive_legacy/ (next.config.mjs の 301 redirects で吸収済み)
 
 ## インフラ
 - ホスティング: Vercel
@@ -16,13 +15,40 @@
 - 決済: Stripe
 
 ## ファイル構成
+```
 ironworks-ado/
 ├── CLAUDE.md
-├── index.html
-├── v0-design/          ← 本番コード（Next.js）
-├── item/               ← 旧版（原則編集不可。例外: 戸籍正字「蠣﨑」統一など、明示的にユーザーが許可した場合のみ更新可）
-├── images/
-└── item/images/
+├── package.json, vercel.json     ← デプロイ設定
+├── v0-design/                    ← 本番コード（Next.js）
+├── api/                          ← Vercel Functions (checkout/webhook/contact/session)
+├── js/                           ← API共有ライブラリ (vercel.json から参照)
+├── images/                       ← 旧版時代の共通画像（参照は限定的）
+├── item/                         ← 旧版静的HTML（編集不可・next.config.mjsで301リダイレクト）
+├── _archive_legacy/              ← 旧版静的サイト（編集不要・301で吸収済み）
+├── drafting-agent/               ← 別サービス (FastAPI + MCP, Railway デプロイ)
+├── node_modules/                 ← npm依存 (stripe / googleapis)
+└── ironworks-ado-calendar-*.json ← Google Calendar 鍵 (.gitignore済み・触らない)
+```
+
+## 新規ファイル保存ルール
+
+新しいファイルを作る前に、用途に応じた保存先を判断する。直下に「とりあえず」置かない。
+
+| 用途 | 保存先 |
+|---|---|
+| 本番コード (Next.js) | `v0-design/app/` `components/` `lib/` `hooks/` |
+| 画像・アイコン (Web用) | `v0-design/public/images/` |
+| Vercel Functions | `api/` |
+| API 共有ロジック | `js/` |
+| drafting-agent (FastAPI) | `drafting-agent/` |
+| メモ・草案・実験 | `_drafts/`（なければ作る） |
+| 大型メディア (>10MB の画像/動画) | リポジトリ外。外付けHDD `/Volumes/Elements/ironworks-ado_アーカイブ/` へ |
+| 機密 (鍵 / API key / パスワード) | リポジトリ外。やむを得ず置くときは `.gitignore` に必ず追加 |
+
+NG パターン：
+- 直下に「とりあえず」HTML や画像を置く → 散らばり化
+- 大型メディア（.mov, 大量の .jpg）を repo に置く → fsevents 負荷でフリーズの原因
+- 機密 JSON を直下にコミット → 即取り消し対応が必要
 
 ---
 
