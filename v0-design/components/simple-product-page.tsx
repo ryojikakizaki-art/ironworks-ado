@@ -10,6 +10,7 @@ import { Footer } from "@/components/footer"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
 import type { SimpleProduct } from "@/lib/products/simple"
 import { galleryUrl } from "@/lib/products/display"
+import { getProductStructuredData } from "@/lib/products/structured-data"
 
 /**
  * シンプルな商品詳細ページ（手すり以外の 17 商品向け）
@@ -58,8 +59,16 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
     }
   }
 
+  const structuredData = getProductStructuredData(product.slug)
+
   return (
     <main className="min-h-screen bg-white">
+      {structuredData && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
+      )}
       <Header />
 
       {/* ── パンくず ── */}
