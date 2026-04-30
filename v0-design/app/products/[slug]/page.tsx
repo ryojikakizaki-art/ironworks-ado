@@ -14,6 +14,7 @@ import { ZakinEditor, type ZakinState } from "@/components/drawing-modal/zakin-e
 import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants"
 import { getProductFull, galleryUrl, type FeatureIconName } from "@/lib/products/display"
 import { getSimpleProduct } from "@/lib/products/simple"
+import { getRelatedProducts } from "@/lib/products/catalog"
 import { getProductStructuredData } from "@/lib/products/structured-data"
 import { SimpleProductPage } from "@/components/simple-product-page"
 import { calcShipping, type ProductType } from "@/lib/shipping/sagawa"
@@ -40,11 +41,10 @@ const prefectures = [
   "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"
 ]
 
-const relatedProducts = [
-  { name: "Claire クレール", price: "¥42,000〜", image: galleryUrl("0a0c0c78f9f636cca733.jpg"), href: "/products/claire" },
-  { name: "Marcel マルセル", price: "¥36,000〜", image: galleryUrl("939d0690971c550c1dd9.jpg"), href: "/products/marcel" },
-  { name: "Émile エミール", price: "¥45,800〜", image: galleryUrl("2d1043dcd7658a96e5f3.jpg"), href: "/products/emile" },
-]
+function priceLabel(price: number): string {
+  if (price <= 0) return "お見積もり"
+  return `¥${price.toLocaleString()}〜`
+}
 
 export default function ProductDetailPage() {
   const routeParams = useParams<{ slug: string }>()
@@ -877,29 +877,33 @@ export default function ProductDetailPage() {
             )}
 
             {/* Related Products */}
-            <section>
-              <h2 className="font-serif text-2xl mb-6">関連商品</h2>
-              <div className="grid sm:grid-cols-3 gap-6">
-                {relatedProducts.map((product, index) => (
-                  <motion.div
-                    key={index}
-                    whileHover={{ y: -8 }}
-                    className="group cursor-pointer"
-                  >
-                    <div className="aspect-square bg-secondary rounded-lg overflow-hidden mb-4 relative">
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        fill
-                        className="object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                    <h3 className="font-serif text-lg mb-1">{product.name}</h3>
-                    <p className="text-[13px] text-muted-foreground">{product.price}</p>
-                  </motion.div>
-                ))}
-              </div>
-            </section>
+            {(() => {
+              const related = getRelatedProducts(slug, 3)
+              if (related.length === 0) return null
+              return (
+                <section>
+                  <h2 className="font-serif text-2xl mb-6">関連商品</h2>
+                  <div className="grid sm:grid-cols-3 gap-6">
+                    {related.map((rel) => (
+                      <Link key={rel.href} href={rel.href} className="group block">
+                        <motion.div whileHover={{ y: -8 }} className="cursor-pointer">
+                          <div className="aspect-square bg-secondary rounded-lg overflow-hidden mb-4 relative">
+                            <Image
+                              src={galleryUrl(`${rel.img}.jpg`)}
+                              alt={rel.name}
+                              fill
+                              className="object-cover group-hover:scale-105 transition-transform duration-500"
+                            />
+                          </div>
+                          <h3 className="font-serif text-lg mb-1">{rel.name}</h3>
+                          <p className="text-[13px] text-muted-foreground">{priceLabel(rel.price)}</p>
+                        </motion.div>
+                      </Link>
+                    ))}
+                  </div>
+                </section>
+              )
+            })()}
           </div>
         </div>
       </main>
