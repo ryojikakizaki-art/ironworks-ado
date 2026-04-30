@@ -88,3 +88,14 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
   { cat: "other", label: "家具", name: "横揺れしないテーブル脚", sub: "アイアンレッグ サイズオーダー", price: 0, img: "720c42cc222961d0c4f7", href: "/products/table-leg" },
   { cat: "other", label: "家具・インテリア", name: "アイアンラック", sub: "アイアンシェルフ 棚 什器", price: 0, img: "2aecc4e6b289986d9859", href: "/products/iron-rack" },
 ]
+
+/**
+ * 同カテゴリ内の関連商品を返す（自分自身は除外）
+ * 足りない場合は件数が少ないまま返す（最大 count 件）
+ */
+export function getRelatedProducts(slug: string, count = 3): CatalogProduct[] {
+  const selfHref = `/products/${slug}`
+  const self = CATALOG_PRODUCTS.find((p) => p.href === selfHref)
+  if (!self) return []
+  return CATALOG_PRODUCTS.filter((p) => p.cat === self.cat && p.href !== selfHref).slice(0, count)
+}

@@ -11,6 +11,12 @@ import { PrimaryCTA } from "@/components/ui/primary-cta"
 import type { SimpleProduct } from "@/lib/products/simple"
 import { galleryUrl } from "@/lib/products/display"
 import { getProductStructuredData } from "@/lib/products/structured-data"
+import { getRelatedProducts } from "@/lib/products/catalog"
+
+function priceLabel(price: number): string {
+  if (price <= 0) return "お見積もり"
+  return `¥${price.toLocaleString()}〜`
+}
 
 /**
  * シンプルな商品詳細ページ（手すり以外の 17 商品向け）
@@ -300,6 +306,36 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
             </motion.div>
           </div>
         </div>
+
+        {/* ── 関連商品 ── */}
+        {(() => {
+          const related = getRelatedProducts(product.slug, 3)
+          if (related.length === 0) return null
+          return (
+            <section className="mt-20 pt-12 border-t border-border">
+              <h2 className="font-serif text-2xl text-dark mb-6">関連商品</h2>
+              <div className="grid sm:grid-cols-3 gap-6">
+                {related.map((rel) => (
+                  <Link key={rel.href} href={rel.href} className="group block">
+                    <motion.div whileHover={{ y: -8 }} className="cursor-pointer">
+                      <div className="aspect-square bg-secondary rounded-lg overflow-hidden mb-4 relative">
+                        <Image
+                          src={galleryUrl(`${rel.img}.jpg`)}
+                          alt={rel.name}
+                          fill
+                          className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          sizes="(max-width: 640px) 100vw, 33vw"
+                        />
+                      </div>
+                      <h3 className="font-serif text-lg text-dark mb-1">{rel.name}</h3>
+                      <p className="text-[13px] text-muted-foreground">{priceLabel(rel.price)}</p>
+                    </motion.div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )
+        })()}
       </section>
 
       <Footer />
