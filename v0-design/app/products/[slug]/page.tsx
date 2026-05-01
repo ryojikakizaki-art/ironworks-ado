@@ -1036,6 +1036,23 @@ export default function ProductDetailPage() {
         open={!!checkoutClientSecret}
         clientSecret={checkoutClientSecret}
         onClose={() => setCheckoutClientSecret(null)}
+        summary={{
+          productName: `${product.nameEn} ${product.nameJaShort} 壁付け手すり ${length}mm${hasOrientation ? `（${orientation === "left" ? "左向き" : "右向き"}）` : ""}`,
+          productNote: `座金 ${prices.zakinCount}個 / ${deliveryType === "express" ? "特急配送 5営業日" : "通常配送 10営業日"}`,
+          lines: [
+            { label: `基本料金（〜${product.drawing.stdLengthMm}mm）`, amount: prices.basePrice },
+            ...(prices.addon > 0 ? [{ label: "長さ追加料金", note: `+${length - product.drawing.stdLengthMm}mm × ¥${PRICE_PER_MM}`, amount: prices.addon }] : []),
+            ...(prices.addZakin > 0 ? [{ label: "追加座金料金", note: `${prices.zakinCount - INCLUDED_ZAKIN}個 × ¥${ZAKIN_PRICE.toLocaleString()}`, amount: prices.addZakin }] : []),
+            ...(prices.surcharge > 0 ? [{ label: "長尺割増", note: `${length}mm`, amount: prices.surcharge }] : []),
+            ...(prices.angleCost > 0 ? [{ label: "角度加工料金", note: `${prices.zakinCount}個 × ¥${ANGLE_PRICE.toLocaleString()}`, amount: prices.angleCost }] : []),
+            ...(quantity > 1 ? [{ label: `数量 × ${quantity}`, amount: prices.subtotal, emphasize: true }] : []),
+            ...(prices.expressAddon > 0 ? [{ label: "特急割増（+20%）", amount: prices.expressAddon }] : []),
+            ...(prices.shipping > 0 ? [{ label: `送料（佐川急便・${prefecture}・税抜）`, amount: prices.shipping }] : []),
+            ...(prices.shippingTax > 0 ? [{ label: "送料消費税（10%）", amount: prices.shippingTax }] : []),
+          ],
+          totalLabel: "合計（税込）",
+          totalAmount: prices.total,
+        }}
       />
     </>
   )
