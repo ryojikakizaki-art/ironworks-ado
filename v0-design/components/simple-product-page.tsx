@@ -1,22 +1,111 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { motion } from "framer-motion"
-import { ChevronLeft, ChevronRight, Mail, MessageSquare, ShoppingBag, Minus, Plus } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
+import { ChevronLeft, ChevronRight, Mail, MessageSquare, ShoppingBag, Minus, Plus, Hammer, Paintbrush, Ruler, Wrench } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
 import type { SimpleProduct } from "@/lib/products/simple"
-import { galleryUrl } from "@/lib/products/display"
+import { galleryUrl, type FeatureIconName } from "@/lib/products/display"
 import { getProductStructuredData } from "@/lib/products/structured-data"
 import { getRelatedProducts } from "@/lib/products/catalog"
 import { EmbeddedCheckoutModal } from "@/components/checkout/embedded-checkout-modal"
 
+const FEATURE_ICON_MAP: Record<FeatureIconName, typeof Hammer> = {
+  Hammer,
+  Paintbrush,
+  Ruler,
+  Wrench,
+}
+
 function priceLabel(price: number): string {
   if (price <= 0) return "お見積もり"
   return `¥${price.toLocaleString()}〜`
+}
+
+/** FAQ アコーディオン項目 */
+function FAQItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="border-b border-border">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="w-full flex items-start justify-between gap-4 py-5 text-left hover:text-gold transition-colors"
+        aria-expanded={open}
+      >
+        <span className="font-serif text-[16px] font-medium text-foreground leading-relaxed">{q}</span>
+        <span className={`shrink-0 w-7 h-7 rounded-full border border-border flex items-center justify-center transition-transform ${open ? "rotate-45 border-gold" : ""}`}>
+          <Plus className="w-4 h-4" />
+        </span>
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="overflow-hidden"
+          >
+            <p className="text-[14px] leading-loose text-muted-foreground pb-5 whitespace-pre-line">{a}</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
+
+/** 施工事例 横スライダー */
+function CaseStudySlider({ images, productName }: { images: string[]; productName: string }) {
+  const ref = useRef<HTMLDivElement | null>(null)
+  const scroll = (dir: "prev" | "next") => {
+    const el = ref.current
+    if (!el) return
+    const dx = (el.clientWidth ?? 320) * 0.85
+    el.scrollBy({ left: dir === "next" ? dx : -dx, behavior: "smooth" })
+  }
+  return (
+    <div className="relative">
+      <div
+        ref={ref}
+        className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-2"
+        style={{ scrollbarWidth: "none" }}
+      >
+        {images.map((id, i) => (
+          <div key={`${id}-${i}`} className="relative shrink-0 w-[78%] sm:w-[55%] md:w-[42%] lg:w-[32%] aspect-[4/3] bg-secondary rounded-lg overflow-hidden snap-start">
+            <Image
+              src={galleryUrl(id)}
+              alt={`${productName} 施工事例 ${i + 1}`}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 78vw, 32vw"
+            />
+          </div>
+        ))}
+      </div>
+      {images.length > 1 && (
+        <>
+          <button
+            onClick={() => scroll("prev")}
+            aria-label="前の施工事例"
+            className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 shadow-md flex items-center justify-center hover:bg-white"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button
+            onClick={() => scroll("next")}
+            aria-label="次の施工事例"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 shadow-md flex items-center justify-center hover:bg-white"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
+        </>
+      )}
+    </div>
+  )
 }
 
 /**
@@ -310,6 +399,68 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
             </motion.div>
           </div>
         </div>
+
+        {/* ── 特徴 4 点アイコン ── */}
+        {product.featureBullets && product.featureBullets.length > 0 && (
+          <section className="mt-20 pt-12 border-t border-border">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="w-1 h-7 bg-gold rounded-full" />
+              <h2 className="font-serif text-2xl text-dark">この商品について</h2>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {product.featureBullets.map((feature, i) => {
+                const Icon = FEATURE_ICON_MAP[feature.icon]
+                return (
+                  <div key={i} className="flex flex-col items-start gap-3 p-6 bg-secondary rounded-lg">
+                    <Icon className="w-8 h-8 text-gold" />
+                    <h3 className="font-serif text-[16px] font-medium text-foreground">{feature.title}</h3>
+                    <p className="text-[13px] text-muted-foreground leading-relaxed">{feature.desc}</p>
+                  </div>
+                )
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* ── 施工事例 横スライダー ── */}
+        {product.caseStudyImages && product.caseStudyImages.length > 0 && (
+          <section className="mt-16">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-1 h-7 bg-gold rounded-full" />
+              <h2 className="font-serif text-2xl text-dark">施工事例</h2>
+            </div>
+            <CaseStudySlider images={product.caseStudyImages} productName={product.nameEn} />
+            <p className="text-[12px] text-muted-foreground mt-3">
+              ほかの作例は <Link href="/atelier" className="text-gold hover:underline">アトリエギャラリー</Link> でもご覧いただけます。
+            </p>
+          </section>
+        )}
+
+        {/* ── FAQ ── */}
+        {product.faq && product.faq.length > 0 && (
+          <section className="mt-16">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-1 h-7 bg-gold rounded-full" />
+              <h2 className="font-serif text-2xl text-dark">よくあるご質問</h2>
+            </div>
+            <div className="border-t border-border">
+              {product.faq.map((item, i) => (
+                <FAQItem key={i} q={item.q} a={item.a} />
+              ))}
+            </div>
+            <div className="mt-8 flex justify-center">
+              <PrimaryCTA
+                href={`/contact?product=${encodeURIComponent(product.slug)}&category=question`}
+                variant="gold"
+                size="md"
+                icon={<MessageSquare className="w-4 h-4" />}
+                withArrow
+              >
+                その他のご質問はこちら
+              </PrimaryCTA>
+            </div>
+          </section>
+        )}
 
         {/* ── 関連商品 ── */}
         {(() => {
