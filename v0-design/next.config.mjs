@@ -65,6 +65,9 @@ const nextConfig = {
 
       // 旧デモ・開発用ページ
       { source: "/item/zakin-angle.html", destination: "/#lineup", permanent: true },
+
+      // /atelier ルート廃止 (PR #214 で /about に統合) — 過去リンク救済
+      { source: "/atelier", destination: "/about", permanent: true },
     ]
   },
 }
