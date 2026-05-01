@@ -17,6 +17,7 @@ import { getSimpleProduct } from "@/lib/products/simple"
 import { getRelatedProducts } from "@/lib/products/catalog"
 import { getProductStructuredData } from "@/lib/products/structured-data"
 import { SimpleProductPage } from "@/components/simple-product-page"
+import { EmbeddedCheckoutModal } from "@/components/checkout/embedded-checkout-modal"
 import { calcShipping, type ProductType } from "@/lib/shipping/sagawa"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
 import { ChevronLeft, ChevronRight, X, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench } from "lucide-react"
@@ -82,6 +83,8 @@ export default function ProductDetailPage() {
   const [orientation, setOrientation] = useState<"right" | "left">("left")
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  // Embedded Checkout: clientSecret が入ったらモーダルが開く
+  const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
   const [isCtaInView, setIsCtaInView] = useState(false)
   const ctaRef = useRef<HTMLDivElement | null>(null)
   const prefectureRef = useRef<HTMLDivElement | null>(null)
@@ -216,12 +219,13 @@ export default function ProductDetailPage() {
         }),
       })
       const data = await res.json()
-      if (!res.ok || !data?.url) {
+      if (!res.ok || !data?.clientSecret) {
         setCheckoutError(data?.error ?? "購入手続きを開始できませんでした")
         setIsCheckingOut(false)
         return
       }
-      window.location.href = data.url
+      setCheckoutClientSecret(data.clientSecret)
+      setIsCheckingOut(false)
     } catch {
       setCheckoutError("ネットワークエラーが発生しました。時間をおいて再度お試しください")
       setIsCheckingOut(false)
@@ -1026,6 +1030,12 @@ export default function ProductDetailPage() {
         angleDir={zakin.angleDir}
         zakinRule={zakinRule}
         washerType={washerType}
+      />
+
+      <EmbeddedCheckoutModal
+        open={!!checkoutClientSecret}
+        clientSecret={checkoutClientSecret}
+        onClose={() => setCheckoutClientSecret(null)}
       />
     </>
   )

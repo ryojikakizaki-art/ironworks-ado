@@ -12,6 +12,7 @@ import type { SimpleProduct } from "@/lib/products/simple"
 import { galleryUrl } from "@/lib/products/display"
 import { getProductStructuredData } from "@/lib/products/structured-data"
 import { getRelatedProducts } from "@/lib/products/catalog"
+import { EmbeddedCheckoutModal } from "@/components/checkout/embedded-checkout-modal"
 
 function priceLabel(price: number): string {
   if (price <= 0) return "お見積もり"
@@ -44,6 +45,8 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
   const [quantity, setQuantity] = useState(1)
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  // Embedded Checkout: clientSecret が入ったらモーダルが開く
+  const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
 
   const handleDirectCheckout = async () => {
     setIsCheckingOut(true)
@@ -55,10 +58,11 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
         body: JSON.stringify({ product: product.slug, quantity }),
       })
       const data = await res.json()
-      if (!res.ok || !data.url) {
+      if (!res.ok || !data.clientSecret) {
         throw new Error(data?.error || "セッションの作成に失敗しました")
       }
-      window.location.href = data.url
+      setCheckoutClientSecret(data.clientSecret)
+      setIsCheckingOut(false)
     } catch (err) {
       setCheckoutError(err instanceof Error ? err.message : "セッションの作成に失敗しました")
       setIsCheckingOut(false)
@@ -339,6 +343,12 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
       </section>
 
       <Footer />
+
+      <EmbeddedCheckoutModal
+        open={!!checkoutClientSecret}
+        clientSecret={checkoutClientSecret}
+        onClose={() => setCheckoutClientSecret(null)}
+      />
     </main>
   )
 }
