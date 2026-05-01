@@ -86,6 +86,26 @@ const flowSteps = [
   },
 ] as const
 
+// ── よくあるご質問 ──
+const faqItems = [
+  {
+    q: "取り付けの強度は大丈夫ですか？",
+    a: "本体は無垢鉄（25φ 丸棒や 12×32mm フラットバーなど商品ごとに最適な太さ）で、ブラケット座金 2〜4 点で壁にがっちり固定します。大人がもたれかかったり体重をかけたりしても十分耐える強度設計です。座金位置は壁の下地（柱・間柱）に合わせて指定可能で、補強板なしでも安全に固定できます。",
+  },
+  {
+    q: "取り付けは自分でできますか？",
+    a: "付属の取付ビス（M5×40mm 等）と、壁の下地確認ができれば DIY 可能です。製作図面と取付ガイドを商品に同梱します。施工に不安がある場合は、千葉県全域および関東一部エリアであれば ado による現地施工にも対応可能（別途お見積もり）。施工エリア外でも、お近くの工務店向けに取付指示書をお渡しできます。",
+  },
+  {
+    q: "納期はどれくらいですか？",
+    a: "通常配送 10 営業日 / 特急配送 5 営業日（+20%）で発送します。お問い合わせから見積→ご注文→発送まで合計 2〜3 週間が目安です。スケルトン階段やフェンス等の大型オーダー品は 4〜8 週間程度かかります。お急ぎの場合はご相談ください。",
+  },
+  {
+    q: "図面がなくてもオーダーできますか？",
+    a: "もちろん可能です。「階段の長さがおおよそ 1.5m」「玄関ポーチの段差用」など、おおまかなサイズや設置場所のお写真をいただければお見積もりできます。建築図面がある場合は、より精度の高い見積りと取付検討が可能です。図面がなくても、現地のお写真と寸法スケッチで対応できますのでお気軽にご相談ください。",
+  },
+] as const
+
 // ── ご相談の手段 ──
 const channels = [
   {
@@ -223,6 +243,27 @@ export default function ContactPage() {
                 ご質問・ご要望・お見積もりのご依頼など、お気軽にご相談ください。
                 通常 1〜2 営業日以内に、職人より直接ご返信いたします。
                 寸法や取り付け環境のお写真があると、より具体的にご案内できます。
+              </p>
+
+              {/* Hero CTA — 広告流入の即時転換用 */}
+              <div className="mt-8 flex flex-col sm:flex-row gap-3 max-w-md">
+                <PrimaryCTA href="#form" variant="gold" size="md" className="flex-1">
+                  フォームで相談
+                </PrimaryCTA>
+                <PrimaryCTA
+                  href="https://lin.ee/Tnjukrf"
+                  external
+                  variant="line"
+                  size="md"
+                  icon={<LineIcon className="w-4 h-4" />}
+                  withArrow={false}
+                  className="flex-1"
+                >
+                  LINE で相談
+                </PrimaryCTA>
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-3 max-w-md">
+                個人情報の入力なしで LINE からも相談できます。
               </p>
             </div>
             {/* Right: workshop photo */}
@@ -642,6 +683,55 @@ export default function ContactPage() {
                       </h4>
                       <p className="text-[13px] lg:text-[14px] leading-[1.85] text-muted-foreground">
                         {s.desc}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 04 — FAQ */}
+        <section id="faq" className="py-20 lg:py-28">
+          <div className="max-w-[1200px] mx-auto px-5 lg:px-8 grid lg:grid-cols-12 gap-8 lg:gap-12">
+            <aside className="lg:col-span-3">
+              <div className="lg:sticky lg:top-24">
+                <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Section 04</p>
+                <h2 className="font-serif text-3xl lg:text-5xl text-foreground leading-none">
+                  FAQ
+                </h2>
+                <p className="text-[12px] text-muted-foreground mt-3">よくあるご質問</p>
+              </div>
+            </aside>
+            <div className="lg:col-span-9 scroll-mt-24">
+              <h3 className="font-serif text-xl lg:text-3xl text-foreground mb-6 leading-snug">
+                ご注文前によくいただくご質問にお答えします。
+              </h3>
+              <p className="text-[15px] leading-[1.95] text-foreground/80 mb-10 max-w-2xl">
+                以下にない内容は、お気軽にお問い合わせフォームまたは LINE / メールでご相談ください。
+              </p>
+
+              <div className="space-y-5">
+                {faqItems.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="border border-border bg-card/40 rounded-md p-5 lg:p-7"
+                  >
+                    <div className="flex items-start gap-3 lg:gap-4 mb-3">
+                      <span className="font-serif text-[18px] lg:text-[20px] text-gold leading-none mt-0.5">
+                        Q.
+                      </span>
+                      <h4 className="font-serif text-base lg:text-lg text-foreground leading-snug">
+                        {item.q}
+                      </h4>
+                    </div>
+                    <div className="flex items-start gap-3 lg:gap-4 pl-0 lg:pl-1">
+                      <span className="font-serif text-[18px] lg:text-[20px] text-muted-foreground leading-none mt-0.5">
+                        A.
+                      </span>
+                      <p className="text-[13px] lg:text-[14px] leading-[1.95] text-foreground/80">
+                        {item.a}
                       </p>
                     </div>
                   </div>
