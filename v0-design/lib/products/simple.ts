@@ -93,11 +93,11 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       },
     ],
     caseStudyImages: [
-      "fb5d87842ccb3edbe94d.jpg",
-      "ca8b847ba967280f8655.jpg",
-      "010728a1313b8ddfc41e.jpg",
-      "1900d5027eaece50d578.jpg",
-      "7dcf95166348ad44aad5.jpg",
+      "/images/products/elisabeth/01.jpg",
+      "/images/products/elisabeth/02.jpg",
+      "/images/products/elisabeth/03.jpg",
+      "/images/products/elisabeth/04.jpg",
+      "/images/products/elisabeth/05.jpg",
     ],
   },
   clemence: {
