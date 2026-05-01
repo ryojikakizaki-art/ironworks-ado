@@ -5,6 +5,13 @@
 // 価格 0 = 要見積もり（お問い合わせフォーム誘導）
 // 価格 > 0 = Stripe 決済対応（追って Stripe 設定）
 
+import type { FeatureBullet } from "@/lib/products/display"
+
+export interface SimpleFAQ {
+  q: string
+  a: string
+}
+
 export interface SimpleProduct {
   slug: string
   nameEn: string
@@ -22,6 +29,12 @@ export interface SimpleProduct {
   badge?: string
   /** 旧 STORES URL（参考・移行期間中の補助リンク） */
   storesUrl?: string
+  /** 「製品について」セクションの 4 点アイコン（縦型ページと同じ FB_* プリセット利用可） */
+  featureBullets?: FeatureBullet[]
+  /** よくある質問（強度/施工/納期/メンテ等） */
+  faq?: SimpleFAQ[]
+  /** 施工事例として横スライダーで見せる画像 ID（既存 images から流用可・無いアイテムは未指定でセクション非表示） */
+  caseStudyImages?: string[]
 }
 
 export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
@@ -55,6 +68,37 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
     basePrice: 149000,
     badge: "Artisan",
     storesUrl: "https://ironworks-ado.stores.jp/items/63ea2bfd34e01709f8fa4ac9",
+    featureBullets: [
+      { icon: "Hammer", title: "火造り鍛造", desc: "鍛冶職人が無垢鉄を熱しハンマーで一本ずつ鍛え上げます" },
+      { icon: "Paintbrush", title: "古美仕上げ", desc: "2液型ウレタン艶消し黒の上に古美仕上げで深い表情に" },
+      { icon: "Ruler", title: "オーダーメイド", desc: "L1000mm〜 から階段に合わせて長さ・形状を調整可能" },
+      { icon: "Wrench", title: "ブラケット選択", desc: "支柱を巻きつくデザイン座金 ／ シンプル支柱から選択可" },
+    ],
+    faq: [
+      {
+        q: "強度は十分ですか？毎日使う階段でも安心して使えますか？",
+        a: "22φ の無垢鉄をハンマーで叩き締めて鍛造しているため、一般的な 16φ・19φ のパイプ手すりと比べて飛躍的に強度が高くなっています。毎日体重をかけて握ってもたわまず、長期間安心してご使用いただけます。",
+      },
+      {
+        q: "DIY で取付できますか？業者依頼が必要ですか？",
+        a: "下地（柱・間柱）の位置にビス固定ができれば DIY 取付も可能です。付属の M5×40mm ビスとタッチアップ剤をお送りしますが、階段手すりは安全に直結するため、取付に不安がある方は施工エリア内（千葉県全域・神奈川/東京/埼玉一部）であれば当工房での施工も承ります。",
+      },
+      {
+        q: "納期はどれくらいですか？",
+        a: "ご注文・図面確認から製作開始、おおよそ 4〜6 週間でお届けです。鍛冶職人が一本ずつ手で叩く工程のため余裕を持ったスケジュールでご相談ください。お急ぎの場合は事前にご相談ください。",
+      },
+      {
+        q: "メンテナンスは必要ですか？錆びませんか？",
+        a: "屋内使用であれば基本的にメンテナンス不要です。万が一鋭利な物がぶつかって塗装が剥がれた場合は、付属のタッチアップ剤（1液ウレタン）でその箇所を補修してください。屋外使用をご検討の場合は事前にご相談ください、溶融亜鉛メッキ処理を追加で承ります。",
+      },
+    ],
+    caseStudyImages: [
+      "fb5d87842ccb3edbe94d.jpg",
+      "ca8b847ba967280f8655.jpg",
+      "010728a1313b8ddfc41e.jpg",
+      "1900d5027eaece50d578.jpg",
+      "7dcf95166348ad44aad5.jpg",
+    ],
   },
   clemence: {
     slug: "clemence",
@@ -101,6 +145,37 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
     ],
     basePrice: 88000,
     storesUrl: "https://ironworks-ado.stores.jp/items/68f839882fa52af95b4e403e",
+    featureBullets: [
+      { icon: "Hammer", title: "火造り鍛造", desc: "無垢鉄を熱しハンマーで叩き締め、鎚目模様まで手仕事で仕上げます" },
+      { icon: "Paintbrush", title: "古美仕上げ", desc: "2液型ウレタン艶消し黒塗装に古美仕上げを重ね、深い表情に" },
+      { icon: "Ruler", title: "L 型サポート", desc: "立ち座りをしっかり支える L 型フォルム ／ 500×1000mm まで一律料金" },
+      { icon: "Wrench", title: "下地位置指定可", desc: "壁下地の位置に合わせてブラケット 3 点を指定可（補強板不要）" },
+    ],
+    faq: [
+      {
+        q: "強度は十分ですか？立ち座りで体重をかけても大丈夫ですか？",
+        a: "22φ の無垢鉄を鍛造で締めているため、一般的な介護用補助手すり（16〜19φ パイプ）と比べて飛躍的に強度が高くなっています。下地のしっかりした壁面に 3 点固定で取り付ければ、立ち座り・姿勢保持に十分な強度を確保できます。",
+      },
+      {
+        q: "DIY で取付できますか？補強板は必要ですか？",
+        a: "壁下地（柱・間柱）の位置をお知らせいただければ、ブラケット 3 点をその位置に合わせて製作するため補強板は不要です。下地位置をお調べいただきオーダー時に共有いただければ、後付け DIY 取付が可能です。施工エリア内であれば当工房での取付も承ります。",
+      },
+      {
+        q: "介護保険の住宅改修では使えますか？",
+        a: "Clémence はデザイン性を重視した補助手すりで、介護保険の住宅改修（種目「手すりの取付け」）の対象として申請できる場合があります。市区町村窓口・ケアマネージャーにて事前申請が必要となるため、自治体により取扱が異なります。事前にご確認のうえ、見積書のご依頼ください。",
+      },
+      {
+        q: "納期はどれくらいですか？",
+        a: "ご注文・下地位置確定から製作開始、おおよそ 4〜6 週間でお届けです。鍛冶職人の手仕事のため余裕を持ったスケジュールでご相談ください。",
+      },
+    ],
+    caseStudyImages: [
+      "93a09eba02db3d9f6912.jpg",
+      "64af76ec396265e9b783.jpg",
+      "ecef47c60a09bd95e432.jpg",
+      "022f366ba289a9e10228.jpg",
+      "4f86552ba93b4e48b830.jpg",
+    ],
   },
   "simple-black": {
     slug: "simple-black",
