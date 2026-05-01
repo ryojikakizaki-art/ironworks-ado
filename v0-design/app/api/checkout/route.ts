@@ -185,7 +185,9 @@ export async function POST(request: NextRequest) {
     const exclusiveTaxRates = taxExclusiveId ? { tax_rates: [taxExclusiveId] } : {};
 
     const session = await stripeClient.checkout.sessions.create({
-      payment_method_types: ['card'],
+      // ui_mode: 'embedded' で client_secret を返し、自社サイト内に決済 UI を埋め込む。
+      // 旧 hosted モードへ戻したい場合は ui_mode を消し、success_url/cancel_url を復活させる。
+      ui_mode: 'embedded',
       line_items: [
         {
           price_data: {
@@ -215,8 +217,8 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: 'payment',
-      success_url: `${baseUrl}/thanks?session_id={CHECKOUT_SESSION_ID}&product=${productKey}&length=${L}&rush=${rushDelivery ? '1' : '0'}`,
-      cancel_url:  `${baseUrl}/products/${productKey}`,
+      // embedded モードは return_url のみ。決済成功/失敗どちらもここに戻る (status を thanks 側で判定)
+      return_url: `${baseUrl}/thanks?session_id={CHECKOUT_SESSION_ID}&product=${productKey}&length=${L}&rush=${rushDelivery ? '1' : '0'}`,
       metadata: {
         product:                productKey,
         product_name:           prod.name,
@@ -269,7 +271,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ clientSecret: session.client_secret });
 
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';

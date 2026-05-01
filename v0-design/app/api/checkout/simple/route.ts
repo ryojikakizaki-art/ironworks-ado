@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     const inclusiveTaxRates = taxInclusiveId ? { tax_rates: [taxInclusiveId] } : {};
 
     const session = await stripeClient.checkout.sessions.create({
-      payment_method_types: ['card'],
+      ui_mode: 'embedded',
       line_items: [
         {
           price_data: {
@@ -65,8 +65,7 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: 'payment',
-      success_url: `${baseUrl}/thanks?session_id={CHECKOUT_SESSION_ID}&product=${productKey}`,
-      cancel_url:  `${baseUrl}/products/${productKey}`,
+      return_url: `${baseUrl}/thanks?session_id={CHECKOUT_SESSION_ID}&product=${productKey}`,
       metadata: {
         product_type:     'simple',
         product:          productKey,
@@ -104,7 +103,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ clientSecret: session.client_secret });
 
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
