@@ -19,8 +19,13 @@ function escapeXml(value: string): string {
 }
 
 function imageUrl(imgId: string): string {
+  // ローカルパス（既に拡張子付き）はそのまま絶対URL化
   if (imgId.startsWith("/")) return `${SITE_URL}${imgId}`
-  return `${CDN_BASE}/${imgId}/public`
+  // CDN: 拡張子なしの bare ID には .jpg を付与する
+  // （Cloudflare Images の URL は ID に拡張子が含まれていないと 404 を返し、
+  //   Google Merchant 側で「サポートされていない画像形式」エラーになる）
+  const id = imgId.includes(".") ? imgId : `${imgId}.jpg`
+  return `${CDN_BASE}/${id}/public`
 }
 
 function productDescription(slug: string, fallback: string): string {
