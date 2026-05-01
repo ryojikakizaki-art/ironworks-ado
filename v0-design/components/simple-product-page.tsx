@@ -348,6 +348,16 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
         open={!!checkoutClientSecret}
         clientSecret={checkoutClientSecret}
         onClose={() => setCheckoutClientSecret(null)}
+        summary={isDirectCheckout ? {
+          productName: `${product.nameJa}（${product.nameEn}）`,
+          productNote: `${product.subtitle} / 数量 ${quantity}`,
+          lines: [
+            { label: `単価 × ${quantity}`, amount: product.basePrice * quantity },
+            { label: "送料", note: "クリックポスト（送料込）", amount: 0 },
+          ],
+          totalLabel: "合計（税込・送料込）",
+          totalAmount: product.basePrice * quantity,
+        } : undefined}
       />
     </main>
   )
