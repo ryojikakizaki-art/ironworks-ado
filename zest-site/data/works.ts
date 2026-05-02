@@ -1,0 +1,528 @@
+export type WorkCategory = 'gate' | 'sign' | 'fence' | 'handrail' | 'interior' | 'other';
+
+export type Work = {
+  slug: string;
+  title: string;
+  category: WorkCategory;
+  year?: string;
+  image: string;
+  material?: string;
+  finish?: string;
+  dimensions?: string;
+  location?: string;
+  caption?: string;
+};
+
+export const works: Work[] = [
+  // ── GATE ──────────────────────────────────
+  {
+    slug: 'gate-large-gate',
+    title: '大型門扉',
+    category: 'gate',
+    year: '2023',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2023/05/IMG_9757.jpeg',
+  },
+  {
+    slug: 'gate-dog-gate-2',
+    title: 'ドッグゲート 2',
+    category: 'gate',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/12/petgate_iron_004.jpg',
+    caption: '詳しくはこちら → ★',
+  },
+  {
+    slug: 'gate-dog-gate-1',
+    title: 'ドッグゲート 1',
+    category: 'gate',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/12/dog_gate_001.jpg',
+    caption: '詳しくはこちら → ★',
+  },
+  {
+    slug: 'gate-roughtirongate',
+    title: '鍛鉄の門扉',
+    category: 'gate',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/IMG_5609z.jpg',
+  },
+  {
+    slug: 'gate-hanei',
+    title: '繁栄の門扉',
+    category: 'gate',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF4749z.jpg',
+  },
+  // ── SIGN ──────────────────────────────────
+  {
+    slug: 'sign-brush',
+    title: '毛筆',
+    category: 'sign',
+    year: '2023',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2023/05/DSC_2173.jpg',
+  },
+  {
+    slug: 'sign-olive',
+    title: 'オリーブ',
+    category: 'sign',
+    year: '2023',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2023/05/DSCF4166.jpg',
+  },
+  {
+    slug: 'sign-idle-words',
+    title: '遊び文字',
+    category: 'sign',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/06/DSCF9680.jpg',
+  },
+  {
+    slug: 'sign-japanese-sweets-shop',
+    title: '和菓子屋',
+    category: 'sign',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF9494z.jpg',
+  },
+  {
+    slug: 'sign-pine',
+    title: '松',
+    category: 'sign',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF5063z.jpg',
+  },
+  {
+    slug: 'sign-acupuncture-and-moxibustion-clinic',
+    title: '鍼灸院',
+    category: 'sign',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF8557z.jpg',
+  },
+  {
+    slug: 'sign-cursive',
+    title: '筆記体',
+    category: 'sign',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF4324z.jpg',
+  },
+  {
+    slug: 'sign-customer-design',
+    title: 'お客さまのデザイン',
+    category: 'sign',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1140554z.jpg',
+  },
+  {
+    slug: 'sign-farmer',
+    title: '農家',
+    category: 'sign',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1140061z.jpg',
+  },
+  {
+    slug: 'sign-3-piece-set',
+    title: '３点セット',
+    category: 'sign',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1140690z.jpg',
+  },
+  {
+    slug: 'sign-handwriting-style',
+    title: '手書き風',
+    category: 'sign',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1130397z.jpg',
+  },
+  {
+    slug: 'sign-classic-tires',
+    title: 'クラシックタイヤ',
+    category: 'sign',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1140946z.jpg',
+  },
+  {
+    slug: 'sign-functional-pole',
+    title: '機能ポールに付け替え',
+    category: 'sign',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/P1090878z.jpg',
+  },
+  {
+    slug: 'sign-clivia',
+    title: '君子蘭',
+    category: 'sign',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/P1080452z.jpg',
+  },
+  {
+    slug: 'sign-3-little-pigs',
+    title: '３びきのこぶた',
+    category: 'sign',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1320118z.jpg',
+  },
+  {
+    slug: 'sign-flower',
+    title: '花を生ける',
+    category: 'sign',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1150946z.jpg',
+  },
+  {
+    slug: 'sign-hairdresser',
+    title: '美容師',
+    category: 'sign',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/P1040986z.jpg',
+  },
+  {
+    slug: 'sign-owl',
+    title: 'ふくろう',
+    category: 'sign',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1100252z.jpg',
+  },
+  // ── FENCE ──────────────────────────────────
+  {
+    slug: 'fence-window-security-grill',
+    title: '薔薇の面格子',
+    category: 'fence',
+    year: '2023',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2023/05/DSCF6203-1.jpg',
+    caption: 'シンプルな格子状のものでは牢屋みたいになってしまう面格子。 お好きな薔薇をモチーフに、威圧感無く防犯性能も兼ねた物をとのことで 昨今の治安の悪化を受けてご依頼いただきました。 ルーバー窓が開くように窓との距離を大きめにとっています 。 動植物は『命を感じるように』魂をこめて作っています。 唐草（くるっとしたデザイン）は単調でつまらないデザインにならないように、 手しごとならではの立体的な動きを入れています。 葉っぱは無垢の鉄の塊からハンマーで叩き出し作り上げております。 薄い板に模様を付けた物には出せない力強さがあります。 一般的にはわかりにくい部分かと思いますが、鉄が交差するところや曲げる部分は鉄を割いて通したりと、…',
+  },
+  {
+    slug: 'fence-stairwell-fence-b',
+    title: '吹き抜けフェンス b',
+    category: 'fence',
+    year: '2023',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2023/05/DSCF1975.jpg',
+  },
+  {
+    slug: 'fence-stairwell-fence-a',
+    title: '吹き抜けフェンス a',
+    category: 'fence',
+    year: '2022',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2022/07/DSCF6151.jpg',
+  },
+  {
+    slug: 'fence-balcony-fence',
+    title: 'バルコニーフェンス',
+    category: 'fence',
+    year: '2022',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2022/05/DSCF6179.jpg',
+  },
+  {
+    slug: 'fence-garage-fence',
+    title: 'ガレージのフェンス',
+    category: 'fence',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF0438.jpeg',
+  },
+  {
+    slug: 'fence-white-fence',
+    title: '白いフェンス',
+    category: 'fence',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF9652.jpeg',
+  },
+  {
+    slug: 'fence-nursery-fence',
+    title: '保育園のフェンス',
+    category: 'fence',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF8621.jpeg',
+  },
+  {
+    slug: 'fence-simple-fence',
+    title: 'シンプルなフェンス',
+    category: 'fence',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/IMG_20190814_160131.jpg',
+  },
+  // ── HANDRAIL ──────────────────────────────────
+  {
+    slug: 'handrail-spiral-staircase',
+    title: '回り階段の手すり',
+    category: 'handrail',
+    year: '2025',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2025/12/IMG_2525.jpg',
+    caption: '継ぎ目を感じさせない流れるような曲線で 回り階段を美しく安全に。 22mmφの丸棒を一本一本叩き締めたロートアイアン手すりで 表面に施したハンマートーンが 滑りにくく温かみのある質感を生み出しています。 つなぎ目が多い既製品とは異なり 可能な限り継ぎ目をなくして見た目の美しさにこだわりました。 この商品は正確に採寸ができるお宅限定の受注制作とし 階段形状に合わせた最適なラインをご提案いたします。',
+  },
+  {
+    slug: 'handrail-curved-stair-handrail',
+    title: 'カーブを描く階段手摺り',
+    category: 'handrail',
+    year: '2022',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2022/07/DSCF6885.jpg',
+  },
+  {
+    slug: 'handrail-skeleton-staircase-handrail',
+    title: 'スケルトン階段の手摺り',
+    category: 'handrail',
+    year: '2022',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2022/07/DSCF6141.jpg',
+  },
+  {
+    slug: 'handrail-clematis-railing',
+    title: 'クレマチスの手すり',
+    category: 'handrail',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF4317.jpg',
+  },
+  {
+    slug: 'handrail-railing-of-an-old-folk-house',
+    title: '古民家の手すり',
+    category: 'handrail',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF4132.jpg',
+  },
+  {
+    slug: 'handrail-railing-of-the-outer-stairs-a',
+    title: '外階段の手すり a',
+    category: 'handrail',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1140606.jpg',
+  },
+  {
+    slug: 'handrail-3m-railing',
+    title: '３ｍの手すり',
+    category: 'handrail',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSC_0080.jpg',
+  },
+  {
+    slug: 'handrail-approach-railing',
+    title: 'アプローチの手すり',
+    category: 'handrail',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1100371.jpg',
+  },
+  // ── INTERIOR ──────────────────────────────────
+  {
+    slug: 'interior-log-rack-2',
+    title: 'ログラック b',
+    category: 'interior',
+    year: '2023',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2023/05/DSCF4460.jpg',
+  },
+  {
+    slug: 'interior-wood-stove-accessories',
+    title: '薪ストーブアクセサリー',
+    category: 'interior',
+    year: '2023',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2023/05/DSCF4238.jpg',
+  },
+  {
+    slug: 'interior-skeleton-staircase',
+    title: 'スケルトン階段',
+    category: 'interior',
+    year: '2022',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2022/07/DSCF6137.jpg',
+  },
+  {
+    slug: 'interior-frying-pan-bar-hook',
+    title: '鉄のフライパン＆バーフック',
+    category: 'interior',
+    year: '2022',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2022/04/IMG_4768.jpeg',
+    caption: 'お名前の刻印入りのフライパンと キッチンにピッタリサイズの アイアンバーとS字フックの３点セット。',
+  },
+  {
+    slug: 'interior-iron-furnace',
+    title: '囲炉裏テーブルの鉄炉',
+    category: 'interior',
+    year: '2022',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2022/04/IMG_3920.jpeg',
+    caption: '鉄炉に灰を入れて銅壷を置きます。 銅壷とはお湯を沸かし熱燗を作る民具。 中央の小さな二つの蓋を開けると 徳利を入れて温められます。',
+  },
+  {
+    slug: 'interior-frame',
+    title: '額縁',
+    category: 'interior',
+    year: '2022',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2022/04/DSCF0891.jpg',
+    caption: '映画『ロード・オブ・ザ・リング』に出てくる 竜の絵を飾る額縁 のオーダーをいただきました。',
+  },
+  {
+    slug: 'interior-stool',
+    title: 'スツール',
+    category: 'interior',
+    year: '2022',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2022/04/DSCF0961.jpg',
+  },
+  {
+    slug: 'interior-coat-rack-2',
+    title: 'コート掛け',
+    category: 'interior',
+    year: '2022',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2022/04/DSCF0602.jpg',
+  },
+  {
+    slug: 'interior-range-hood-hook',
+    title: 'レンジフードフック',
+    category: 'interior',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF2941.jpg',
+  },
+  {
+    slug: 'interior-photographers-shelf',
+    title: '写真家の棚',
+    category: 'interior',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF2915.jpg',
+  },
+  {
+    slug: 'interior-spiral-staircase',
+    title: '螺旋階段',
+    category: 'interior',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1140304.jpg',
+  },
+  {
+    slug: 'interior-coat-rack',
+    title: '帽子掛け',
+    category: 'interior',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF1330.jpg',
+  },
+  {
+    slug: 'interior-log-rack',
+    title: 'ログラック a',
+    category: 'interior',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/IMG_4748.jpeg',
+  },
+  {
+    slug: 'interior-store',
+    title: '店舗',
+    category: 'interior',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF4377.jpg',
+  },
+  {
+    slug: 'interior-table',
+    title: 'テーブル',
+    category: 'interior',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF4594.jpg',
+  },
+  {
+    slug: 'interior-table-leg',
+    title: 'テーブルレッグ',
+    category: 'interior',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/P1090873.jpg',
+  },
+  // ── OTHER ──────────────────────────────────
+  {
+    slug: 'other-function_unit',
+    title: 'ファンクションユニット',
+    category: 'other',
+    year: '2025',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2025/01/DSCF9217.jpg',
+    caption: 'モデルルームに設置する ファンクションユニット（機能門柱）を 千葉県八千代市に本社ショールームがある 『 木の住まい工房 』さまよりご依頼いただきました。 インターホンカバーのハンマートーン。 表札を兼ね備えたお名前と会社のロゴ。 シンプルな作りの中に鍛鉄の技術を取り入れております。 上部内側に横長の薄い形状のLEDライトを設置しているので 外が暗くなっても明るく照らしてくれます。',
+  },
+  {
+    slug: 'other-bulletinboard',
+    title: 'ブレティンボード',
+    category: 'other',
+    year: '2025',
+    image: 'https://tantetuzest.com/wp-content/uploads/2025/01/DSCF9207.jpg',
+    caption: 'モデルルームに設置するブレティンボード（掲示板）を 千葉県八千代市に本社ショールームがある 『 木の住まい工房 』さまよりご依頼いただきました。 植栽との調和と目を惹くデザイン。 照明があるので夜でも見えます。 （高さ：約2000mm）',
+  },
+  {
+    slug: 'other-shirodhara-stand',
+    title: 'シロダーラスタンド',
+    category: 'other',
+    year: '2022',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2022/04/ShirodharaStand_gousei.jpg',
+    caption: 'ご自宅のサロンでシロダーラを始める方から シロダーラポットを吊り下げる スタンドのオーダーをいただきました。',
+  },
+  {
+    slug: 'other-horseshoe',
+    title: '蹄鉄HORSE',
+    category: 'other',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/06/DSCF0310.jpg',
+  },
+  {
+    slug: 'other-fire-pit-grill',
+    title: 'ファイヤーピットグリル',
+    category: 'other',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/06/DSCF9735.jpg',
+  },
+  {
+    slug: 'other-outer-stairs',
+    title: '外階段',
+    category: 'other',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1140991.jpg',
+  },
+  {
+    slug: 'other-welcome-board',
+    title: 'ウェルカムボード',
+    category: 'other',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1100544.jpg',
+  },
+  {
+    slug: 'other-accessory-tray',
+    title: '小物トレー',
+    category: 'other',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF2761-1.jpg',
+  },
+  {
+    slug: 'other-birth-celebration',
+    title: '出産祝い',
+    category: 'other',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/P1070789.jpg',
+  },
+  {
+    slug: 'other-rose',
+    title: '薔薇',
+    category: 'other',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF1197.jpeg',
+  },
+  {
+    slug: 'other-wine-bottle-stand',
+    title: 'ワインボトルスタンド',
+    category: 'other',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF1244.jpeg',
+  },
+  {
+    slug: 'other-dragonfly',
+    title: '蜻蛉',
+    category: 'other',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF9629.jpeg',
+  },
+  {
+    slug: 'other-owl',
+    title: 'ふくろう',
+    category: 'other',
+    year: '2021',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1100257.jpg',
+  },
+];
+
+export const categoryLabels: Record<WorkCategory, { en: string; ja: string }> = {
+  gate:     { en: 'Gate',     ja: '門扉' },
+  sign:     { en: 'Sign',     ja: '表札' },
+  fence:    { en: 'Fence',    ja: '面格子・フェンス' },
+  handrail: { en: 'Handrail', ja: '手すり' },
+  interior: { en: 'Interior', ja: 'インテリア' },
+  other:    { en: 'Other',    ja: 'その他' },
+};
+
+export const categoryOrder: WorkCategory[] = ['gate', 'sign', 'fence', 'handrail', 'interior', 'other'];
+
+export function getWork(slug: string): Work | undefined {
+  return works.find((w) => w.slug === slug);
+}
+
+export function worksByCategory(category: WorkCategory): Work[] {
+  return works.filter((w) => w.category === category);
+}

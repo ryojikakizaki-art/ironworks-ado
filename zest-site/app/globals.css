@@ -1,0 +1,46 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-paper: #f4efe8;
+  --color-paper-deep: #ebe4d9;
+  --color-ink: #181614;
+  --color-ink-soft: #2b2825;
+  --color-iron: #3a3633;
+  --color-rust: #7a2e1f;
+  --color-rust-deep: #4f1e15;
+  --color-ash: #8a847c;
+  --color-line: #cdc4b6;
+
+  --font-serif-en: 'Cormorant Garamond', 'EB Garamond', 'Times New Roman', serif;
+  --font-sans-en: 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+  --font-serif-ja: 'Yu Mincho', '游明朝', 'Hiragino Mincho ProN', 'Noto Serif JP', serif;
+  --font-sans-ja: 'Yu Gothic', '游ゴシック', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+}
+
+html, body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-serif-ja);
+  font-feature-settings: 'palt';
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-rust);
+  color: var(--color-paper);
+}
+
+.font-en { font-family: var(--font-serif-en); }
+.font-en-sans { font-family: var(--font-sans-en); font-weight: 400; }
+.font-ja { font-family: var(--font-serif-ja); }
+.font-sans-ja { font-family: var(--font-sans-ja); }
+
+.tracking-display {
+  letter-spacing: 0.18em;
+}
+
+.hairline {
+  background: var(--color-line);
+  height: 1px;
+  width: 100%;
+}
