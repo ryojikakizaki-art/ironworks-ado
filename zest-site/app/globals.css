@@ -44,3 +44,65 @@ html, body {
   height: 1px;
   width: 100%;
 }
+
+/* WP 由来 HTML を story 詳細で読みやすくする最小スタイル */
+.story-prose {
+  word-break: break-word;
+}
+.story-prose p { margin: 0 0 1.6em; }
+.story-prose h2 {
+  font-family: var(--font-serif-ja);
+  font-size: 1.4rem;
+  margin: 3em 0 1em;
+  letter-spacing: 0.04em;
+  border-left: 2px solid var(--color-rust);
+  padding-left: 1em;
+}
+.story-prose h3 {
+  font-family: var(--font-serif-ja);
+  font-size: 1.15rem;
+  margin: 2.4em 0 0.8em;
+  letter-spacing: 0.04em;
+}
+.story-prose a {
+  border-bottom: 1px solid var(--color-line);
+  padding-bottom: 1px;
+}
+.story-prose a:hover {
+  border-color: var(--color-ink);
+}
+.story-prose img {
+  display: block;
+  height: auto;
+  max-width: 100%;
+  margin: 2em auto;
+}
+.story-prose figure { margin: 2em 0; }
+.story-prose figcaption {
+  font-size: 0.85em;
+  text-align: center;
+  color: var(--color-ash);
+  margin-top: 0.5em;
+}
+.story-prose ul, .story-prose ol {
+  margin: 1em 0 1.6em;
+  padding-left: 1.5em;
+}
+.story-prose li { margin: 0.4em 0; }
+.story-prose blockquote {
+  border-left: 2px solid var(--color-line);
+  padding: 0.2em 0 0.2em 1.4em;
+  margin: 1.6em 0;
+  color: var(--color-ash);
+  font-style: italic;
+}
+.story-prose iframe {
+  display: block;
+  max-width: 100%;
+  margin: 2em auto;
+}
+.story-prose .wp-block-embed,
+.story-prose .wp-block-image,
+.story-prose .wp-block-gallery {
+  margin: 2em 0;
+}
