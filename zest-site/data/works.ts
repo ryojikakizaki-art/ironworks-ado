@@ -425,7 +425,7 @@ export const works: Work[] = [
     title: 'ブレティンボード',
     category: 'other',
     year: '2025',
-    image: 'https://tantetuzest.com/wp-content/uploads/2025/01/DSCF9207.jpg',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2025/01/DSCF9207.jpg',
     caption: 'モデルルームに設置するブレティンボード（掲示板）を 千葉県八千代市に本社ショールームがある 『 木の住まい工房 』さまよりご依頼いただきました。 植栽との調和と目を惹くデザイン。 照明があるので夜でも見えます。 （高さ：約2000mm）',
   },
   {

@@ -9,9 +9,9 @@ export const metadata = {
     '千葉市若葉区の鍛鉄工房 ZEST、職人・蠣﨑良治の工房と仕事の紹介。鍛鉄職人歴15年、西洋鍛冶の技術で住まいの一点ものを制作しています。',
 };
 
-const workshopImage = 'https://tantetuzest.com/wp-content/uploads/2021/04/DSCF5067.jpg';
-const portraitImage = 'https://tantetuzest.com/wp-content/uploads/2021/04/1100203.jpg';
-const toolImage = 'https://tantetuzest.com/wp-content/uploads/2021/04/1140312.jpg';
+const workshopImage = 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF5067.jpg';
+const portraitImage = 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1100203.jpg';
+const toolImage = 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1140312.jpg';
 
 export default function StudioPage() {
   return (
