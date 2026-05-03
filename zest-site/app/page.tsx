@@ -2,32 +2,32 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { SiteHeader } from '@/components/site-header';
 
-const heroImage = 'https://tantetuzest.com/wp-content/uploads/2021/04/1140037.jpg';
+const heroImage = 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1140037.jpg';
 
 const selectedWorks = [
   {
     title: '鍛鉄の門扉',
     category: 'Gate',
     year: '2023',
-    image: 'https://tantetuzest.com/wp-content/uploads/2021/04/1100206.jpg',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1100206.jpg',
   },
   {
     title: 'クレマチスの手すり',
     category: 'Handrail',
     year: '2022',
-    image: 'https://tantetuzest.com/wp-content/uploads/2021/04/DSCF4769.jpg',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF4769.jpg',
   },
   {
     title: '薔薇の面格子',
     category: 'Fence',
     year: '2021',
-    image: 'https://tantetuzest.com/wp-content/uploads/2021/04/1090166.jpg',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1090166.jpg',
   },
   {
     title: '螺旋階段',
     category: 'Interior',
     year: '2020',
-    image: 'https://tantetuzest.com/wp-content/uploads/2021/04/1120470.jpg',
+    image: 'https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/1120470.jpg',
   },
 ];
 
@@ -150,7 +150,7 @@ export default function Home() {
         <div className="mx-auto max-w-7xl grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-20 items-center">
           <div className="md:col-span-7 relative aspect-[5/4]">
             <Image
-              src="https://tantetuzest.com/wp-content/uploads/2021/04/DSCF5067.jpg"
+              src="https://i0.wp.com/tantetuzest.com/wp-content/uploads/2021/04/DSCF5067.jpg"
               alt="工房の風景"
               fill
               sizes="(min-width: 768px) 58vw, 100vw"
