@@ -1,10 +1,22 @@
 "use client"
 
-import { useEffect, useState, Suspense } from "react"
+import { useEffect, useRef, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+
+declare global {
+  interface Window {
+    dataLayer?: unknown[]
+  }
+}
+
+function pushGtagEvent(name: string, params: Record<string, unknown>) {
+  if (typeof window === "undefined") return
+  window.dataLayer = window.dataLayer || []
+  window.dataLayer.push({ 0: "event", 1: name, 2: params })
+}
 
 interface SessionData {
   id: string
@@ -38,6 +50,7 @@ function ThanksContent() {
   const [data, setData] = useState<SessionData | null>(null)
   const [error, setError] = useState<string>("")
   const [loading, setLoading] = useState(true)
+  const cvFiredRef = useRef(false)
 
   useEffect(() => {
     if (!sessionId) {
@@ -61,6 +74,31 @@ function ThanksContent() {
       }
     })()
   }, [sessionId])
+
+  useEffect(() => {
+    if (!data || data.payment_status !== "paid" || cvFiredRef.current) return
+    cvFiredRef.current = true
+
+    const value = data.amount_total ?? 0
+    const currency = (data.currency || "JPY").toUpperCase()
+
+    pushGtagEvent("purchase", {
+      transaction_id: data.id,
+      value,
+      currency,
+    })
+
+    const adsId = process.env.NEXT_PUBLIC_ADS_ID
+    const cvLabel = process.env.NEXT_PUBLIC_ADS_PURCHASE_CV_LABEL
+    if (adsId && cvLabel) {
+      pushGtagEvent("conversion", {
+        send_to: `${adsId}/${cvLabel}`,
+        transaction_id: data.id,
+        value,
+        currency,
+      })
+    }
+  }, [data])
 
   return (
     <main className="pt-20 lg:pt-24 pb-20 bg-background">
