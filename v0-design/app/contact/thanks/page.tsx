@@ -13,20 +13,17 @@ declare global {
   }
 }
 
-// gtag 本体（next/script afterInteractive）が未ロードの場合は
-// arguments 互換の配列形式で dataLayer にキューする。
-// オブジェクト形式 ({0:..., 1:..., 2:...}) では gtag が認識しないので注意。
+// gtag.js は dataLayer に push された arguments object のみ認識する。
+// 配列 push は無視されてイベントが届かないので、未ロード時は arguments を push する stub を立てる。
 function fireGtagEvent(name: string, params: Record<string, unknown>) {
   if (typeof window === "undefined") return
-  if (typeof window.gtag === "function") {
-    window.gtag("event", name, params)
-    return
-  }
   window.dataLayer = window.dataLayer || []
-  const queued: GtagFn = function (...a: unknown[]) {
-    window.dataLayer!.push(a)
+  if (typeof window.gtag !== "function") {
+    window.gtag = function () {
+      window.dataLayer!.push(arguments)
+    } as GtagFn
   }
-  queued("event", name, params)
+  window.gtag("event", name, params)
 }
 
 export default function ContactThanksPage() {
