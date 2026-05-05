@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { Noto_Serif_JP, Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
-import Script from 'next/script'
 import './globals.css'
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID
@@ -156,6 +155,17 @@ export default function RootLayout({
     ? `https://www.googletagmanager.com/gtag/js?id=${ADS_ID}`
     : null
 
+  // gtag-init は head に inline で埋め込むことで、ブラウザが HTML をパースした
+  // 直後（hydration / useEffect より前）に config が発火し、dataLayer 順序問題で
+  // CV イベントが取りこぼされるのを防ぐ。
+  const gtagInit = gtagSrc
+    ? `window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+${GA_ID ? `gtag('config', '${GA_ID}');` : ''}
+${ADS_ID ? `gtag('config', '${ADS_ID}');` : ''}`
+    : null
+
   return (
     <html lang="ja" className={`${notoSerifJP.variable} ${inter.variable} bg-background`}>
       <head>
@@ -164,24 +174,14 @@ export default function RootLayout({
           // 構造化データは静的なので JSON.stringify を直接埋め込み (XSS 対策不要なノード構成)
           dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }}
         />
+        {gtagInit && (
+          <script id="gtag-init" dangerouslySetInnerHTML={{ __html: gtagInit }} />
+        )}
+        {gtagSrc && <script async src={gtagSrc} />}
       </head>
       <body className="font-sans antialiased">
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
-        {gtagSrc && (
-          <>
-            <Script src={gtagSrc} strategy="afterInteractive" />
-            <Script id="gtag-init" strategy="afterInteractive">
-              {`
-                window.dataLayer = window.dataLayer || [];
-                function gtag(){dataLayer.push(arguments);}
-                gtag('js', new Date());
-                ${GA_ID ? `gtag('config', '${GA_ID}');` : ''}
-                ${ADS_ID ? `gtag('config', '${ADS_ID}');` : ''}
-              `}
-            </Script>
-          </>
-        )}
       </body>
     </html>
   )
