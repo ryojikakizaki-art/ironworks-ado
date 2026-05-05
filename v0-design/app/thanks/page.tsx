@@ -6,16 +6,28 @@ import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 
+type GtagFn = (...args: unknown[]) => void
 declare global {
   interface Window {
     dataLayer?: unknown[]
+    gtag?: GtagFn
   }
 }
 
-function pushGtagEvent(name: string, params: Record<string, unknown>) {
+// gtag 本体（next/script afterInteractive）が未ロードの場合は
+// arguments 互換の配列形式で dataLayer にキューする。
+// オブジェクト形式 ({0:..., 1:..., 2:...}) では gtag が認識しないので注意。
+function fireGtagEvent(name: string, params: Record<string, unknown>) {
   if (typeof window === "undefined") return
+  if (typeof window.gtag === "function") {
+    window.gtag("event", name, params)
+    return
+  }
   window.dataLayer = window.dataLayer || []
-  window.dataLayer.push({ 0: "event", 1: name, 2: params })
+  const queued: GtagFn = function (...a: unknown[]) {
+    window.dataLayer!.push(a)
+  }
+  queued("event", name, params)
 }
 
 interface SessionData {
@@ -82,16 +94,22 @@ function ThanksContent() {
     const value = data.amount_total ?? 0
     const currency = (data.currency || "JPY").toUpperCase()
 
-    pushGtagEvent("purchase", {
+    fireGtagEvent("purchase", {
       transaction_id: data.id,
       value,
       currency,
+      items: data.line_items?.map((it) => ({
+        item_name: it.description,
+        quantity: it.quantity,
+        price:
+          it.amount_total != null && it.quantity ? it.amount_total / it.quantity : undefined,
+      })),
     })
 
     const adsId = process.env.NEXT_PUBLIC_ADS_ID
     const cvLabel = process.env.NEXT_PUBLIC_ADS_PURCHASE_CV_LABEL
     if (adsId && cvLabel) {
-      pushGtagEvent("conversion", {
+      fireGtagEvent("conversion", {
         send_to: `${adsId}/${cvLabel}`,
         transaction_id: data.id,
         value,

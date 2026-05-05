@@ -5,24 +5,34 @@ import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 
+type GtagFn = (...args: unknown[]) => void
 declare global {
   interface Window {
     dataLayer?: unknown[]
+    gtag?: GtagFn
   }
 }
 
-// gtag 本体 (next/script afterInteractive) がロード前でも、
-// dataLayer に直接 push しておけばロード後に同じ扱いで消費される
-function pushGtagEvent(name: string, params: Record<string, unknown>) {
+// gtag 本体（next/script afterInteractive）が未ロードの場合は
+// arguments 互換の配列形式で dataLayer にキューする。
+// オブジェクト形式 ({0:..., 1:..., 2:...}) では gtag が認識しないので注意。
+function fireGtagEvent(name: string, params: Record<string, unknown>) {
   if (typeof window === "undefined") return
+  if (typeof window.gtag === "function") {
+    window.gtag("event", name, params)
+    return
+  }
   window.dataLayer = window.dataLayer || []
-  window.dataLayer.push({ 0: "event", 1: name, 2: params })
+  const queued: GtagFn = function (...a: unknown[]) {
+    window.dataLayer!.push(a)
+  }
+  queued("event", name, params)
 }
 
 export default function ContactThanksPage() {
   useEffect(() => {
     // GA4: 見込み顧客獲得イベント
-    pushGtagEvent("generate_lead", {
+    fireGtagEvent("generate_lead", {
       event_category: "contact",
       event_label: "contact_form_submit",
     })
@@ -31,7 +41,7 @@ export default function ContactThanksPage() {
     const adsId = process.env.NEXT_PUBLIC_ADS_ID
     const cvLabel = process.env.NEXT_PUBLIC_ADS_CONTACT_CV_LABEL
     if (adsId && cvLabel) {
-      pushGtagEvent("conversion", {
+      fireGtagEvent("conversion", {
         send_to: `${adsId}/${cvLabel}`,
       })
     }
