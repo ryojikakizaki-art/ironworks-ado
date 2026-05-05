@@ -1,10 +1,31 @@
 "use client"
 
-import { useEffect, useState, Suspense } from "react"
+import { useEffect, useRef, useState, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+
+type GtagFn = (...args: unknown[]) => void
+declare global {
+  interface Window {
+    dataLayer?: unknown[]
+    gtag?: GtagFn
+  }
+}
+
+function fireGtagEvent(name: string, params: Record<string, unknown>) {
+  if (typeof window === "undefined") return
+  if (typeof window.gtag === "function") {
+    window.gtag("event", name, params)
+    return
+  }
+  window.dataLayer = window.dataLayer || []
+  const queued: GtagFn = function (...a: unknown[]) {
+    window.dataLayer!.push(a)
+  }
+  queued("event", name, params)
+}
 
 interface SessionData {
   id: string
@@ -38,6 +59,7 @@ function ThanksContent() {
   const [data, setData] = useState<SessionData | null>(null)
   const [error, setError] = useState<string>("")
   const [loading, setLoading] = useState(true)
+  const conversionFired = useRef(false)
 
   useEffect(() => {
     if (!sessionId) {
@@ -61,6 +83,39 @@ function ThanksContent() {
       }
     })()
   }, [sessionId])
+
+  // 決済完了が確認できたタイミングで GA4 / Google 広告のコンバージョンを発火
+  useEffect(() => {
+    if (!data || data.payment_status !== "paid") return
+    if (conversionFired.current) return
+    conversionFired.current = true
+
+    const value = (data.amount_total ?? 0) / 1 // JPY は最小単位＝円なので変換不要
+    const currency = (data.currency || "JPY").toUpperCase()
+    const transactionId = data.id
+
+    fireGtagEvent("purchase", {
+      transaction_id: transactionId,
+      value,
+      currency,
+      items: data.line_items?.map((it) => ({
+        item_name: it.description,
+        quantity: it.quantity,
+        price: it.amount_total != null && it.quantity ? it.amount_total / it.quantity : undefined,
+      })),
+    })
+
+    const adsId = process.env.NEXT_PUBLIC_ADS_ID
+    const cvLabel = process.env.NEXT_PUBLIC_ADS_PURCHASE_CV_LABEL
+    if (adsId && cvLabel) {
+      fireGtagEvent("conversion", {
+        send_to: `${adsId}/${cvLabel}`,
+        value,
+        currency,
+        transaction_id: transactionId,
+      })
+    }
+  }, [data])
 
   return (
     <main className="pt-20 lg:pt-24 pb-20 bg-background">
