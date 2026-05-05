@@ -187,14 +187,6 @@ export default function AboutPage() {
                   「住まいのなかで毎日触れる金物だからこそ、握ったときに手がよろこぶものを作りたい」 — それが工房を構えてから今日まで変わらない、ものづくりの原点です。
                 </p>
               </div>
-              <div className="mt-8 flex flex-wrap gap-3">
-                <Link
-                  href="/atelier"
-                  className="inline-flex items-center gap-2 text-[12px] tracking-wider text-gold border-b border-gold/40 pb-1 hover:border-gold transition-colors"
-                >
-                  工房の様子を見る <ArrowRight className="w-3.5 h-3.5" />
-                </Link>
-              </div>
             </div>
           </div>
         </section>
@@ -212,9 +204,17 @@ export default function AboutPage() {
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
-            <div className="border border-border bg-card rounded-lg p-8 lg:p-10">
-              <p className="text-[10px] tracking-[0.3em] uppercase text-foreground/50 mb-3">Brand 01</p>
-              <h3 className="font-serif text-2xl text-foreground mb-2">鍛鉄工房ZEST</h3>
+            <a
+              href="https://tantetuzest.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group block border border-border bg-card rounded-lg p-8 lg:p-10 hover:border-gold/50 hover:shadow-md transition-all"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <p className="text-[10px] tracking-[0.3em] uppercase text-foreground/50">Brand 01</p>
+                <ArrowRight className="w-4 h-4 -rotate-45 text-foreground/40 group-hover:text-gold group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all" />
+              </div>
+              <h3 className="font-serif text-2xl text-foreground mb-2 group-hover:text-gold transition-colors">鍛鉄工房ZEST</h3>
               <p className="text-[12px] text-foreground/60 mb-6 tracking-wider">FULL ORDER</p>
               <ul className="space-y-3 text-[13px] text-foreground/85 leading-relaxed">
                 <li className="flex gap-3">
@@ -230,7 +230,10 @@ export default function AboutPage() {
                   <span>本格ロートアイアン・装飾門扉・大型階段</span>
                 </li>
               </ul>
-            </div>
+              <p className="mt-6 text-[11px] tracking-wider text-foreground/50 group-hover:text-gold transition-colors">
+                tantetuzest.com を見る ↗
+              </p>
+            </a>
             <div className="border-2 border-gold bg-gold/5 rounded-lg p-8 lg:p-10 relative">
               <span className="absolute -top-3 right-6 bg-gold text-white text-[10px] px-3 py-1 tracking-widest rounded-full">
                 THIS SITE
@@ -241,7 +244,7 @@ export default function AboutPage() {
               <ul className="space-y-3 text-[13px] text-foreground/85 leading-relaxed">
                 <li className="flex gap-3">
                   <span className="text-gold flex-shrink-0">●</span>
-                  <span>個人のお客様向けにオンライン販売</span>
+                  <span>個人・法人どちらにもオンライン販売（建築会社・設計事務所からのご注文も対応）</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="text-gold flex-shrink-0">●</span>
@@ -249,7 +252,7 @@ export default function AboutPage() {
                 </li>
                 <li className="flex gap-3">
                   <span className="text-gold flex-shrink-0">●</span>
-                  <span>クレジット決済対応・全国配送</span>
+                  <span>クレジット決済・銀行振込対応／全国配送</span>
                 </li>
               </ul>
             </div>

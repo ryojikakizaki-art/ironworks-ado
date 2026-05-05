@@ -7,17 +7,27 @@ import Image from "next/image"
 import { Menu, X, ShoppingBag } from "lucide-react"
 
 export function Header() {
-  const [isScrolled, setIsScrolled] = useState(false)
-  // ヒーローエリア（高さ200vh）の上にいるかどうか。背景が暗いので文字色を白に。
+  // 「手仕事と、暮らそう。」のエントランス完了に合わせて自然に降りてくる
+  const [headerVisible, setHeaderVisible] = useState(false)
+  // ヒーローエリア上は背景が暗いので文字色を白に。
   const [overHero, setOverHero] = useState(true)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  // ヒーローのエントランス（金線 0.3s + 0.8s + H1 1.2s 待ち + 1.2s = 約 2.4s）後にヘッダー出現。
+  // 既にスクロールされている（戻る／復元）場合は即時表示。
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.scrollY > 50) {
+      setHeaderVisible(true)
+      return
+    }
+    const t = setTimeout(() => setHeaderVisible(true), 2500)
+    return () => clearTimeout(t)
+  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
       const y = window.scrollY
       const vh = window.innerHeight
-      // 「手仕事と、暮らそう。」が線に沈み始める頃（≒50vh）にヘッダーを出す
-      setIsScrolled(y > vh * 0.5)
       // ヒーロー（500vh）を抜けたら濃いテキスト色へ
       setOverHero(y < vh * 5 - 80)
     }
@@ -28,9 +38,9 @@ export function Header() {
 
   const navItems = [
     { label: "製品一覧", href: "/#lineup" },
-    { label: "ご注文について", href: "/about" },
+    { label: "ABOUT", href: "/about" },
     { label: "お客様の声", href: "/#testimonials" },
-    { label: "ブログ", href: "/blog" },
+    { label: "お問い合わせ", href: "/contact" },
   ]
 
   return (
@@ -38,12 +48,12 @@ export function Header() {
       <motion.header
         initial={false}
         animate={{
-          y: isScrolled ? 0 : -100,
-          opacity: isScrolled ? 1 : 0,
+          y: headerVisible ? 0 : -100,
+          opacity: headerVisible ? 1 : 0,
         }}
         transition={{ duration: 0.5, ease: "easeOut" }}
         className={`fixed top-0 left-0 right-0 z-40 bg-transparent transition-colors duration-500 ${
-          isScrolled ? "pointer-events-auto" : "pointer-events-none"
+          headerVisible ? "pointer-events-auto" : "pointer-events-none"
         }`}
       >
         <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
@@ -83,7 +93,7 @@ export function Header() {
             </nav>
 
             {/* Right Actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 lg:gap-3">
               {/* Cart Icon */}
               <button
                 className={`p-2 rounded-full transition-all duration-300 relative ${

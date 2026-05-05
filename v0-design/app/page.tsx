@@ -15,7 +15,7 @@ import { BackToTop } from "@/components/back-to-top"
 
 export default function HomePage() {
   return (
-    <main className="relative">
+    <main className="relative bg-dark">
       <Header />
 
       {/* ── ヒーロー（固定背景 + スクロール駆動テキスト） ── */}

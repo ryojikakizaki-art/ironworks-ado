@@ -114,9 +114,10 @@ export function HeroSection() {
       className="relative"
       style={{ height: "500vh" }}
     >
-      {/* ── 固定背景：カルーセル（動画 + 画像5枚、全スライドを常時マウントしopacityでクロスフェード） ── */}
+      {/* ── 固定背景：カルーセル（動画 + 画像5枚、全スライドを常時マウントしopacityでクロスフェード） ──
+          初回ロード時に body の白背景が一瞬透けるのを防ぐため bg-dark をベースに敷く */}
       <div
-        className="fixed inset-0 z-0 overflow-hidden"
+        className="fixed inset-0 z-0 overflow-hidden bg-dark"
         style={{ willChange: "transform", transform: "translateZ(0)" }}
       >
         {heroMedia.map((media, idx) => (
@@ -193,6 +194,7 @@ export function HeroSection() {
                 className="absolute left-1/2 -translate-x-1/2 top-full h-px bg-gradient-to-r from-transparent via-gold to-transparent"
               />
             )}
+
           </div>
         </div>
 

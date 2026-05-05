@@ -4,7 +4,7 @@ import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Instagram, Facebook, Mail } from "lucide-react"
+import { Instagram, Mail } from "lucide-react"
 import { LineIcon } from "@/components/ui/line-icon"
 
 const footerLinks = {
@@ -39,7 +39,6 @@ const footerLinks = {
 const socialLinks = [
   { icon: LineIcon, href: "https://lin.ee/Tnjukrf", label: "LINE" },
   { icon: Instagram, href: "https://www.instagram.com/ironworks_ado/", label: "Instagram" },
-  { icon: Facebook, href: "https://www.facebook.com/profile.php?id=61556286998274", label: "Facebook" },
   { icon: Mail, href: "mailto:ado@tantetuzest.com", label: "メール" },
 ]
 
