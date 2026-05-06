@@ -6,9 +6,10 @@ import { PrimaryCTA } from "@/components/ui/primary-cta"
 import { galleryUrl } from "@/lib/products/display"
 
 export const metadata = {
-  title: "亜鉛メッキについて | IRONWORKS ado",
+  title: "屋外アイアン手すりの亜鉛メッキ処理｜10 年以上錆びない二重防錆｜IRONWORKS ado",
   description:
-    "屋外でも錆びない、ado の二重防錆処理。溶融亜鉛メッキ＋2液型ウレタン塗装で 10 年以上の耐久性を実現します。図解で分かる仕組みと対応製品をご紹介。",
+    "屋外でも錆びない、ado のアイアン手すりの二重防錆処理。溶融亜鉛メッキ＋2液型ウレタン塗装で 10 年以上の耐久性を実現します。図解で分かる仕組みと対応製品をご紹介。",
+  alternates: { canonical: "/galvanizing" },
 }
 
 const stats = [

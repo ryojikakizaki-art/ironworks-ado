@@ -2,8 +2,9 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 
 export const metadata = {
-  title: "特定商取引法に基づく表記 | IRONWORKS ado",
+  title: "特定商取引法に基づく表記｜IRONWORKS ado",
   description: "IRONWORKS ado（鍛鉄工房ZEST）— 特定商取引法に基づく表記",
+  alternates: { canonical: "/tokushoho" },
 }
 
 const rows: { label: string; value: React.ReactNode }[] = [

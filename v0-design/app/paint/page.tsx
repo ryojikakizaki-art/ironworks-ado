@@ -6,9 +6,10 @@ import { PrimaryCTA } from "@/components/ui/primary-cta"
 import { galleryUrl } from "@/lib/products/display"
 
 export const metadata = {
-  title: "塗装について | IRONWORKS ado",
+  title: "アイアン手すりの塗装について｜2液型ウレタン塗装｜IRONWORKS ado",
   description:
-    "ado の手すりは自動車塗装と同じ 2 液型ウレタン塗装を標準採用。1 液型・焼付塗装との性能比較、工程、よくあるご質問を図解で詳しく解説します。",
+    "ado のアイアン手すりは自動車塗装と同じ 2 液型ウレタン塗装を標準採用。1 液型・焼付塗装との性能比較、工程、よくあるご質問を図解で詳しく解説します。",
+  alternates: { canonical: "/paint" },
 }
 
 const stats = [

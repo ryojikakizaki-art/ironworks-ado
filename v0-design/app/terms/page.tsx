@@ -2,8 +2,9 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 
 export const metadata = {
-  title: "利用規約 | IRONWORKS ado",
+  title: "利用規約｜IRONWORKS ado",
   description: "IRONWORKS ado の利用規約 — サイト・商品のご利用について",
+  alternates: { canonical: "/terms" },
 }
 
 const sections = [

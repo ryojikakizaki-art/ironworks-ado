@@ -5,9 +5,10 @@ import Image from "next/image"
 import { VOICE_SLIDES, TOTAL_VOICE_COUNT } from "@/lib/testimonials"
 
 export const metadata = {
-  title: "お客様の声 | IRONWORKS ado",
+  title: "お客様の声｜アイアン手すり購入レビュー｜IRONWORKS ado",
   description:
-    "IRONWORKS ado の手摺をご購入いただいたお客様から頂いた嬉しいお言葉をご紹介しています。",
+    "IRONWORKS ado のアイアン手すりをご購入いただいたお客様から頂いた嬉しいお言葉をご紹介しています。",
+  alternates: { canonical: "/reviews" },
 }
 
 export default function ReviewsPage() {
