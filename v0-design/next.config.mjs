@@ -12,6 +12,10 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
+    // Vercel Image Optimization の月間枠超過で /_next/image が 402 を返し
+      // 商品画像が一切表示されなくなる事故が発生したため最適化を停止。
+      // Cloudflare Images 側で variant 配信されているので画質劣化はほぼ無い。
+    unoptimized: true,
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 60 * 60 * 24 * 30,
     remotePatterns: [
