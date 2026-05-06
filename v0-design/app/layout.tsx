@@ -22,8 +22,8 @@ const inter = Inter({
 const isIndexable = process.env.SITE_INDEXABLE === 'true'
 
 const SITE_URL = 'https://ado.tantetuzest.com'
-const SITE_TITLE = 'IRONWORKS ado | 鍛冶職人が手掛けるアイアン手摺'
-const SITE_DESCRIPTION = '一本一本、鍛冶職人が心を込めて手作りするアイアン手摺。伝統の技と現代のデザインが融合した、唯一無二の手摺をお届けします。'
+const SITE_TITLE = 'IRONWORKS ado｜鍛冶職人が一本ずつ手作りするアイアン手すり'
+const SITE_DESCRIPTION = '千葉の鍛冶職人が一本ずつ手作りするアイアン手すり。横型・縦型・ロートアイアン手すりを 22 商品ラインナップ。¥18,000〜、サイズオーダー対応、全国配送。アプローチ・フェンス・面格子・アイアンドアもオーダー可能。'
 const OG_IMAGE = `${SITE_URL}/images/hero/loft-staircase.jpg`
 
 // schema.org 構造化データ — Organization / LocalBusiness / WebSite を1ノードグラフで宣言
@@ -93,6 +93,9 @@ export const metadata: Metadata = {
   title: SITE_TITLE,
   description: SITE_DESCRIPTION,
   generator: 'v0.app',
+  alternates: {
+    canonical: '/',
+  },
   robots: isIndexable
     ? { index: true, follow: true }
     : {
@@ -115,7 +118,7 @@ export const metadata: Metadata = {
         url: OG_IMAGE,
         width: 1200,
         height: 630,
-        alt: 'IRONWORKS ado — 鍛冶職人が手掛けるアイアン手摺',
+        alt: 'IRONWORKS ado — 鍛冶職人が一本ずつ手作りするアイアン手すり',
       },
     ],
   },

@@ -4,9 +4,10 @@ import Link from "next/link"
 import { NEWS, shouldShowNewBadge } from "@/lib/news"
 
 export const metadata = {
-  title: "お知らせ | IRONWORKS ado",
+  title: "お知らせ｜IRONWORKS ado",
   description:
     "IRONWORKS ado からのお知らせ・新商品情報・価格改定・営業のご案内などをまとめています。",
+  alternates: { canonical: "/news" },
 }
 
 export default function NewsPage() {

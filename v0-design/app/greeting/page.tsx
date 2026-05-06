@@ -4,9 +4,10 @@ import Link from "next/link"
 import Image from "next/image"
 
 export const metadata = {
-  title: "ごあいさつ | IRONWORKS ado",
+  title: "ごあいさつ｜IRONWORKS ado 代表 蠣﨑良治",
   description:
-    "IRONWORKS ado 代表 蠣﨑良治からのごあいさつ。鍛冶職人としての経歴と製品への想いをご紹介します。",
+    "IRONWORKS ado 代表 蠣﨑良治からのごあいさつ。鍛冶職人としての経歴とアイアン手すりへの想いをご紹介します。",
+  alternates: { canonical: "/greeting" },
 }
 
 type SectionImage = { src: string; alt: string; aspect: "video" | "square" | "portrait" }

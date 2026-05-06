@@ -2,8 +2,9 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 
 export const metadata = {
-  title: "プライバシーポリシー | IRONWORKS ado",
+  title: "プライバシーポリシー｜IRONWORKS ado",
   description: "IRONWORKS ado のプライバシーポリシー — お客様の個人情報の取扱いについて",
+  alternates: { canonical: "/privacy" },
 }
 
 const sections = [
