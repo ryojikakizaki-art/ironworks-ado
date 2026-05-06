@@ -53,10 +53,43 @@ export function getProductStructuredData(slug: string): Record<string, unknown> 
     "@type": "Offer",
     priceCurrency: "JPY",
     availability: "https://schema.org/InStock",
+    itemCondition: "https://schema.org/NewCondition",
     url: productUrl,
     seller: {
       "@type": "Organization",
       name: BRAND,
+    },
+    shippingDetails: {
+      "@type": "OfferShippingDetails",
+      shippingRate: {
+        "@type": "MonetaryAmount",
+        value: "0",
+        currency: "JPY",
+      },
+      shippingDestination: {
+        "@type": "DefinedRegion",
+        addressCountry: "JP",
+      },
+      deliveryTime: {
+        "@type": "ShippingDeliveryTime",
+        handlingTime: {
+          "@type": "QuantitativeValue",
+          minValue: 0,
+          maxValue: 1,
+          unitCode: "DAY",
+        },
+        transitTime: {
+          "@type": "QuantitativeValue",
+          minValue: 7,
+          maxValue: 14,
+          unitCode: "DAY",
+        },
+      },
+    },
+    hasMerchantReturnPolicy: {
+      "@type": "MerchantReturnPolicy",
+      applicableCountry: "JP",
+      returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
     },
   }
 
