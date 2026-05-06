@@ -7,7 +7,7 @@ export const revalidate = 86400
 
 const SITE_URL = "https://ado.tantetuzest.com"
 const SHOP_NAME = "IRONWORKS ado"
-const SHOP_DESCRIPTION = "鍛冶職人が一本一本手作りするアイアン手摺・建材・家具"
+const SHOP_DESCRIPTION = "鍛冶職人が一本一本手作りするアイアン手すり・建材・家具"
 
 function escapeXml(value: string): string {
   return value
@@ -26,6 +26,13 @@ function imageUrl(imgId: string): string {
   //   Google Merchant 側で「サポートされていない画像形式」エラーになる）
   const id = imgId.includes(".") ? imgId : `${imgId}.jpg`
   return `${CDN_BASE}/${id}/public`
+}
+
+function catalogFeedTitle(p: { cat: string; label: string; name: string; sub: string }): string {
+  const isHandrail = p.cat === "handrail_h" || p.cat === "handrail_v"
+  const cleanLabel = p.label.replace(/\s*・\s*/g, " ").trim()
+  const prefix = isHandrail ? `アイアン手すり ${cleanLabel}` : cleanLabel
+  return `${prefix} ${p.name} ${p.sub}`.trim()
 }
 
 function productDescription(slug: string, fallback: string): string {
@@ -83,7 +90,7 @@ export async function GET() {
     seen.add(slug)
     collected.push({
       slug,
-      title: `${p.name} ${p.sub}`.trim(),
+      title: catalogFeedTitle(p),
       description: productDescription(slug, `${p.label} ${p.sub}`),
       href: p.href,
       image: p.img,
@@ -98,7 +105,7 @@ export async function GET() {
     if (!p.images || p.images.length === 0) continue
     collected.push({
       slug: p.slug,
-      title: `${p.nameEn} ${p.nameJa} ${p.subtitle}`.trim(),
+      title: `${p.category} ${p.nameEn} ${p.nameJa} ${p.subtitle}`.trim(),
       description: productDescription(p.slug, p.shortDescription),
       href: `/products/${p.slug}`,
       image: p.images[0],
