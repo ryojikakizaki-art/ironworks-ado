@@ -93,7 +93,52 @@ NG パターン：
 - Markdownの `- [ ]` チェックボックスは使わない（クリックできないため）
 - 推奨案は先頭に配置し (Recommended) を付ける
 
-## 8. 縦型手すりの仕様
+## 8. デザイン作業はデザイン特化 skill を必ず呼び出す
+**【最優先・繰り返し指摘】** UI / レイアウト / グラフィック / トップページ刷新 / バナー / ロゴ など「デザイン性を求める作業」のときは、必ずデザイン特化 skill を呼び出してから着手する。素の Edit/Write だけで進めない（何度もやり直しになる）。
+
+該当 skill 例：
+- `anthropic-skills:web-artifacts-builder` — Web ページ／React アートワーク（**ZEST / ado サイトの主役**）
+- `anthropic-skills:canvas-design` — ポスター・静的アート・PDF
+- `anthropic-skills:theme-factory` — テーマ／配色適用
+- `anthropic-skills:brand-guidelines` — Anthropic ブランド系
+- `anthropic-skills:ec-site-handmade-art` — ハンドメイド EC（ワイヤー／レイアウト／ロゴ／バナー／請求書）
+- `anthropic-skills:algorithmic-art` — p5.js 生成アート
+- `anthropic-skills:slack-gif-creator` — アニメ GIF
+- `anthropic-skills:pptx` / `docx` / `xlsx` / `pdf` — 各種ドキュメント整形
+
+ロジック・API・設定など「視覚に出ない作業」は通常通りで OK。
+
+## 9. SEO 作業は SEO 特化 skill を必ず呼び出す
+SEO に関わる作業のときは、以下の skill を先に呼び出してから着手する。素の Edit/Write + 手動確認だけで進めない。
+
+| skill | 使う場面 |
+|---|---|
+| `searchfit-seo:seo-auditor` | サイト全体の SEO 監査（canonical / sitemap / 構造化データ一括確認） |
+| `searchfit-seo:technical-seo` | canonical タグ・robots.txt・Core Web Vitals などの技術的 SEO |
+| `searchfit-seo:on-page-seo` | 商品ページ・コンテンツページのタイトル／description／見出し品質チェック |
+| `searchfit-seo:keyword-clustering` | 「アイアン手すり」「鍛鉄手すり」周辺キーワードの整理・優先度付け |
+| `searchfit-seo:content-strategy` | ストーリー・ブログ・LP の記事計画を立てるとき |
+
+## 10. エンジニアリング系の定型作業は engineering skill を使う
+以下の場面では対応する engineering skill を呼び出す。
+
+| skill | 使う場面 |
+|---|---|
+| `engineering:deploy-checklist` | main への merge 直前・Vercel デプロイ後の確認 |
+| `engineering:code-review` | 大きめの PR をマージする前の品質チェック |
+| `engineering:standup` | セッション冒頭で「今日の状況は？」を整理するとき |
+| `engineering:debug` | 本番バグ・502/404/画像消失などインシデント対応時 |
+
+## 11. 広告作業は adspirer skill を使う
+Google 広告の確認・最適化は adspirer skill で実行する。Chrome MCP の手動操作だけで終わらせない。
+
+| skill | 使う場面 |
+|---|---|
+| `adspirer-ads-agent:campaign-performance` | キャンペーン別クリック数・CV数・CPA の確認 |
+| `adspirer-ads-agent:keyword-research` | 入札キーワードの調査・競合比較 |
+| `adspirer-ads-agent:ad-campaign-best-practices` | 広告文・アセット改善の方針を立てるとき |
+
+## 12. 縦型手すりの仕様
 - Claude / Catherine / Alexandre / Antoine は縦型手すり
 - 角度指定なし（常に垂直取付）
 - UIは「長さ」表記（「高さ」ではない）
