@@ -249,45 +249,44 @@
   }
 }
 
-/* ──────────────────────────────────────────────
- * IntroSplash: 黒画面 → ado パスを描画 → 白で塗り潰し → IRONWORKS フェードイン → フェードアウト
- * ────────────────────────────────────────────── */
-.ado-splash {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: opacity 0.8s ease;
-}
-.ado-splash--exit { opacity: 0; pointer-events: none; }
+/* IntroSplash: 黒画面に ado ロゴ PNG をフェードインで表示するスプラッシュ。
+   Tailwind v4 + Lightning CSS が直前の @media print の後にある vanilla CSS を
+   バンドルから落とすため、@layer components でラップして取り込みを保証する。 */
+@layer components {
+  .ado-splash {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: opacity 0.8s ease;
+  }
+  .ado-splash--exit { opacity: 0; pointer-events: none; }
 
-.ado-splash__center {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 24px;
-}
+  .ado-splash__center {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+  }
 
-/* PNG ロゴ画像のフェードイン（アウトライン一筆書き演出は handoff_2026_05_06_ado_intro_splash で
- * 一旦保留 → 後日再着手）。ヒーローの ado ロゴ Image コンテナ（w-[220px] h-[260px]
- * md:w-[300px] h-[360px] lg:w-[360px] h-[420px]）と寸法完全一致。 */
-.ado-splash__png-img {
-  display: block;
-  width: 220px;
-  height: 255px; /* PNG 1378×1598 の縦横比を保つ（220 × 1598/1378 ≈ 255） */
-  opacity: 0;
-  animation: ado-splash-png-fade-in 1.5s 0.2s cubic-bezier(0.4, 0, 0.4, 1) forwards;
-  object-fit: contain;
-}
-@media (min-width: 768px) {
-  .ado-splash__png-img { width: 300px; height: 348px; }
-}
-@media (min-width: 1024px) {
-  .ado-splash__png-img { width: 360px; height: 417px; }
+  .ado-splash__png-img {
+    display: block;
+    width: 220px;
+    height: 255px;
+    opacity: 0;
+    animation: ado-splash-png-fade-in 1.5s 0.2s cubic-bezier(0.4, 0, 0.4, 1) forwards;
+    object-fit: contain;
+  }
+  @media (min-width: 768px) {
+    .ado-splash__png-img { width: 300px; height: 348px; }
+  }
+  @media (min-width: 1024px) {
+    .ado-splash__png-img { width: 360px; height: 417px; }
+  }
 }
 
 @keyframes ado-splash-png-fade-in {
