@@ -96,8 +96,20 @@ NG パターン：
 ## 8. デザイン作業はデザイン特化 skill を必ず呼び出す
 **【最優先・繰り返し指摘】** UI / レイアウト / グラフィック / トップページ刷新 / バナー / ロゴ など「デザイン性を求める作業」のときは、必ずデザイン特化 skill を呼び出してから着手する。素の Edit/Write だけで進めない（何度もやり直しになる）。
 
+### 8a. ado サイト本体（v0-design/）の UI 変更は ado-ui-change-review を最優先で起動
+
+**【最重要・繰り返し指摘】** ado サイトの UI / ヒーロー / ヘッダー / スプラッシュ / カテゴリードック / レイアウト / 配色 / 文字サイズ / モバイル対応 を触る作業では、まず：
+
+```
+anthropic-skills:ado-ui-change-review
+```
+
+を必ず起動する。`ironworks-ado-skills/ado-ui-change-review.skill` に格納され、**過去 4 セッションで踏んだ落とし穴（Tailwind v4 layer 落ち / viewport-fit 抜け / Next/Image fill / ado_logo_W/K 切替 / contrast / safe-area-inset / CSS バンドル落ち / 文字サイズ過小）を全部チェックリスト化** している。これを通さずに修正すると「修正の修正」のループになるので、視覚に出る変更では必ず先頭で呼ぶ。
+
+その上で、より「デザイン性を求める作業」（新規ページ作成 / トップ刷新 / バナー / ロゴ）では下記 skill も併用する。
+
 該当 skill 例：
-- `anthropic-skills:web-artifacts-builder` — Web ページ／React アートワーク（**ZEST / ado サイトの主役**）
+- `anthropic-skills:web-artifacts-builder` — Web ページ／React アートワーク（**新規 artifact 用。既存 Next.js 修正には使えない**）
 - `anthropic-skills:canvas-design` — ポスター・静的アート・PDF
 - `anthropic-skills:theme-factory` — テーマ／配色適用
 - `anthropic-skills:brand-guidelines` — Anthropic ブランド系
@@ -125,7 +137,7 @@ SEO に関わる作業のときは、以下の skill を先に呼び出してか
 | skill | 使う場面 |
 |---|---|
 | `engineering:deploy-checklist` | main への merge 直前・Vercel デプロイ後の確認 |
-| `engineering:code-review` | 大きめの PR をマージする前の品質チェック |
+| **`engineering:code-review`** | **UI に関わる PR は必ず**、それ以外も大きめ PR は必須でマージ前に通す |
 | `engineering:standup` | セッション冒頭で「今日の状況は？」を整理するとき |
 | `engineering:debug` | 本番バグ・502/404/画像消失などインシデント対応時 |
 
