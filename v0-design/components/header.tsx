@@ -60,7 +60,7 @@ export function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`relative text-[13px] tracking-wide transition-colors duration-300 group py-2 ${
+                  className={`relative text-[15px] tracking-wide transition-colors duration-300 group py-2 ${
                     overHero
                       ? "text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)] hover:text-white"
                       : "text-dark/80 hover:text-dark"
@@ -74,7 +74,7 @@ export function Header() {
               ))}
               <Link
                 href="/contact"
-                className={`relative text-[13px] tracking-wide transition-colors duration-300 group py-2 ${
+                className={`relative text-[15px] tracking-wide transition-colors duration-300 group py-2 ${
                   overHero
                     ? "text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)] hover:text-white"
                     : "text-dark/80 hover:text-dark"
