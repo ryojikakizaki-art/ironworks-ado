@@ -9,6 +9,20 @@ const SITE_URL = "https://ado.tantetuzest.com"
 const SHOP_NAME = "IRONWORKS ado"
 const SHOP_DESCRIPTION = "鍛冶職人が一本一本手作りするアイアン手すり・建材・家具"
 
+// Shopping 広告で配信する主力商品。custom_label_0=core のみキャンペーンが拾う。
+// それ以外は custom_label_0=other となり、Merchant Center 上には残るが広告は出ない。
+const AD_CORE_SLUGS = new Set([
+  "rene",
+  "claude",
+  "alexandre",
+  "catherine",
+  "marcel",
+  "clemence",
+  "claire",
+  "elisabeth",
+  "scroll19",
+])
+
 function escapeXml(value: string): string {
   return value
     .replace(/&/g, "&amp;")
@@ -31,7 +45,7 @@ function imageUrl(imgId: string): string {
 function catalogFeedTitle(p: { cat: string; label: string; name: string; sub: string }): string {
   const isHandrail = p.cat === "handrail_h" || p.cat === "handrail_v"
   const cleanLabel = p.label.replace(/\s*・\s*/g, " ").trim()
-  const prefix = isHandrail ? `アイアン手すり ${cleanLabel}` : cleanLabel
+  const prefix = isHandrail ? `オーダーメイド アイアン手すり ${cleanLabel}` : cleanLabel
   return `${prefix} ${p.name} ${p.sub}`.trim()
 }
 
@@ -60,6 +74,7 @@ interface FeedItem {
 }
 
 function buildItem(item: FeedItem): string {
+  const adGroup = AD_CORE_SLUGS.has(item.slug) ? "core" : "other"
   return [
     "    <item>",
     `      <g:id>${escapeXml(item.slug)}</g:id>`,
@@ -73,7 +88,7 @@ function buildItem(item: FeedItem): string {
     `      <g:brand>${escapeXml(SHOP_NAME)}</g:brand>`,
     `      <g:identifier_exists>false</g:identifier_exists>`,
     `      <g:product_type>${escapeXml(item.productType)}</g:product_type>`,
-    `      <g:custom_label_0>ado</g:custom_label_0>`,
+    `      <g:custom_label_0>${adGroup}</g:custom_label_0>`,
     `      <g:shipping><g:country>JP</g:country><g:service>佐川急便</g:service><g:price>0 JPY</g:price></g:shipping>`,
     "    </item>",
   ].join("\n")
