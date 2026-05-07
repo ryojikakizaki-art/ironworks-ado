@@ -123,14 +123,14 @@ export function CategoryDock() {
             {DOCK_CATEGORIES.map((cat) => {
               const active = activeKey === cat.key
               return (
-                <li key={cat.key} className="flex-1 min-w-[110px] md:min-w-[140px]">
+                <li key={cat.key} className="flex-1 min-w-[120px] md:min-w-[150px]">
                   <button
                     type="button"
                     onMouseEnter={() => setActiveKey(cat.key)}
                     onClick={() =>
                       setActiveKey((prev) => (prev === cat.key ? null : cat.key))
                     }
-                    className={`w-full px-3 py-4 md:py-5 text-[11px] md:text-[13px] tracking-[0.15em] transition-all duration-300 ${
+                    className={`w-full px-3 py-4 md:py-5 text-[13px] md:text-[15px] tracking-[0.15em] transition-all duration-300 ${
                       active
                         ? "text-gold"
                         : "text-white/85 hover:text-white"
