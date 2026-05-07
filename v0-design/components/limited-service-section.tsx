@@ -206,6 +206,20 @@ export function LimitedServiceSection() {
                   transition={{ duration: 0.5, delay: 0.15 + index * 0.08 }}
                   className="flex-shrink-0 w-[260px] md:w-[280px] snap-start cursor-pointer"
                   style={{ perspective: "1000px" }}
+                  onMouseEnter={() =>
+                    setFlippedCards((prev) => {
+                      const next = new Set(prev)
+                      next.add(index)
+                      return next
+                    })
+                  }
+                  onMouseLeave={() =>
+                    setFlippedCards((prev) => {
+                      const next = new Set(prev)
+                      next.delete(index)
+                      return next
+                    })
+                  }
                   onClick={() => toggleFlip(index)}
                   onMouseEnter={() => setFlippedCards(prev => { const n = new Set(prev); n.add(index); return n })}
                   onMouseLeave={() => setFlippedCards(prev => { const n = new Set(prev); n.delete(index); return n })}

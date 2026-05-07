@@ -30,7 +30,6 @@ const footerLinks = {
     title: "IRONWORKS ado",
     links: [
       { label: "ご挨拶", href: "/greeting" },
-      { label: "ブログ", href: "/blog" },
       { label: "特定商取引法に基づく表記", href: "/tokushoho" },
     ],
   },
