@@ -61,6 +61,10 @@ export function HeroSection() {
         ))}
         {/* 文字・ロゴの可読性を保つ暗幕 */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/35 to-black/65" />
+        {/* ヘッダー（白文字 / text-white/85）を明るい背景画像でも読めるように、最上部に追加の暗幕。
+            ヒーロー画像は 6 枚あり中には ウッド天井 / 緑 / ガラス など明るいシーンも含むため、
+            ベース from-black/45 では 64〜80px 高のヘッダーゾーンでコントラストが足りない。 */}
+        <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-black/80 via-black/45 to-transparent" />
       </div>
 
       {/* ── 中央：ado ロゴ（常時固定） ── */}
