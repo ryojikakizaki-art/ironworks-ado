@@ -62,7 +62,7 @@ export function Header() {
                   href={item.href}
                   className={`relative text-[13px] tracking-wide transition-colors duration-300 group py-2 ${
                     overHero
-                      ? "text-white/85 hover:text-white"
+                      ? "text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)] hover:text-white"
                       : "text-dark/80 hover:text-dark"
                   }`}
                 >
@@ -76,7 +76,7 @@ export function Header() {
                 href="/contact"
                 className={`relative text-[13px] tracking-wide transition-colors duration-300 group py-2 ${
                   overHero
-                    ? "text-white/85 hover:text-white"
+                    ? "text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)] hover:text-white"
                     : "text-dark/80 hover:text-dark"
                 }`}
               >
