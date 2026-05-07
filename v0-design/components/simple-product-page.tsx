@@ -21,9 +21,9 @@ const FEATURE_ICON_MAP: Record<FeatureIconName, typeof Hammer> = {
   Wrench,
 }
 
-function priceLabel(price: number): string {
+function priceLabel(price: number, priceFrom = false): string {
   if (price <= 0) return "お見積もり"
-  return `¥${price.toLocaleString()}〜`
+  return `¥${price.toLocaleString()}${priceFrom ? "〜" : ""}`
 }
 
 /** FAQ アコーディオン項目 */
@@ -483,7 +483,7 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
                         />
                       </div>
                       <h3 className="font-serif text-lg text-dark mb-1">{rel.name}</h3>
-                      <p className="text-[13px] text-muted-foreground">{priceLabel(rel.price)}</p>
+                      <p className="text-[13px] text-muted-foreground">{priceLabel(rel.price, rel.priceFrom)}</p>
                     </motion.div>
                   </Link>
                 ))}

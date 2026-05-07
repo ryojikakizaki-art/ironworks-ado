@@ -88,7 +88,7 @@ export default function ProductListPage() {
                     </div>
                     {p.price > 0 ? (
                       <div className="text-[10px] text-muted-foreground mt-0.5">
-                        ¥{p.price.toLocaleString()}
+                        ¥{p.price.toLocaleString()}{p.priceFrom ? "〜" : ""}
                       </div>
                     ) : (
                       <div className="text-[10px] text-muted-foreground mt-0.5">要見積もり</div>

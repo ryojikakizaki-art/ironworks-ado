@@ -42,9 +42,9 @@ const prefectures = [
   "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県"
 ]
 
-function priceLabel(price: number): string {
+function priceLabel(price: number, priceFrom = false): string {
   if (price <= 0) return "お見積もり"
-  return `¥${price.toLocaleString()}〜`
+  return `¥${price.toLocaleString()}${priceFrom ? "〜" : ""}`
 }
 
 export default function ProductDetailPage() {
@@ -900,7 +900,7 @@ export default function ProductDetailPage() {
                             />
                           </div>
                           <h3 className="font-serif text-lg mb-1">{rel.name}</h3>
-                          <p className="text-[13px] text-muted-foreground">{priceLabel(rel.price)}</p>
+                          <p className="text-[13px] text-muted-foreground">{priceLabel(rel.price, rel.priceFrom)}</p>
                         </motion.div>
                       </Link>
                     ))}

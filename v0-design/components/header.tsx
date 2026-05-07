@@ -7,29 +7,16 @@ import Image from "next/image"
 import { Menu, X, ShoppingBag } from "lucide-react"
 
 export function Header() {
-  // 「手仕事と、暮らそう。」のエントランス完了に合わせて自然に降りてくる
-  const [headerVisible, setHeaderVisible] = useState(false)
-  // ヒーローエリア上は背景が暗いので文字色を白に。
+  // ヒーローエリア（高さ100vh）の上にいるかどうか。背景が暗いので文字色を白に。
   const [overHero, setOverHero] = useState(true)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-
-  // ヒーローのエントランス（金線 0.3s + 0.8s + H1 1.2s 待ち + 1.2s = 約 2.4s）後にヘッダー出現。
-  // 既にスクロールされている（戻る／復元）場合は即時表示。
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.scrollY > 50) {
-      setHeaderVisible(true)
-      return
-    }
-    const t = setTimeout(() => setHeaderVisible(true), 2500)
-    return () => clearTimeout(t)
-  }, [])
 
   useEffect(() => {
     const handleScroll = () => {
       const y = window.scrollY
       const vh = window.innerHeight
-      // ヒーロー（500vh）を抜けたら濃いテキスト色へ
-      setOverHero(y < vh * 5 - 80)
+      // ヒーロー（100vh）を抜けたら濃いテキスト色へ
+      setOverHero(y < vh - 80)
     }
     handleScroll()
     window.addEventListener("scroll", handleScroll, { passive: true })
@@ -40,21 +27,15 @@ export function Header() {
     { label: "製品一覧", href: "/#lineup" },
     { label: "ABOUT", href: "/about" },
     { label: "お客様の声", href: "/#testimonials" },
-    { label: "お問い合わせ", href: "/contact" },
   ]
 
   return (
     <>
       <motion.header
-        initial={false}
-        animate={{
-          y: headerVisible ? 0 : -100,
-          opacity: headerVisible ? 1 : 0,
-        }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className={`fixed top-0 left-0 right-0 z-40 bg-transparent transition-colors duration-500 ${
-          headerVisible ? "pointer-events-auto" : "pointer-events-none"
-        }`}
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
+        className="fixed top-0 left-0 right-0 z-40 bg-transparent pointer-events-auto transition-colors duration-500"
       >
         <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20">
@@ -66,6 +47,7 @@ export function Header() {
                   alt="IRONWORKS ado"
                   fill
                   priority
+                  unoptimized
                   sizes="(min-width: 1024px) 48px, 40px"
                   className="object-contain object-left"
                 />
@@ -73,7 +55,7 @@ export function Header() {
             </Link>
 
             {/* Center Navigation - Desktop */}
-            <nav className="hidden lg:flex items-center justify-center gap-10 absolute left-1/2 -translate-x-1/2">
+            <nav className="hidden lg:flex items-center justify-center gap-8 absolute left-1/2 -translate-x-1/2">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
@@ -90,10 +72,23 @@ export function Header() {
                   }`} />
                 </Link>
               ))}
+              <Link
+                href="/contact"
+                className={`relative text-[13px] tracking-wide transition-colors duration-300 group py-2 ${
+                  overHero
+                    ? "text-white/85 hover:text-white"
+                    : "text-dark/80 hover:text-dark"
+                }`}
+              >
+                お問い合わせ
+                <span className={`absolute bottom-0 left-0 w-0 h-[1px] transition-all duration-300 group-hover:w-full ${
+                  overHero ? "bg-white" : "bg-dark"
+                }`} />
+              </Link>
             </nav>
 
             {/* Right Actions */}
-            <div className="flex items-center gap-2 lg:gap-3">
+            <div className="flex items-center gap-3">
               {/* Cart Icon */}
               <button
                 className={`p-2 rounded-full transition-all duration-300 relative ${
@@ -223,6 +218,7 @@ export function Header() {
                         src="/images/ado_logo_K.png"
                         alt="IRONWORKS ado"
                         fill
+                        unoptimized
                         sizes="40px"
                         className="object-contain object-left"
                       />

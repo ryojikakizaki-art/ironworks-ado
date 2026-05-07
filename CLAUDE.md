@@ -138,7 +138,7 @@ Google 広告の確認・最適化は adspirer skill で実行する。Chrome MC
 | `adspirer-ads-agent:keyword-research` | 入札キーワードの調査・競合比較 |
 | `adspirer-ads-agent:ad-campaign-best-practices` | 広告文・アセット改善の方針を立てるとき |
 
-## 12. 縦型手すりの仕様
+## 13. 縦型手すりの仕様
 - Claude / Catherine / Alexandre / Antoine は縦型手すり
 - 角度指定なし（常に垂直取付）
 - UIは「長さ」表記（「高さ」ではない）
