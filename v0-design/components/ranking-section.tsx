@@ -207,6 +207,7 @@ export function RankingSection() {
                     <span className={`font-medium text-foreground ${item.rank === 1 ? "text-xl" : "text-lg"}`}>
                       {item.price}
                     </span>
+                    <span className="text-[12px] text-muted-foreground">〜</span>
                     <span className="text-[10px] text-muted-foreground ml-1">（税込）</span>
                   </div>
                 </div>

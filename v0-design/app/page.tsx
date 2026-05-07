@@ -15,39 +15,23 @@ import { BackToTop } from "@/components/back-to-top"
 
 export default function HomePage() {
   return (
-    <main className="relative">
+    <main className="relative bg-white">
       <Header />
 
-      {/* ── ヒーロー（固定背景 + スクロール駆動テキスト） ── */}
+      {/* ── ヒーロー（100vh、中央に ado ロゴ、下部にカテゴリードック） ── */}
       <div id="hero">
         <HeroSection />
       </div>
 
-      {/* ── コンテンツセクション（白背景で固定ヒーローを隠す） ── */}
-      <div className="relative z-10 bg-white">
-        <LimitedServiceSection />
-        <RankingSection />
-      </div>
-
-      {/* ── 透明スペーサー ── */}
-      <div className="h-48 md:h-64" />
-
-      {/* ── コンテンツセクション（白背景） ── */}
-      <div className="relative z-10 bg-white">
-        <LineupSection />
-        <TestimonialsSection />
-      </div>
-
-      {/* ── 透明スペーサー ── */}
-      <div className="h-48 md:h-64" />
-
-      <div className="relative z-10">
-        <CraftsmanshipStorySection />
-        <NewsSection />
-        <BlogSection />
-        <CtaBanner />
-        <Footer />
-      </div>
+      <LimitedServiceSection />
+      <RankingSection />
+      <LineupSection />
+      <TestimonialsSection />
+      <CraftsmanshipStorySection />
+      <NewsSection />
+      <BlogSection />
+      <CtaBanner />
+      <Footer />
 
       <BackToTop />
     </main>

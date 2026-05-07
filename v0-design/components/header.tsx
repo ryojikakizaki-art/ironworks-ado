@@ -7,8 +7,7 @@ import Image from "next/image"
 import { Menu, X, ShoppingBag } from "lucide-react"
 
 export function Header() {
-  const [isScrolled, setIsScrolled] = useState(false)
-  // ヒーローエリア（高さ200vh）の上にいるかどうか。背景が暗いので文字色を白に。
+  // ヒーローエリア（高さ100vh）の上にいるかどうか。背景が暗いので文字色を白に。
   const [overHero, setOverHero] = useState(true)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
@@ -16,10 +15,8 @@ export function Header() {
     const handleScroll = () => {
       const y = window.scrollY
       const vh = window.innerHeight
-      // 「手仕事と、暮らそう。」が線に沈み始める頃（≒50vh）にヘッダーを出す
-      setIsScrolled(y > vh * 0.5)
-      // ヒーロー（500vh）を抜けたら濃いテキスト色へ
-      setOverHero(y < vh * 5 - 80)
+      // ヒーロー（100vh）を抜けたら濃いテキスト色へ
+      setOverHero(y < vh - 80)
     }
     handleScroll()
     window.addEventListener("scroll", handleScroll, { passive: true })
@@ -28,23 +25,17 @@ export function Header() {
 
   const navItems = [
     { label: "製品一覧", href: "/#lineup" },
-    { label: "ご注文について", href: "/about" },
+    { label: "ABOUT", href: "/about" },
     { label: "お客様の声", href: "/#testimonials" },
-    { label: "ブログ", href: "/blog" },
   ]
 
   return (
     <>
       <motion.header
-        initial={false}
-        animate={{
-          y: isScrolled ? 0 : -100,
-          opacity: isScrolled ? 1 : 0,
-        }}
-        transition={{ duration: 0.5, ease: "easeOut" }}
-        className={`fixed top-0 left-0 right-0 z-40 bg-transparent transition-colors duration-500 ${
-          isScrolled ? "pointer-events-auto" : "pointer-events-none"
-        }`}
+        initial={{ y: -100, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
+        className="fixed top-0 left-0 right-0 z-40 bg-transparent pointer-events-auto transition-colors duration-500"
       >
         <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20">
@@ -56,6 +47,7 @@ export function Header() {
                   alt="IRONWORKS ado"
                   fill
                   priority
+                  unoptimized
                   sizes="(min-width: 1024px) 48px, 40px"
                   className="object-contain object-left"
                 />
@@ -63,7 +55,7 @@ export function Header() {
             </Link>
 
             {/* Center Navigation - Desktop */}
-            <nav className="hidden lg:flex items-center justify-center gap-10 absolute left-1/2 -translate-x-1/2">
+            <nav className="hidden lg:flex items-center justify-center gap-8 absolute left-1/2 -translate-x-1/2">
               {navItems.map((item) => (
                 <Link
                   key={item.href}
@@ -80,6 +72,19 @@ export function Header() {
                   }`} />
                 </Link>
               ))}
+              <Link
+                href="/contact"
+                className={`relative text-[13px] tracking-wide transition-colors duration-300 group py-2 ${
+                  overHero
+                    ? "text-white/85 hover:text-white"
+                    : "text-dark/80 hover:text-dark"
+                }`}
+              >
+                お問い合わせ
+                <span className={`absolute bottom-0 left-0 w-0 h-[1px] transition-all duration-300 group-hover:w-full ${
+                  overHero ? "bg-white" : "bg-dark"
+                }`} />
+              </Link>
             </nav>
 
             {/* Right Actions */}
@@ -213,6 +218,7 @@ export function Header() {
                         src="/images/ado_logo_K.png"
                         alt="IRONWORKS ado"
                         fill
+                        unoptimized
                         sizes="40px"
                         className="object-contain object-left"
                       />

@@ -103,7 +103,7 @@ export function LimitedServiceSection() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="font-serif text-[24px] md:text-[28px] text-foreground"
             >
-              オンラインショップが選ばれる理由
+              IRONWORKS ado が選ばれる理由
             </motion.h2>
           </div>
 
@@ -206,6 +206,20 @@ export function LimitedServiceSection() {
                   transition={{ duration: 0.5, delay: 0.15 + index * 0.08 }}
                   className="flex-shrink-0 w-[260px] md:w-[280px] snap-start cursor-pointer"
                   style={{ perspective: "1000px" }}
+                  onMouseEnter={() =>
+                    setFlippedCards((prev) => {
+                      const next = new Set(prev)
+                      next.add(index)
+                      return next
+                    })
+                  }
+                  onMouseLeave={() =>
+                    setFlippedCards((prev) => {
+                      const next = new Set(prev)
+                      next.delete(index)
+                      return next
+                    })
+                  }
                   onClick={() => toggleFlip(index)}
                 >
                   <motion.div

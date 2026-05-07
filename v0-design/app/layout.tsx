@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Noto_Serif_JP, Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import Script from 'next/script'
+import { IntroSplash } from '@/components/intro-splash'
 import './globals.css'
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID
@@ -97,6 +98,7 @@ export default function RootLayout({
   return (
     <html lang="ja" className={`${notoSerifJP.variable} ${inter.variable} bg-background`}>
       <body className="font-sans antialiased">
+        <IntroSplash />
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
         {gtagSrc && (
