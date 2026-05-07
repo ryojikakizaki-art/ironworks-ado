@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Noto_Serif_JP, Inter } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { IntroSplash } from '@/components/intro-splash'
@@ -87,6 +87,14 @@ const STRUCTURED_DATA = {
       publisher: { '@id': `${SITE_URL}/#organization` },
     },
   ],
+}
+
+// iOS の notch・ホームバー領域までコンテンツを伸ばす（safe-area-inset で
+// ヘッダー / splash / カテゴリードックを安全領域に揃える前提）
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 }
 
 export const metadata: Metadata = {

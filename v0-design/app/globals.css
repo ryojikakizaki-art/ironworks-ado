@@ -263,6 +263,11 @@
     justify-content: center;
     cursor: pointer;
     transition: opacity 0.8s ease;
+    /* iOS notch / home bar を考慮して可視領域の中央にロゴが来るよう padding を入れる。
+       inset:0 のままだと geometric 中央 = notch を含む viewport 中央なので、
+       実機では「下にズレて見える」ため。 */
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
   }
   .ado-splash--exit { opacity: 0; pointer-events: none; }
 
