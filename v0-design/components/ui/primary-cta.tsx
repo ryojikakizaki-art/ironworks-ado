@@ -27,7 +27,15 @@ import { cn } from "@/lib/utils"
  * 左に Lucide アイコンを足したい場合は icon プロップに渡す。
  */
 
-type CTAVariant = "gold" | "dark" | "outline" | "ghost-light" | "purchase" | "line"
+type CTAVariant =
+  | "gold"
+  | "dark"
+  | "outline"
+  | "ghost-light"
+  | "purchase"
+  | "line"
+  | "gold-glass"
+  | "line-glass"
 type CTASize = "lg" | "md" | "sm"
 
 const baseStyles =
@@ -42,6 +50,29 @@ const variantStyles: Record<CTAVariant, string> = {
     "border-2 border-white/40 text-white bg-white/5 hover:bg-white hover:text-dark hover:border-white",
   // LINE 公式アカウントへの誘導専用 — LINE ブランドカラー (#06C755)
   line: "bg-[#06C755] text-white shadow-lg hover:bg-[#05B048] hover:shadow-xl",
+  /**
+   * gold-glass: ヒーロー写真上で使う「乗算」ゴールド CTA。
+   * - 背景レイヤー (::before) に mix-blend-mode: multiply を当てて、下の写真と乗算合成
+   * - テキスト・矢印は z-10 で前面に出して可読性を確保（multiply の影響を受けない）
+   * - 細い白枠 + 影で輪郭を保つ
+   */
+  "gold-glass": [
+    "relative isolate text-white backdrop-blur-[2px] border border-white/30",
+    "shadow-[0_4px_18px_rgba(0,0,0,0.45)]",
+    "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:-z-10",
+    "before:bg-gold before:opacity-85 before:[mix-blend-mode:multiply]",
+    "hover:before:opacity-95 hover:shadow-[0_6px_24px_rgba(0,0,0,0.55)]",
+  ].join(" "),
+  /**
+   * line-glass: ヒーロー写真上で使う「乗算」LINE CTA。gold-glass と対。
+   */
+  "line-glass": [
+    "relative isolate text-white backdrop-blur-[2px] border border-white/30",
+    "shadow-[0_4px_18px_rgba(0,0,0,0.45)]",
+    "before:content-[''] before:absolute before:inset-0 before:rounded-[inherit] before:-z-10",
+    "before:bg-[#06C755] before:opacity-90 before:[mix-blend-mode:multiply]",
+    "hover:before:opacity-100 hover:shadow-[0_6px_24px_rgba(0,0,0,0.55)]",
+  ].join(" "),
   /**
    * 購入確定ボタン専用 — 内側ハイライト/シャドウと多重ベース影を重ねた「本物の金属ボタン」表現。
    * 商品ページの「購入手続きへ進む」とフローティング CTA バーだけに使う。
@@ -134,7 +165,9 @@ function CTAInner({
     variant === "gold" ||
     variant === "dark" ||
     variant === "purchase" ||
-    variant === "line"
+    variant === "line" ||
+    variant === "gold-glass" ||
+    variant === "line-glass"
   return (
     <>
       <span className="relative z-10 inline-flex items-center justify-center gap-2">
