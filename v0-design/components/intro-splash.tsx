@@ -4,15 +4,19 @@ import { useEffect, useRef, useState } from "react"
 
 const STORAGE_KEY = "ado-intro-seen"
 
-/* タイムライン（PNG フェードイン版）
+/* タイムライン（PNG フェードイン版・ゆっくり構成）
  *  0.00s   黒画面
- *  0.20s   ado_logo_W.png が 1.5 秒かけてフェードイン
- *  1.70s   完成形（PNG ロゴと完全一致）でホールド
- *  2.60s   フェードアウト（0.8s）
- *  3.40s   splash 消滅
+ *  0.10s   ado_logo_W.png が 1.5 秒かけてゆっくりフェードイン
+ *  1.60s   完成形でホールド（0.7s）
+ *  2.30s   フェードアウト（1.5s）
+ *  3.80s   splash 消滅
+ *
+ * 蠣﨑さんの希望（2026-05-08）: 1 秒は早すぎるので 3 秒かけて表示、
+ * フェードアウトはさらにゆっくり 1.5 秒で余韻を残す。
+ * 初回のみ表示・Esc/クリックでスキップ可能は維持。
  */
-const TOTAL_MS = 2600
-const FADE_OUT_MS = 800
+const TOTAL_MS = 2300
+const FADE_OUT_MS = 1500
 
 export function IntroSplash() {
   const [stage, setStage] = useState<"idle" | "visible" | "exiting" | "gone">("idle")

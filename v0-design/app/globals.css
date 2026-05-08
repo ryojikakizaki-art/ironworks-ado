@@ -262,7 +262,7 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    transition: opacity 0.8s ease;
+    transition: opacity 1.5s ease;
     /* iOS notch / home bar を考慮して可視領域の中央にロゴが来るよう padding を入れる。
        inset:0 のままだと geometric 中央 = notch を含む viewport 中央なので、
        実機では「下にズレて見える」ため。 */
@@ -283,7 +283,7 @@
     width: 220px;
     height: 255px;
     opacity: 0;
-    animation: ado-splash-png-fade-in 1.5s 0.2s cubic-bezier(0.4, 0, 0.4, 1) forwards;
+    animation: ado-splash-png-fade-in 1.5s 0.1s cubic-bezier(0.4, 0, 0.4, 1) forwards;
     object-fit: contain;
   }
   @media (min-width: 768px) {
