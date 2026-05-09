@@ -23,7 +23,7 @@ export default function ReviewsPage() {
             </p>
             <h1 className="font-serif text-3xl lg:text-5xl text-foreground">お客様の声</h1>
             <p className="text-[13px] text-muted-foreground mt-3 max-w-[640px]">
-              全国 {TOTAL_VOICE_COUNT} 名以上のお客様から、IRONWORKS ado の手摺について
+              全国 {TOTAL_VOICE_COUNT} 名以上のお客様から、IRONWORKS ado の手すりについて
               嬉しいお言葉を頂戴しております。その一部をご紹介いたします。
             </p>
           </div>

@@ -69,7 +69,7 @@ export function CtaBanner() {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="font-serif text-3xl md:text-4xl lg:text-5xl text-white mb-6 leading-relaxed text-balance"
         >
-          あなただけの手摺を、
+          あなただけの手すりを、
           <br />
           一緒につくりませんか
         </motion.h2>
