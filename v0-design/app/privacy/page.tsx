@@ -12,13 +12,17 @@ const sections = [
     title: "1. 事業者情報",
     body: (
       <>
+        事業形態：個人事業
+        <br />
         屋号：鍛鉄工房ZEST／IRONWORKS ado
         <br />
-        代表者：蠣﨑 良治
+        代表者：蠣﨑 良治（個人事業主）
         <br />
         所在地：〒265-0052 千葉県千葉市若葉区和泉町239-2
         <br />
         連絡先：ado@tantetuzest.com
+        <br />
+        適格請求書発行事業者登録番号：T7810771171765
       </>
     ),
   },
@@ -88,7 +92,7 @@ const sections = [
       <>
         個人情報の取扱いに関するお問い合わせは、以下までお願いいたします。
         <br />
-        鍛鉄工房ZEST（IRONWORKS ado）
+        鍛鉄工房ZEST（屋号：IRONWORKS ado） ― 個人事業（代表 蠣﨑 良治）
         <br />
         Email: ado@tantetuzest.com
         <br />
@@ -116,7 +120,7 @@ export default function PrivacyPage() {
 
         <div className="max-w-[800px] mx-auto px-4 lg:px-8 py-16 space-y-12">
           <p className="text-[14px] leading-[1.9] text-muted-foreground">
-            鍛鉄工房ZEST（IRONWORKS ado、以下「当店」）は、お客様の個人情報を適切に取り扱うことが重要な責務であると考え、個人情報保護法その他の関係法令を遵守するとともに、以下の方針に基づき、個人情報の保護に努めます。
+            鍛鉄工房ZEST（屋号：IRONWORKS ado、以下「当店」）は、お客様の個人情報を適切に取り扱うことが重要な責務であると考え、個人情報保護法その他の関係法令を遵守するとともに、以下の方針に基づき、個人情報の保護に努めます。
           </p>
 
           {sections.map((s) => (

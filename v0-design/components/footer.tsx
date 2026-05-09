@@ -131,7 +131,7 @@ export function Footer() {
           className="mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4"
         >
           <p className="text-white/40 text-xs">
-            &copy; {new Date().getFullYear()} IRONWORKS ado. All rights reserved.
+            &copy; {new Date().getFullYear()} 鍛鉄工房ZEST / IRONWORKS ado（事業者：蠣﨑 良治）. All rights reserved.
           </p>
           <div className="flex gap-6">
             <Link href="/terms" className="text-white/40 text-xs hover:text-white transition-colors duration-300">
