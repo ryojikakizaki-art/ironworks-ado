@@ -87,7 +87,7 @@ export function CraftsmanshipStorySection() {
               transition={{ duration: 0.6, delay: 0.7 }}
               className="text-[14px] md:text-[15px] text-white/75 leading-loose mb-10"
             >
-              千葉の工房で、15年以上にわたり鉄と向き合ってきました。
+              自社工房で、15年以上にわたり鉄と向き合ってきました。
               一本一本、火と鉄と向き合い、心を込めて打ち出す。
               機械では出せない、手仕事ならではの温かみと風合いを、
               世界に一つだけの作品としてお届けします。

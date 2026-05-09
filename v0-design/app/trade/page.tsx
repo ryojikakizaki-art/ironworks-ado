@@ -191,7 +191,7 @@ export default function TradePage() {
               ado で形にしませんか。
             </h1>
             <p className="text-[14px] lg:text-[16px] leading-[1.95] text-white/80 max-w-2xl mb-8">
-              鍛鉄・焼付塗装・レーザーカット・機械加工・溶融亜鉛めっき。一般的な鉄工所では断られがちな仕様も、千葉の工房で職人本人が一貫して請け負います。卸価格・図面 / CAD 対応・特急納期にも対応。
+              鍛鉄・焼付塗装・レーザーカット・機械加工・溶融亜鉛めっき。一般的な鉄工所では断られがちな仕様も、自社工房で職人本人が一貫して請け負います。卸価格・図面 / CAD 対応・特急納期にも対応。
             </p>
             <div className="flex flex-wrap gap-3">
               <PrimaryCTA href="#trade-form" variant="gold" size="md" withArrow>

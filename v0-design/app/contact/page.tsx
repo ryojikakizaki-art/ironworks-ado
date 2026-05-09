@@ -270,7 +270,7 @@ export default function ContactPage() {
             <div className="lg:col-span-7 relative aspect-[3/2] lg:aspect-auto bg-secondary">
               <Image
                 src="/images/greeting-craft.jpg"
-                alt="千葉の工房で鉄を打つ職人"
+                alt="自社工房で鉄を打つ職人"
                 fill
                 sizes="(max-width: 1024px) 100vw, 60vw"
                 priority
