@@ -93,7 +93,7 @@ export function HeroSection() {
         {/* 中央：見出し＋英語サブ（位置はキープ） */}
         <div className="flex flex-col items-center text-center text-white max-w-[460px]">
           <h1 className="font-serif text-[20px] md:text-[26px] lg:text-[30px] font-medium leading-[1.35] drop-shadow-[0_2px_8px_rgba(0,0,0,0.55)]">
-            選ばれる理由は、本物だから。
+            現代の鍛冶屋、真心こめて直販。
           </h1>
           <p className="mt-2 md:mt-3 font-serif italic text-[10px] md:text-[12px] tracking-[0.25em] text-gold/95 uppercase drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]">
             Real Ironworks. Real Blacksmith.
