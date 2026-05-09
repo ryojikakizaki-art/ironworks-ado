@@ -2,6 +2,7 @@
 
 import { Header } from "@/components/header"
 import { HeroSection } from "@/components/hero-section"
+import { TradeBanner } from "@/components/trade-banner"
 import { LimitedServiceSection } from "@/components/limited-service-section"
 import { RankingSection } from "@/components/ranking-section"
 import { LineupSection } from "@/components/lineup-section"
@@ -23,6 +24,7 @@ export default function HomePage() {
         <HeroSection />
       </div>
 
+      <TradeBanner />
       <LimitedServiceSection />
       <RankingSection />
       <LineupSection />
