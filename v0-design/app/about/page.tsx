@@ -6,7 +6,7 @@ import { PrimaryCTA } from "@/components/ui/primary-cta"
 import { Hammer, Flame, Paintbrush, ArrowRight, Mail, MessageSquare, MapPin } from "lucide-react"
 
 export const metadata = {
-  title: "About｜千葉の鍛冶職人が手作りするアイアン手すりの工房｜IRONWORKS ado",
+  title: "About｜鍛冶職人が手作りするアイアン手すりの工房｜IRONWORKS ado",
   description:
     "千葉市の鍛鉄工房ZESTで 15 年の経験を持つ鍛冶職人が、火造り鍛造で一本ずつ仕上げるアイアン手すり・インテリアの工房。",
   alternates: { canonical: "/about" },

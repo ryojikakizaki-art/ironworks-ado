@@ -80,7 +80,7 @@ export function CtaBanner() {
           transition={{ duration: 0.6, delay: 0.3 }}
           className="text-white/70 text-sm md:text-base max-w-xl mx-auto mb-10 leading-relaxed"
         >
-          千葉の工房から、ひとつずつ手仕事で仕上げます。
+          自社工房から、ひとつずつ手仕事で仕上げます。
           <br className="hidden md:block" />
           図面・現場写真・ご相談、お気軽にお寄せください。
         </motion.p>

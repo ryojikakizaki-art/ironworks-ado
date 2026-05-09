@@ -782,12 +782,12 @@ export default function GalvanizingPage() {
               <div className="lg:sticky lg:top-24">
                 <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Atelier</p>
                 <h2 className="font-serif text-3xl lg:text-5xl text-white leading-none">制作風景</h2>
-                <p className="text-[12px] text-white/50 mt-3">千葉の工房・実映像</p>
+                <p className="text-[12px] text-white/50 mt-3">自社工房・実映像</p>
               </div>
             </aside>
             <div className="lg:col-span-9 scroll-mt-24">
               <p className="text-[15px] leading-[1.95] text-white/80 mb-8 max-w-2xl">
-                ado の屋外用手すりが、千葉の工房で 1 本ずつ手作業で生まれていく様子。
+                ado の屋外用手すりが、自社工房で 1 本ずつ手作業で生まれていく様子。
                 製作 → メッキ工場 → 戻し作業 → 塗装の各工程を、実際の動画と作業写真でご覧いただけます。
               </p>
 
@@ -856,7 +856,7 @@ export default function GalvanizingPage() {
                 ))}
               </div>
               <p className="text-[11px] text-white/50 mt-4 leading-relaxed">
-                ※ 千葉の工房での実際の制作工程動画より抜粋。
+                ※ 自社工房での実際の制作工程動画より抜粋。
                 すべての屋外用手すりはこの工程を経て、溶融亜鉛メッキ後にお届けします。
               </p>
             </div>
