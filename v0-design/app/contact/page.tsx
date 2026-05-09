@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { TradeBanner } from "@/components/trade-banner"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
 import { LineIcon } from "@/components/ui/line-icon"
 import { Mail, FileText } from "lucide-react"
@@ -279,6 +280,9 @@ export default function ContactPage() {
             </div>
           </div>
         </section>
+
+        {/* ════════════ Trade banner — 業者の方への導線 ════════════ */}
+        <TradeBanner />
 
         {/* ════════════ Stats banner ════════════ */}
         <section className="border-b border-border bg-card/30">
