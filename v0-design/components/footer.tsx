@@ -74,7 +74,7 @@ export function Footer() {
             <p className="text-white/60 text-sm leading-relaxed mb-6">
               千葉の工房から、
               <br />
-              心を込めた手摺をお届けします。
+              心を込めた手すりをお届けします。
             </p>
 
             {/* Social Links */}
