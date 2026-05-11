@@ -194,6 +194,17 @@ ${ADS_ID ? `gtag('config', '${ADS_ID}');` : ''}`
   return (
     <html lang="ja" className={`${notoSerifJP.variable} ${inter.variable} ${zenMaruGothic.variable} ${zenKakuGothicNew.variable} bg-background`}>
       <head>
+        {/* Splash FOUC 防止: head で同期的に sessionStorage を判定して
+            <html data-splash-pending="1"> を立てる。
+            この属性が付くと html::before の黒オーバーレイが SSR の段階で確実に
+            表示されるため、IntroSplash の useEffect が走るまでの間に
+            一瞬トップページが見えてしまう FOUC を防ぐ。
+            IntroSplash 側で「初回ではない」と判定したら同期的に属性を削除する。 */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type==='reload'){try{sessionStorage.removeItem('ado-intro-seen')}catch(e){}}var s=false;try{s=sessionStorage.getItem('ado-intro-seen')==='1'}catch(e){}if(!s){document.documentElement.setAttribute('data-splash-pending','1')}}catch(e){}})();`,
+          }}
+        />
         <script
           type="application/ld+json"
           // 構造化データは静的なので JSON.stringify を直接埋め込み (XSS 対策不要なノード構成)

@@ -4,12 +4,18 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import Image from "next/image"
-import { Menu, X, ShoppingBag } from "lucide-react"
+import { Menu, X, ShoppingBag, ChevronDown } from "lucide-react"
+
+type NavChild = { label: string; href: string; sub?: string }
+type NavItem =
+  | { label: string; href: string; children?: undefined }
+  | { label: string; href?: undefined; children: NavChild[] }
 
 export function Header() {
   // ヒーローエリア（高さ100vh）の上にいるかどうか。背景が暗いので文字色を白に。
   const [overHero, setOverHero] = useState(true)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,8 +29,15 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
-  const navItems = [
+  const navItems: NavItem[] = [
     { label: "製品一覧", href: "/#lineup" },
+    {
+      label: "カテゴリ",
+      children: [
+        { label: "アンティーク・クラシック手すり", href: "/categories/antique", sub: "ロートアイアン・装飾・職人手打ち" },
+        { label: "シンプル手すり", href: "/categories/simple", sub: "25φ STKM パイプ・モダン定番" },
+      ],
+    },
     { label: "ABOUT", href: "/about" },
     { label: "お客様の声", href: "/#testimonials" },
     { label: "介護保険", href: "/kaigo" },
@@ -57,23 +70,81 @@ export function Header() {
             </Link>
 
             {/* Center Navigation - Desktop */}
-            <nav className="hidden lg:flex items-center justify-center gap-8 absolute left-1/2 -translate-x-1/2">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`relative text-[15px] tracking-wide transition-colors duration-300 group py-2 ${
-                    overHero
-                      ? "text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)] hover:text-white"
-                      : "text-dark/80 hover:text-dark"
-                  }`}
-                >
-                  {item.label}
-                  <span className={`absolute bottom-0 left-0 w-0 h-[1px] transition-all duration-300 group-hover:w-full ${
-                    overHero ? "bg-white" : "bg-dark"
-                  }`} />
-                </Link>
-              ))}
+            <nav className="hidden lg:flex items-center justify-center gap-7 absolute left-1/2 -translate-x-1/2">
+              {navItems.map((item) => {
+                if (item.children) {
+                  const isOpen = openDropdown === item.label
+                  return (
+                    <div
+                      key={item.label}
+                      className="relative"
+                      onMouseEnter={() => setOpenDropdown(item.label)}
+                      onMouseLeave={() => setOpenDropdown(null)}
+                    >
+                      <button
+                        type="button"
+                        className={`relative text-[15px] tracking-wide transition-colors duration-300 group py-2 inline-flex items-center gap-1 ${
+                          overHero
+                            ? "text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)] hover:text-white"
+                            : "text-dark/80 hover:text-dark"
+                        }`}
+                        aria-haspopup="true"
+                        aria-expanded={isOpen}
+                      >
+                        {item.label}
+                        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} strokeWidth={1.8} />
+                        <span className={`absolute bottom-0 left-0 w-0 h-[1px] transition-all duration-300 group-hover:w-full ${
+                          overHero ? "bg-white" : "bg-dark"
+                        }`} />
+                      </button>
+                      <AnimatePresence>
+                        {isOpen && (
+                          <motion.div
+                            key="dropdown-panel"
+                            initial={{ opacity: 0, y: -8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute top-full left-1/2 -translate-x-1/2 pt-3 w-[300px]"
+                          >
+                            <div className="bg-white rounded-md shadow-xl border border-border overflow-hidden">
+                              {item.children.map((child) => (
+                                <Link
+                                  key={child.href}
+                                  href={child.href}
+                                  className="block px-5 py-4 hover:bg-muted/50 transition-colors border-b border-border last:border-b-0"
+                                  onClick={() => setOpenDropdown(null)}
+                                >
+                                  <div className="text-[14px] text-dark font-medium leading-tight">{child.label}</div>
+                                  {child.sub && (
+                                    <div className="text-[11px] text-muted-foreground mt-1 tracking-wide">{child.sub}</div>
+                                  )}
+                                </Link>
+                              ))}
+                            </div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )
+                }
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`relative text-[15px] tracking-wide transition-colors duration-300 group py-2 ${
+                      overHero
+                        ? "text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)] hover:text-white"
+                        : "text-dark/80 hover:text-dark"
+                    }`}
+                  >
+                    {item.label}
+                    <span className={`absolute bottom-0 left-0 w-0 h-[1px] transition-all duration-300 group-hover:w-full ${
+                      overHero ? "bg-white" : "bg-dark"
+                    }`} />
+                  </Link>
+                )
+              })}
               <Link
                 href="/contact"
                 className={`relative text-[15px] tracking-wide transition-colors duration-300 group py-2 ${
@@ -160,21 +231,42 @@ export function Header() {
                   <div className="py-4">
                     {navItems.map((item, index) => (
                       <motion.div
-                        key={item.href}
+                        key={item.label}
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: index * 0.05 }}
                       >
-                        <Link
-                          href={item.href}
-                          className="flex items-center justify-between px-6 py-4 text-dark hover:bg-muted/50 transition-colors duration-200 group"
-                          onClick={() => setIsMobileMenuOpen(false)}
-                        >
-                          <span className="text-[15px] tracking-wide">{item.label}</span>
-                          <span className="text-muted-foreground group-hover:text-dark group-hover:translate-x-1 transition-all duration-200">
-                            &rarr;
-                          </span>
-                        </Link>
+                        {item.children ? (
+                          <div>
+                            <div className="px-6 pt-4 pb-2 text-[11px] tracking-[0.2em] uppercase text-muted-foreground">
+                              {item.label}
+                            </div>
+                            {item.children.map((child) => (
+                              <Link
+                                key={child.href}
+                                href={child.href}
+                                className="flex items-center justify-between pl-8 pr-6 py-3 text-dark hover:bg-muted/50 transition-colors duration-200 group"
+                                onClick={() => setIsMobileMenuOpen(false)}
+                              >
+                                <span className="text-[14px] tracking-wide leading-tight">{child.label}</span>
+                                <span className="text-muted-foreground group-hover:text-dark group-hover:translate-x-1 transition-all duration-200">
+                                  &rarr;
+                                </span>
+                              </Link>
+                            ))}
+                          </div>
+                        ) : (
+                          <Link
+                            href={item.href}
+                            className="flex items-center justify-between px-6 py-4 text-dark hover:bg-muted/50 transition-colors duration-200 group"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                          >
+                            <span className="text-[15px] tracking-wide">{item.label}</span>
+                            <span className="text-muted-foreground group-hover:text-dark group-hover:translate-x-1 transition-all duration-200">
+                              &rarr;
+                            </span>
+                          </Link>
+                        )}
                       </motion.div>
                     ))}
                   </div>

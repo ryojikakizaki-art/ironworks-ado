@@ -34,12 +34,20 @@ export function IntroSplash() {
       }
     } catch {}
     if (alreadySeen) {
+      // 既読: layout.tsx head の inline script は属性を立てない想定だが、
+      // 念のためここでも確実に外す（reload など条件で立ったケースを救う）
+      document.documentElement.removeAttribute("data-splash-pending")
       setStage("gone")
       return
     }
     setStage("visible")
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = "hidden"
+    // splash の React レンダリングが終わってから head の pre-splash オーバーレイを
+    // 外すことで「pre-splash → React splash」の継ぎ目を可視化させない
+    requestAnimationFrame(() => {
+      document.documentElement.removeAttribute("data-splash-pending")
+    })
     const auto = window.setTimeout(() => dismiss(), TOTAL_MS)
     return () => {
       window.clearTimeout(auto)
