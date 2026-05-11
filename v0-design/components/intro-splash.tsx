@@ -33,20 +33,23 @@ export function IntroSplash() {
         alreadySeen = sessionStorage.getItem(STORAGE_KEY) === "1"
       }
     } catch {}
+    // 既読の場合: SSR 段階で head の inline script が data-splash-skip="1" を立て
+    // pre-splash は CSS で display:none。React splash も不要なので gone に。
+    // ※ pre-splash 要素自体は React 管理下の SSR ノードなので JS で .remove() しない
+    //   （Next.js のクライアントナビゲーション時に reconciler が壊れる）。
+    //   常に data-splash-skip 属性を立てて CSS で隠す。
     if (alreadySeen) {
-      // 既読: layout.tsx head の inline script は属性を立てない想定だが、
-      // 念のためここでも確実に外す（reload など条件で立ったケースを救う）
-      document.documentElement.removeAttribute("data-splash-pending")
+      document.documentElement.setAttribute("data-splash-skip", "1")
       setStage("gone")
       return
     }
+    // 初回: React splash を visible に。pre-splash は React splash 描画後に
+    // data-splash-skip="1" で隠す（DOM からは削除しない）。
     setStage("visible")
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = "hidden"
-    // splash の React レンダリングが終わってから head の pre-splash オーバーレイを
-    // 外すことで「pre-splash → React splash」の継ぎ目を可視化させない
     requestAnimationFrame(() => {
-      document.documentElement.removeAttribute("data-splash-pending")
+      document.documentElement.setAttribute("data-splash-skip", "1")
     })
     const auto = window.setTimeout(() => dismiss(), TOTAL_MS)
     return () => {

@@ -253,22 +253,9 @@
    Tailwind v4 + Lightning CSS が直前の @media print の後にある vanilla CSS を
    バンドルから落とすため、@layer components でラップして取り込みを保証する。 */
 @layer components {
-  /* Splash FOUC 防止: layout.tsx の head inline script が初回訪問判定で
-     html[data-splash-pending="1"] を立てる。React がマウント・hydration を
-     終えて IntroSplash がレンダリングされるまでの間、html::before の黒オーバーレイで
-     ページ本体を完全に覆い、「トップが一瞬見える」現象を防ぐ。
-     IntroSplash 側で React の splash が visible になった直後に属性を外す。 */
-  html[data-splash-pending="1"]::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: #000;
-    z-index: 9998;
-    pointer-events: none;
-  }
-  html[data-splash-pending="1"] body {
-    overflow: hidden;
-  }
+  /* Splash FOUC 防止の inline CSS は layout.tsx の <head> 内に critical CSS として
+     直接埋め込んでいる（SSR 段階から #pre-splash 黒オーバーレイを適用するため）。
+     ここには置かない。 */
 
   .ado-splash {
     position: fixed;

@@ -194,15 +194,20 @@ ${ADS_ID ? `gtag('config', '${ADS_ID}');` : ''}`
   return (
     <html lang="ja" className={`${notoSerifJP.variable} ${inter.variable} ${zenMaruGothic.variable} ${zenKakuGothicNew.variable} bg-background`}>
       <head>
-        {/* Splash FOUC 防止: head で同期的に sessionStorage を判定して
-            <html data-splash-pending="1"> を立てる。
-            この属性が付くと html::before の黒オーバーレイが SSR の段階で確実に
-            表示されるため、IntroSplash の useEffect が走るまでの間に
-            一瞬トップページが見えてしまう FOUC を防ぐ。
-            IntroSplash 側で「初回ではない」と判定したら同期的に属性を削除する。 */}
+        {/* Splash FOUC 防止: SSR で <body> 直下に黒オーバーレイ <div id="pre-splash">
+            を必ずレンダリングしておき、初期ペイントの瞬間からトップ画像を覆う。
+            head の inline script が sessionStorage で「既に見た」と判定したら
+            その場で <html data-splash-skip="1"> を立て、CSS で pre-splash を display:none に。
+            React がマウントして IntroSplash に切り替わったタイミングで pre-splash を
+            消去する（intro-splash.tsx の useEffect 内）。 */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type==='reload'){try{sessionStorage.removeItem('ado-intro-seen')}catch(e){}}var s=false;try{s=sessionStorage.getItem('ado-intro-seen')==='1'}catch(e){}if(!s){document.documentElement.setAttribute('data-splash-pending','1')}}catch(e){}})();`,
+            __html: `(function(){try{var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type==='reload'){try{sessionStorage.removeItem('ado-intro-seen')}catch(e){}}var s=false;try{s=sessionStorage.getItem('ado-intro-seen')==='1'}catch(e){}if(s){document.documentElement.setAttribute('data-splash-skip','1')}}catch(e){}})();`,
+          }}
+        />
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `#pre-splash{position:fixed;inset:0;background:#000;z-index:9998;pointer-events:none}html[data-splash-skip="1"] #pre-splash{display:none}`,
           }}
         />
         <script
@@ -216,6 +221,11 @@ ${ADS_ID ? `gtag('config', '${ADS_ID}');` : ''}`
         {gtagSrc && <script async src={gtagSrc} />}
       </head>
       <body className="font-sans antialiased">
+        {/* SSR でレンダリングする pre-splash オーバーレイ（FOUC 防止）。
+            head の inline script が「既読」と判定した場合のみ data-splash-skip="1" が立ち
+            CSS で display:none になる。React の IntroSplash がマウントしたら useEffect で
+            この要素自体を削除して、splash アニメーションに引き継ぐ。 */}
+        <div id="pre-splash" aria-hidden="true" />
         <IntroSplash />
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}

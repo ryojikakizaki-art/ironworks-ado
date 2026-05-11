@@ -3,17 +3,16 @@ import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
-import { Hammer, Flame, Paintbrush, ArrowRight, Mail, MessageSquare, MapPin } from "lucide-react"
+import { ArrowRight, Mail, MessageSquare, MapPin } from "lucide-react"
 
 export const metadata = {
   title: "About｜鍛冶職人が手作りするアイアン手すりの工房｜IRONWORKS ado",
   description:
-    "千葉市の鍛鉄工房ZESTで 15 年の経験を持つ鍛冶職人が、火造り鍛造で一本ずつ仕上げるアイアン手すり・インテリアの工房。",
+    "鍛鉄工房ZEST 内で、鍛冶職人が火造り鍛造で一本ずつ仕上げるアイアン手すり・インテリアの工房。",
   alternates: { canonical: "/about" },
 }
 
 const numbers = [
-  { value: "15", unit: "年", label: "鍛鉄職人歴", note: "西洋鍛冶（フォージング）の手仕事" },
   { value: "30+", unit: "種", label: "商品ラインナップ", note: "手すり・フェンス・家具・小物" },
   { value: "47", unit: "都道府県", label: "全国配送対応", note: "施工は千葉＋関東 4 都県" },
   { value: "千葉", unit: "市", label: "工房拠点", note: "鍛鉄工房ZEST 内に併設" },
@@ -22,29 +21,29 @@ const numbers = [
 type ProcessMedia = { type: "image"; src: string } | { type: "video"; src: string }
 
 const processSteps: {
-  icon: typeof Flame
+  chapter: string
   eyebrow: string
   title: string
   body: string
   media: ProcessMedia
 }[] = [
   {
-    icon: Flame,
-    eyebrow: "Step 01",
+    chapter: "01",
+    eyebrow: "Forging",
     title: "火造り・鍛造",
-    body: "炉で 1000 ℃ 以上に熱した無垢鉄を、まだ赤いうちにハンマーで叩いて成形します。曲げ・捻り・延ばしを繰り返し、目指す形を生み出します。鉄は叩くことで内部組織が締まり、より強く・粘り強くなります。",
+    body: "炉で 1000℃ 以上に熱した無垢鉄を、まだ赤いうちにハンマーで叩いて成形します。曲げ・捻り・延ばしを繰り返し、目指す形を生み出します。鉄は叩くことで内部組織が締まり、より強く・粘り強くなります。",
     media: { type: "video", src: "/videos/about-forging.mp4" },
   },
   {
-    icon: Paintbrush,
-    eyebrow: "Step 02",
+    chapter: "02",
+    eyebrow: "Finishing",
     title: "塗装・仕上げ",
     body: "錆止め下地に 2 液型ウレタン艶消し黒を吹き付け、必要に応じて古美・銀古美仕上げを重ねます。屋外設置品は溶融亜鉛メッキで二重防錆を採用しています。",
     media: { type: "video", src: "/videos/about-painting.mp4" },
   },
   {
-    icon: Hammer,
-    eyebrow: "Step 03",
+    chapter: "03",
+    eyebrow: "Polishing",
     title: "水研ぎ",
     body: "塗装後に紙やすりで丁寧に水研ぎして表面を整えます。塗膜の仕上がり・耐久性を左右する地味で大切な工程です。",
     media: { type: "video", src: "/videos/about-sanding.mp4" },
@@ -81,11 +80,6 @@ const voiceCards: { quote: string; region: string }[] = [
       "ご相談の段階からとてもご丁寧にアドバイスを頂き、大満足の仕上がりになりました。来客の目にも止まるようで、必ず何かしらコメントがあります。",
     region: "京都府のお客様",
   },
-  {
-    quote:
-      "昨日無事に、手すりが届きました。早速、玄関に設置いたしました。近くのスイッチ等ともマッチして、すごくよい感じになっております！ 大切に使わせていただきます。",
-    region: "広島県のお客様",
-  },
 ]
 
 const galleryImages = [
@@ -95,8 +89,6 @@ const galleryImages = [
   { src: "/images/products/elisabeth/01.jpg", alt: "Élisabeth 階段全景" },
   { src: "/images/hero/dscf6234.jpg", alt: "白丸棒のシンプル手すり" },
   { src: "/images/products/elisabeth/05.jpg", alt: "Élisabeth 終端の渦巻き装飾" },
-  { src: "/images/hero/dscf6186.jpg", alt: "ベランダの手すり（ガラス＋鉄）" },
-  { src: "/images/hero/loft-staircase.jpg", alt: "ロフト鉄骨階段" },
 ]
 
 export default function AboutPage() {
@@ -104,283 +96,326 @@ export default function AboutPage() {
     <>
       <Header />
       <main className="bg-background">
-        {/* ── HERO ── */}
-        <section className="relative h-[88vh] min-h-[600px] overflow-hidden">
-          <video
-            src="/videos/hero-reel.mp4"
-            autoPlay
-            muted
-            loop
-            playsInline
-            className="absolute inset-0 w-full h-full object-cover"
-            aria-hidden
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/35 to-black/70" />
-          <div className="relative z-10 h-full flex flex-col items-center justify-center text-center px-6">
-            <p className="text-[10px] sm:text-[11px] tracking-[0.5em] uppercase text-gold mb-6">
-              About IRONWORKS ado
-            </p>
-            <h1 className="font-serif text-4xl sm:text-5xl lg:text-7xl text-white leading-tight">
-              鉄を、火で、手で。
-            </h1>
-            <p className="mt-8 text-[15px] sm:text-[16px] text-white/85 max-w-xl leading-loose">
-              千葉市の小さな鍛冶工房から、
-              <br />
-              一本ずつ手仕事で生まれるアイアン製品をお届けしています。
-            </p>
-            <div className="mt-12 flex items-center gap-2 text-[10px] tracking-[0.3em] uppercase text-white/60 animate-pulse">
-              <span>Scroll</span>
-              <span className="w-12 h-px bg-white/40" />
-            </div>
-          </div>
-        </section>
-
-        {/* ── PROLOGUE ── */}
-        <section className="max-w-3xl mx-auto px-6 py-24 lg:py-32">
-          <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-4 text-center">Prologue</p>
-          <h2 className="font-serif text-2xl lg:text-3xl text-foreground text-center mb-10 leading-relaxed">
-            ようこそ、IRONWORKS ado へ
-          </h2>
-          <div className="space-y-6 text-[15px] leading-[2.1] text-foreground/85">
-            <p>
-              IRONWORKS ado（アイアンワークス・アド）は、千葉市の鍛冶工房から生まれた、アイアン製品のオンラインショップです。
-              母体は本格ロートアイアンを手がける <strong>鍛鉄工房ZEST</strong>。職人がフルオーダーで培ってきた西洋鍛冶の技術と意匠を、ご家庭でも取り入れやすいかたちにお仕立てし、お届けしています。
-            </p>
-            <p>
-              手すり・階段・フェンス・家具・小物まで、暮らしのなかで毎日触れるアイアンを、一本ずつ手仕事で作る。
-              そんな当たり前のものづくりを、今もまっすぐに続けています。
-            </p>
-          </div>
-        </section>
-
-        {/* ── CRAFTSMAN ── */}
-        <section className="bg-secondary/40 py-24 lg:py-32">
-          <div className="max-w-6xl mx-auto px-6 grid lg:grid-cols-[1.1fr_1fr] gap-12 lg:gap-20 items-center">
-            <div className="relative aspect-[3/2] rounded-lg overflow-hidden order-2 lg:order-1 bg-black">
-              <Image
-                src="/images/about/craftsman-hands.jpg"
-                alt="鍛冶職人 蠣﨑良治の手 — 15 年の手仕事の証"
-                fill
-                className="object-cover object-center"
-                sizes="(max-width: 1024px) 100vw, 50vw"
+        {/* ── HERO（C アシメ型）──
+            左 60% に映像 / 右 40% にテキストを「並べる」エディトリアル構成。
+            オーバーレイ型と差別化し、ヒーロー直下から雑誌的なリズムを始める。 */}
+        <section className="relative">
+          <div className="grid lg:grid-cols-[60fr_40fr] min-h-[88vh]">
+            {/* 左: 映像（モバイルでは先に上に出る） */}
+            <div className="relative h-[55vh] min-h-[420px] lg:h-auto lg:min-h-[88vh] overflow-hidden order-1">
+              <video
+                src="/videos/hero-reel.mp4"
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="absolute inset-0 w-full h-full object-cover"
+                aria-hidden
               />
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-5">
-                <p className="text-white/90 text-[12px] tracking-wide">
-                  鍛冶職人 ・ 蠣﨑 良治（かきざき りょうじ）
-                </p>
-              </div>
+              {/* 上部薄幕でヘッダー視認性 */}
+              <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/55 via-black/15 to-transparent" />
             </div>
-            <div className="order-1 lg:order-2">
-              <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-4">Craftsman</p>
-              <h2 className="font-serif text-3xl lg:text-4xl text-foreground mb-8 leading-tight">
-                15 年、
-                <br className="sm:hidden" />
-                火と鉄に向き合って。
-              </h2>
-              <div className="space-y-5 text-[14px] leading-[2.1] text-foreground/85">
-                <p>
-                  代表の蠣﨑良治は、千葉市を拠点に <strong>鍛鉄職人として 15 年</strong> にわたり、火造り鍛造の手仕事を続けてきました。
+
+            {/* 右: テキストパネル */}
+            <div className="order-2 flex flex-col justify-center px-6 lg:px-14 py-16 lg:py-0">
+              <div className="max-w-md">
+                <p className="text-[10px] sm:text-[11px] tracking-[0.5em] uppercase text-gold mb-6 lg:mb-8">
+                  About
                 </p>
-                <p>
-                  日本では馴染みの薄い <strong>西洋鍛冶（フォージング）</strong> は、熱した鉄をハンマーで叩き、引き伸ばし、ねじり、丸めて造形する技法。鋳型で量産する製品とはまったく違い、一本一本が「打ち手の物語」を持つ仕上がりになります。
+                <h1 className="font-serif text-foreground text-[32px] md:text-[44px] lg:text-[52px] font-light leading-[1.25] tracking-tight mb-8 lg:mb-10">
+                  鉄を、<br />火で、<br />手で。
+                </h1>
+                <p className="text-[14px] md:text-[15px] leading-[2.1] text-foreground/75">
+                  鍛冶工房から、一本ずつ手仕事で生まれるアイアン製品をお届けしています。
                 </p>
-                <p>
-                  「住まいのなかで毎日触れる金物だからこそ、握ったときに手がよろこぶものを作りたい」 — それが工房を構えてから今日まで変わらない、ものづくりの原点です。
-                </p>
+                <div className="mt-12 flex items-center gap-3 text-[10px] tracking-[0.3em] uppercase text-foreground/45">
+                  <span className="w-10 h-px bg-foreground/30" />
+                  <span>IRONWORKS ado</span>
+                </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* ── WORKSHOP (ZEST x ado) ── */}
-        <section className="max-w-5xl mx-auto px-6 py-24 lg:py-32">
-          <div className="text-center mb-14">
-            <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-4">Workshop</p>
-            <h2 className="font-serif text-3xl lg:text-4xl text-foreground mb-4">
-              鍛鉄工房ZEST と IRONWORKS ado
-            </h2>
-            <p className="text-[14px] text-foreground/70 max-w-2xl mx-auto leading-relaxed">
-              同じ職人の手、同じ工房から、二つのかたちでお届けしています。
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6 lg:gap-8">
-            <a
-              href="https://tantetuzest.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group block border border-border bg-card rounded-lg p-8 lg:p-10 hover:border-gold/50 hover:shadow-md transition-all"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <p className="text-[10px] tracking-[0.3em] uppercase text-foreground/50">Brand 01</p>
-                <ArrowRight className="w-4 h-4 -rotate-45 text-foreground/40 group-hover:text-gold group-hover:-translate-y-0.5 group-hover:translate-x-0.5 transition-all" />
+        {/* ── 01. PROLOGUE（マガジン章立て）── */}
+        <section className="px-6 py-28 lg:py-40">
+          <div className="max-w-[1100px] mx-auto">
+            <div className="grid lg:grid-cols-[200px_1fr] gap-10 lg:gap-20">
+              <div>
+                <p className="font-serif text-[14px] tracking-[0.4em] text-gold mb-2">Chapter</p>
+                <p className="font-serif text-[64px] lg:text-[80px] text-foreground/15 leading-none">01</p>
               </div>
-              <h3 className="font-serif text-2xl text-foreground mb-2 group-hover:text-gold transition-colors">鍛鉄工房ZEST</h3>
-              <p className="text-[12px] text-foreground/60 mb-6 tracking-wider">FULL ORDER</p>
-              <ul className="space-y-3 text-[13px] text-foreground/85 leading-relaxed">
-                <li className="flex gap-3">
-                  <span className="text-gold flex-shrink-0">●</span>
-                  <span>建築家・設計事務所・工務店との協業実績</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-gold flex-shrink-0">●</span>
-                  <span>図面ご相談からの完全フルオーダー</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-gold flex-shrink-0">●</span>
-                  <span>本格ロートアイアン・装飾門扉・大型階段</span>
-                </li>
-              </ul>
-              <p className="mt-6 text-[11px] tracking-wider text-foreground/50 group-hover:text-gold transition-colors">
-                tantetuzest.com を見る ↗
-              </p>
-            </a>
-            <div className="border-2 border-gold bg-gold/5 rounded-lg p-8 lg:p-10 relative">
-              <span className="absolute -top-3 right-6 bg-gold text-white text-[10px] px-3 py-1 tracking-widest rounded-full">
-                THIS SITE
-              </span>
-              <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-3">Brand 02</p>
-              <h3 className="font-serif text-2xl text-foreground mb-2">IRONWORKS ado</h3>
-              <p className="text-[12px] text-gold mb-6 tracking-wider">SEMI ORDER</p>
-              <ul className="space-y-3 text-[13px] text-foreground/85 leading-relaxed">
-                <li className="flex gap-3">
-                  <span className="text-gold flex-shrink-0">●</span>
-                  <span>個人・法人どちらにもオンライン販売（建築会社・設計事務所からのご注文も対応）</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-gold flex-shrink-0">●</span>
-                  <span>定形デザインを長さ・色・取付方法でセミオーダー</span>
-                </li>
-                <li className="flex gap-3">
-                  <span className="text-gold flex-shrink-0">●</span>
-                  <span>クレジット決済・銀行振込対応／全国配送</span>
-                </li>
-              </ul>
+              <div className="max-w-[640px]">
+                <h2 className="font-serif text-[24px] md:text-[32px] leading-[1.5] text-foreground mb-10 font-light">
+                  ようこそ、IRONWORKS ado へ
+                </h2>
+                <div className="space-y-6 text-[15px] leading-[2.2] text-foreground/80">
+                  <p>
+                    IRONWORKS ado（アイアンワークス・アド）は、鍛冶工房から生まれたアイアン製品のオンラインショップです。母体は本格ロートアイアンを手がける <strong className="font-medium text-foreground">鍛鉄工房ZEST</strong>。職人がフルオーダーで培ってきた西洋鍛冶の技術と意匠を、ご家庭でも取り入れやすいかたちにお仕立てし、お届けしています。
+                  </p>
+                  <p>
+                    手すり・階段・フェンス・家具・小物まで、暮らしのなかで毎日触れるアイアンを、一本ずつ手仕事で作る。そんな当たり前のものづくりを、今もまっすぐに続けています。
+                  </p>
+                </div>
+              </div>
             </div>
-          </div>
-
-          <div className="mt-10 max-w-2xl mx-auto text-center text-[13px] text-foreground/70 leading-loose">
-            ZEST のフルオーダーで磨いた技術を、ado ではご家庭サイズに整えてお届けしています。手仕事の品質は、ふたつのブランドで一切変わりません。
           </div>
         </section>
 
-        {/* ── PROCESS ── */}
-        <section className="bg-secondary/40 py-24 lg:py-32">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="text-center mb-16">
-              <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-4">Process</p>
-              <h2 className="font-serif text-3xl lg:text-4xl text-foreground mb-4">
-                ものづくりの工程
-              </h2>
-              <p className="text-[14px] text-foreground/70 max-w-2xl mx-auto leading-relaxed">
-                火造りから仕上げまで、すべての工程を工房内で一貫して行っています。
+        {/* ── マガジン: フルブリード写真 + 余白キャプション ── */}
+        <section className="relative">
+          <div className="relative h-[70vh] min-h-[480px] w-full overflow-hidden">
+            <Image
+              src="/images/about/craftsman-hands.jpg"
+              alt="鍛冶職人 蠣﨑良治の手"
+              fill
+              className="object-cover object-center"
+              sizes="100vw"
+            />
+          </div>
+          <div className="px-6 py-10 lg:py-14 bg-background border-b border-border">
+            <div className="max-w-[1100px] mx-auto flex flex-col lg:flex-row gap-4 lg:gap-12 items-start">
+              <p className="text-[10px] tracking-[0.4em] uppercase text-gold lg:w-32 shrink-0">Caption</p>
+              <p className="text-[13px] md:text-[14px] leading-[2] text-foreground/70 max-w-2xl">
+                鍛冶職人 ・ 蠣﨑 良治（かきざき りょうじ）。鉄を熱して叩き、人の手で形を起こす西洋鍛冶（フォージング）の作り手。
               </p>
             </div>
+          </div>
+        </section>
 
-            <div className="grid md:grid-cols-3 gap-8 lg:gap-10">
-              {processSteps.map((step) => {
-                const Icon = step.icon
-                return (
-                  <div key={step.title} className="bg-white rounded-lg overflow-hidden">
-                    <div className="relative aspect-[3/4] bg-black">
-                      {step.media.type === "image" ? (
-                        <Image
-                          src={step.media.src}
-                          alt={step.title}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 100vw, 33vw"
-                        />
-                      ) : (
-                        <video
-                          src={step.media.src}
-                          autoPlay
-                          muted
-                          loop
-                          playsInline
-                          className="absolute inset-0 w-full h-full object-cover"
-                          aria-label={step.title}
-                        />
-                      )}
-                    </div>
-                    <div className="p-6 lg:p-8">
-                      <div className="flex items-center gap-3 mb-4">
-                        <Icon className="w-6 h-6 text-gold" />
-                        <p className="text-[10px] tracking-[0.3em] uppercase text-foreground/50">
-                          {step.eyebrow}
-                        </p>
-                      </div>
-                      <h3 className="font-serif text-xl text-foreground mb-3">{step.title}</h3>
-                      <p className="text-[13px] leading-[1.95] text-foreground/75">{step.body}</p>
-                    </div>
+        {/* ── 02. CRAFTSMAN（マガジン: pull-quote + sparse text）── */}
+        <section className="px-6 py-28 lg:py-40">
+          <div className="max-w-[1100px] mx-auto">
+            <div className="grid lg:grid-cols-[200px_1fr] gap-10 lg:gap-20">
+              <div>
+                <p className="font-serif text-[14px] tracking-[0.4em] text-gold mb-2">Chapter</p>
+                <p className="font-serif text-[64px] lg:text-[80px] text-foreground/15 leading-none">02</p>
+              </div>
+              <div className="max-w-[640px]">
+                <h2 className="font-serif text-[24px] md:text-[32px] leading-[1.5] text-foreground mb-12 font-light">
+                  火と鉄に、<br className="md:hidden" />向き合いつづける。
+                </h2>
+
+                {/* Pull-quote */}
+                <blockquote className="border-l-2 border-gold pl-6 mb-12">
+                  <p className="font-serif text-[18px] md:text-[22px] leading-[1.7] text-foreground/80 italic">
+                    「住まいのなかで毎日触れる金物だからこそ、握ったときに手がよろこぶものを作りたい」
+                  </p>
+                </blockquote>
+
+                <div className="space-y-6 text-[15px] leading-[2.2] text-foreground/80">
+                  <p>
+                    代表の蠣﨑良治は、千葉市を拠点に火造り鍛造の手仕事を続けてきました。日本では馴染みの薄い <strong className="font-medium text-foreground">西洋鍛冶（フォージング）</strong> は、熱した鉄をハンマーで叩き、引き伸ばし、ねじり、丸めて造形する技法。鋳型で量産する製品とはまったく違い、一本一本が「打ち手の物語」を持つ仕上がりになります。
+                  </p>
+                  <p>
+                    工房を構えてから今日まで変わらない、ものづくりの原点です。
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 03. WORKSHOP（ZEST × ado）── */}
+        <section className="bg-[#faf8f4] px-6 py-28 lg:py-40">
+          <div className="max-w-[1100px] mx-auto">
+            <div className="grid lg:grid-cols-[200px_1fr] gap-10 lg:gap-20 mb-16">
+              <div>
+                <p className="font-serif text-[14px] tracking-[0.4em] text-gold mb-2">Chapter</p>
+                <p className="font-serif text-[64px] lg:text-[80px] text-foreground/15 leading-none">03</p>
+              </div>
+              <div className="max-w-[640px]">
+                <h2 className="font-serif text-[24px] md:text-[32px] leading-[1.5] text-foreground mb-8 font-light">
+                  同じ工房から、<br className="md:hidden" />二つのかたちで。
+                </h2>
+                <p className="text-[14px] md:text-[15px] leading-[2.1] text-foreground/75">
+                  鍛鉄工房ZEST のフルオーダーで磨いた技術を、ado ではご家庭サイズに整えてお届け。手仕事の品質は、ふたつのブランドで一切変わりません。
+                </p>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-8">
+              <a
+                href="https://tantetuzest.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group block border border-border bg-background p-10 lg:p-12 hover:border-gold/50 transition-all"
+              >
+                <p className="text-[10px] tracking-[0.4em] uppercase text-foreground/50 mb-3">Brand 01 / Full Order</p>
+                <h3 className="font-serif text-[24px] md:text-[28px] text-foreground mb-8 group-hover:text-gold transition-colors leading-tight">
+                  鍛鉄工房ZEST
+                </h3>
+                <ul className="space-y-3 text-[13px] text-foreground/80 leading-[1.95]">
+                  <li>― 建築家・設計事務所・工務店との協業実績</li>
+                  <li>― 図面ご相談からの完全フルオーダー</li>
+                  <li>― 本格ロートアイアン・装飾門扉・大型階段</li>
+                </ul>
+                <p className="mt-10 text-[11px] tracking-[0.2em] uppercase text-foreground/45 group-hover:text-gold transition-colors inline-flex items-center gap-2">
+                  tantetuzest.com <ArrowRight className="w-3.5 h-3.5 -rotate-45" />
+                </p>
+              </a>
+              <div className="border border-gold bg-background p-10 lg:p-12 relative">
+                <span className="absolute -top-3 right-6 bg-gold text-white text-[9px] tracking-[0.2em] uppercase px-3 py-1">
+                  This Site
+                </span>
+                <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-3">Brand 02 / Semi Order</p>
+                <h3 className="font-serif text-[24px] md:text-[28px] text-foreground mb-8 leading-tight">
+                  IRONWORKS ado
+                </h3>
+                <ul className="space-y-3 text-[13px] text-foreground/80 leading-[1.95]">
+                  <li>― 個人・法人どちらにもオンライン販売</li>
+                  <li>― 定形デザインを長さ・色・取付方法でセミオーダー</li>
+                  <li>― クレジット決済・銀行振込対応／全国配送</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 04. PROCESS（マガジン 3up・大きめ動画）── */}
+        <section className="px-6 py-28 lg:py-40">
+          <div className="max-w-[1300px] mx-auto">
+            <div className="grid lg:grid-cols-[200px_1fr] gap-10 lg:gap-20 mb-20">
+              <div>
+                <p className="font-serif text-[14px] tracking-[0.4em] text-gold mb-2">Chapter</p>
+                <p className="font-serif text-[64px] lg:text-[80px] text-foreground/15 leading-none">04</p>
+              </div>
+              <div className="max-w-[640px]">
+                <h2 className="font-serif text-[24px] md:text-[32px] leading-[1.5] text-foreground mb-8 font-light">
+                  ものづくりの工程
+                </h2>
+                <p className="text-[14px] md:text-[15px] leading-[2.1] text-foreground/75">
+                  火造りから仕上げまで、すべての工程を工房内で一貫して行っています。
+                </p>
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+              {processSteps.map((step) => (
+                <div key={step.title}>
+                  <div className="relative aspect-[3/4] bg-black overflow-hidden mb-6">
+                    {step.media.type === "image" ? (
+                      <Image
+                        src={step.media.src}
+                        alt={step.title}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                      />
+                    ) : (
+                      <video
+                        src={step.media.src}
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        className="absolute inset-0 w-full h-full object-cover"
+                        aria-label={step.title}
+                      />
+                    )}
                   </div>
-                )
-              })}
+                  <div className="px-1">
+                    <p className="font-serif text-gold text-[14px] tracking-[0.3em] mb-3">{step.chapter} ・ {step.eyebrow}</p>
+                    <h3 className="font-serif text-[20px] md:text-[22px] text-foreground mb-4 leading-tight">{step.title}</h3>
+                    <p className="text-[13px] leading-[2] text-foreground/75">{step.body}</p>
+                  </div>
+                </div>
+              ))}
             </div>
 
-            <div className="mt-10 flex flex-wrap gap-x-8 gap-y-3 justify-center">
+            <div className="mt-16 flex flex-wrap gap-x-10 gap-y-3 justify-center">
               <Link
                 href="/paint"
-                className="inline-flex items-center gap-2 text-[12px] tracking-wider text-foreground border-b border-foreground/30 pb-1 hover:text-gold hover:border-gold transition-colors"
+                className="inline-flex items-center gap-2 text-[12px] tracking-[0.15em] uppercase text-foreground border-b border-foreground/30 pb-1 hover:text-gold hover:border-gold transition-colors"
               >
-                塗装について詳しく <ArrowRight className="w-3.5 h-3.5" />
+                塗装について <ArrowRight className="w-3.5 h-3.5" />
               </Link>
               <Link
                 href="/galvanizing"
-                className="inline-flex items-center gap-2 text-[12px] tracking-wider text-foreground border-b border-foreground/30 pb-1 hover:text-gold hover:border-gold transition-colors"
+                className="inline-flex items-center gap-2 text-[12px] tracking-[0.15em] uppercase text-foreground border-b border-foreground/30 pb-1 hover:text-gold hover:border-gold transition-colors"
               >
-                溶融亜鉛メッキについて <ArrowRight className="w-3.5 h-3.5" />
+                溶融亜鉛メッキ <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
           </div>
         </section>
 
-        {/* ── NUMBERS ── */}
-        <section className="max-w-6xl mx-auto px-6 py-24 lg:py-32">
-          <div className="text-center mb-14">
-            <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-4">Numbers</p>
-            <h2 className="font-serif text-3xl lg:text-4xl text-foreground mb-4">
-              数字で見る ado
-            </h2>
+        {/* ── マガジン: フルブリード写真（Élisabeth 階段事例）── */}
+        <section className="relative">
+          <div className="relative h-[70vh] min-h-[480px] w-full overflow-hidden">
+            <Image
+              src="/images/products/elisabeth/01.jpg"
+              alt="Élisabeth ロートアイアン階段手すり 山田邸"
+              fill
+              className="object-cover object-center"
+              sizes="100vw"
+            />
           </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
-            {numbers.map((n) => (
-              <div
-                key={n.label}
-                className="border border-border bg-card rounded-lg p-6 lg:p-8 text-center hover:border-gold transition-colors"
-              >
-                <div className="flex items-baseline justify-center gap-1 mb-3">
-                  <span className="font-serif text-4xl lg:text-5xl text-foreground tabular-nums">
-                    {n.value}
-                  </span>
-                  <span className="font-serif text-lg lg:text-xl text-foreground/70">{n.unit}</span>
-                </div>
-                <p className="text-[12px] tracking-[0.2em] uppercase text-gold mb-2">{n.label}</p>
-                <p className="text-[11px] text-foreground/60 leading-relaxed">{n.note}</p>
-              </div>
-            ))}
+          <div className="px-6 py-10 lg:py-14 bg-background border-b border-border">
+            <div className="max-w-[1100px] mx-auto flex flex-col lg:flex-row gap-4 lg:gap-12 items-start">
+              <p className="text-[10px] tracking-[0.4em] uppercase text-gold lg:w-32 shrink-0">Case</p>
+              <p className="text-[13px] md:text-[14px] leading-[2] text-foreground/70 max-w-2xl">
+                Élisabeth エリザベート ― 階段の両側に施工した本格ロートアイアン手すり事例。階段の長さに合わせて、職人が一本ずつ熱し叩いて延ばし、現場で位置を合わせています。
+              </p>
+            </div>
           </div>
         </section>
 
-        {/* ── WORKS GALLERY ── */}
-        <section className="bg-secondary/40 py-24 lg:py-32">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="text-center mb-14">
-              <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-4">Works</p>
-              <h2 className="font-serif text-3xl lg:text-4xl text-foreground mb-4">
-                施工事例
-              </h2>
-              <p className="text-[14px] text-foreground/70 max-w-2xl mx-auto leading-relaxed">
-                これまでに納めた手すり・階段・フェンスの一部をご覧いただけます。
-              </p>
+        {/* ── 05. NUMBERS（数字を控えめに 3 つ）── */}
+        <section className="px-6 py-28 lg:py-40">
+          <div className="max-w-[1100px] mx-auto">
+            <div className="grid lg:grid-cols-[200px_1fr] gap-10 lg:gap-20 mb-16">
+              <div>
+                <p className="font-serif text-[14px] tracking-[0.4em] text-gold mb-2">Chapter</p>
+                <p className="font-serif text-[64px] lg:text-[80px] text-foreground/15 leading-none">05</p>
+              </div>
+              <div className="max-w-[640px]">
+                <h2 className="font-serif text-[24px] md:text-[32px] leading-[1.5] text-foreground font-light">
+                  数字で見る ado
+                </h2>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-y-12 md:gap-x-12 md:gap-y-0 border-y border-border py-12 lg:py-16">
+              {numbers.map((n) => (
+                <div key={n.label} className="text-center md:border-r md:border-border last:border-r-0 md:px-6">
+                  <div className="flex items-baseline justify-center gap-1 mb-4">
+                    <span className="font-serif text-[44px] lg:text-[56px] text-foreground tabular-nums leading-none">
+                      {n.value}
+                    </span>
+                    <span className="font-serif text-[18px] lg:text-[22px] text-foreground/70">{n.unit}</span>
+                  </div>
+                  <p className="text-[11px] tracking-[0.3em] uppercase text-gold mb-2">{n.label}</p>
+                  <p className="text-[12px] text-foreground/55 leading-relaxed max-w-[200px] mx-auto">{n.note}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 06. WORKS GALLERY（マガジン的モザイク）── */}
+        <section className="bg-[#faf8f4] px-6 py-28 lg:py-40">
+          <div className="max-w-[1300px] mx-auto">
+            <div className="grid lg:grid-cols-[200px_1fr] gap-10 lg:gap-20 mb-16">
+              <div>
+                <p className="font-serif text-[14px] tracking-[0.4em] text-gold mb-2">Chapter</p>
+                <p className="font-serif text-[64px] lg:text-[80px] text-foreground/15 leading-none">06</p>
+              </div>
+              <div className="max-w-[640px]">
+                <h2 className="font-serif text-[24px] md:text-[32px] leading-[1.5] text-foreground mb-8 font-light">
+                  施工事例
+                </h2>
+                <p className="text-[14px] md:text-[15px] leading-[2.1] text-foreground/75">
+                  これまでに納めた手すり・階段・フェンスの一部をご覧いただけます。
+                </p>
+              </div>
             </div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 lg:gap-4">
               {galleryImages.map((img, i) => (
                 <div
                   key={img.src}
-                  className={`relative overflow-hidden rounded-lg group ${
+                  className={`relative overflow-hidden group ${
                     i === 0 || i === 5 ? "lg:col-span-2 lg:row-span-2 aspect-square" : "aspect-square"
                   }`}
                 >
@@ -388,17 +423,17 @@ export default function AboutPage() {
                     src={img.src}
                     alt={img.alt}
                     fill
-                    className="object-cover group-hover:scale-105 transition-transform duration-700"
+                    className="object-cover group-hover:scale-105 transition-transform duration-[1200ms]"
                     sizes="(max-width: 1024px) 50vw, 25vw"
                   />
                 </div>
               ))}
             </div>
 
-            <div className="mt-10 flex justify-center">
+            <div className="mt-12 flex justify-center">
               <Link
                 href="/products"
-                className="inline-flex items-center gap-2 text-[12px] tracking-wider text-foreground border-b border-foreground/30 pb-1 hover:text-gold hover:border-gold transition-colors"
+                className="inline-flex items-center gap-2 text-[12px] tracking-[0.15em] uppercase text-foreground border-b border-foreground/30 pb-1 hover:text-gold hover:border-gold transition-colors"
               >
                 商品ラインナップを見る <ArrowRight className="w-3.5 h-3.5" />
               </Link>
@@ -406,79 +441,81 @@ export default function AboutPage() {
           </div>
         </section>
 
-        {/* ── VOICE ── */}
-        <section className="max-w-6xl mx-auto px-6 py-24 lg:py-32">
-          <div className="text-center mb-14">
-            <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-4">Voice</p>
-            <h2 className="font-serif text-3xl lg:text-4xl text-foreground mb-4">
-              お客様からの声
-            </h2>
-            <p className="text-[14px] text-foreground/70 max-w-2xl mx-auto leading-relaxed">
-              全国のお客様から頂いた、納品後のお言葉です。
-            </p>
-          </div>
+        {/* ── 07. VOICE（pull-quotes 編集風）── */}
+        <section className="px-6 py-28 lg:py-40">
+          <div className="max-w-[1100px] mx-auto">
+            <div className="grid lg:grid-cols-[200px_1fr] gap-10 lg:gap-20 mb-16">
+              <div>
+                <p className="font-serif text-[14px] tracking-[0.4em] text-gold mb-2">Chapter</p>
+                <p className="font-serif text-[64px] lg:text-[80px] text-foreground/15 leading-none">07</p>
+              </div>
+              <div className="max-w-[640px]">
+                <h2 className="font-serif text-[24px] md:text-[32px] leading-[1.5] text-foreground mb-8 font-light">
+                  お客様からの声
+                </h2>
+                <p className="text-[14px] md:text-[15px] leading-[2.1] text-foreground/75">
+                  全国のお客様から頂いた、納品後のお言葉です。
+                </p>
+              </div>
+            </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-5">
-            {voiceCards.map((v, i) => (
-              <figure
-                key={i}
-                className="bg-card border border-border rounded-lg p-6 lg:p-7 flex flex-col h-full"
-              >
-                <span className="font-serif text-4xl text-gold/40 leading-none mb-3" aria-hidden>
-                  &ldquo;
-                </span>
-                <blockquote className="text-[14px] leading-[2] text-foreground/85 flex-1">
-                  {v.quote}
-                </blockquote>
-                <figcaption className="mt-5 pt-4 border-t border-border/60 text-[11px] tracking-[0.15em] text-foreground/55">
-                  {v.region}
-                </figcaption>
-              </figure>
-            ))}
+            <div className="grid sm:grid-cols-2 gap-x-12 gap-y-14">
+              {voiceCards.map((v, i) => (
+                <figure key={i}>
+                  <span className="font-serif text-[48px] text-gold/30 leading-none block mb-2" aria-hidden>
+                    &ldquo;
+                  </span>
+                  <blockquote className="font-serif text-[15px] md:text-[16px] leading-[2.1] text-foreground/85 italic">
+                    {v.quote}
+                  </blockquote>
+                  <figcaption className="mt-6 text-[11px] tracking-[0.2em] uppercase text-foreground/55">
+                    ― {v.region}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
           </div>
         </section>
 
-        {/* ── LOCATION ── */}
-        <section className="bg-secondary/40 py-20 lg:py-24">
-          <div className="max-w-3xl mx-auto px-6 text-center">
-            <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-4">Location</p>
-            <h2 className="font-serif text-2xl lg:text-3xl text-foreground mb-6">
+        {/* ── 08. LOCATION ── */}
+        <section className="bg-[#faf8f4] px-6 py-24">
+          <div className="max-w-[640px] mx-auto text-center">
+            <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-5">Location</p>
+            <h2 className="font-serif text-[24px] md:text-[28px] text-foreground mb-8 font-light">
               工房は千葉市にあります
             </h2>
             <div className="inline-flex items-center gap-2 text-[14px] text-foreground/80 mb-6">
               <MapPin className="w-4 h-4 text-gold" />
               <span>千葉県千葉市 ・ 鍛鉄工房ZEST 内</span>
             </div>
-            <p className="text-[13px] text-foreground/70 leading-loose">
-              施工は <strong>千葉県全域・神奈川/東京/埼玉（一部エリア）</strong> に対応しています。
-              <br />
-              本体製作のみのご注文は <strong>全国 47 都道府県</strong> へ配送いたします。
+            <p className="text-[13px] text-foreground/70 leading-[2]">
+              施工は <strong className="text-foreground font-medium">千葉県全域・神奈川/東京/埼玉（一部エリア）</strong> に対応しています。本体製作のみのご注文は <strong className="text-foreground font-medium">全国 47 都道府県</strong> へ配送いたします。
             </p>
           </div>
         </section>
 
         {/* ── CTA ── */}
-        <section className="max-w-3xl mx-auto px-6 py-24 lg:py-32 text-center">
-          <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-4">Contact</p>
-          <h2 className="font-serif text-3xl lg:text-4xl text-foreground mb-6">
-            まずはお気軽に、
-            <br className="sm:hidden" />
-            ご相談ください。
-          </h2>
-          <p className="text-[14px] text-foreground/75 leading-loose mb-10 max-w-xl mx-auto">
-            「こんなサイズで作れる？」「うちの階段に合うかな？」など、ざっくりした段階のご相談を歓迎しています。写真と簡単な記入で OK、お見積もりは無料です。
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <PrimaryCTA href="/contact#form" variant="gold" size="md" icon={<Mail className="w-4 h-4" />} className="flex-1">
-              フォームで相談
-            </PrimaryCTA>
-            <PrimaryCTA href="/contact#line" variant="dark" size="md" icon={<MessageSquare className="w-4 h-4" />} className="flex-1">
-              LINE で相談
-            </PrimaryCTA>
+        <section className="px-6 py-28 lg:py-40">
+          <div className="max-w-[640px] mx-auto text-center">
+            <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-5">Contact</p>
+            <h2 className="font-serif text-[26px] md:text-[36px] text-foreground mb-8 font-light leading-[1.4]">
+              まずはお気軽に、<br className="sm:hidden" />ご相談ください。
+            </h2>
+            <p className="text-[14px] text-foreground/75 leading-loose mb-12 max-w-md mx-auto">
+              「こんなサイズで作れる？」「うちの階段に合うかな？」など、ざっくりした段階のご相談を歓迎しています。写真と簡単な記入で OK、お見積もりは無料です。
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+              <PrimaryCTA href="/contact#form" variant="gold" size="md" icon={<Mail className="w-4 h-4" />} className="flex-1">
+                フォームで相談
+              </PrimaryCTA>
+              <PrimaryCTA href="/contact#line" variant="dark" size="md" icon={<MessageSquare className="w-4 h-4" />} className="flex-1">
+                LINE で相談
+              </PrimaryCTA>
+            </div>
+            <p className="text-[11px] text-foreground/55 mt-6">
+              個人情報の入力なしで LINE からも相談できます
+            </p>
           </div>
-          <p className="text-[11px] text-foreground/55 mt-6">
-            個人情報の入力なしで LINE からも相談できます
-          </p>
         </section>
       </main>
       <Footer />
