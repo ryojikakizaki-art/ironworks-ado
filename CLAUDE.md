@@ -88,6 +88,17 @@ NG パターン：
 3. ロジック変更時は増加・減少の両方向でテストする
 4. 変更後はプレビューで既存機能（モーダル・価格計算・座金自動追加）の動作を確認する
 
+## 6a. React 管理下の SSR DOM を vanilla JS で操作しない【絶対遵守】
+Next.js App Router で SSR レンダリングされた DOM ノード（`<body>` 直下の `<div>` など）を vanilla JS で `.remove()` / `removeChild` / `appendChild` してはいけない。
+
+**症状**: ヘッダーから他ページへ Link 遷移すると URL は変わるが画面が更新されず "This page couldn't load" になる。コンソールに `NotFoundError: Failed to execute 'removeChild'/'insertBefore' on 'Node'` が大量発生。
+
+**正しい方法**: 「DOM に残したまま CSS で表示・非表示を切り替える」
+- ❌ `document.getElementById('foo').remove()`
+- ✅ `document.documentElement.setAttribute('data-foo-hidden', '1')` ＋ CSS `html[data-foo-hidden] #foo { display: none }`
+
+詳細とその他の正解パターンは memory `feedback_react_ssr_dom_rules.md` 参照。**この規則を破ると最重要 UX（ナビゲーション）が壊れる**ので、迷ったら必ず CSS 隠し方式を選ぶ。
+
 ## 7. 選択肢の提示方法
 - 複数の選択肢をユーザーに提示する場合は AskUserQuestion ツールを使う
 - Markdownの `- [ ]` チェックボックスは使わない（クリックできないため）
@@ -104,7 +115,9 @@ NG パターン：
 anthropic-skills:ado-ui-change-review
 ```
 
-を必ず起動する。`ironworks-ado-skills/ado-ui-change-review.skill` に格納され、**過去 4 セッションで踏んだ落とし穴（Tailwind v4 layer 落ち / viewport-fit 抜け / Next/Image fill / ado_logo_W/K 切替 / contrast / safe-area-inset / CSS バンドル落ち / 文字サイズ過小）を全部チェックリスト化** している。これを通さずに修正すると「修正の修正」のループになるので、視覚に出る変更では必ず先頭で呼ぶ。
+を必ず起動する。`ironworks-ado-skills/ado-ui-change-review.skill` に格納され、**過去のセッションで踏んだ落とし穴（Tailwind v4 layer 落ち / viewport-fit 抜け / Next/Image fill / ado_logo_W/K 切替 / contrast / safe-area-inset / CSS バンドル落ち / 文字サイズ過小）を全部チェックリスト化** している。これを通さずに修正すると「修正の修正」のループになるので、視覚に出る変更では必ず先頭で呼ぶ。
+
+**⚠️ 注意:** `ado-ui-change-review` は **落とし穴チェック専用** であり、デザインそのものを生成する skill ではない。**新規 LP 作成・トップ刷新では下記の `ec-site-handmade-art` を必ず併用する**（memory: `feedback_design_skill_must_be_invoked.md` 参照）。「skill 名を呼んだだけ」で本質的なデザイン作業をしないと、必ず蠣﨑さんから修正依頼が来る。
 
 その上で、より「デザイン性を求める作業」（新規ページ作成 / トップ刷新 / バナー / ロゴ）では下記 skill も併用する。
 
