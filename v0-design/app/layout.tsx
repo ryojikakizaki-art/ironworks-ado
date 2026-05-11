@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Noto_Serif_JP, Inter } from 'next/font/google'
+import { Noto_Serif_JP, Inter, Zen_Maru_Gothic, Zen_Kaku_Gothic_New } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { IntroSplash } from '@/components/intro-splash'
 import './globals.css'
@@ -13,9 +13,22 @@ const notoSerifJP = Noto_Serif_JP({
   variable: "--font-serif-jp"
 });
 
-const inter = Inter({ 
+const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter"
+});
+
+// 介護ページなど「やわらかい印象」が必要な文脈で使う丸ゴシック系（feedback_kaigo_page_design 参照）
+const zenMaruGothic = Zen_Maru_Gothic({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-rounded",
+});
+
+const zenKakuGothicNew = Zen_Kaku_Gothic_New({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-rounded-body",
 });
 
 // 制作中のためデフォルトで検索エンジンに非表示
@@ -179,7 +192,7 @@ ${ADS_ID ? `gtag('config', '${ADS_ID}');` : ''}`
     : null
 
   return (
-    <html lang="ja" className={`${notoSerifJP.variable} ${inter.variable} bg-background`}>
+    <html lang="ja" className={`${notoSerifJP.variable} ${inter.variable} ${zenMaruGothic.variable} ${zenKakuGothicNew.variable} bg-background`}>
       <head>
         <script
           type="application/ld+json"

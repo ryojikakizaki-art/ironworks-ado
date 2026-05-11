@@ -27,6 +27,7 @@ export function Header() {
     { label: "製品一覧", href: "/#lineup" },
     { label: "ABOUT", href: "/about" },
     { label: "お客様の声", href: "/#testimonials" },
+    { label: "介護保険", href: "/kaigo" },
     { label: "FAQ", href: "/faq" },
   ]
 
