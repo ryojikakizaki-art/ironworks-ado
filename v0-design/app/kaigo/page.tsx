@@ -292,30 +292,12 @@ export default function KaigoPage() {
                 </div>
               </div>
 
-              {/* 一般的な介護手すり 側 */}
+              {/* 一般的な介護手すり 側（写真は蠣﨑さんが後日提供予定） */}
               <div className="rounded-lg overflow-hidden" style={{ backgroundColor: "#F4F4F4", border: `1px solid ${C.border}` }}>
-                <div className="relative aspect-[4/3] flex items-center justify-center" style={{ backgroundColor: "#EEEEEE" }}>
-                  {/* 白いプラスチック手すりの SVG イラスト */}
-                  <svg viewBox="0 0 400 300" className="w-full h-full p-8" aria-hidden="true">
-                    <rect x="0" y="0" width="400" height="300" fill="#EEEEEE" />
-                    {/* 壁 */}
-                    <rect x="40" y="40" width="320" height="220" fill="#F8F8F8" stroke="#DDD" strokeWidth="1" />
-                    {/* 取付ブラケット */}
-                    <rect x="100" y="120" width="20" height="20" fill="#CCCCCC" rx="3" />
-                    <rect x="280" y="120" width="20" height="20" fill="#CCCCCC" rx="3" />
-                    {/* プラスチック手すり */}
-                    <rect x="100" y="130" width="200" height="22" fill="#FFFFFF" stroke="#CCCCCC" strokeWidth="1.5" rx="11" />
-                    <ellipse cx="105" cy="141" rx="6" ry="11" fill="#FFFFFF" stroke="#CCCCCC" strokeWidth="1.5" />
-                    <ellipse cx="295" cy="141" rx="6" ry="11" fill="#FFFFFF" stroke="#CCCCCC" strokeWidth="1.5" />
-                    {/* ネジ */}
-                    <circle cx="110" cy="130" r="2" fill="#999" />
-                    <circle cx="110" cy="152" r="2" fill="#999" />
-                    <circle cx="290" cy="130" r="2" fill="#999" />
-                    <circle cx="290" cy="152" r="2" fill="#999" />
-                    <text x="200" y="220" textAnchor="middle" fontSize="11" fill="#999" fontFamily="sans-serif">
-                      ※ 一般的な介護用プラスチック手すりの図
-                    </text>
-                  </svg>
+                <div className="relative aspect-[4/3] flex items-center justify-center" style={{ backgroundColor: "#EFEAE2" }}>
+                  <p className="text-center px-6" style={{ color: "#9A8E7C", fontSize: "13px", lineHeight: 1.9 }}>
+                    （一般的な樹脂・スチール手すりの<br />参考写真は近日掲載予定）
+                  </p>
                   <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-medium" style={{ backgroundColor: "#999", color: "#FFF" }}>
                     一般的な介護用品
                   </div>
