@@ -5,7 +5,7 @@ const SITE_URL = "https://ado.tantetuzest.com"
 export const metadata: Metadata = {
   title: "アンティーク・クラシック手すり｜鍛冶職人手打ちのロートアイアン手すり ¥18,000〜｜IRONWORKS ado",
   description:
-    "本物のロートアイアン（鍛鉄）手すりを職人歴15年の鍛冶職人が一本ずつ手打ちで製作。アンティーク・クラシック調の装飾手すり11種類を ¥18,000〜。火造り鍛造・鎚目仕上げ・銀古美・アートアイアン。全国オーダー対応。",
+    "本物のロートアイアン（鍛鉄）手すりを鍛冶職人が一本ずつ手打ちで製作。アンティーク・クラシック調の装飾手すり11種類を ¥18,000〜。火造り鍛造・鎚目仕上げ・銀古美・アートアイアン。全国オーダー対応。",
   keywords: [
     "アンティーク手すり",
     "クラシック手すり",
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     siteName: "IRONWORKS ado",
     title: "アンティーク・クラシック手すり｜鍛冶職人手打ちのロートアイアン手すり",
     description:
-      "本物のロートアイアン（鍛鉄）手すりを職人歴15年の鍛冶職人が一本ずつ手打ち。装飾手すり11種類を ¥18,000〜。",
+      "本物のロートアイアン（鍛鉄）手すりを鍛冶職人が一本ずつ手打ち。装飾手すり11種類を ¥18,000〜。",
     locale: "ja_JP",
     images: [{ url: `${SITE_URL}/images/products/elisabeth/02.jpg`, width: 1200, height: 630, alt: "Élisabeth ロートアイアン手すり" }],
   },
