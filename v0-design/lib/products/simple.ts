@@ -12,6 +12,78 @@ export interface SimpleFAQ {
   a: string
 }
 
+/** ATF（ファーストビュー）に表示する安心バッジ用アイコン名 */
+export type TrustBadgeIcon = "Sparkles" | "Hammer" | "Clock" | "Mail" | "Truck" | "ShieldCheck"
+
+/**
+ * ATF（ファーストビュー）に表示する 4 点までの安心バッジ
+ * 価格ショックを和らげ、納期 / オーダー対応 / 相談無料 など
+ * 高単価ハンドメイド商品の検討に必要な情報を即座に提示する。
+ */
+export interface TrustBadge {
+  icon: TrustBadgeIcon
+  label: string
+  sub?: string
+}
+
+/**
+ * 価格内訳構造（オーダーメイド商品向け）
+ * 「単価 + 装飾オプション」型の価格を透明に提示する。
+ *
+ * - ATF: 単価 + 例示（1〜2件）で「目安いくら」を即理解させる
+ * - スクロール下: 完全な価格表（rows）と「※ 標準構成」の注釈
+ *
+ * すべて optional。未指定の商品はこれまで通り basePrice 一行表示。
+ */
+export interface PriceBuildupOption {
+  /** 例: "唐草エンド" "巻き付け座金" */
+  label: string
+  /** 例: 10000 (¥10,000) */
+  price: number
+  /** 単位（"個" "箇所" "m" など）。デフォルトは表示なし */
+  unit?: string
+  /** 補足（例: "通常溶接座金は ¥4,000/箇所"） */
+  note?: string
+}
+export interface PriceBuildupExample {
+  /** 例: "3m 手すり・両端唐草・巻き付け座金 5箇所" */
+  label: string
+  /** 合計金額（税込）*/
+  price: number
+  /** 補足（例: "送料別" "※モデルケース"） */
+  note?: string
+}
+export interface PriceBuildupRow {
+  /** 例: "1.5m" "2.0m" */
+  length: string
+  /** 標準構成（巻き付け座金など、推し構成）の合計金額 */
+  primaryPrice: number
+  /** 代替構成（通常溶接座金など）の合計金額。任意。 */
+  altPrice?: number
+}
+export interface PriceBuildup {
+  /** 単価ラベル（例: "1m あたり"） */
+  unitLabel: string
+  /** 単価金額（税込）*/
+  unitPrice: number
+  /** ATF 単価表示直下の補足（例: "装飾と座金の数で変動"） */
+  unitNote?: string
+  /** 装飾オプション一覧（唐草・座金など） */
+  options?: PriceBuildupOption[]
+  /** ATF に出す価格例（1〜2件で十分） */
+  examples?: PriceBuildupExample[]
+  /** Specs 下に展開する価格表（任意） */
+  table?: {
+    /** 標準構成のラベル（例: "巻き付け座金 構成"） */
+    primaryLabel: string
+    /** 代替構成のラベル（例: "通常溶接座金 構成"） */
+    altLabel?: string
+    rows: PriceBuildupRow[]
+    /** 表の下の注釈（座金本数の根拠など） */
+    footnote?: string
+  }
+}
+
 export interface SimpleProduct {
   slug: string
   nameEn: string
@@ -26,6 +98,18 @@ export interface SimpleProduct {
   basePrice: number // 0 = 要見積もり
   /** true なら価格表示を「税込・送料込」に切り替え（小物・定形外配送商品向け） */
   shippingIncluded?: boolean
+  /** true なら価格に「〜」を付けて「サイズ・仕様で変動」であることを示す（オーダーメイド系） */
+  priceFrom?: boolean
+  /** 価格直下に表示する補足（例：「※サイズ・形状で変動。お見積もり無料」） */
+  priceNote?: string
+  /** ATF に縦並び 4 点まで表示する安心バッジ。未指定の場合は表示しない（既存商品は段階的に追加） */
+  trustBadges?: TrustBadge[]
+  /** 価格内訳（オーダーメイド商品向け）。指定があれば basePrice 単独表示の代わりに「単価 + 例 + 価格表」を表示 */
+  priceBuildup?: PriceBuildup
+  /** 主 CTA の文言上書き。未指定なら従来どおり「ご注文・お問い合わせ」 / 「お見積もり・ご相談はこちら」 */
+  primaryCtaLabel?: string
+  /** 主 CTA 下の補足説明（添付物 / 下見可否など） */
+  primaryCtaSub?: string
   badge?: string
   /** 旧 STORES URL（参考・移行期間中の補助リンク） */
   storesUrl?: string
@@ -65,8 +149,51 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       "7dcf95166348ad44aad5.jpg",
       "210f572a0c70b0750889.jpg",
     ],
-    basePrice: 149000,
+    // basePrice は「代表価格」(3m 標準構成) として Merchant Center / structured-data に出す。
+    // ATF の表示価格は下の priceBuildup を優先する（1m単価 ¥36,000〜 + 例 ¥168,000）。
+    basePrice: 168000,
+    priceFrom: true,
+    priceNote: "1m あたりの基本料金。装飾と座金の数で変動します。お見積もり無料",
+    priceBuildup: {
+      unitLabel: "1m あたり",
+      unitPrice: 36000,
+      unitNote: "鍛冶職人が手打ち・22φ 無垢鉄の基本料金（税込）",
+      options: [
+        { label: "唐草エンド", price: 10000, unit: "個", note: "両端 2 個が標準" },
+        { label: "巻き付け座金", price: 8000, unit: "箇所", note: "支柱に巻きつくデザイン座金（手打ち）" },
+        { label: "通常溶接座金", price: 4000, unit: "箇所", note: "シンプルなまる座金（溶接のみ）" },
+      ],
+      examples: [
+        {
+          label: "3m 手すり・両端唐草・巻き付け座金 5箇所（標準）",
+          price: 168000,
+          note: "もっとも多くお選びいただく構成",
+        },
+      ],
+      table: {
+        primaryLabel: "巻き付け座金 構成（標準）",
+        altLabel: "通常溶接座金 構成",
+        rows: [
+          { length: "1.5m", primaryPrice: 98000, altPrice: 86000 },
+          { length: "2.0m", primaryPrice: 124000, altPrice: 108000 },
+          { length: "2.5m", primaryPrice: 142000, altPrice: 126000 },
+          { length: "3.0m", primaryPrice: 168000, altPrice: 148000 },
+          { length: "4.0m", primaryPrice: 212000, altPrice: 188000 },
+          { length: "5.0m", primaryPrice: 256000, altPrice: 228000 },
+        ],
+        footnote:
+          "※ 両端唐草エンド付き／座金は強度上 1m あたり 1.5〜2 箇所を目安に算出。階段の形状・取付下地で本数が変わります。正確な見積もりは図面でご相談ください。",
+      },
+    },
     badge: "Artisan",
+    trustBadges: [
+      { icon: "Sparkles", label: "オーダーメイド対応", sub: "L1000mm〜・形状/座金デザイン選択可" },
+      { icon: "Hammer", label: "鍛冶職人が一本ずつ手打ち", sub: "22φ 無垢鉄を火造りで鍛造" },
+      { icon: "Clock", label: "納期目安 4〜6 週間", sub: "図面確認後に製作開始" },
+      { icon: "Mail", label: "お見積もり・図面相談 無料", sub: "階段図面 / 写真添付 OK" },
+    ],
+    primaryCtaLabel: "無料で見積もりを依頼する",
+    primaryCtaSub: "階段図面・写真の添付 OK／千葉県内なら現地下見も可能。後ほど見積書（送料込）をお送りします。",
     storesUrl: "https://ironworks-ado.stores.jp/items/63ea2bfd34e01709f8fa4ac9",
     featureBullets: [
       { icon: "Hammer", title: "火造り鍛造", desc: "鍛冶職人が無垢鉄を熱しハンマーで一本ずつ鍛え上げます" },
