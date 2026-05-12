@@ -415,62 +415,84 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
           {/* ── 左：画像ギャラリー ── */}
           <div>
             {/* メイン画像（サムネイルにホバー中はホバー画像を優先表示）
-                モバイル: タッチスワイプで左右切替 (2026-05-12 追加) */}
-            <div
-              className="relative aspect-square bg-secondary rounded-xl overflow-hidden mb-3 select-none"
-              onTouchStart={(e) => {
-                touchStartXRef.current = e.touches[0].clientX
-                touchStartYRef.current = e.touches[0].clientY
-              }}
-              onTouchEnd={(e) => {
-                if (touchStartXRef.current === null || touchStartYRef.current === null || imageUrls.length < 2) return
-                const dx = e.changedTouches[0].clientX - touchStartXRef.current
-                const dy = e.changedTouches[0].clientY - touchStartYRef.current
-                touchStartXRef.current = null
-                touchStartYRef.current = null
-                // 縦スクロールと区別: 横移動が縦移動より大きく、かつ 40px 以上の場合のみスワイプ判定
-                if (Math.abs(dx) <= Math.abs(dy)) return
-                if (Math.abs(dx) < 40) return
-                if (dx > 0) goPrev()
-                else goNext()
-              }}
-            >
-              <Image
-                key={imageUrls[hoveredImage ?? selectedImage]}
-                src={imageUrls[hoveredImage ?? selectedImage]}
-                alt={`${product.nameEn} ${(hoveredImage ?? selectedImage) + 1}`}
-                fill
-                className="object-cover pointer-events-none"
-                priority={selectedImage === 0}
-                sizes="(max-width: 1024px) 100vw, 50vw"
-              />
-
-              {/* 前後ボタン（画像 2 枚以上の場合のみ表示） */}
-              {imageUrls.length > 1 && (
-                <>
-                  <button
-                    onClick={goPrev}
-                    className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur flex items-center justify-center hover:bg-white transition-colors"
-                    aria-label="前の画像"
+                モバイル: タッチスワイプで左右切替 (2026-05-12 追加)
+                スライドトラック方式 (2026-05-12): 画像間が横に繋がってスライド表示 */}
+            {(() => {
+              const displayIndex = hoveredImage ?? selectedImage
+              const N = imageUrls.length
+              return (
+                <div
+                  className="relative aspect-square bg-secondary rounded-xl overflow-hidden mb-3 select-none"
+                  onTouchStart={(e) => {
+                    touchStartXRef.current = e.touches[0].clientX
+                    touchStartYRef.current = e.touches[0].clientY
+                  }}
+                  onTouchEnd={(e) => {
+                    if (touchStartXRef.current === null || touchStartYRef.current === null || N < 2) return
+                    const dx = e.changedTouches[0].clientX - touchStartXRef.current
+                    const dy = e.changedTouches[0].clientY - touchStartYRef.current
+                    touchStartXRef.current = null
+                    touchStartYRef.current = null
+                    if (Math.abs(dx) <= Math.abs(dy)) return
+                    if (Math.abs(dx) < 40) return
+                    if (dx > 0) goPrev()
+                    else goNext()
+                  }}
+                >
+                  {/* スライドトラック */}
+                  <div
+                    className="absolute inset-0 flex transition-transform duration-300 ease-out"
+                    style={{
+                      width: `${N * 100}%`,
+                      transform: `translateX(-${(100 / N) * displayIndex}%)`,
+                    }}
                   >
-                    <ChevronLeft className="w-5 h-5" />
-                  </button>
-                  <button
-                    onClick={goNext}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur flex items-center justify-center hover:bg-white transition-colors"
-                    aria-label="次の画像"
-                  >
-                    <ChevronRight className="w-5 h-5" />
-                  </button>
-                </>
-              )}
+                    {imageUrls.map((url, i) => (
+                      <div
+                        key={url}
+                        className="relative h-full flex-shrink-0"
+                        style={{ width: `${100 / N}%` }}
+                      >
+                        <Image
+                          src={url}
+                          alt={`${product.nameEn} ${i + 1}`}
+                          fill
+                          className="object-cover pointer-events-none"
+                          priority={i === 0}
+                          sizes="(max-width: 1024px) 100vw, 50vw"
+                        />
+                      </div>
+                    ))}
+                  </div>
 
-              {product.badge && (
-                <div className="absolute top-3 left-3 px-3 py-1 bg-gold text-white text-xs tracking-wider rounded-full">
-                  {product.badge}
+                  {/* 前後ボタン（画像 2 枚以上の場合のみ表示） */}
+                  {N > 1 && (
+                    <>
+                      <button
+                        onClick={goPrev}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur flex items-center justify-center hover:bg-white transition-colors z-10"
+                        aria-label="前の画像"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={goNext}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/80 backdrop-blur flex items-center justify-center hover:bg-white transition-colors z-10"
+                        aria-label="次の画像"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    </>
+                  )}
+
+                  {product.badge && (
+                    <div className="absolute top-3 left-3 px-3 py-1 bg-gold text-white text-xs tracking-wider rounded-full z-10">
+                      {product.badge}
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              )
+            })()}
 
             {/* サムネイル（ホバーでメイン画像にプレビュー、クリックで選択固定） */}
             {imageUrls.length > 1 && (
