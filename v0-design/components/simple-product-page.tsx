@@ -531,15 +531,7 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
               {product.nameEn}
             </h1>
             <p className="text-lg text-muted-foreground mb-1">{product.nameJa}</p>
-            <p className="text-sm text-muted-foreground mb-8">{product.subtitle}</p>
-
-            {/* 価格表示（priceBuildup があれば単価+例示、無ければ basePrice 単独） */}
-            {!isQuoteOnly && <PriceBlock product={product} />}
-
-            {/* ── 安心バッジ（ATF）── */}
-            {product.trustBadges && product.trustBadges.length > 0 && (
-              <TrustBadges badges={product.trustBadges} />
-            )}
+            <p className="text-sm text-muted-foreground mb-6">{product.subtitle}</p>
 
             {/* キャッチ */}
             <p className="text-base text-dark leading-relaxed mb-6">
@@ -550,6 +542,14 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
             <p className="text-sm text-muted-foreground leading-loose mb-10 whitespace-pre-line">
               {product.longDescription}
             </p>
+
+            {/* 価格表示（priceBuildup があれば単価+例示、無ければ basePrice 単独） */}
+            {!isQuoteOnly && <PriceBlock product={product} />}
+
+            {/* ── 安心バッジ（ATF）── */}
+            {product.trustBadges && product.trustBadges.length > 0 && (
+              <TrustBadges badges={product.trustBadges} />
+            )}
 
             {/* スペック表 */}
             <div className="mb-10">

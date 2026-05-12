@@ -73,6 +73,9 @@ export default function ProductDetailPage() {
   const touchStartXRef = useRef<number | null>(null)
   const touchStartYRef = useRef<number | null>(null)
   const [length, setLength] = useState(product.drawing.stdLengthMm)
+  // 入力欄は length とは独立した文字列 state。空文字や min 未満の途中入力も許容し、
+  // Blur 時にのみ範囲内へクランプする（クリア → 再入力ができないと報告された問題への対処）。
+  const [lengthInput, setLengthInput] = useState<string>(String(product.drawing.stdLengthMm))
   const [quantity, setQuantity] = useState(1)
   const [prefecture, setPrefecture] = useState("")
   const [deliveryType, setDeliveryType] = useState<"normal" | "express">("normal")
@@ -486,7 +489,11 @@ export default function ProductDetailPage() {
                               max={maxLength}
                               step={1}
                               value={length}
-                              onChange={(e) => setLength(Number(e.target.value))}
+                              onChange={(e) => {
+                                const v = Number(e.target.value)
+                                setLength(v)
+                                setLengthInput(String(v))
+                              }}
                               className="w-full h-2 bg-muted rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-gold [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md"
                             />
                             <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
@@ -500,8 +507,36 @@ export default function ProductDetailPage() {
                               min={minLength}
                               max={maxLength}
                               step={1}
-                              value={length}
-                              onChange={(e) => setLength(Math.min(maxLength, Math.max(minLength, Number(e.target.value))))}
+                              value={lengthInput}
+                              onFocus={(e) => e.currentTarget.select()}
+                              onChange={(e) => {
+                                const raw = e.target.value
+                                setLengthInput(raw)
+                                if (raw === "") return
+                                const n = Number(raw)
+                                if (Number.isFinite(n) && n >= minLength && n <= maxLength) {
+                                  setLength(n)
+                                }
+                              }}
+                              onBlur={() => {
+                                if (lengthInput === "") {
+                                  setLengthInput(String(length))
+                                  return
+                                }
+                                const n = Number(lengthInput)
+                                if (!Number.isFinite(n)) {
+                                  setLengthInput(String(length))
+                                  return
+                                }
+                                const clamped = Math.min(maxLength, Math.max(minLength, Math.round(n)))
+                                setLength(clamped)
+                                setLengthInput(String(clamped))
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.currentTarget.blur()
+                                }
+                              }}
                               className="w-28 h-12 bg-gold/10 border-2 border-gold text-center font-mono text-lg text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
                             />
                             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">
