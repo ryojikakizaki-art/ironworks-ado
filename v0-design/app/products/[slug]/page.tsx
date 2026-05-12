@@ -277,58 +277,82 @@ export default function ProductDetailPage() {
             {/* LEFT COLUMN - Gallery */}
             <div className="space-y-4">
               {/* Main Image — サムネと同じスクエア
-                  モバイル: 左右スワイプで切替 + 矢印タップで切替
-                  Lightbox は廃止 (2026-05-12) — モバイル UX 改善のため
-                  画像切替時のフェード演出も撤廃 (2026-05-12) — 切り替わりが煩わしいため即時反映 */}
-              <div
-                className="relative aspect-square bg-secondary rounded-lg overflow-hidden group select-none"
-                onTouchStart={(e) => {
-                  touchStartXRef.current = e.touches[0].clientX
-                  touchStartYRef.current = e.touches[0].clientY
-                }}
-                onTouchEnd={(e) => {
-                  if (touchStartXRef.current === null || touchStartYRef.current === null) return
-                  const dx = e.changedTouches[0].clientX - touchStartXRef.current
-                  const dy = e.changedTouches[0].clientY - touchStartYRef.current
-                  touchStartXRef.current = null
-                  touchStartYRef.current = null
-                  // 縦スクロールと区別: 横移動が縦移動より大きく、かつ 40px 以上の場合だけスワイプ判定
-                  if (Math.abs(dx) <= Math.abs(dy)) return
-                  if (Math.abs(dx) < 40) return
-                  if (dx > 0) prevImage()
-                  else nextImage()
-                }}
-              >
-                <Image
-                  key={hoveredImage ?? selectedImage}
-                  src={productImages[hoveredImage ?? selectedImage].src}
-                  alt={productImages[hoveredImage ?? selectedImage].alt}
-                  fill
-                  className="object-cover pointer-events-none"
-                  priority
-                />
+                  モバイル: 左右スワイプで切替 (画像と画像が横スライドで繋がる) + 矢印タップで切替
+                  デスクトップ: サムネホバーで該当画像にスライド
+                  Lightbox は廃止 (2026-05-12)
+                  フェード→スライド演出に変更 (2026-05-12): フェードだと隣画像との白隙間が見えるため */}
+              {(() => {
+                const displayIndex = hoveredImage ?? selectedImage
+                const N = productImages.length
+                return (
+                  <div
+                    className="relative aspect-square bg-secondary rounded-lg overflow-hidden group select-none"
+                    onTouchStart={(e) => {
+                      touchStartXRef.current = e.touches[0].clientX
+                      touchStartYRef.current = e.touches[0].clientY
+                    }}
+                    onTouchEnd={(e) => {
+                      if (touchStartXRef.current === null || touchStartYRef.current === null) return
+                      const dx = e.changedTouches[0].clientX - touchStartXRef.current
+                      const dy = e.changedTouches[0].clientY - touchStartYRef.current
+                      touchStartXRef.current = null
+                      touchStartYRef.current = null
+                      // 縦スクロールと区別: 横移動が縦移動より大きく、かつ 40px 以上の場合だけスワイプ判定
+                      if (Math.abs(dx) <= Math.abs(dy)) return
+                      if (Math.abs(dx) < 40) return
+                      if (dx > 0) prevImage()
+                      else nextImage()
+                    }}
+                  >
+                    {/* スライドトラック: 全画像を横並びで配置し translateX で位置をずらす */}
+                    <div
+                      className="absolute inset-0 flex transition-transform duration-300 ease-out"
+                      style={{
+                        width: `${N * 100}%`,
+                        transform: `translateX(-${(100 / N) * displayIndex}%)`,
+                      }}
+                    >
+                      {productImages.map((image, i) => (
+                        <div
+                          key={image.src}
+                          className="relative h-full flex-shrink-0"
+                          style={{ width: `${100 / N}%` }}
+                        >
+                          <Image
+                            src={image.src}
+                            alt={image.alt}
+                            fill
+                            className="object-cover pointer-events-none"
+                            priority={i === 0}
+                            sizes="(max-width: 1024px) 100vw, 50vw"
+                          />
+                        </div>
+                      ))}
+                    </div>
 
-                {/* Navigation Arrows — モバイルでも常に表示。デスクトップは半透明 → ホバーで強調 */}
-                <button
-                  onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                  className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-11 md:h-11 bg-white/85 md:bg-white/70 lg:bg-white/60 lg:group-hover:bg-white/95 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white shadow-md hover:shadow-lg backdrop-blur-sm"
-                  aria-label="前の画像"
-                >
-                  <ChevronLeft className="w-5 h-5 text-dark" />
-                </button>
-                <button
-                  onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                  className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-11 md:h-11 bg-white/85 md:bg-white/70 lg:bg-white/60 lg:group-hover:bg-white/95 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white shadow-md hover:shadow-lg backdrop-blur-sm"
-                  aria-label="次の画像"
-                >
-                  <ChevronRight className="w-5 h-5 text-dark" />
-                </button>
+                    {/* Navigation Arrows — モバイルでも常に表示。デスクトップは半透明 → ホバーで強調 */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                      className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-11 md:h-11 bg-white/85 md:bg-white/70 lg:bg-white/60 lg:group-hover:bg-white/95 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white shadow-md hover:shadow-lg backdrop-blur-sm z-10"
+                      aria-label="前の画像"
+                    >
+                      <ChevronLeft className="w-5 h-5 text-dark" />
+                    </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                      className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-11 md:h-11 bg-white/85 md:bg-white/70 lg:bg-white/60 lg:group-hover:bg-white/95 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white shadow-md hover:shadow-lg backdrop-blur-sm z-10"
+                      aria-label="次の画像"
+                    >
+                      <ChevronRight className="w-5 h-5 text-dark" />
+                    </button>
 
-                {/* Image Counter */}
-                <div className="absolute bottom-4 right-4 bg-dark/70 text-white text-[11px] px-3 py-1 rounded-full font-mono">
-                  {selectedImage + 1} / {productImages.length}
-                </div>
-              </div>
+                    {/* Image Counter */}
+                    <div className="absolute bottom-4 right-4 bg-dark/70 text-white text-[11px] px-3 py-1 rounded-full font-mono z-10">
+                      {selectedImage + 1} / {productImages.length}
+                    </div>
+                  </div>
+                )
+              })()}
 
               {/* Thumbnail Grid — タップでヒーロー画像を切替 (Lightbox は廃止) */}
               <div
