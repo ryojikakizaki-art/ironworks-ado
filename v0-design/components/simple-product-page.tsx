@@ -4,11 +4,11 @@ import { useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronLeft, ChevronRight, Mail, MessageSquare, ShoppingBag, Minus, Plus, Hammer, Paintbrush, Ruler, Wrench } from "lucide-react"
+import { ChevronLeft, ChevronRight, Mail, MessageSquare, ShoppingBag, Minus, Plus, Hammer, Paintbrush, Ruler, Wrench, Sparkles, Clock, Truck, ShieldCheck } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
-import type { SimpleProduct } from "@/lib/products/simple"
+import type { SimpleProduct, TrustBadgeIcon } from "@/lib/products/simple"
 import { galleryUrl, type FeatureIconName } from "@/lib/products/display"
 import { getProductStructuredData } from "@/lib/products/structured-data"
 import { getRelatedProducts } from "@/lib/products/catalog"
@@ -19,6 +19,226 @@ const FEATURE_ICON_MAP: Record<FeatureIconName, typeof Hammer> = {
   Paintbrush,
   Ruler,
   Wrench,
+}
+
+/** TrustBadge アイコン名 → lucide-react コンポーネントへのマップ */
+const TRUST_BADGE_ICON_MAP: Record<TrustBadgeIcon, typeof Sparkles> = {
+  Sparkles,
+  Hammer,
+  Clock,
+  Mail,
+  Truck,
+  ShieldCheck,
+}
+
+/**
+ * ATF（ファーストビュー）の価格ブロック。
+ * priceBuildup が指定されていれば「単価表示 + 例示」を優先表示し、価格ショックを和らげる。
+ * 未指定の商品はこれまで通り basePrice 単独表示。
+ */
+function PriceBlock({ product }: { product: SimpleProduct }) {
+  const buildup = product.priceBuildup
+  if (buildup) {
+    return (
+      <div className="mb-8 pb-8 border-b border-border">
+        <p className="text-xs text-muted-foreground mb-1 tracking-wider">PRICE</p>
+        <p className="font-serif text-3xl text-dark">
+          ¥{buildup.unitPrice.toLocaleString()}
+          <span className="text-sm text-muted-foreground ml-1">/ {buildup.unitLabel}</span>
+          <span className="text-sm text-muted-foreground ml-2">〜（税込）</span>
+        </p>
+        {buildup.unitNote && (
+          <p className="text-[12px] md:text-[13px] text-muted-foreground leading-relaxed mt-2">
+            {buildup.unitNote}
+          </p>
+        )}
+        {buildup.examples && buildup.examples.length > 0 && (
+          <div className="mt-4 rounded-md bg-secondary/60 px-4 py-3">
+            <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase mb-1.5">
+              Example
+            </p>
+            {buildup.examples.map((ex, i) => (
+              <div key={i} className={i > 0 ? "mt-2" : ""}>
+                <p className="text-[13px] md:text-[14px] text-dark leading-relaxed">
+                  {ex.label}
+                </p>
+                <p className="font-serif text-[18px] md:text-[20px] text-dark mt-0.5">
+                  ¥{ex.price.toLocaleString()}
+                  <span className="text-[12px] text-muted-foreground ml-1.5">（税込）</span>
+                </p>
+                {ex.note && (
+                  <p className="text-[11px] text-muted-foreground leading-relaxed mt-0.5">
+                    {ex.note}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    )
+  }
+  return (
+    <div className="mb-8 pb-8 border-b border-border">
+      <p className="text-xs text-muted-foreground mb-1 tracking-wider">PRICE</p>
+      <p className="font-serif text-3xl text-dark">
+        ¥{product.basePrice.toLocaleString()}{product.priceFrom ? "〜" : ""}
+        <span className="text-sm text-muted-foreground ml-2">
+          {product.shippingIncluded
+            ? "（税込・送料込）"
+            : product.priceFrom
+            ? "（税込）"
+            : "（税込・送料別）"}
+        </span>
+      </p>
+      {product.priceNote && (
+        <p className="text-[12px] md:text-[13px] text-muted-foreground leading-relaxed mt-2">
+          {product.priceNote}
+        </p>
+      )}
+    </div>
+  )
+}
+
+/**
+ * 価格内訳テーブル（Specs 下に配置）。
+ * オーダーメイド商品の長さ別価格を一覧表示し、お客様が即計算できる透明性を提供。
+ */
+function PriceTable({ buildup }: { buildup: NonNullable<SimpleProduct["priceBuildup"]> }) {
+  if (!buildup.options && !buildup.table) return null
+  return (
+    <section className="mt-20 pt-12 border-t border-border">
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-1 h-7 bg-gold rounded-full" />
+        <h2 className="font-serif text-2xl text-dark">価格について</h2>
+      </div>
+      <p className="text-[13px] md:text-[14px] text-muted-foreground leading-loose mb-8">
+        オーダーメイドのため、長さ・装飾の構成によって価格が変わります。下記の単価と価格表を目安にご検討ください。正確な金額は図面・写真をお送りいただければ無料でお見積もりいたします。
+      </p>
+
+      {buildup.options && buildup.options.length > 0 && (
+        <div className="mb-10">
+          <h3 className="text-xs tracking-[0.3em] text-muted-foreground uppercase mb-4">
+            Unit prices
+          </h3>
+          <dl className="divide-y divide-border border-y border-border">
+            <div className="grid grid-cols-12 gap-4 py-3">
+              <dt className="text-[14px] text-dark col-span-7 md:col-span-8">
+                {buildup.unitLabel}
+                <span className="block text-[11px] text-muted-foreground mt-0.5">
+                  鍛冶職人手打ち・22φ 無垢鉄
+                </span>
+              </dt>
+              <dd className="text-[14px] text-dark col-span-5 md:col-span-4 text-right font-serif">
+                ¥{buildup.unitPrice.toLocaleString()}
+              </dd>
+            </div>
+            {buildup.options.map((opt) => (
+              <div key={opt.label} className="grid grid-cols-12 gap-4 py-3">
+                <dt className="text-[14px] text-dark col-span-7 md:col-span-8">
+                  {opt.label}
+                  {opt.note && (
+                    <span className="block text-[11px] text-muted-foreground mt-0.5">
+                      {opt.note}
+                    </span>
+                  )}
+                </dt>
+                <dd className="text-[14px] text-dark col-span-5 md:col-span-4 text-right font-serif">
+                  +¥{opt.price.toLocaleString()}
+                  {opt.unit && (
+                    <span className="text-[11px] text-muted-foreground ml-1">/{opt.unit}</span>
+                  )}
+                </dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
+
+      {buildup.table && (() => {
+        const table = buildup.table
+        return (
+          <div>
+            <h3 className="text-xs tracking-[0.3em] text-muted-foreground uppercase mb-4">
+              Price examples
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full border-y border-border text-[14px]">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="text-left py-3 px-2 text-[12px] font-normal text-muted-foreground tracking-wider">
+                      長さ
+                    </th>
+                    <th className="text-right py-3 px-2 text-[12px] font-normal text-muted-foreground tracking-wider">
+                      {table.primaryLabel}
+                    </th>
+                    {table.altLabel && (
+                      <th className="text-right py-3 px-2 text-[12px] font-normal text-muted-foreground tracking-wider">
+                        {table.altLabel}
+                      </th>
+                    )}
+                  </tr>
+                </thead>
+                <tbody>
+                  {table.rows.map((row) => (
+                    <tr key={row.length} className="border-b border-border last:border-b-0">
+                      <td className="py-3 px-2 text-dark">{row.length}</td>
+                      <td className="py-3 px-2 text-right font-serif text-dark">
+                        ¥{row.primaryPrice.toLocaleString()}
+                      </td>
+                      {table.altLabel && (
+                        <td className="py-3 px-2 text-right font-serif text-muted-foreground">
+                          {row.altPrice ? `¥${row.altPrice.toLocaleString()}` : "—"}
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            {table.footnote && (
+              <p className="text-[12px] text-muted-foreground leading-relaxed mt-4">
+                {table.footnote}
+              </p>
+            )}
+          </div>
+        )
+      })()}
+    </section>
+  )
+}
+
+/**
+ * ATF（ファーストビュー）に縦並びで安心要素を提示するバッジリスト。
+ * - 価格直下に挿入し、価格ショックを和らげつつ高単価商品の検討材料を即座に提示する
+ * - ハンドメイドEC の品位を保つため装飾は最小限（左にゴールドアイコン + ラベル + 補足）
+ * - モバイルでもデスクトップでも縦 4 行を維持（高さよりも視認性優先）
+ */
+function TrustBadges({ badges }: { badges: NonNullable<SimpleProduct["trustBadges"]> }) {
+  return (
+    <ul className="mb-8 pb-8 border-b border-border space-y-4">
+      {badges.map((badge, i) => {
+        const Icon = TRUST_BADGE_ICON_MAP[badge.icon] ?? Sparkles
+        return (
+          <li key={i} className="flex items-start gap-4">
+            <span className="shrink-0 mt-0.5 inline-flex w-6 h-6 items-center justify-center text-gold">
+              <Icon className="w-5 h-5" strokeWidth={1.6} />
+            </span>
+            <span className="flex-1">
+              <span className="block font-serif text-[15px] md:text-[16px] text-dark leading-snug">
+                {badge.label}
+              </span>
+              {badge.sub && (
+                <span className="block text-[12px] md:text-[13px] text-muted-foreground leading-relaxed mt-0.5">
+                  {badge.sub}
+                </span>
+              )}
+            </span>
+          </li>
+        )
+      })}
+    </ul>
+  )
 }
 
 function priceLabel(price: number, priceFrom = false): string {
@@ -268,17 +488,12 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
             <p className="text-lg text-muted-foreground mb-1">{product.nameJa}</p>
             <p className="text-sm text-muted-foreground mb-8">{product.subtitle}</p>
 
-            {/* 価格表示 */}
-            {!isQuoteOnly && (
-              <div className="mb-8 pb-8 border-b border-border">
-                <p className="text-xs text-muted-foreground mb-1 tracking-wider">PRICE</p>
-                <p className="font-serif text-3xl text-dark">
-                  ¥{product.basePrice.toLocaleString()}
-                  <span className="text-sm text-muted-foreground ml-2">
-                    {product.shippingIncluded ? "（税込・送料込）" : "（税込・送料別）"}
-                  </span>
-                </p>
-              </div>
+            {/* 価格表示（priceBuildup があれば単価+例示、無ければ basePrice 単独） */}
+            {!isQuoteOnly && <PriceBlock product={product} />}
+
+            {/* ── 安心バッジ（ATF）── */}
+            {product.trustBadges && product.trustBadges.length > 0 && (
+              <TrustBadges badges={product.trustBadges} />
             )}
 
             {/* キャッチ */}
@@ -321,7 +536,7 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
                   icon={<MessageSquare className="w-4 h-4" />}
                   withArrow
                 >
-                  お見積もり・ご相談はこちら
+                  {product.primaryCtaLabel ?? "お見積もり・ご相談はこちら"}
                 </PrimaryCTA>
               ) : isDirectCheckout ? (
                 <>
@@ -386,12 +601,16 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
                     icon={<Mail className="w-4 h-4" />}
                     withArrow
                   >
-                    ご注文・お問い合わせ
+                    {product.primaryCtaLabel ?? "ご注文・お問い合わせ"}
                   </PrimaryCTA>
                   <p className="text-xs text-muted-foreground text-center leading-loose">
-                    ご注文確認後、見積書（送料込）をお送りいたします。
-                    <br />
-                    オンライン決済対応は順次拡大中です。
+                    {product.primaryCtaSub ?? (
+                      <>
+                        ご注文確認後、見積書（送料込）をお送りいたします。
+                        <br />
+                        オンライン決済対応は順次拡大中です。
+                      </>
+                    )}
                   </p>
                 </>
               )}
@@ -399,6 +618,9 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
             </motion.div>
           </div>
         </div>
+
+        {/* ── 価格について（単価表 + 価格例） ── */}
+        {product.priceBuildup && <PriceTable buildup={product.priceBuildup} />}
 
         {/* ── 特徴 4 点アイコン ── */}
         {product.featureBullets && product.featureBullets.length > 0 && (
