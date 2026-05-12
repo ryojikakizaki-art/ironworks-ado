@@ -69,7 +69,9 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0)
   const [hoveredImage, setHoveredImage] = useState<number | null>(null)
   // スワイプ用 (モバイル): メインヒーロー画像でタッチして左右にフリックで切替
+  // X/Y 両方記録して縦スクロールと区別する
   const touchStartXRef = useRef<number | null>(null)
+  const touchStartYRef = useRef<number | null>(null)
   const [length, setLength] = useState(product.drawing.stdLengthMm)
   const [quantity, setQuantity] = useState(1)
   const [prefecture, setPrefecture] = useState("")
@@ -275,41 +277,36 @@ export default function ProductDetailPage() {
             {/* LEFT COLUMN - Gallery */}
             <div className="space-y-4">
               {/* Main Image — サムネと同じスクエア
-                  モバイル: タッチスワイプで左右切替 + 矢印タップで切替
-                  デスクトップ: ホバー時に矢印フェードイン (visual nicety)
-                  Lightbox は廃止 (2026-05-12) — モバイル UX 改善のため */}
-              <motion.div
+                  モバイル: 左右スワイプで切替 + 矢印タップで切替
+                  Lightbox は廃止 (2026-05-12) — モバイル UX 改善のため
+                  画像切替時のフェード演出も撤廃 (2026-05-12) — 切り替わりが煩わしいため即時反映 */}
+              <div
                 className="relative aspect-square bg-secondary rounded-lg overflow-hidden group select-none"
-                whileHover={{ scale: 1.01 }}
-                transition={{ duration: 0.3 }}
-                onTouchStart={(e) => { touchStartXRef.current = e.touches[0].clientX }}
+                onTouchStart={(e) => {
+                  touchStartXRef.current = e.touches[0].clientX
+                  touchStartYRef.current = e.touches[0].clientY
+                }}
                 onTouchEnd={(e) => {
-                  if (touchStartXRef.current === null) return
+                  if (touchStartXRef.current === null || touchStartYRef.current === null) return
                   const dx = e.changedTouches[0].clientX - touchStartXRef.current
+                  const dy = e.changedTouches[0].clientY - touchStartYRef.current
                   touchStartXRef.current = null
+                  touchStartYRef.current = null
+                  // 縦スクロールと区別: 横移動が縦移動より大きく、かつ 40px 以上の場合だけスワイプ判定
+                  if (Math.abs(dx) <= Math.abs(dy)) return
                   if (Math.abs(dx) < 40) return
                   if (dx > 0) prevImage()
                   else nextImage()
                 }}
               >
-                <AnimatePresence mode="wait">
-                  <motion.div
-                    key={hoveredImage ?? selectedImage}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute inset-0"
-                  >
-                    <Image
-                      src={productImages[hoveredImage ?? selectedImage].src}
-                      alt={productImages[hoveredImage ?? selectedImage].alt}
-                      fill
-                      className="object-cover pointer-events-none"
-                      priority
-                    />
-                  </motion.div>
-                </AnimatePresence>
+                <Image
+                  key={hoveredImage ?? selectedImage}
+                  src={productImages[hoveredImage ?? selectedImage].src}
+                  alt={productImages[hoveredImage ?? selectedImage].alt}
+                  fill
+                  className="object-cover pointer-events-none"
+                  priority
+                />
 
                 {/* Navigation Arrows — モバイルでも常に表示。デスクトップは半透明 → ホバーで強調 */}
                 <button
@@ -331,7 +328,7 @@ export default function ProductDetailPage() {
                 <div className="absolute bottom-4 right-4 bg-dark/70 text-white text-[11px] px-3 py-1 rounded-full font-mono">
                   {selectedImage + 1} / {productImages.length}
                 </div>
-              </motion.div>
+              </div>
 
               {/* Thumbnail Grid — タップでヒーロー画像を切替 (Lightbox は廃止) */}
               <div
