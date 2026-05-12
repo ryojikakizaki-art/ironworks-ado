@@ -2,17 +2,22 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { AnimatePresence, motion } from "framer-motion"
 import { useEffect, useRef, useState } from "react"
 import { CATALOG_PRODUCTS, type CategoryKey } from "@/lib/products/catalog"
 import { galleryUrl } from "@/lib/products/display"
 
 /**
  * ヒーロー下部に常時表示されるカテゴリードック。
- * - PC: カテゴリーラベルにホバー → 商品リストが上方向に展開
- * - モバイル: タップでトグル
  *
- * 商品リストはヒーロー下半分を覆うように出現。クリック外でクローズ。
+ * 2026-05-13 改修: 商品サムネを常時マーキー (横スクロール) で表示。
+ * - デフォルトで「手すり 横型」の商品が左方向に無限スクロール
+ * - カテゴリーラベルをホバー/タップで切替 → 該当カテゴリの商品に差し替わる
+ * - サムネにホバー/フォーカスでスクロールを一時停止
+ * - クリック/タップで商品ページへ遷移
+ *
+ * 旧版は「ホバー時にグリッド展開」だったため、トップ進入直後は
+ * 商品が一つも見えず GA4 上で離脱が早かった。常時露出 + 横アニメで
+ * 視線を集める設計に変更。
  */
 
 type DockCategory = {
@@ -30,94 +35,89 @@ const DOCK_CATEGORIES: DockCategory[] = [
   { key: "other", label: "その他" },
 ]
 
+const DEFAULT_KEY: CategoryKey = "handrail_h"
+
 export function CategoryDock() {
-  const [activeKey, setActiveKey] = useState<CategoryKey | null>(null)
+  const [activeKey, setActiveKey] = useState<CategoryKey>(DEFAULT_KEY)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // 範囲外クリックで閉じる（モバイルのトグル用）
+  // モバイル向け: 範囲外タップで初期カテゴリーに戻す挙動は無し（常時表示なので不要）
+  // 念のため containerRef は残す
   useEffect(() => {
-    if (!activeKey) return
-    function onDown(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setActiveKey(null)
-      }
-    }
-    document.addEventListener("mousedown", onDown)
-    return () => document.removeEventListener("mousedown", onDown)
-  }, [activeKey])
+    // no-op (将来の拡張用)
+  }, [])
 
-  const activeProducts = activeKey
-    ? CATALOG_PRODUCTS.filter((p) => p.cat === activeKey)
-    : []
+  const activeProducts = CATALOG_PRODUCTS.filter((p) => p.cat === activeKey)
+  // マーキー連続再生のため 2 列分複製
+  const marqueeProducts = [...activeProducts, ...activeProducts]
+  // 1 列分の商品数によりスクロール時間を調整（少ない方が遅く、多い方が速く流れる）
+  const animationDuration = Math.max(18, activeProducts.length * 4)
 
   return (
     <div
       ref={containerRef}
       className="absolute inset-x-0 bottom-0 z-20"
-      onMouseLeave={() => setActiveKey(null)}
     >
-      {/* 商品リストパネル（上方向に展開） */}
-      <AnimatePresence>
-        {activeKey && (
-          <motion.div
-            key={activeKey}
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: 20, opacity: 0 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute inset-x-0 bottom-full bg-black/85 backdrop-blur-sm border-t border-white/10"
-          >
-            <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-6 md:py-8">
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 md:gap-4">
-                {activeProducts.map((p) => {
-                  const isExternal = p.external === true
-                  const card = (
-                    <div className="group">
-                      <div className="relative aspect-square overflow-hidden rounded bg-white/5">
-                        <Image
-                          src={galleryUrl(`${p.img}.jpg`)}
-                          alt={p.name}
-                          fill
-                          sizes="(max-width: 640px) 33vw, (max-width: 1024px) 16vw, 12vw"
-                          className="object-contain transition-transform duration-500 group-hover:scale-105"
-                        />
-                      </div>
-                      <div className="pt-1.5 px-0.5">
-                        <div className="text-[10px] md:text-[11px] font-medium text-white leading-tight truncate group-hover:text-gold transition-colors">
-                          {p.name}
-                        </div>
-                        <div className="text-[9px] md:text-[10px] text-white/60 mt-0.5">
-                          {p.price > 0
-                            ? `¥${p.price.toLocaleString()}${p.priceFrom ? "〜" : ""}`
-                            : "要見積もり"}
-                        </div>
-                      </div>
-                    </div>
-                  )
-                  return isExternal ? (
-                    <a
-                      key={p.name}
-                      href={p.href}
-                      target="_blank"
-                      rel="noopener"
-                      className="block"
-                    >
-                      {card}
-                    </a>
-                  ) : (
-                    <Link key={p.name} href={p.href} className="block">
-                      {card}
-                    </Link>
-                  )
-                })}
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* 商品マーキー（常時表示・左方向に無限スクロール） */}
+      <div className="relative bg-black/75 backdrop-blur-sm border-t border-white/10 overflow-hidden">
+        {/* 左右のフェードマスク（端で商品が突然出現しないよう） */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-12 md:w-20 bg-gradient-to-r from-black/90 to-transparent z-10" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-12 md:w-20 bg-gradient-to-l from-black/90 to-transparent z-10" />
 
-      {/* カテゴリーラベル（常時表示） */}
-      <nav className="bg-black/80 backdrop-blur-sm border-t border-white/15">
+        <div
+          key={activeKey}
+          className="dock-marquee-track flex gap-3 md:gap-4 py-3 md:py-4 px-4"
+          style={{
+            ["--dock-marquee-duration" as string]: `${animationDuration}s`,
+          }}
+        >
+          {marqueeProducts.map((p, idx) => {
+            const isExternal = p.external === true
+            const card = (
+              <div className="group">
+                <div className="relative w-[120px] h-[120px] md:w-[140px] md:h-[140px] overflow-hidden rounded bg-white/5">
+                  <Image
+                    src={galleryUrl(`${p.img}.jpg`)}
+                    alt={p.name}
+                    fill
+                    sizes="140px"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <div className="pt-1.5 px-0.5 w-[120px] md:w-[140px]">
+                  <div className="text-[11px] md:text-[12px] font-medium text-white leading-tight truncate group-hover:text-gold transition-colors">
+                    {p.name}
+                  </div>
+                  <div className="text-[10px] md:text-[11px] text-white/60 mt-0.5">
+                    {p.price > 0
+                      ? `¥${p.price.toLocaleString()}${p.priceFrom ? "〜" : ""}`
+                      : "要見積もり"}
+                  </div>
+                </div>
+              </div>
+            )
+            // key は重複対策で idx を付与（marqueeProducts が同一商品を 2 周持つため）
+            return isExternal ? (
+              <a
+                key={`${p.name}-${idx}`}
+                href={p.href}
+                target="_blank"
+                rel="noopener"
+                className="flex-shrink-0"
+              >
+                {card}
+              </a>
+            ) : (
+              <Link key={`${p.name}-${idx}`} href={p.href} className="flex-shrink-0">
+                {card}
+              </Link>
+            )
+          })}
+        </div>
+      </div>
+
+      {/* カテゴリーラベル（常時表示・ホバー/タップで上のマーキー商品を切替） */}
+      <nav className="bg-black/85 backdrop-blur-sm border-t border-white/15">
         <div className="max-w-[1400px] mx-auto px-2 lg:px-6">
           <ul className="flex items-stretch overflow-x-auto scrollbar-hide">
             {DOCK_CATEGORIES.map((cat) => {
@@ -127,10 +127,9 @@ export function CategoryDock() {
                   <button
                     type="button"
                     onMouseEnter={() => setActiveKey(cat.key)}
-                    onClick={() =>
-                      setActiveKey((prev) => (prev === cat.key ? null : cat.key))
-                    }
-                    className={`w-full px-3 py-4 md:py-5 text-[13px] md:text-[15px] tracking-[0.15em] transition-all duration-300 ${
+                    onFocus={() => setActiveKey(cat.key)}
+                    onClick={() => setActiveKey(cat.key)}
+                    className={`w-full px-3 py-3 md:py-4 text-[13px] md:text-[15px] tracking-[0.15em] transition-all duration-300 ${
                       active
                         ? "text-gold"
                         : "text-white/85 hover:text-white"
