@@ -142,9 +142,6 @@ export function Footer() {
             <Link href="/privacy" className="text-white/40 text-xs hover:text-white transition-colors duration-300">
               プライバシーポリシー
             </Link>
-            <Link href="/sitemap" className="text-white/40 text-xs hover:text-white transition-colors duration-300">
-              サイトマップ
-            </Link>
           </div>
         </motion.div>
       </div>
