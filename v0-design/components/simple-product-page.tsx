@@ -342,7 +342,9 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
   const [selectedImage, setSelectedImage] = useState(0)
   const [hoveredImage, setHoveredImage] = useState<number | null>(null)
   // モバイル: ヒーロー画像のスワイプ用 (2026-05-12)
+  // X/Y 両方記録して縦スクロールと区別する
   const touchStartXRef = useRef<number | null>(null)
+  const touchStartYRef = useRef<number | null>(null)
 
   // 画像 URL を構築：STORES CDN から id を解決
   const imageUrls = product.images.map((id) => galleryUrl(id))
@@ -416,11 +418,18 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
                 モバイル: タッチスワイプで左右切替 (2026-05-12 追加) */}
             <div
               className="relative aspect-square bg-secondary rounded-xl overflow-hidden mb-3 select-none"
-              onTouchStart={(e) => { touchStartXRef.current = e.touches[0].clientX }}
+              onTouchStart={(e) => {
+                touchStartXRef.current = e.touches[0].clientX
+                touchStartYRef.current = e.touches[0].clientY
+              }}
               onTouchEnd={(e) => {
-                if (touchStartXRef.current === null || imageUrls.length < 2) return
+                if (touchStartXRef.current === null || touchStartYRef.current === null || imageUrls.length < 2) return
                 const dx = e.changedTouches[0].clientX - touchStartXRef.current
+                const dy = e.changedTouches[0].clientY - touchStartYRef.current
                 touchStartXRef.current = null
+                touchStartYRef.current = null
+                // 縦スクロールと区別: 横移動が縦移動より大きく、かつ 40px 以上の場合のみスワイプ判定
+                if (Math.abs(dx) <= Math.abs(dy)) return
                 if (Math.abs(dx) < 40) return
                 if (dx > 0) goPrev()
                 else goNext()
