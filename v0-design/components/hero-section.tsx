@@ -29,7 +29,6 @@ const heroImages: HeroImage[] = [
   { src: "/images/hero/dscf6186.jpg", alt: "アイアン手すり施工例 2" },
   { src: "/images/hero/dscf6234.jpg", alt: "アイアン手すり施工例 3" },
   { src: "/images/hero/dscf6699.jpg", alt: "アイアン手すり施工例 4" },
-  { src: "/images/hero/loft-staircase.jpg", alt: "鉄製手すり付き階段のあるロフトリビング" },
 ]
 
 export function HeroSection() {
