@@ -20,7 +20,7 @@ import { SimpleProductPage } from "@/components/simple-product-page"
 import { EmbeddedCheckoutModal } from "@/components/checkout/embedded-checkout-modal"
 import { calcShipping, type ProductType } from "@/lib/shipping/sagawa"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
-import { ChevronLeft, ChevronRight, X, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench } from "lucide-react"
+import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench } from "lucide-react"
 
 // productImages / specs は商品ごとに display.ts から取得
 
@@ -68,7 +68,8 @@ export default function ProductDetailPage() {
   }))
   const [selectedImage, setSelectedImage] = useState(0)
   const [hoveredImage, setHoveredImage] = useState<number | null>(null)
-  const [isLightboxOpen, setIsLightboxOpen] = useState(false)
+  // スワイプ用 (モバイル): メインヒーロー画像でタッチして左右にフリックで切替
+  const touchStartXRef = useRef<number | null>(null)
   const [length, setLength] = useState(product.drawing.stdLengthMm)
   const [quantity, setQuantity] = useState(1)
   const [prefecture, setPrefecture] = useState("")
@@ -174,13 +175,9 @@ export default function ProductDetailPage() {
     if (deliveryType) setCurrentStep(Math.max(currentStep, 3))
   }, [length, quantity, prefecture, deliveryType, currentStep, minLength])
 
-  // Lightbox 開閉時の body スクロールロック
-  useEffect(() => {
-    if (isLightboxOpen) {
-      document.body.style.overflow = "hidden"
-      return () => { document.body.style.overflow = "" }
-    }
-  }, [isLightboxOpen])
+  // Lightbox は廃止 (2026-05-12) — モバイルで黒バック+×だけだと不便だったため、
+  // ヒーロー画像はスワイプ+矢印で切替・サムネタップでヒーローに反映する方式に移行。
+
 
   // CTA領域 (Step4 合計～ボタン) のビューポート監視でフローティング価格の表示制御
   useEffect(() => {
@@ -277,12 +274,23 @@ export default function ProductDetailPage() {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
             {/* LEFT COLUMN - Gallery */}
             <div className="space-y-4">
-              {/* Main Image — サムネと同じスクエア */}
+              {/* Main Image — サムネと同じスクエア
+                  モバイル: タッチスワイプで左右切替 + 矢印タップで切替
+                  デスクトップ: ホバー時に矢印フェードイン (visual nicety)
+                  Lightbox は廃止 (2026-05-12) — モバイル UX 改善のため */}
               <motion.div
-                className="relative aspect-square bg-secondary rounded-lg overflow-hidden cursor-zoom-in group"
-                onClick={() => setIsLightboxOpen(true)}
+                className="relative aspect-square bg-secondary rounded-lg overflow-hidden group select-none"
                 whileHover={{ scale: 1.01 }}
                 transition={{ duration: 0.3 }}
+                onTouchStart={(e) => { touchStartXRef.current = e.touches[0].clientX }}
+                onTouchEnd={(e) => {
+                  if (touchStartXRef.current === null) return
+                  const dx = e.changedTouches[0].clientX - touchStartXRef.current
+                  touchStartXRef.current = null
+                  if (Math.abs(dx) < 40) return
+                  if (dx > 0) prevImage()
+                  else nextImage()
+                }}
               >
                 <AnimatePresence mode="wait">
                   <motion.div
@@ -297,23 +305,23 @@ export default function ProductDetailPage() {
                       src={productImages[hoveredImage ?? selectedImage].src}
                       alt={productImages[hoveredImage ?? selectedImage].alt}
                       fill
-                      className="object-cover"
+                      className="object-cover pointer-events-none"
                       priority
                     />
                   </motion.div>
                 </AnimatePresence>
-                
-                {/* Navigation Arrows */}
+
+                {/* Navigation Arrows — モバイルでも常に表示。デスクトップは半透明 → ホバーで強調 */}
                 <button
                   onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-white shadow-lg"
+                  className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-11 md:h-11 bg-white/85 md:bg-white/70 lg:bg-white/60 lg:group-hover:bg-white/95 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white shadow-md hover:shadow-lg backdrop-blur-sm"
                   aria-label="前の画像"
                 >
                   <ChevronLeft className="w-5 h-5 text-dark" />
                 </button>
                 <button
                   onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/90 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-white shadow-lg"
+                  className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 w-10 h-10 md:w-11 md:h-11 bg-white/85 md:bg-white/70 lg:bg-white/60 lg:group-hover:bg-white/95 rounded-full flex items-center justify-center transition-all duration-300 hover:bg-white shadow-md hover:shadow-lg backdrop-blur-sm"
                   aria-label="次の画像"
                 >
                   <ChevronRight className="w-5 h-5 text-dark" />
@@ -325,7 +333,7 @@ export default function ProductDetailPage() {
                 </div>
               </motion.div>
 
-              {/* Thumbnail Grid — ホバーでヒーロー画像切替、クリックでLightbox */}
+              {/* Thumbnail Grid — タップでヒーロー画像を切替 (Lightbox は廃止) */}
               <div
                 className="grid grid-cols-5 sm:grid-cols-7 md:grid-cols-5 lg:grid-cols-7 gap-2"
                 onMouseLeave={() => setHoveredImage(null)}
@@ -334,7 +342,8 @@ export default function ProductDetailPage() {
                   <button
                     key={index}
                     onMouseEnter={() => setHoveredImage(index)}
-                    onClick={() => { setSelectedImage(index); setIsLightboxOpen(true); }}
+                    onClick={() => setSelectedImage(index)}
+                    aria-label={`画像 ${index + 1} を表示`}
                     className={`relative aspect-square rounded-md overflow-hidden transition-all duration-300 ${
                       selectedImage === index
                         ? "ring-2 ring-gold ring-offset-2"
@@ -948,77 +957,6 @@ export default function ProductDetailPage() {
       </AnimatePresence>
 
       <Footer />
-
-      {/* Lightbox */}
-      <AnimatePresence>
-        {isLightboxOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center"
-            onClick={() => setIsLightboxOpen(false)}
-          >
-            <button
-              onClick={() => setIsLightboxOpen(false)}
-              className="absolute top-6 right-6 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
-              aria-label="閉じる"
-            >
-              <X className="w-6 h-6 text-white" />
-            </button>
-            
-            <button
-              onClick={(e) => { e.stopPropagation(); prevImage(); }}
-              className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
-              aria-label="前の画像"
-            >
-              <ChevronLeft className="w-6 h-6 text-white" />
-            </button>
-            
-            <button
-              onClick={(e) => { e.stopPropagation(); nextImage(); }}
-              className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
-              aria-label="次の画像"
-            >
-              <ChevronRight className="w-6 h-6 text-white" />
-            </button>
-            
-            <div className="relative w-full max-w-5xl aspect-[4/3] mx-6" onClick={(e) => e.stopPropagation()}>
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={selectedImage}
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  transition={{ duration: 0.3 }}
-                  className="absolute inset-0"
-                >
-                  <Image
-                    src={productImages[selectedImage].src}
-                    alt={productImages[selectedImage].alt}
-                    fill
-                    className="object-contain"
-                  />
-                </motion.div>
-              </AnimatePresence>
-            </div>
-            
-            {/* Lightbox Thumbnails */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2">
-              {productImages.map((_, index) => (
-                <button
-                  key={index}
-                  onClick={(e) => { e.stopPropagation(); setSelectedImage(index); }}
-                  className={`w-2 h-2 rounded-full transition-all ${
-                    selectedImage === index ? "bg-gold w-6" : "bg-white/40 hover:bg-white/60"
-                  }`}
-                  aria-label={`画像 ${index + 1}`}
-                />
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <ReneDrawingModal
         open={isDrawingOpen}
