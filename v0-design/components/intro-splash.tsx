@@ -24,6 +24,14 @@ export function IntroSplash() {
 
   useEffect(() => {
     if (typeof window === "undefined") return
+    // スプラッシュはホーム ("/") の初回訪問でのみ表示する。
+    // 商品ページなど深いリンクから入った時は煩わしいので即スキップ。
+    // (蠣﨑さん指示 2026-05-12)
+    if (window.location.pathname !== "/") {
+      document.documentElement.setAttribute("data-splash-skip", "1")
+      setStage("gone")
+      return
+    }
     let alreadySeen = false
     try {
       const nav = performance.getEntriesByType("navigation")[0] as PerformanceNavigationTiming | undefined
