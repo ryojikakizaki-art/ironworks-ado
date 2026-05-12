@@ -56,6 +56,11 @@ function formatTimestamp(ts: number) {
 function ThanksContent() {
   const params = useSearchParams()
   const sessionId = params.get("session_id") || ""
+  // 購入元の商品スラッグ。/api/checkout 系で return_url に &product=<slug> を付与している。
+  // 「戻る」ボタンを /products 一覧ではなく購入した商品ページに戻す用途。
+  const productSlug = params.get("product") || ""
+  const backHref = productSlug ? `/products/${productSlug}` : "/products"
+  const backLabel = productSlug ? "商品ページに戻る" : "製品一覧に戻る"
   const [data, setData] = useState<SessionData | null>(null)
   const [error, setError] = useState<string>("")
   const [loading, setLoading] = useState(true)
@@ -252,10 +257,10 @@ function ThanksContent() {
 
         <div className="mt-12 text-center">
           <Link
-            href="/products"
+            href={backHref}
             className="inline-block px-8 py-4 border border-gold text-gold text-[10px] tracking-[0.3em] uppercase hover:bg-gold hover:text-dark transition-colors"
           >
-            製品一覧に戻る
+            {backLabel}
           </Link>
         </div>
       </div>
