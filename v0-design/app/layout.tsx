@@ -192,7 +192,13 @@ ${ADS_ID ? `gtag('config', '${ADS_ID}');` : ''}`
     : null
 
   return (
-    <html lang="ja" className={`${notoSerifJP.variable} ${inter.variable} ${zenMaruGothic.variable} ${zenKakuGothicNew.variable} bg-background`}>
+    <html
+      lang="ja"
+      className={`${notoSerifJP.variable} ${inter.variable} ${zenMaruGothic.variable} ${zenKakuGothicNew.variable} bg-background`}
+      // 意図的に head inline script で data-splash-skip 属性を立てているため、
+      // hydration mismatch 警告を抑止する (FOUC 防止のための想定動作)
+      suppressHydrationWarning
+    >
       <head>
         {/* Splash FOUC 防止: SSR で <body> 直下に黒オーバーレイ <div id="pre-splash">
             を必ずレンダリングしておき、初期ペイントの瞬間からトップ画像を覆う。

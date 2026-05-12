@@ -341,6 +341,8 @@ function CaseStudySlider({ images, productName }: { images: string[]; productNam
 export function SimpleProductPage({ product }: { product: SimpleProduct }) {
   const [selectedImage, setSelectedImage] = useState(0)
   const [hoveredImage, setHoveredImage] = useState<number | null>(null)
+  // モバイル: ヒーロー画像のスワイプ用 (2026-05-12)
+  const touchStartXRef = useRef<number | null>(null)
 
   // 画像 URL を構築：STORES CDN から id を解決
   const imageUrls = product.images.map((id) => galleryUrl(id))
@@ -410,14 +412,26 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16">
           {/* ── 左：画像ギャラリー ── */}
           <div>
-            {/* メイン画像（サムネイルにホバー中はホバー画像を優先表示） */}
-            <div className="relative aspect-square bg-secondary rounded-xl overflow-hidden mb-3">
+            {/* メイン画像（サムネイルにホバー中はホバー画像を優先表示）
+                モバイル: タッチスワイプで左右切替 (2026-05-12 追加) */}
+            <div
+              className="relative aspect-square bg-secondary rounded-xl overflow-hidden mb-3 select-none"
+              onTouchStart={(e) => { touchStartXRef.current = e.touches[0].clientX }}
+              onTouchEnd={(e) => {
+                if (touchStartXRef.current === null || imageUrls.length < 2) return
+                const dx = e.changedTouches[0].clientX - touchStartXRef.current
+                touchStartXRef.current = null
+                if (Math.abs(dx) < 40) return
+                if (dx > 0) goPrev()
+                else goNext()
+              }}
+            >
               <Image
                 key={imageUrls[hoveredImage ?? selectedImage]}
                 src={imageUrls[hoveredImage ?? selectedImage]}
                 alt={`${product.nameEn} ${(hoveredImage ?? selectedImage) + 1}`}
                 fill
-                className="object-cover"
+                className="object-cover pointer-events-none"
                 priority={selectedImage === 0}
                 sizes="(max-width: 1024px) 100vw, 50vw"
               />
