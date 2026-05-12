@@ -398,13 +398,16 @@ export default function ProductDetailPage() {
                 </span>
               </div>
 
-              {/* Product Name */}
+              {/* Product Name + Description */}
               <div>
                 <h1 className="font-serif text-4xl lg:text-5xl text-foreground mb-3 leading-tight">
                   {product.nameEn} {product.nameJaShort}
                 </h1>
-                <p className="text-[16px] text-muted-foreground leading-relaxed">
+                <p className="text-[16px] text-muted-foreground leading-relaxed mb-5">
                   {product.shortDescription}
+                </p>
+                <p className="text-[15px] leading-relaxed text-foreground whitespace-pre-line">
+                  {product.longDescription}
                 </p>
               </div>
 
@@ -887,12 +890,9 @@ export default function ProductDetailPage() {
 
           {/* BELOW THE FOLD */}
           <div className="mt-20 space-y-20">
-            {/* Product Description */}
+            {/* Specs & Features (longDescription は右カラム上部に移動) */}
             <section className="max-w-3xl">
-              <h2 className="font-serif text-3xl lg:text-4xl mb-8">製品について</h2>
-              <p className="text-[17px] leading-relaxed text-foreground mb-10 whitespace-pre-line">
-                {product.longDescription}
-              </p>
+              <h2 className="font-serif text-3xl lg:text-4xl mb-8">仕様と特徴</h2>
 
               {/* Specs Grid (シミュレーター上から移動) */}
               <div className="bg-secondary rounded-lg p-6 mb-10">
