@@ -30,6 +30,11 @@ export interface ProductDisplay {
   featureBullets: FeatureBullet[] // 「製品について」の 4 点アイコン (仕上げ・製法で変わる)
   galleryIds: string[] // 既存 item/*.html の GALLERY_IDS から抜粋 (先頭6件程度)
   youtubeId?: string // 制作動画 (あれば埋め込み表示)
+  // SEO 個別最適化用（STORES 旧サイトとの重複回避・工房直販訴求）
+  // 設定された商品は generateMetadata でこちらを優先採用する。
+  // 未設定の商品は subtitle + shortDescription からの自動生成にフォールバック。
+  seoTitle?: string
+  seoDescription?: string
 }
 
 // 仕上げ別の特徴プリセット (同一プリセットを複数商品で共有)
@@ -112,6 +117,8 @@ const DISPLAY: Record<string, ProductDisplay> = {
       "6af00541b422cefa2348.jpg","6431145df3f48a69b3ba.jpg","ef59fb2d37647f61563d.jpg",
     ],
     youtubeId: "NYRb4pMN0NI",
+    seoTitle: "【工房直販】René ルネ｜横型アイアン手すり 25φ マットブラック｜CAD 制作図付き｜IRONWORKS ado",
+    seoDescription: "鍛冶職人が手打ちで仕上げる横型アイアン手すり 25φ マットブラック。ado 工房から直販・中間マージン無し。¥36,500〜。CAD 制作図を事前提供、ATF 安全座金で確実取付。サイズオーダー対応・全国配送。",
   },
   claire: {
     slug: "claire",
@@ -229,6 +236,8 @@ const DISPLAY: Record<string, ProductDisplay> = {
       "88eb66165a7f2ff8773d.jpg","4d8beb3b89354bf181bf.jpg","b8fd8dbbe2b28beff3f1.jpg",
       "4380b8f100b251599f3d.jpg","8ea249f541b73524afa5.jpg","93769cb9994dc6f4c7e5.jpg",
     ],
+    seoTitle: "【工房直販】Claude クロード｜縦型アイアン手すり 25φ マットブラック｜安全設計座金｜IRONWORKS ado",
+    seoDescription: "鍛冶職人手打ちの縦型アイアン手すり 25φ マットブラック。工房直販・職人と直接相談可。¥30,000〜。リビング・洗面・トイレなど縦設置 1.5m まで対応。安全設計の座金付き・図面相談無料・全国配送。",
   },
   catherine: {
     slug: "catherine",
@@ -259,6 +268,8 @@ const DISPLAY: Record<string, ProductDisplay> = {
       "4d8beb3b89354bf181bf.jpg","b8fd8dbbe2b28beff3f1.jpg","33d99fc7e30df4dc8983.jpg",
       "0c87b33aaf166d4e805e.jpg",
     ],
+    seoTitle: "【工房直販】Catherine カトリーヌ｜縦型アイアン手すり 25φ マットホワイト｜北欧テイスト｜IRONWORKS ado",
+    seoDescription: "鍛冶職人手打ちの縦型アイアン手すり 25φ マットホワイト。北欧・ナチュラルインテリア向け工房直販。¥34,500〜。図面相談無料・サイズオーダー対応・安全設計座金付き・全国配送。",
   },
   alexandre: {
     slug: "alexandre",

@@ -51,8 +51,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (product) {
     const catalog = CATALOG_PRODUCTS.find((p) => p.href === `/products/${slug}`)
     const price = catalog?.price ?? 0
-    const title = `${product.nameEn} ${product.nameJaShort}｜${product.subtitle}｜IRONWORKS ado アイアン手すり`
-    const description = `${product.shortDescription}。${priceText(price)}。鍛冶職人が一本ずつ手仕上げするアイアン手すり。サイズオーダー対応・全国配送。`
+    // SEO 個別最適化フィールドがあれば優先採用（STORES 旧サイトと差別化したい商品向け）
+    const title = product.seoTitle
+      ?? `${product.nameEn} ${product.nameJaShort}｜${product.subtitle}｜IRONWORKS ado アイアン手すり`
+    const description = product.seoDescription
+      ?? `${product.shortDescription}。${priceText(price)}。鍛冶職人が一本ずつ手仕上げするアイアン手すり。サイズオーダー対応・全国配送。`
     const firstImage = product.galleryIds[0]
     const image = firstImage ? galleryUrl(firstImage) : undefined
     return {
