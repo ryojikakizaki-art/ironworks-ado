@@ -497,7 +497,7 @@ export default function ProductDetailPage() {
                                 setLength(v)
                                 setLengthInput(String(v))
                               }}
-                              className="w-full h-2 bg-muted rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-gold [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:shadow-md"
+                              className="ado-range-thumb w-full h-2 bg-muted rounded-full cursor-pointer"
                             />
                             <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
                               <span>{minLength}mm</span>

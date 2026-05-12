@@ -59,19 +59,36 @@ interface Props {
 export function EmbeddedCheckoutModal({ clientSecret, open, onClose, summary }: Props) {
   const dialogRef = useRef<HTMLDivElement | null>(null)
 
-  // body スクロールロック + Esc で閉じる
+  // body スクロールロック + Esc で閉じる + デバイス戻るボタンでモーダルを閉じる
+  // (Stripe iframe 内でデバイスの戻るボタンを押すと、対策なしでは商品ページ
+  //  ごと前の履歴に遷移してしまう。history.pushState で 1 エントリ追加し
+  //  popstate で onClose を呼ぶことで「戻る = モーダルを閉じる」に統一する)
   useEffect(() => {
     if (!open) return
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = "hidden"
 
+    let poppedByBack = false
+    window.history.pushState({ stripeCheckoutOpen: true }, "")
+
+    function onPopState() {
+      poppedByBack = true
+      onClose()
+    }
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") onClose()
     }
+    window.addEventListener("popstate", onPopState)
     window.addEventListener("keydown", onKey)
     return () => {
       document.body.style.overflow = prevOverflow
+      window.removeEventListener("popstate", onPopState)
       window.removeEventListener("keydown", onKey)
+      // × ボタン / Esc / 親側 onClose で閉じた場合は pushState で
+      // 積んだエントリを巻き戻す（ユーザーが期待する履歴位置に戻す）
+      if (!poppedByBack) {
+        window.history.back()
+      }
     }
   }, [open, onClose])
 
