@@ -497,7 +497,10 @@ export default function ProductDetailPage() {
                                 setLength(v)
                                 setLengthInput(String(v))
                               }}
-                              className="ado-range-thumb w-full h-2 bg-muted rounded-full cursor-pointer"
+                              style={{
+                                ["--ado-range-fill" as string]: `${Math.max(0, Math.min(100, ((length - minLength) / (maxLength - minLength)) * 100))}%`,
+                              }}
+                              className="ado-range-thumb w-full h-2 rounded-full cursor-pointer"
                             />
                             <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
                               <span>{minLength}mm</span>

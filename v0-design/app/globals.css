@@ -304,49 +304,69 @@
 
 /* ──────────────────────────────────────────────
  * 長さ選択スライダー (input[type=range]) の thumb
- * 大きめゴールド丸 + 白リング + グリップドット 3 点で
- * 「ここをドラッグできる」と一目で分かる外観にする。
- * webkit-slider-thumb は疑似要素なので追加要素を入れられず、
- * グリップは inline SVG を background-image として描画。
+ * 縦長ピル + 左右矢印アイコンで「左右にドラッグできる」が
+ * 一目で分かる外観。さらに thumb 左側のトラックを
+ * ゴールドで fill して現在位置（進捗）を視覚化する。
+ *
+ * fill 率はインラインスタイル --ado-range-fill (例 "42%") で
+ * 渡し、linear-gradient で track の色を分岐させる。
+ * webkit は track 共通、moz は ::-moz-range-progress が
+ * 自動で進捗側を塗るので gradient 不要。
  * ────────────────────────────────────────────── */
 .ado-range-thumb {
   -webkit-appearance: none;
   appearance: none;
+  background: linear-gradient(
+    to right,
+    var(--accent) 0%,
+    var(--accent) var(--ado-range-fill, 0%),
+    #e5e5e5 var(--ado-range-fill, 0%),
+    #e5e5e5 100%
+  );
 }
 .ado-range-thumb::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 28px;
-  height: 28px;
+  width: 38px;
+  height: 24px;
   border-radius: 9999px;
   background-color: var(--accent);
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><circle cx='10' cy='14' r='1.2' fill='%23ffffff'/><circle cx='14' cy='14' r='1.2' fill='%23ffffff'/><circle cx='18' cy='14' r='1.2' fill='%23ffffff'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 38 24'><path d='M9 8 L5 12 L9 16' stroke='%23ffffff' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/><path d='M29 8 L33 12 L29 16' stroke='%23ffffff' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
   background-repeat: no-repeat;
   background-position: center;
-  border: 3px solid #ffffff;
+  border: 2px solid #ffffff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18), 0 1px 2px rgba(0, 0, 0, 0.1);
-  cursor: grab;
+  cursor: ew-resize;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 .ado-range-thumb::-webkit-slider-thumb:hover {
-  transform: scale(1.1);
+  transform: scale(1.08);
 }
 .ado-range-thumb:active::-webkit-slider-thumb {
   cursor: grabbing;
-  transform: scale(1.15);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
 }
 .ado-range-thumb::-moz-range-thumb {
-  width: 28px;
-  height: 28px;
+  width: 38px;
+  height: 24px;
   border-radius: 9999px;
   background-color: var(--accent);
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><circle cx='10' cy='14' r='1.2' fill='%23ffffff'/><circle cx='14' cy='14' r='1.2' fill='%23ffffff'/><circle cx='18' cy='14' r='1.2' fill='%23ffffff'/></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 38 24'><path d='M9 8 L5 12 L9 16' stroke='%23ffffff' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/><path d='M29 8 L33 12 L29 16' stroke='%23ffffff' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
   background-repeat: no-repeat;
   background-position: center;
-  border: 3px solid #ffffff;
+  border: 2px solid #ffffff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.18);
-  cursor: grab;
+  cursor: ew-resize;
+}
+.ado-range-thumb::-moz-range-track {
+  background-color: #e5e5e5;
+  height: 8px;
+  border-radius: 9999px;
+}
+.ado-range-thumb::-moz-range-progress {
+  background-color: var(--accent);
+  height: 8px;
+  border-radius: 9999px;
 }
 .ado-range-thumb:active::-moz-range-thumb {
   cursor: grabbing;
