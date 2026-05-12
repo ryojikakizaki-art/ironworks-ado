@@ -202,7 +202,7 @@ ${ADS_ID ? `gtag('config', '${ADS_ID}');` : ''}`
             消去する（intro-splash.tsx の useEffect 内）。 */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type==='reload'){try{sessionStorage.removeItem('ado-intro-seen')}catch(e){}}var s=false;try{s=sessionStorage.getItem('ado-intro-seen')==='1'}catch(e){}if(s){document.documentElement.setAttribute('data-splash-skip','1')}}catch(e){}})();`,
+            __html: `(function(){try{var p=location.pathname;if(p!=='/'&&p!==''){document.documentElement.setAttribute('data-splash-skip','1');return}var n=performance.getEntriesByType&&performance.getEntriesByType('navigation')[0];if(n&&n.type==='reload'){try{sessionStorage.removeItem('ado-intro-seen')}catch(e){}}var s=false;try{s=sessionStorage.getItem('ado-intro-seen')==='1'}catch(e){}if(s){document.documentElement.setAttribute('data-splash-skip','1')}}catch(e){}})();`,
           }}
         />
         <style
