@@ -12,9 +12,12 @@
   --popover-foreground: #1a1a1a;
   --primary: #1a1a1a;
   --primary-foreground: #ffffff;
-  --secondary: #f9f7f4;
+  /* 2026-05-13: ベージュ系 (#f9f7f4 / #f0eeeb) を廃止し、
+     薄いグレー (#f3f4f6 / #e5e7eb) に統一。今後 ado サイトの
+     背景・カード地色は必ずこのグレー系を使う。 */
+  --secondary: #f3f4f6;
   --secondary-foreground: #1a1a1a;
-  --muted: #f0eeeb;
+  --muted: #e5e7eb;
   --muted-foreground: #6b6b6b;
   --accent: #b8860b;
   --accent-foreground: #ffffff;
@@ -33,14 +36,17 @@
   --sidebar-foreground: #1a1a1a;
   --sidebar-primary: #1a1a1a;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #f0eeeb;
+  --sidebar-accent: #e5e7eb;
   --sidebar-accent-foreground: #1a1a1a;
   --sidebar-border: #e5e5e5;
   --sidebar-ring: #b8860b;
   
-  /* Custom colors for IRONWORKS ado */
-  --cream: #f9f7f4;
-  --light-gray: #f0eeeb;
+  /* Custom colors for IRONWORKS ado
+     --cream は旧ベージュ用変数だが、2026-05-13 蠣﨑さん指示で
+     薄いグレー化。既存 bg-cream クラスは互換のため残すが
+     色そのものは --secondary と同じ薄いグレー (#f3f4f6)。 */
+  --cream: #f3f4f6;
+  --light-gray: #e5e7eb;
   --dark: #1a1a1a;
   --gold: #b8860b;
   --gold-light: #d4a84b;

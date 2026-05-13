@@ -88,6 +88,14 @@ NG パターン：
 3. ロジック変更時は増加・減少の両方向でテストする
 4. 変更後はプレビューで既存機能（モーダル・価格計算・座金自動追加）の動作を確認する
 
+## 6b. 背景・カード地色は薄いグレーに統一【2026-05-13 確定】
+ado サイトの背景・カード地色はベージュ系（旧 `#f9f7f4`, `#f0eeeb`）を**使わない**。
+薄いグレー（`#f3f4f6` / `#e5e7eb`）に統一済み。
+
+- 使う変数: `bg-secondary` / `bg-cream` / `bg-muted` / `bg-[var(--light-gray)]`（すべてグレー）
+- ハードコード禁止: `bg-[#f9f7f4]` `bg-[#f0eeeb]` を新規追加しないこと
+- 新規セクションの地色も必ずグレー系から選ぶ
+
 ## 6a. React 管理下の SSR DOM を vanilla JS で操作しない【絶対遵守】
 Next.js App Router で SSR レンダリングされた DOM ノード（`<body>` 直下の `<div>` など）を vanilla JS で `.remove()` / `removeChild` / `appendChild` してはいけない。
 
