@@ -69,7 +69,10 @@ export function HeroSection() {
           justify-between で 3 ブロックを上端・中央・下端へ確実に配置。
           ロゴだけ上に、見出しは中央位置を維持する設計。 */}
       <div className="relative z-10 h-full flex flex-col items-center px-6 pt-20 md:pt-24 pb-60 md:pb-72">
-        {/* 上部：ado ロゴ */}
+        {/* モバイルのみ上部スペーサー: ロゴを「天井とキャッチの中間」まで下げる */}
+        <div className="flex-1 md:hidden" />
+
+        {/* ado ロゴ */}
         <div className="flex flex-col items-center">
           <div className="relative w-[180px] h-[209px] md:w-[210px] md:h-[244px] lg:w-[230px] lg:h-[267px]">
             <Image
