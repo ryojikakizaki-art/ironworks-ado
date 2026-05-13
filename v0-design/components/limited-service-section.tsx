@@ -170,7 +170,7 @@ export function LimitedServiceSection() {
                   >
                     <div className="relative h-[220px] bg-secondary rounded-2xl p-6 border border-transparent hover:border-[#06C755]/40 transition-all duration-300 overflow-hidden">
                       {/* Number Badge */}
-                      <span className="absolute top-4 right-4 text-[48px] font-serif text-foreground/5 leading-none select-none">
+                      <span className="absolute top-4 right-4 text-[48px] font-serif text-foreground/25 leading-none select-none">
                         {String(index + 1).padStart(2, "0")}
                       </span>
 
@@ -236,7 +236,7 @@ export function LimitedServiceSection() {
                       style={{ backfaceVisibility: "hidden" }}
                     >
                       {/* Number Badge */}
-                      <span className="absolute top-4 right-4 text-[48px] font-serif text-foreground/5 leading-none select-none">
+                      <span className="absolute top-4 right-4 text-[48px] font-serif text-foreground/25 leading-none select-none">
                         {String(index + 1).padStart(2, "0")}
                       </span>
 

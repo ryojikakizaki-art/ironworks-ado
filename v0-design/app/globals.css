@@ -13,11 +13,12 @@
   --primary: #1a1a1a;
   --primary-foreground: #ffffff;
   /* 2026-05-13: ベージュ系 (#f9f7f4 / #f0eeeb) を廃止し、
-     薄いグレー (#f3f4f6 / #e5e7eb) に統一。今後 ado サイトの
-     背景・カード地色は必ずこのグレー系を使う。 */
-  --secondary: #f3f4f6;
+     薄いグレー系に統一。さらに同日「もう少し濃く」指示で
+     ワンランク濃く調整。今後 ado サイトの背景・カード地色は
+     必ずこのグレー系を使う。 */
+  --secondary: #e5e7eb;
   --secondary-foreground: #1a1a1a;
-  --muted: #e5e7eb;
+  --muted: #d1d5db;
   --muted-foreground: #6b6b6b;
   --accent: #b8860b;
   --accent-foreground: #ffffff;
@@ -36,7 +37,7 @@
   --sidebar-foreground: #1a1a1a;
   --sidebar-primary: #1a1a1a;
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #e5e7eb;
+  --sidebar-accent: #d1d5db;
   --sidebar-accent-foreground: #1a1a1a;
   --sidebar-border: #e5e5e5;
   --sidebar-ring: #b8860b;
@@ -45,8 +46,8 @@
      --cream は旧ベージュ用変数だが、2026-05-13 蠣﨑さん指示で
      薄いグレー化。既存 bg-cream クラスは互換のため残すが
      色そのものは --secondary と同じ薄いグレー (#f3f4f6)。 */
-  --cream: #f3f4f6;
-  --light-gray: #e5e7eb;
+  --cream: #e5e7eb;
+  --light-gray: #d1d5db;
   --dark: #1a1a1a;
   --gold: #b8860b;
   --gold-light: #d4a84b;
