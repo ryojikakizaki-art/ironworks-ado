@@ -168,7 +168,7 @@ export function LimitedServiceSection() {
                     transition={{ duration: 0.5, delay: 0.15 + index * 0.08 }}
                     className="group flex-shrink-0 w-[260px] md:w-[280px] snap-start"
                   >
-                    <div className="relative h-[220px] bg-[#f9f7f4] rounded-2xl p-6 border border-transparent hover:border-[#06C755]/40 transition-all duration-300 overflow-hidden">
+                    <div className="relative h-[220px] bg-secondary rounded-2xl p-6 border border-transparent hover:border-[#06C755]/40 transition-all duration-300 overflow-hidden">
                       {/* Number Badge */}
                       <span className="absolute top-4 right-4 text-[48px] font-serif text-foreground/5 leading-none select-none">
                         {String(index + 1).padStart(2, "0")}
@@ -232,7 +232,7 @@ export function LimitedServiceSection() {
                   >
                     {/* Front Side */}
                     <div
-                      className="absolute inset-0 bg-[#f9f7f4] rounded-2xl p-6 border border-transparent hover:border-gold/20 transition-all duration-300"
+                      className="absolute inset-0 bg-secondary rounded-2xl p-6 border border-transparent hover:border-gold/20 transition-all duration-300"
                       style={{ backfaceVisibility: "hidden" }}
                     >
                       {/* Number Badge */}
