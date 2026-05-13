@@ -68,12 +68,10 @@ export function HeroSection() {
       {/* ── 前景：上に ado ロゴ → 中央に見出し → 下に CTA ＋ 信頼 ──
           justify-between で 3 ブロックを上端・中央・下端へ確実に配置。
           ロゴだけ上に、見出しは中央位置を維持する設計。 */}
-      <div className="relative z-10 h-full flex flex-col items-center px-6 pt-20 md:pt-24 pb-60 md:pb-72">
-        {/* モバイルのみ上部スペーサー: ロゴを「天井とキャッチの中間」まで下げる */}
-        <div className="flex-1 md:hidden" />
-
-        {/* ado ロゴ */}
-        <div className="flex flex-col items-center">
+      <div className="relative z-10 h-full flex flex-col items-center justify-center px-6 pt-20 md:pt-24 pb-60 md:pb-72">
+        {/* ado ロゴ + キャッチを 1 グループとして、ヒーロー (ドック上の領域) 中央に縦配置 */}
+        <div className="flex flex-col items-center gap-8 md:gap-10">
+          {/* ado ロゴ */}
           <div className="relative w-[180px] h-[209px] md:w-[210px] md:h-[244px] lg:w-[230px] lg:h-[267px]">
             <Image
               src="/images/ado_logo_W.png"
@@ -85,10 +83,8 @@ export function HeroSection() {
               className="object-contain"
             />
           </div>
-        </div>
 
-        {/* 残り空間で見出しを縦中央配置 */}
-        <div className="flex-1 flex items-center justify-center">
+          {/* 見出し */}
           <div className="flex flex-col items-center text-center text-white max-w-[520px]">
             <h1 className="font-sans text-[22px] md:text-[28px] lg:text-[32px] font-medium tracking-wide leading-[1.5] text-center drop-shadow-[0_2px_8px_rgba(0,0,0,0.55)]">
               <span className="block">高品質アイアン手すり、</span>
