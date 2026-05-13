@@ -35,23 +35,23 @@ const DOCK_CATEGORIES: DockCategory[] = [
   { key: "other", label: "その他" },
 ]
 
-const DEFAULT_KEY: CategoryKey = "handrail_h"
-
 export function CategoryDock() {
-  const [activeKey, setActiveKey] = useState<CategoryKey>(DEFAULT_KEY)
+  // null = 全カテゴリの商品をシャッフルせず順番に表示 (デフォルト)
+  //        CategoryKey が指定された場合は該当カテゴリのみにフィルタ
+  const [activeKey, setActiveKey] = useState<CategoryKey | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // モバイル向け: 範囲外タップで初期カテゴリーに戻す挙動は無し（常時表示なので不要）
-  // 念のため containerRef は残す
   useEffect(() => {
     // no-op (将来の拡張用)
   }, [])
 
-  const activeProducts = CATALOG_PRODUCTS.filter((p) => p.cat === activeKey)
+  const activeProducts = activeKey
+    ? CATALOG_PRODUCTS.filter((p) => p.cat === activeKey)
+    : CATALOG_PRODUCTS
   // マーキー連続再生のため 2 列分複製
   const marqueeProducts = [...activeProducts, ...activeProducts]
-  // 1 列分の商品数によりスクロール時間を調整（少ない方が遅く、多い方が速く流れる）
-  const animationDuration = Math.max(18, activeProducts.length * 4)
+  // 商品数に応じたスクロール時間。一定速度感を保つため上限/下限でクランプ。
+  const animationDuration = Math.max(20, Math.min(90, activeProducts.length * 2.8))
 
   return (
     <div
@@ -116,8 +116,12 @@ export function CategoryDock() {
         </div>
       </div>
 
-      {/* カテゴリーラベル（常時表示・ホバー/タップで上のマーキー商品を切替） */}
-      <nav className="bg-black/85 backdrop-blur-sm border-t border-white/15">
+      {/* カテゴリーラベル（常時表示・ホバー/タップで上のマーキー商品を切替）
+          nav から外れたら activeKey を null に戻して全商品マーキーへ復帰 */}
+      <nav
+        className="bg-black/85 backdrop-blur-sm border-t border-white/15"
+        onMouseLeave={() => setActiveKey(null)}
+      >
         <div className="max-w-[1400px] mx-auto px-2 lg:px-6">
           <ul className="flex items-stretch overflow-x-auto scrollbar-hide">
             {DOCK_CATEGORIES.map((cat) => {
@@ -128,7 +132,7 @@ export function CategoryDock() {
                     type="button"
                     onMouseEnter={() => setActiveKey(cat.key)}
                     onFocus={() => setActiveKey(cat.key)}
-                    onClick={() => setActiveKey(cat.key)}
+                    onClick={() => setActiveKey((prev) => (prev === cat.key ? null : cat.key))}
                     className={`w-full px-3 py-3 md:py-4 text-[13px] md:text-[15px] tracking-[0.15em] transition-all duration-300 ${
                       active
                         ? "text-gold"
