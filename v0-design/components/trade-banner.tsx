@@ -13,11 +13,11 @@ import { Building2, ArrowRight } from "lucide-react"
  */
 export function TradeBanner() {
   return (
-    <section className="border-b border-border bg-white text-foreground">
-      <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-5 lg:py-6">
+    <section className="border-b border-border bg-secondary text-foreground">
+      <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-6 lg:py-8">
         {/* (1) ado 工房の一貫体制 + 最短発送日 — トップに配置 */}
         <div className="text-center md:text-left text-foreground">
-          <p className="text-[13px] md:text-[14px] leading-relaxed">
+          <p className="text-[15px] md:text-[18px] leading-relaxed">
             <span className="block">当工房はオーダーから制作、発送までを一貫して行っているため、</span>
             <span className="block">スピーディー、ハイクオリティ、リーズナブルにお届けします</span>
           </p>
