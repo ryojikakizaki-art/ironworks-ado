@@ -70,7 +70,7 @@ export function HeroSection() {
           ロゴだけ上に、見出しは中央位置を維持する設計。 */}
       <div className="relative z-10 h-full flex flex-col items-center justify-center px-6 pt-20 md:pt-24 pb-80 md:pb-72">
         {/* ado ロゴ + キャッチを 1 グループとして、ヒーロー (ドック上の領域) 中央に縦配置 */}
-        <div className="flex flex-col items-center gap-8 md:gap-10">
+        <div className="flex flex-col items-center gap-16 md:gap-20">
           {/* ado ロゴ */}
           <div className="relative w-[180px] h-[209px] md:w-[210px] md:h-[244px] lg:w-[230px] lg:h-[267px]">
             <Image
@@ -87,7 +87,7 @@ export function HeroSection() {
           {/* 見出し */}
           <div className="flex flex-col items-center text-center text-white max-w-[520px]">
             <h1 className="font-sans text-[22px] md:text-[28px] lg:text-[32px] font-medium tracking-wide leading-[1.5] text-center drop-shadow-[0_2px_8px_rgba(0,0,0,0.55)]">
-              <span className="block">高品質アイアン手すり、</span>
+              <span className="block">高品質アイアン手すり</span>
               <span className="block">真心こめて直販</span>
             </h1>
             <p className="mt-3 md:mt-4 font-serif text-[9px] md:text-[10px] tracking-[0.25em] text-white/90 uppercase drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]">
