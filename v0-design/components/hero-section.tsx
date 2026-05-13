@@ -68,7 +68,7 @@ export function HeroSection() {
       {/* ── 前景：上に ado ロゴ → 中央に見出し → 下に CTA ＋ 信頼 ──
           justify-between で 3 ブロックを上端・中央・下端へ確実に配置。
           ロゴだけ上に、見出しは中央位置を維持する設計。 */}
-      <div className="relative z-10 h-full flex flex-col items-center justify-center px-6 pt-20 md:pt-24 pb-60 md:pb-72">
+      <div className="relative z-10 h-full flex flex-col items-center justify-center px-6 pt-20 md:pt-24 pb-80 md:pb-72">
         {/* ado ロゴ + キャッチを 1 グループとして、ヒーロー (ドック上の領域) 中央に縦配置 */}
         <div className="flex flex-col items-center gap-8 md:gap-10">
           {/* ado ロゴ */}
