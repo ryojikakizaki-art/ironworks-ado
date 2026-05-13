@@ -87,8 +87,8 @@ export function HeroSection() {
           {/* 見出し */}
           <div className="flex flex-col items-center text-center text-white max-w-[520px]">
             <h1 className="font-sans text-[22px] md:text-[28px] lg:text-[32px] font-medium tracking-wide leading-[1.5] text-center drop-shadow-[0_2px_8px_rgba(0,0,0,0.55)]">
-              <span className="block">高品質アイアン手すり</span>
-              <span className="block">真心こめて直販</span>
+              <span className="block">毎日手にするものだから、</span>
+              <span className="block">手触りのいいものを</span>
             </h1>
             <p className="mt-3 md:mt-4 font-serif text-[9px] md:text-[10px] tracking-[0.25em] text-white/90 uppercase drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]">
               Real Ironworks. Real Blacksmith.
