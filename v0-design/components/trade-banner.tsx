@@ -11,6 +11,7 @@ export function TradeBanner() {
   return (
     <section className="border-b border-border bg-dark text-white">
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-4 lg:py-5">
+        {/* 工務店・設計事務所 向けバナー (既存) */}
         <Link
           href="/trade"
           className="group flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-6 text-left"
@@ -36,6 +37,24 @@ export function TradeBanner() {
             <ArrowRight className="w-4 h-4" />
           </span>
         </Link>
+
+        {/* ado 工房の一貫体制アピール + 最短発送日 (蠣﨑さん指示で追加) */}
+        <div className="mt-5 pt-5 border-t border-white/15 text-center md:text-left">
+          <p className="text-[13px] md:text-[14px] leading-relaxed text-white/85">
+            当工房はオーダーから制作・発送までを一貫して行っているため、
+            <span className="text-gold">スピーディー</span>・
+            <span className="text-gold">ハイクオリティ</span>・
+            <span className="text-gold">リーズナブル</span>
+            にお届けします。
+          </p>
+          <p className="mt-3 font-serif text-[22px] md:text-[28px] font-bold tracking-wide flex items-baseline justify-center md:justify-start gap-1">
+            <span>手すり最短</span>
+            <span className="text-gold text-[48px] md:text-[60px] leading-none font-bold tracking-tight drop-shadow-[0_2px_8px_rgba(184,134,11,0.4)]">
+              5
+            </span>
+            <span>日発送</span>
+          </p>
+        </div>
       </div>
     </section>
   )

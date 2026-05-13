@@ -25,11 +25,11 @@ export default function HomePage() {
       </div>
 
       <TradeBanner />
-      <LimitedServiceSection />
       <RankingSection />
       <LineupSection />
       <TestimonialsSection />
       <CraftsmanshipStorySection />
+      <LimitedServiceSection />
       <NewsSection />
       <BlogSection />
       <CtaBanner />
