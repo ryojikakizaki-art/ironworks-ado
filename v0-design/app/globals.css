@@ -392,9 +392,7 @@
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
-@media (prefers-reduced-motion: reduce) {
-  .dock-marquee-track {
-    animation: none;
-  }
-}
+/* 注: prefers-reduced-motion: reduce ガードは 2026-05-13 蠣﨑さん指示で撤去。
+   柔らかな横スクロールでマーキー意図 (商品露出) が重要なため、OS 設定に関わらず
+   全訪問者に表示する。 */
 
