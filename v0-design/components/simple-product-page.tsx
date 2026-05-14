@@ -53,7 +53,7 @@ function PriceBlock({ product }: { product: SimpleProduct }) {
           </p>
         )}
         {buildup.examples && buildup.examples.length > 0 && (
-          <div className="mt-4 rounded-md bg-secondary/60 px-4 py-3">
+          <div className="mt-4 rounded-md bg-white border border-border px-4 py-3">
             <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase mb-1.5">
               Example
             </p>
@@ -678,7 +678,7 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
               {product.featureBullets.map((feature, i) => {
                 const Icon = FEATURE_ICON_MAP[feature.icon]
                 return (
-                  <div key={i} className="flex flex-col items-start gap-3 p-6 bg-secondary rounded-lg">
+                  <div key={i} className="flex flex-col items-start gap-3 p-6 bg-white border border-border rounded-lg">
                     <Icon className="w-8 h-8 text-gold" />
                     <h3 className="font-serif text-[16px] font-medium text-foreground">{feature.title}</h3>
                     <p className="text-[13px] text-muted-foreground leading-relaxed">{feature.desc}</p>
