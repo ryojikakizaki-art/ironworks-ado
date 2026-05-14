@@ -384,27 +384,8 @@
   cursor: grabbing;
 }
 
-/* ──────────────────────────────────────────────
- * ヒーロー下部 カテゴリードック マーキー
- * 商品サムネが左方向に無限スクロール。
- * 子要素を 2 周分複製しており、-50% で 1 周分シフト
- * したら最初に戻るとシームレスにループする。
- * ホバー / フォーカス時はアニメ一時停止。
- * ────────────────────────────────────────────── */
-.dock-marquee-track {
-  width: max-content;
-  animation: dock-marquee-scroll var(--dock-marquee-duration, 30s) linear infinite;
-  will-change: transform;
-}
-.dock-marquee-track:hover,
-.dock-marquee-track:focus-within {
-  animation-play-state: paused;
-}
-@keyframes dock-marquee-scroll {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-/* 注: prefers-reduced-motion: reduce ガードは 2026-05-13 蠣﨑さん指示で撤去。
-   柔らかな横スクロールでマーキー意図 (商品露出) が重要なため、OS 設定に関わらず
-   全訪問者に表示する。 */
+/* カテゴリードックのマーキーは JS 駆動の自動スクロールに移行（category-dock.tsx）。
+   実スクロールコンテナ（overflow-x:auto）上で rAF が scrollLeft を進め、触れている
+   間は一時停止してネイティブの横スワイプで手動スクロールできる。
+   prefers-reduced-motion ガードは 2026-05-13 蠣﨑さん指示で撤去済み。 */
 
