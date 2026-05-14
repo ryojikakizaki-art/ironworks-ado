@@ -80,7 +80,6 @@ export default function ProductDetailPage() {
   const [prefecture, setPrefecture] = useState("")
   const [deliveryType, setDeliveryType] = useState<"normal" | "express">("normal")
   const [isPrefectureOpen, setIsPrefectureOpen] = useState(false)
-  const [currentStep, setCurrentStep] = useState(1)
   const [isDrawingOpen, setIsDrawingOpen] = useState(false)
   const [washerType, setWasherType] = useState<WasherTypeId>(product.drawing.washerSpec?.id ?? "A")
   // Scroll 16/19/22 のみ向きの選択 (左右で価格変更なし)
@@ -176,12 +175,13 @@ export default function ProductDetailPage() {
 
   const prices = calculatePrice()
 
-  // Update current step based on filled fields
-  useEffect(() => {
-    if (length >= minLength) setCurrentStep(Math.max(currentStep, 1))
-    if (quantity > 0 && prefecture) setCurrentStep(Math.max(currentStep, 2))
-    if (deliveryType) setCurrentStep(Math.max(currentStep, 3))
-  }, [length, quantity, prefecture, deliveryType, currentStep, minLength])
+  // 各ステップの入力が満たされているか（番号サークルの進捗表示用）。
+  // 以前は単調増加カウンタで、初期値のある長さ・配送のせいで未入力でも
+  // ② が「完了」表示になっていた。実際の入力状況に直結する形に修正。
+  const step1Done = length >= minLength && length <= maxLength
+  const step2Done = quantity > 0 && prefecture !== ""
+  const step3Done = deliveryType === "normal" || deliveryType === "express"
+  const step4Ready = step1Done && step2Done && step3Done
 
   // Lightbox は廃止 (2026-05-12) — モバイルで黒バック+×だけだと不便だったため、
   // ヒーロー画像はスワイプ+矢印で切替・サムネタップでヒーローに反映する方式に移行。
@@ -432,7 +432,7 @@ export default function ProductDetailPage() {
                 {/* Step 1: Length */}
                 <div className="relative pl-14">
                   <div className={`absolute left-0 top-0 w-11 h-11 flex items-center justify-center text-[16px] font-serif font-bold rounded-full shadow-sm transition-colors ${
-                    currentStep >= 1 ? "bg-gold text-white" : "bg-white border border-gold/40 text-gold/70"
+                    step1Done ? "bg-gold text-white" : "bg-gold/15 text-gold"
                   }`}>
                     01
                   </div>
@@ -627,7 +627,7 @@ export default function ProductDetailPage() {
                 {/* Step 2: Quantity & Prefecture */}
                 <div className="relative pl-14 pt-6">
                   <div className={`absolute left-0 top-6 w-11 h-11 flex items-center justify-center text-[16px] font-serif font-bold rounded-full shadow-sm transition-colors ${
-                    currentStep >= 2 ? "bg-gold text-white" : "bg-white border border-gold/40 text-gold/70"
+                    step2Done ? "bg-gold text-white" : "bg-gold/15 text-gold"
                   }`}>
                     02
                   </div>
@@ -710,7 +710,7 @@ export default function ProductDetailPage() {
                 {/* Step 3: Delivery */}
                 <div className="relative pl-14 pt-6">
                   <div className={`absolute left-0 top-6 w-11 h-11 flex items-center justify-center text-[16px] font-serif font-bold rounded-full shadow-sm transition-colors ${
-                    currentStep >= 3 ? "bg-gold text-white" : "bg-white border border-gold/40 text-gold/70"
+                    step3Done ? "bg-gold text-white" : "bg-gold/15 text-gold"
                   }`}>
                     03
                   </div>
@@ -751,7 +751,7 @@ export default function ProductDetailPage() {
                 {/* Step 4: Confirm & Purchase */}
                 <div ref={ctaRef} className="relative pl-14 pt-6">
                   <div className={`absolute left-0 top-6 w-11 h-11 flex items-center justify-center text-[16px] font-serif font-bold rounded-full shadow-sm transition-colors ${
-                    currentStep >= 4 ? "bg-gold text-white" : "bg-white border border-gold/40 text-gold/70"
+                    step4Ready ? "bg-gold text-white" : "bg-gold/15 text-gold"
                   }`}>
                     04
                   </div>
