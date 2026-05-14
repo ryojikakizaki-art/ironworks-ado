@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Header } from "@/components/header"
@@ -151,6 +151,28 @@ export default function ContactPage() {
   const [status, setStatus] = useState<"idle" | "sending" | "error">("idle")
   const [errorMsg, setErrorMsg] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // 商品ページから ?product=&category= 付きで遷移してきた場合、
+  // お問い合わせ種別とご興味のある商品を事前選択する。
+  // 不正・未知の値は無視（category は CATEGORY_OPTIONS、product は
+  // PRODUCT_OPTIONS に無ければ「その他・複数」へフォールバック）。
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const category = params.get("category")
+    const product = params.get("product")
+    setForm((prev) => ({
+      ...prev,
+      category:
+        category && CATEGORY_OPTIONS.some((o) => o.value === category)
+          ? category
+          : prev.category,
+      product: product
+        ? PRODUCT_OPTIONS.some((o) => o.value === product)
+          ? product
+          : "other"
+        : prev.product,
+    }))
+  }, [])
 
   const totalBytes = files.reduce((acc, f) => acc + f.size, 0)
 
