@@ -13,6 +13,7 @@ import { galleryUrl, type FeatureIconName } from "@/lib/products/display"
 import { getProductStructuredData } from "@/lib/products/structured-data"
 import { getRelatedProducts } from "@/lib/products/catalog"
 import { EmbeddedCheckoutModal } from "@/components/checkout/embedded-checkout-modal"
+import { FinishCommitment } from "@/components/finish-commitment"
 
 const FEATURE_ICON_MAP: Record<FeatureIconName, typeof Hammer> = {
   Hammer,
@@ -539,9 +540,15 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
             </p>
 
             {/* 詳細 */}
-            <p className="text-sm text-muted-foreground leading-loose mb-10 whitespace-pre-line">
+            <p className="text-sm text-muted-foreground leading-loose mb-6 whitespace-pre-line">
               {product.longDescription}
             </p>
+
+            {/* 仕上げのこだわり訴求（説明文の直下・初見の人の目に付く位置）。
+                仕上げ spec からウレタン塗装／蜜蝋仕上げを自動で出し分け。 */}
+            <div className="mb-10">
+              <FinishCommitment specs={product.specs} />
+            </div>
 
             {/* 価格表示（priceBuildup があれば単価+例示、無ければ basePrice 単独） */}
             {!isQuoteOnly && <PriceBlock product={product} />}
