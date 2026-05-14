@@ -9,15 +9,15 @@ import { galleryUrl } from "@/lib/products/display"
 /**
  * ヒーロー下部に常時表示されるカテゴリードック。
  *
- * 2026-05-13 改修: 商品サムネを常時マーキー (横スクロール) で表示。
- * - デフォルトで「手すり 横型」の商品が左方向に無限スクロール
- * - カテゴリーラベルをホバー/タップで切替 → 該当カテゴリの商品に差し替わる
- * - サムネにホバー/フォーカスでスクロールを一時停止
- * - クリック/タップで商品ページへ遷移
+ * 2026-05-14 改修: マーキーを CSS transform アニメから JS 駆動の自動スクロール
+ * （実スクロールコンテナ）に変更。
+ * - 触れていない間は rAF で scrollLeft を進めて自動マーキー
+ * - 触れている間（ポインタ操作中・マウスホバー中）は自動を一時停止し、
+ *   overflow-x: auto によりネイティブの横スワイプで手動スクロールできる
+ * - 短いタップは商品ページへ遷移。8px を超えて動いたらドラッグ扱いで遷移しない
+ * - 商品を 2 周分複製し、1 周分（scrollWidth/2）を超えたら戻してシームレスループ
  *
- * 旧版は「ホバー時にグリッド展開」だったため、トップ進入直後は
- * 商品が一つも見えず GA4 上で離脱が早かった。常時露出 + 横アニメで
- * 視線を集める設計に変更。
+ * カテゴリーラベルをホバー/タップで切替 → 該当カテゴリの商品に差し替わる。
  */
 
 type DockCategory = {
@@ -35,41 +35,132 @@ const DOCK_CATEGORIES: DockCategory[] = [
   { key: "other", label: "その他" },
 ]
 
-export function CategoryDock() {
-  // null = 全カテゴリの商品をシャッフルせず順番に表示 (デフォルト)
-  //        CategoryKey が指定された場合は該当カテゴリのみにフィルタ
-  const [activeKey, setActiveKey] = useState<CategoryKey | null>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
+// マーキーの自動スクロール速度（px/秒）
+const AUTO_SCROLL_PX_PER_SEC = 45
+// タップかドラッグかの判定しきい値（これ以上動いたらドラッグ＝遷移しない）
+const DRAG_THRESHOLD_PX = 8
+// ポインタ操作終了後、自動スクロールを再開するまでの待ち時間
+const RESUME_DELAY_MS = 1400
 
-  useEffect(() => {
-    // no-op (将来の拡張用)
-  }, [])
+export function CategoryDock() {
+  // null = 全カテゴリの商品を順番に表示（デフォルト）
+  const [activeKey, setActiveKey] = useState<CategoryKey | null>(null)
+  const scrollRef = useRef<HTMLDivElement>(null)
+
+  // 自動スクロール一時停止の要因（マウスホバー / ポインタ操作 を独立管理）
+  const hoverPausedRef = useRef(false)
+  const dragPausedRef = useRef(false)
+  // タップ/ドラッグ判定用
+  const pointerStartRef = useRef<{ x: number; y: number } | null>(null)
+  const draggedRef = useRef(false)
+  const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const activeProducts = activeKey
     ? CATALOG_PRODUCTS.filter((p) => p.cat === activeKey)
     : CATALOG_PRODUCTS
   // マーキー連続再生のため 2 列分複製
   const marqueeProducts = [...activeProducts, ...activeProducts]
-  // 商品数に応じたスクロール時間。一定速度感を保つため上限/下限でクランプ。
-  const animationDuration = Math.max(20, Math.min(90, activeProducts.length * 2.8))
+
+  // スクロール位置を「1 周分（scrollWidth/2）の範囲内」に補正してシームレスループ
+  const normalizeScroll = () => {
+    const el = scrollRef.current
+    if (!el) return
+    const half = el.scrollWidth / 2
+    if (half <= 0) return
+    if (el.scrollLeft >= half) el.scrollLeft -= half
+    else if (el.scrollLeft <= 0) el.scrollLeft = half - 1
+  }
+
+  // 自動スクロール（rAF）。一時停止中はスキップ。activeKey 変更で貼り直す。
+  useEffect(() => {
+    let rafId = 0
+    let prev = performance.now()
+    const tick = (now: number) => {
+      const el = scrollRef.current
+      // バックグラウンド復帰時の巨大 dt で飛びすぎないよう上限を設ける
+      const dt = Math.min(now - prev, 50)
+      prev = now
+      if (el && !hoverPausedRef.current && !dragPausedRef.current) {
+        el.scrollLeft += (AUTO_SCROLL_PX_PER_SEC * dt) / 1000
+        normalizeScroll()
+      }
+      rafId = requestAnimationFrame(tick)
+    }
+    rafId = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(rafId)
+  }, [activeKey])
+
+  // アンマウント時に再開タイマーを掃除
+  useEffect(() => {
+    return () => {
+      if (resumeTimerRef.current) clearTimeout(resumeTimerRef.current)
+    }
+  }, [])
+
+  const clearResumeTimer = () => {
+    if (resumeTimerRef.current) {
+      clearTimeout(resumeTimerRef.current)
+      resumeTimerRef.current = null
+    }
+  }
+
+  // ポインタ操作終了 → 少し置いてから自動スクロール再開
+  const endPointer = () => {
+    pointerStartRef.current = null
+    clearResumeTimer()
+    resumeTimerRef.current = setTimeout(() => {
+      dragPausedRef.current = false
+    }, RESUME_DELAY_MS)
+  }
+
+  const handlePointerEnter = (e: React.PointerEvent) => {
+    // マウスホバーのみ一時停止（タッチは pointerdown/up 側で扱う）
+    if (e.pointerType === "mouse") hoverPausedRef.current = true
+  }
+  const handlePointerLeave = (e: React.PointerEvent) => {
+    if (e.pointerType === "mouse") hoverPausedRef.current = false
+    // ドラッグ中に要素外へ出た場合の保険（pointerup を取りこぼさない）
+    if (pointerStartRef.current) endPointer()
+  }
+  const handlePointerDown = (e: React.PointerEvent) => {
+    clearResumeTimer()
+    dragPausedRef.current = true
+    draggedRef.current = false
+    pointerStartRef.current = { x: e.clientX, y: e.clientY }
+  }
+  const handlePointerMove = (e: React.PointerEvent) => {
+    const start = pointerStartRef.current
+    if (!start) return
+    if (Math.hypot(e.clientX - start.x, e.clientY - start.y) > DRAG_THRESHOLD_PX) {
+      draggedRef.current = true
+    }
+  }
+  // ドラッグだった場合はリンク遷移をキャンセル（短いタップのみ遷移）
+  const handleClickCapture = (e: React.MouseEvent) => {
+    if (draggedRef.current) e.preventDefault()
+  }
 
   return (
-    <div
-      ref={containerRef}
-      className="absolute inset-x-0 bottom-0 z-20"
-    >
-      {/* 商品マーキー（常時表示・左方向に無限スクロール） */}
+    <div className="absolute inset-x-0 bottom-0 z-20">
+      {/* 商品マーキー（自動スクロール・触れている間は一時停止して手動スクロール可） */}
       <div className="relative bg-black/75 backdrop-blur-sm border-t border-white/10 overflow-hidden">
         {/* 左右のフェードマスク（端で商品が突然出現しないよう） */}
         <div className="pointer-events-none absolute inset-y-0 left-0 w-12 md:w-20 bg-gradient-to-r from-black/90 to-transparent z-10" />
         <div className="pointer-events-none absolute inset-y-0 right-0 w-12 md:w-20 bg-gradient-to-l from-black/90 to-transparent z-10" />
 
         <div
+          ref={scrollRef}
           key={activeKey}
-          className="dock-marquee-track flex gap-3 md:gap-4 py-3 md:py-4 px-4"
-          style={{
-            ["--dock-marquee-duration" as string]: `${animationDuration}s`,
-          }}
+          onScroll={normalizeScroll}
+          onPointerEnter={handlePointerEnter}
+          onPointerLeave={handlePointerLeave}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={endPointer}
+          onPointerCancel={endPointer}
+          onClickCapture={handleClickCapture}
+          className="flex gap-3 md:gap-4 py-3 md:py-4 px-4 overflow-x-auto scrollbar-hide"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {marqueeProducts.map((p, idx) => {
             const isExternal = p.external === true
@@ -103,12 +194,18 @@ export function CategoryDock() {
                 href={p.href}
                 target="_blank"
                 rel="noopener"
+                draggable={false}
                 className="flex-shrink-0"
               >
                 {card}
               </a>
             ) : (
-              <Link key={`${p.name}-${idx}`} href={p.href} className="flex-shrink-0">
+              <Link
+                key={`${p.name}-${idx}`}
+                href={p.href}
+                draggable={false}
+                className="flex-shrink-0"
+              >
                 {card}
               </Link>
             )
