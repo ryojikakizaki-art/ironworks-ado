@@ -14,8 +14,11 @@ import { galleryUrl } from "@/lib/products/display"
  * - 触れていない間は rAF で scrollLeft を進めて自動マーキー
  * - 触れている間（ポインタ操作中・マウスホバー中）は自動を一時停止し、
  *   overflow-x: auto によりネイティブの横スワイプで手動スクロールできる
+ * - 一度ユーザーが手動でスクロールしたら自動スクロールは再開しない
+ *   （止めた位置からじわじわ動く違和感を防ぐ）。タップのみ・ホバーのみなら
+ *   従来通り再開する
  * - 短いタップは商品ページへ遷移。8px を超えて動いたらドラッグ扱いで遷移しない
- * - 商品を 2 周分複製し、1 周分（scrollWidth/2）を超えたら戻してシームレスループ
+ * - 商品を 2 周分複製し、複製先頭カードの offsetLeft 差ぶんで戻してシームレスループ
  *
  * カテゴリーラベルをホバー/タップで切替 → 該当カテゴリの商品に差し替わる。
  */
@@ -53,6 +56,8 @@ export function CategoryDock() {
   // タップ/ドラッグ判定用
   const pointerStartRef = useRef<{ x: number; y: number } | null>(null)
   const draggedRef = useRef(false)
+  // ポインタ操作開始時の scrollLeft（操作で実際にスクロールしたか判定するため）
+  const scrollStartRef = useRef(0)
   const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const activeProducts = activeKey
@@ -118,10 +123,18 @@ export function CategoryDock() {
     }
   }
 
-  // ポインタ操作終了 → 少し置いてから自動スクロール再開
+  // ポインタ操作終了。
+  // ユーザーが実際に手動スクロールした場合は自動スクロールを再開しない
+  // （止めた位置からじわじわ動く違和感を防ぐ）。タップのみなら少し置いて再開。
   const endPointer = () => {
     pointerStartRef.current = null
     clearResumeTimer()
+    const el = scrollRef.current
+    const scrolled = el ? Math.abs(el.scrollLeft - scrollStartRef.current) > 2 : false
+    if (draggedRef.current || scrolled) {
+      // dragPausedRef は true のまま据え置き（再開しない）
+      return
+    }
     resumeTimerRef.current = setTimeout(() => {
       dragPausedRef.current = false
     }, RESUME_DELAY_MS)
@@ -141,6 +154,7 @@ export function CategoryDock() {
     dragPausedRef.current = true
     draggedRef.current = false
     pointerStartRef.current = { x: e.clientX, y: e.clientY }
+    scrollStartRef.current = scrollRef.current?.scrollLeft ?? 0
   }
   const handlePointerMove = (e: React.PointerEvent) => {
     const start = pointerStartRef.current
