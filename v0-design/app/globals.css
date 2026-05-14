@@ -142,11 +142,16 @@
   }
   body {
     @apply bg-background text-foreground;
-    overflow-x: hidden;
+    /* overflow-x: clip — hidden と違いスクロールコンテナを作らないため
+       position: sticky や framer-motion のスクロール計測を壊さずに横漏れだけ防ぐ */
+    overflow-x: clip;
     scroll-behavior: smooth;
   }
   html {
     scroll-behavior: smooth;
+    /* iOS Safari は html 要素をスクロールコンテナにするため、body だけの
+       overflow-x では横スクロール（右側の空白）が残る。html にも clip を効かせる */
+    overflow-x: clip;
     /* framer-motion useScroll は document.scrollingElement (=<html>) を
        コンテナとして測定する。static のままだと scroll offset が不正確に
        なり警告が出るため relative を付与 */
