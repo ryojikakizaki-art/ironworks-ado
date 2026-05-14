@@ -53,7 +53,7 @@ function PriceBlock({ product }: { product: SimpleProduct }) {
           </p>
         )}
         {buildup.examples && buildup.examples.length > 0 && (
-          <div className="mt-4 rounded-md bg-white border border-border px-4 py-3">
+          <div className="mt-4 rounded-md bg-white border border-gold/20 px-4 py-3">
             <p className="text-[11px] tracking-[0.2em] text-muted-foreground uppercase mb-1.5">
               Example
             </p>
@@ -257,7 +257,7 @@ function FAQItem({ q, a }: { q: string; a: string }) {
         aria-expanded={open}
       >
         <span className="font-serif text-[16px] font-medium text-foreground leading-relaxed">{q}</span>
-        <span className={`shrink-0 w-7 h-7 rounded-full border border-border flex items-center justify-center transition-transform ${open ? "rotate-45 border-gold" : ""}`}>
+        <span className={`shrink-0 w-7 h-7 rounded-full border border-gold/20 flex items-center justify-center transition-transform ${open ? "rotate-45 border-gold" : ""}`}>
           <Plus className="w-4 h-4" />
         </span>
       </button>
@@ -586,14 +586,14 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
               ) : isDirectCheckout ? (
                 <>
                   {/* 数量セレクタ — 立体感のあるカード */}
-                  <div className="flex items-center justify-between border-2 border-border bg-card rounded-md px-5 py-4 mb-2 shadow-sm">
+                  <div className="flex items-center justify-between border-2 border-gold/20 bg-card rounded-md px-5 py-4 mb-2 shadow-sm">
                     <span className="font-serif text-[15px] font-medium text-foreground">数量</span>
                     <div className="flex items-center gap-4">
                       <button
                         type="button"
                         onClick={() => setQuantity((q) => Math.max(1, q - 1))}
                         disabled={isCheckingOut || quantity <= 1}
-                        className="w-9 h-9 flex items-center justify-center rounded-full border border-border bg-white shadow-sm hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="w-9 h-9 flex items-center justify-center rounded-full border border-gold/20 bg-white shadow-sm hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         aria-label="数量を減らす"
                       >
                         <Minus className="w-3.5 h-3.5" />
@@ -605,7 +605,7 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
                         type="button"
                         onClick={() => setQuantity((q) => Math.min(10, q + 1))}
                         disabled={isCheckingOut || quantity >= 10}
-                        className="w-9 h-9 flex items-center justify-center rounded-full border border-border bg-white shadow-sm hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                        className="w-9 h-9 flex items-center justify-center rounded-full border border-gold/20 bg-white shadow-sm hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                         aria-label="数量を増やす"
                       >
                         <Plus className="w-3.5 h-3.5" />
@@ -678,7 +678,7 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
               {product.featureBullets.map((feature, i) => {
                 const Icon = FEATURE_ICON_MAP[feature.icon]
                 return (
-                  <div key={i} className="flex flex-col items-start gap-3 p-6 bg-white border border-border rounded-lg">
+                  <div key={i} className="flex flex-col items-start gap-3 p-6 bg-white border border-gold/20 rounded-lg">
                     <Icon className="w-8 h-8 text-gold" />
                     <h3 className="font-serif text-[16px] font-medium text-foreground">{feature.title}</h3>
                     <p className="text-[13px] text-muted-foreground leading-relaxed">{feature.desc}</p>

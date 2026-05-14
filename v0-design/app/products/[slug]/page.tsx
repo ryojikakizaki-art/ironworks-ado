@@ -432,7 +432,7 @@ export default function ProductDetailPage() {
                 {/* Step 1: Length */}
                 <div className="relative pl-14">
                   <div className={`absolute left-0 top-0 w-11 h-11 flex items-center justify-center text-[16px] font-serif font-bold rounded-full shadow-sm transition-colors ${
-                    currentStep >= 1 ? "bg-gold text-white" : "bg-muted text-muted-foreground"
+                    currentStep >= 1 ? "bg-gold text-white" : "bg-white border border-gold/40 text-gold/70"
                   }`}>
                     01
                   </div>
@@ -445,7 +445,7 @@ export default function ProductDetailPage() {
                     {product.drawing.category === "fixed" ? (
                       <>
                         <div className="flex items-center gap-4">
-                          <div className="flex-1 px-4 py-4 bg-white border border-border text-[14px] text-foreground">
+                          <div className="flex-1 px-4 py-4 bg-white border border-gold/20 text-[14px] text-foreground">
                             高さ {product.drawing.stdLengthMm}mm 固定サイズ
                             <span className="text-[11px] text-muted-foreground ml-2">
                               （長さ調整不可）
@@ -454,7 +454,7 @@ export default function ProductDetailPage() {
                         </div>
                         {/* Scroll 16/19/22 のみ向き選択 (左右で価格変更なし) */}
                         {hasOrientation && (
-                          <div className="mt-3 border border-border bg-card p-4">
+                          <div className="mt-3 border border-gold/20 bg-card p-4">
                             <div className="flex items-center gap-3">
                               <span className="font-serif text-[15px] font-medium text-foreground min-w-[80px]">向き</span>
                               <div className="flex flex-1 gap-2">
@@ -464,7 +464,7 @@ export default function ProductDetailPage() {
                                   className={`flex-1 py-2.5 px-3 rounded-md border-2 transition-all text-center ${
                                     orientation === "right"
                                       ? "border-gold bg-gold/5"
-                                      : "border-border hover:border-gold/50"
+                                      : "border-gold/20 hover:border-gold/50"
                                   }`}
                                 >
                                   <div className="font-serif text-[14px] font-medium">右向き</div>
@@ -475,7 +475,7 @@ export default function ProductDetailPage() {
                                   className={`flex-1 py-2.5 px-3 rounded-md border-2 transition-all text-center ${
                                     orientation === "left"
                                       ? "border-gold bg-gold/5"
-                                      : "border-border hover:border-gold/50"
+                                      : "border-gold/20 hover:border-gold/50"
                                   }`}
                                 >
                                   <div className="font-serif text-[14px] font-medium">左向き</div>
@@ -571,7 +571,7 @@ export default function ProductDetailPage() {
                         />
                         {/* 座金タイプ選択 (縦型CAD精密図対応商品のみ) */}
                         {product.drawing.category === "vertical" && product.drawing.washerSpec && (
-                          <div className="mt-3 border border-border bg-card p-4">
+                          <div className="mt-3 border border-gold/20 bg-card p-4">
                             <div className="flex items-center gap-3 mb-3">
                               <span className="font-serif text-[15px] font-medium text-foreground min-w-[80px]">座金タイプ</span>
                               <div className="flex flex-1 gap-2">
@@ -581,7 +581,7 @@ export default function ProductDetailPage() {
                                   className={`flex-1 py-2.5 px-3 rounded-md border-2 transition-all text-left ${
                                     washerType === "A"
                                       ? "border-gold bg-gold/5"
-                                      : "border-border hover:border-gold/50"
+                                      : "border-gold/20 hover:border-gold/50"
                                   }`}
                                 >
                                   <div className="font-serif text-[14px] font-medium">Aタイプ</div>
@@ -593,7 +593,7 @@ export default function ProductDetailPage() {
                                   className={`flex-1 py-2.5 px-3 rounded-md border-2 transition-all text-left ${
                                     washerType === "B"
                                       ? "border-gold bg-gold/5"
-                                      : "border-border hover:border-gold/50"
+                                      : "border-gold/20 hover:border-gold/50"
                                   }`}
                                 >
                                   <div className="font-serif text-[14px] font-medium">Bタイプ</div>
@@ -627,7 +627,7 @@ export default function ProductDetailPage() {
                 {/* Step 2: Quantity & Prefecture */}
                 <div className="relative pl-14 pt-6">
                   <div className={`absolute left-0 top-6 w-11 h-11 flex items-center justify-center text-[16px] font-serif font-bold rounded-full shadow-sm transition-colors ${
-                    currentStep >= 2 ? "bg-gold text-white" : "bg-muted text-muted-foreground"
+                    currentStep >= 2 ? "bg-gold text-white" : "bg-white border border-gold/40 text-gold/70"
                   }`}>
                     02
                   </div>
@@ -642,7 +642,7 @@ export default function ProductDetailPage() {
                     </h3>
                     <div ref={prefectureRef} className="flex flex-col sm:flex-row gap-4">
                       {/* Quantity */}
-                      <div className="flex items-center border border-border rounded-md">
+                      <div className="flex items-center border border-gold/20 rounded-md">
                         <button
                           onClick={() => setQuantity(Math.max(1, quantity - 1))}
                           className="w-12 h-12 flex items-center justify-center hover:bg-muted transition-colors"
@@ -687,7 +687,7 @@ export default function ProductDetailPage() {
                               initial={{ opacity: 0, y: -10 }}
                               animate={{ opacity: 1, y: 0 }}
                               exit={{ opacity: 0, y: -10 }}
-                              className="absolute top-full left-0 right-0 mt-1 bg-white border border-border rounded-md shadow-lg max-h-60 overflow-y-auto z-20"
+                              className="absolute top-full left-0 right-0 mt-1 bg-white border border-gold/20 rounded-md shadow-lg max-h-60 overflow-y-auto z-20"
                             >
                               {prefectures.map((pref) => (
                                 <button
@@ -710,7 +710,7 @@ export default function ProductDetailPage() {
                 {/* Step 3: Delivery */}
                 <div className="relative pl-14 pt-6">
                   <div className={`absolute left-0 top-6 w-11 h-11 flex items-center justify-center text-[16px] font-serif font-bold rounded-full shadow-sm transition-colors ${
-                    currentStep >= 3 ? "bg-gold text-white" : "bg-muted text-muted-foreground"
+                    currentStep >= 3 ? "bg-gold text-white" : "bg-white border border-gold/40 text-gold/70"
                   }`}>
                     03
                   </div>
@@ -724,7 +724,7 @@ export default function ProductDetailPage() {
                         className={`flex-1 py-4 px-4 rounded-md border-2 transition-all ${
                           deliveryType === "normal"
                             ? "border-gold bg-gold/5"
-                            : "border-border hover:border-gold/50"
+                            : "border-gold/20 hover:border-gold/50"
                         }`}
                       >
                         <div className="text-[15px] font-medium">通常</div>
@@ -735,7 +735,7 @@ export default function ProductDetailPage() {
                         className={`flex-1 py-4 px-4 rounded-md border-2 transition-all ${
                           deliveryType === "express"
                             ? "border-gold bg-gold/5"
-                            : "border-border hover:border-gold/50"
+                            : "border-gold/20 hover:border-gold/50"
                         }`}
                       >
                         <div className="text-[15px] font-medium">特急 <span className="text-gold">+20%</span></div>
@@ -751,7 +751,7 @@ export default function ProductDetailPage() {
                 {/* Step 4: Confirm & Purchase */}
                 <div ref={ctaRef} className="relative pl-14 pt-6">
                   <div className={`absolute left-0 top-6 w-11 h-11 flex items-center justify-center text-[16px] font-serif font-bold rounded-full shadow-sm transition-colors ${
-                    currentStep >= 4 ? "bg-gold text-white" : "bg-muted text-muted-foreground"
+                    currentStep >= 4 ? "bg-gold text-white" : "bg-white border border-gold/40 text-gold/70"
                   }`}>
                     04
                   </div>
@@ -760,7 +760,7 @@ export default function ProductDetailPage() {
                     <h3 className="font-serif text-[22px] font-bold text-foreground tracking-tight">確認して購入</h3>
                     
                     {/* Price Breakdown (詳細内訳) */}
-                    <div className="bg-white border border-border rounded-lg p-5 space-y-2.5">
+                    <div className="bg-white border border-gold/20 rounded-lg p-5 space-y-2.5">
                       <div className="flex justify-between text-[15px]">
                         <span className="text-muted-foreground">
                           基本料金（〜{product.drawing.stdLengthMm}mm）
@@ -886,7 +886,7 @@ export default function ProductDetailPage() {
                       )}
                       <Link
                         href="/contact"
-                        className="block w-full py-4 border border-border text-foreground text-[15px] font-medium rounded-md hover:border-gold hover:text-gold transition-colors text-center"
+                        className="block w-full py-4 border border-gold/20 text-foreground text-[15px] font-medium rounded-md hover:border-gold hover:text-gold transition-colors text-center"
                       >
                         見積もりを取る
                       </Link>
@@ -904,7 +904,7 @@ export default function ProductDetailPage() {
               <h2 className="font-serif text-3xl lg:text-4xl mb-8">仕様と特徴</h2>
 
               {/* Specs Grid (シミュレーター上から移動) */}
-              <div className="bg-white border border-border rounded-lg p-6 mb-10">
+              <div className="bg-white border border-gold/20 rounded-lg p-6 mb-10">
                 <h3 className="font-serif text-[18px] font-medium mb-4 text-foreground">仕様</h3>
                 <div className="grid sm:grid-cols-2 gap-x-8 gap-y-3">
                   {specs.map((spec, index) => (
@@ -925,7 +925,7 @@ export default function ProductDetailPage() {
                 {product.featureBullets.map((feature, index) => {
                   const Icon = FEATURE_ICON_MAP[feature.icon]
                   return (
-                    <div key={index} className="flex items-start gap-3 p-5 bg-white border border-border rounded-lg">
+                    <div key={index} className="flex items-start gap-3 p-5 bg-white border border-gold/20 rounded-lg">
                       <Icon className="w-7 h-7 text-gold flex-shrink-0" />
                       <div>
                         <h4 className="font-serif text-[16px] font-medium mb-1.5">{feature.title}</h4>
