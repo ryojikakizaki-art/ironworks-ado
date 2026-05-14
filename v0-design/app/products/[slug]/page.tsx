@@ -18,6 +18,7 @@ import { getRelatedProducts } from "@/lib/products/catalog"
 import { getProductStructuredData } from "@/lib/products/structured-data"
 import { SimpleProductPage } from "@/components/simple-product-page"
 import { EmbeddedCheckoutModal } from "@/components/checkout/embedded-checkout-modal"
+import { FinishCommitment } from "@/components/finish-commitment"
 import { calcShipping, type ProductType } from "@/lib/shipping/sagawa"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
 import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench } from "lucide-react"
@@ -417,6 +418,10 @@ export default function ProductDetailPage() {
                 </p>
               </div>
 
+              {/* 仕上げのこだわり訴求（説明文の直下・初見の人の目に付く位置）。
+                  仕上げ spec からウレタン塗装／蜜蝋仕上げを自動で出し分け。 */}
+              <FinishCommitment specs={specs} />
+
               {/* Divider */}
               <div className="border-t-2 border-gold/30 pt-6" />
 
@@ -556,20 +561,7 @@ export default function ProductDetailPage() {
                             </span>
                           </div>
                         </div>
-                        {/* 簡易シミュレータ: 長さ直下に配置して推奨座金位置を可視化 (縦型・横型共通) */}
-                        <InlineRailSimulator
-                          product={product.drawing}
-                          lengthMm={length}
-                          positions={zakin.positions}
-                          angleDeg={zakin.angleDeg}
-                          angleDir={zakin.angleDir}
-                          zakinRule={zakinRule}
-                          onPositionsChange={(positions) =>
-                            setZakin({ ...zakin, positions, customMode: true })
-                          }
-                          className="mt-3"
-                        />
-                        {/* 座金タイプ選択 (縦型CAD精密図対応商品のみ) */}
+                        {/* 座金タイプ選択 (縦型CAD精密図対応商品のみ) — 長さの直下に常時表示 */}
                         {product.drawing.category === "vertical" && product.drawing.washerSpec && (
                           <div className="mt-3 border border-gold/20 bg-card p-4">
                             <div className="flex items-center gap-3 mb-3">
@@ -603,22 +595,37 @@ export default function ProductDetailPage() {
                             </div>
                           </div>
                         )}
-                        <ZakinEditor
-                          lengthMm={length}
-                          state={zakin}
-                          onChange={setZakin}
-                          zakinRule={zakinRule}
-                          disableAngle={product.drawing.category === "vertical"}
-                          maxCount={product.drawing.category === "vertical" ? 3 : 20}
-                          className="mt-3"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setIsDrawingOpen(true)}
-                          className="mt-2 inline-flex items-center gap-2 text-[14px] font-medium tracking-wider text-gold hover:text-gold/80 border border-gold/40 hover:border-gold px-5 py-2.5 transition-colors"
-                        >
-                          制作図プレビュー ▸
-                        </button>
+                        {/* 座金の位置調整（シミュレーター＋エディタ）は任意操作のため、
+                            初見の情報量を抑える目的で details に格納し初期は畳む。
+                            制作図プレビューは Step4（確認して購入）へ移動。 */}
+                        <details className="group mt-3 border border-gold/20 rounded-md overflow-hidden">
+                          <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between hover:bg-gold/[0.03] transition-colors">
+                            <span className="text-[14px] font-medium tracking-wider text-foreground">座金の位置を調整する（任意）</span>
+                            <span className="text-gold text-lg leading-none transition-transform group-open:rotate-45">＋</span>
+                          </summary>
+                          <div className="border-t border-gold/20 p-4">
+                            <InlineRailSimulator
+                              product={product.drawing}
+                              lengthMm={length}
+                              positions={zakin.positions}
+                              angleDeg={zakin.angleDeg}
+                              angleDir={zakin.angleDir}
+                              zakinRule={zakinRule}
+                              onPositionsChange={(positions) =>
+                                setZakin({ ...zakin, positions, customMode: true })
+                              }
+                            />
+                            <ZakinEditor
+                              lengthMm={length}
+                              state={zakin}
+                              onChange={setZakin}
+                              zakinRule={zakinRule}
+                              disableAngle={product.drawing.category === "vertical"}
+                              maxCount={product.drawing.category === "vertical" ? 3 : 20}
+                              className="mt-3"
+                            />
+                          </div>
+                        </details>
                       </>
                     )}
                   </div>
@@ -855,6 +862,17 @@ export default function ProductDetailPage() {
                         </span>
                       </div>
                     </div>
+
+                    {/* 制作図プレビュー — 購入前の最終確認として（fixed 商品は図面なし） */}
+                    {product.drawing.category !== "fixed" && (
+                      <button
+                        type="button"
+                        onClick={() => setIsDrawingOpen(true)}
+                        className="block w-full py-4 border border-gold/20 text-gold text-[15px] font-medium rounded-md hover:border-gold transition-colors text-center"
+                      >
+                        制作図プレビューで最終確認 ▸
+                      </button>
+                    )}
 
                     {/* CTA Buttons */}
                     <div className="space-y-3">
