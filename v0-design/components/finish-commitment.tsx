@@ -27,8 +27,8 @@ function resolveVariant(specs: FinishSpec[]): Variant {
   if (/蜜蝋|ミツロウ|黒皮/.test(finish)) {
     return {
       Icon: Flame,
-      title: "熱した鉄に溶かし込む、蜜蝋仕上げ",
-      body: "蜜蝋を熱した鉄に溶かし込み、しっとりと落ち着いた質感に。鍛冶仕事が生んだ鉄そのものの表情を、そのまま生かしています。",
+      title: "熱した鉄に焼き付ける、蜜蝋仕上げ",
+      body: "熱した鉄の表面に蜜蝋を焼き付けるようにコーティング。しっとりと落ち着いた質感で、鍛冶仕事が生んだ鉄そのものの表情を生かしています。",
     }
   }
   return {

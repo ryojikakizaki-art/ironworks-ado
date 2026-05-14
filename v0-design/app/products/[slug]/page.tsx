@@ -902,11 +902,13 @@ export default function ProductDetailPage() {
                           </PrimaryCTA>
                         </div>
                       )}
+                      {/* 長さで価格が確定するため「見積もり」は不要。
+                          計算機で対応できない特殊仕様の相談導線として配置。 */}
                       <Link
                         href="/contact"
                         className="block w-full py-4 border border-gold/20 text-foreground text-[15px] font-medium rounded-md hover:border-gold hover:text-gold transition-colors text-center"
                       >
-                        見積もりを取る
+                        特殊な仕様について相談する
                       </Link>
                     </div>
                   </div>
