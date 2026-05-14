@@ -1,5 +1,5 @@
 import { CATALOG_PRODUCTS } from "@/lib/products/catalog"
-import { CDN_BASE, getProductDisplay } from "@/lib/products/display"
+import { galleryUrl, getProductDisplay } from "@/lib/products/display"
 import { SIMPLE_PRODUCTS, getSimpleProduct } from "@/lib/products/simple"
 
 export const dynamic = "force-static"
@@ -33,13 +33,14 @@ function escapeXml(value: string): string {
 }
 
 function imageUrl(imgId: string): string {
-  // ローカルパス（既に拡張子付き）はそのまま絶対URL化
-  if (imgId.startsWith("/")) return `${SITE_URL}${imgId}`
+  // galleryUrl で LOCAL_IMAGE_OVERRIDES を解決する
+  // （旧 STORES 画像 → 文字を削除した加工版ローカル画像 などの差し替えを反映）。
   // CDN: 拡張子なしの bare ID には .jpg を付与する
   // （Cloudflare Images の URL は ID に拡張子が含まれていないと 404 を返し、
-  //   Google Merchant 側で「サポートされていない画像形式」エラーになる）
-  const id = imgId.includes(".") ? imgId : `${imgId}.jpg`
-  return `${CDN_BASE}/${id}/public`
+  //   Google Merchant 側で「サポートされていない画像形式」エラーになる）。
+  const resolved = galleryUrl(imgId.includes(".") ? imgId : `${imgId}.jpg`)
+  // ローカルパスは絶対 URL 化、CDN URL はそのまま返す
+  return resolved.startsWith("/") ? `${SITE_URL}${resolved}` : resolved
 }
 
 function catalogFeedTitle(p: { cat: string; label: string; name: string; sub: string }): string {

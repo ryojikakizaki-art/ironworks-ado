@@ -38,7 +38,8 @@ const rankings = [
     name: "Antoine アントワーヌ",
     variant: "縦型ロング 25φ｜マットブラック",
     price: "56,000",
-    image: `${CDN}/2d1043dcd7658a96e5f3.jpg/public`,
+    // 旧 STORES 画像（「2.3〜2.5m限定 ¥56,000」文字入り）→ 文字を削除した加工版に差し替え
+    image: "/images/gallery/antoine-top.jpg",
     href: "/products/antoine",
   },
   {

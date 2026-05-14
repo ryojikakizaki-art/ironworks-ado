@@ -59,6 +59,8 @@ export function CategoryDock() {
   // ポインタ操作開始時の scrollLeft（操作で実際にスクロールしたか判定するため）
   const scrollStartRef = useRef(0)
   const resumeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  // 自動スクロールのサブピクセル端数アキュムレータ（iOS Safari の scrollLeft 整数丸め対策）
+  const accumRef = useRef(0)
 
   const activeProducts = activeKey
     ? CATALOG_PRODUCTS.filter((p) => p.cat === activeKey)
@@ -100,8 +102,16 @@ export function CategoryDock() {
       const dt = Math.min(now - prev, 50)
       prev = now
       if (el && !hoverPausedRef.current && !dragPausedRef.current) {
-        el.scrollLeft += (AUTO_SCROLL_PX_PER_SEC * dt) / 1000
-        normalizeScroll()
+        // iOS Safari は scrollLeft が整数に丸められ、サブピクセルの +=
+        // （約 0.75px/frame）が読み戻しで詰まって自動スクロールが進まない。
+        // 端数を accumRef に貯め、1px 以上たまったら整数分だけ進める。
+        accumRef.current += (AUTO_SCROLL_PX_PER_SEC * dt) / 1000
+        const step = Math.floor(accumRef.current)
+        if (step >= 1) {
+          accumRef.current -= step
+          el.scrollLeft += step
+          normalizeScroll()
+        }
       }
       rafId = requestAnimationFrame(tick)
     }
