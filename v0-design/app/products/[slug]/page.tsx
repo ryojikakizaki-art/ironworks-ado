@@ -445,7 +445,7 @@ export default function ProductDetailPage() {
                     {product.drawing.category === "fixed" ? (
                       <>
                         <div className="flex items-center gap-4">
-                          <div className="flex-1 px-4 py-4 bg-secondary border border-border text-[14px] text-foreground">
+                          <div className="flex-1 px-4 py-4 bg-white border border-border text-[14px] text-foreground">
                             高さ {product.drawing.stdLengthMm}mm 固定サイズ
                             <span className="text-[11px] text-muted-foreground ml-2">
                               （長さ調整不可）
@@ -760,7 +760,7 @@ export default function ProductDetailPage() {
                     <h3 className="font-serif text-[22px] font-bold text-foreground tracking-tight">確認して購入</h3>
                     
                     {/* Price Breakdown (詳細内訳) */}
-                    <div className="bg-muted/50 rounded-lg p-5 space-y-2.5">
+                    <div className="bg-white border border-border rounded-lg p-5 space-y-2.5">
                       <div className="flex justify-between text-[15px]">
                         <span className="text-muted-foreground">
                           基本料金（〜{product.drawing.stdLengthMm}mm）
@@ -904,7 +904,7 @@ export default function ProductDetailPage() {
               <h2 className="font-serif text-3xl lg:text-4xl mb-8">仕様と特徴</h2>
 
               {/* Specs Grid (シミュレーター上から移動) */}
-              <div className="bg-secondary rounded-lg p-6 mb-10">
+              <div className="bg-white border border-border rounded-lg p-6 mb-10">
                 <h3 className="font-serif text-[18px] font-medium mb-4 text-foreground">仕様</h3>
                 <div className="grid sm:grid-cols-2 gap-x-8 gap-y-3">
                   {specs.map((spec, index) => (
@@ -925,7 +925,7 @@ export default function ProductDetailPage() {
                 {product.featureBullets.map((feature, index) => {
                   const Icon = FEATURE_ICON_MAP[feature.icon]
                   return (
-                    <div key={index} className="flex items-start gap-3 p-5 bg-secondary rounded-lg">
+                    <div key={index} className="flex items-start gap-3 p-5 bg-white border border-border rounded-lg">
                       <Icon className="w-7 h-7 text-gold flex-shrink-0" />
                       <div>
                         <h4 className="font-serif text-[16px] font-medium mb-1.5">{feature.title}</h4>
