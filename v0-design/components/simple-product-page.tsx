@@ -724,7 +724,7 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
             </div>
             <div className="mt-8 flex justify-center">
               <PrimaryCTA
-                href={`/contact?product=${encodeURIComponent(product.slug)}&category=question`}
+                href={`/contact?product=${encodeURIComponent(product.slug)}&category=product`}
                 variant="gold"
                 size="md"
                 icon={<MessageSquare className="w-4 h-4" />}

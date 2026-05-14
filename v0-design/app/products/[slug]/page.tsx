@@ -903,9 +903,10 @@ export default function ProductDetailPage() {
                         </div>
                       )}
                       {/* 長さで価格が確定するため「見積もり」は不要。
-                          計算機で対応できない特殊仕様の相談導線として配置。 */}
+                          計算機で対応できない特殊仕様の相談導線として配置。
+                          contact 側で種別「特注・カスタムオーダー」＋当該商品が事前選択される。 */}
                       <Link
-                        href="/contact"
+                        href={`/contact?product=${encodeURIComponent(slug)}&category=custom`}
                         className="block w-full py-4 border border-gold/20 text-foreground text-[15px] font-medium rounded-md hover:border-gold hover:text-gold transition-colors text-center"
                       >
                         特殊な仕様について相談する
