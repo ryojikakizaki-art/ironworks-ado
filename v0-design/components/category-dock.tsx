@@ -61,14 +61,28 @@ export function CategoryDock() {
   // マーキー連続再生のため 2 列分複製
   const marqueeProducts = [...activeProducts, ...activeProducts]
 
-  // スクロール位置を「1 周分（scrollWidth/2）の範囲内」に補正してシームレスループ
+  // シームレスループの周期 = 商品 1 周分の幅。
+  // scrollWidth/2 だとトラックの px-4 パディングや複製の境目に入る gap のぶん
+  // 実際の周期とズレ、折り返し地点（先頭商品が左端に来る瞬間）でガタつくため、
+  // 複製先頭カード（index = activeProducts.length）と先頭カードの
+  // offsetLeft の差で正確に求める。
+  const getLoopPeriod = () => {
+    const el = scrollRef.current
+    if (!el) return 0
+    const first = el.children[0] as HTMLElement | undefined
+    const secondCopyFirst = el.children[activeProducts.length] as HTMLElement | undefined
+    if (!first || !secondCopyFirst) return 0
+    return secondCopyFirst.offsetLeft - first.offsetLeft
+  }
+
+  // スクロール位置を「1 周分の範囲内」に補正してシームレスループ
   const normalizeScroll = () => {
     const el = scrollRef.current
     if (!el) return
-    const half = el.scrollWidth / 2
-    if (half <= 0) return
-    if (el.scrollLeft >= half) el.scrollLeft -= half
-    else if (el.scrollLeft <= 0) el.scrollLeft = half - 1
+    const period = getLoopPeriod()
+    if (period <= 0) return
+    if (el.scrollLeft >= period) el.scrollLeft -= period
+    else if (el.scrollLeft <= 0) el.scrollLeft = period - 1
   }
 
   // 自動スクロール（rAF）。一時停止中はスキップ。activeKey 変更で貼り直す。
