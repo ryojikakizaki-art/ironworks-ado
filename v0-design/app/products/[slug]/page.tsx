@@ -92,6 +92,9 @@ export default function ProductDetailPage() {
   // Embedded Checkout: clientSecret が入ったらモーダルが開く
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
   const [isCtaInView, setIsCtaInView] = useState(false)
+  // 初回来訪者への配慮: フローティング購入バーは「一度 Step4（確認して購入）まで
+  // スクロールして到達した」後にのみ表示する。到達後はスクロールを戻しても表示し続ける。
+  const [hasSeenCta, setHasSeenCta] = useState(false)
   const ctaRef = useRef<HTMLDivElement | null>(null)
   const prefectureRef = useRef<HTMLDivElement | null>(null)
   // 座金ルール (商品固有。未指定は旧式=横型ルール)
@@ -189,7 +192,10 @@ export default function ProductDetailPage() {
     const target = ctaRef.current
     if (!target) return
     const obs = new IntersectionObserver(
-      ([entry]) => setIsCtaInView(entry.isIntersecting),
+      ([entry]) => {
+        setIsCtaInView(entry.isIntersecting)
+        if (entry.isIntersecting) setHasSeenCta(true)
+      },
       { rootMargin: "0px 0px -20% 0px", threshold: 0.05 }
     )
     obs.observe(target)
@@ -982,7 +988,7 @@ export default function ProductDetailPage() {
 
       {/* Floating Price Bar (Step4 CTA が画面外の時だけ表示) */}
       <AnimatePresence>
-        {!isCtaInView && !prices.shippingInquiry && (
+        {hasSeenCta && !isCtaInView && !prices.shippingInquiry && (
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
