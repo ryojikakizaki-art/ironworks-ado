@@ -469,7 +469,7 @@ export default function PaintPage() {
               </div>
             </aside>
             {/* Body */}
-            <div className="lg:col-span-9 scroll-mt-24">
+            <div className="lg:col-span-9 scroll-mt-24 min-w-0">
               <h3 className="font-serif text-xl lg:text-3xl text-foreground mb-6 leading-snug">
                 主剤 + 硬化剤の化学反応で<br className="hidden lg:block" />
                 強靭な塗膜が形成される。
@@ -512,7 +512,7 @@ export default function PaintPage() {
                 <p className="text-[12px] text-muted-foreground mt-3">職人の手作業 4 工程</p>
               </div>
             </aside>
-            <div className="lg:col-span-9 scroll-mt-24">
+            <div className="lg:col-span-9 scroll-mt-24 min-w-0">
               <h3 className="font-serif text-xl lg:text-3xl text-foreground mb-6 leading-snug">
                 素地づくりから検品まで、<br className="hidden lg:block" />
                 すべて職人の手作業で。
@@ -577,7 +577,7 @@ export default function PaintPage() {
                 <p className="text-[12px] text-muted-foreground mt-3">お客様の声と職人からの提案</p>
               </div>
             </aside>
-            <div className="lg:col-span-9 scroll-mt-24 space-y-12">
+            <div className="lg:col-span-9 scroll-mt-24 min-w-0 space-y-12">
               {voiceCases.map((c) => (
                 <div key={c.label}>
                   {/* Case label */}
@@ -626,7 +626,7 @@ export default function PaintPage() {
                 <p className="text-[12px] text-muted-foreground mt-3">1液 / 2液 / 焼付塗装</p>
               </div>
             </aside>
-            <div className="lg:col-span-9 scroll-mt-24">
+            <div className="lg:col-span-9 scroll-mt-24 min-w-0">
               <h3 className="font-serif text-xl lg:text-3xl text-foreground mb-6 leading-snug">
                 色の薄い 1 液型は施工の手軽さ以外で<br className="hidden lg:block" />
                 大きく劣ります。
@@ -654,7 +654,11 @@ export default function PaintPage() {
                     <span className="text-gold text-lg leading-none transition-transform group-open:rotate-45">＋</span>
                   </summary>
                   <div className="border-t border-border/40 p-4 lg:p-6 bg-secondary/30">
-                    <FilmCrossSectionDiagram />
+                    <div className="overflow-x-auto">
+                      <div className="min-w-[680px]">
+                        <FilmCrossSectionDiagram />
+                      </div>
+                    </div>
                   </div>
                 </details>
               </div>
@@ -672,7 +676,11 @@ export default function PaintPage() {
                   />
                 </div>
                 <div className="border border-border bg-secondary/30 rounded-md p-6 lg:p-8">
-                  <FilmDurabilityTimeline />
+                  <div className="overflow-x-auto">
+                    <div className="min-w-[680px]">
+                      <FilmDurabilityTimeline />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -759,7 +767,7 @@ export default function PaintPage() {
                 <p className="text-[12px] text-muted-foreground mt-3">ご注文の簡単 3 ステップ</p>
               </div>
             </aside>
-            <div className="lg:col-span-9 scroll-mt-24">
+            <div className="lg:col-span-9 scroll-mt-24 min-w-0">
               <div className="space-y-0">
                 {flowSteps.map((s, i) => (
                   <div
@@ -807,7 +815,7 @@ export default function PaintPage() {
                 <p className="text-[12px] text-muted-foreground mt-3">よくあるご質問</p>
               </div>
             </aside>
-            <div className="lg:col-span-9 scroll-mt-24 space-y-3">
+            <div className="lg:col-span-9 scroll-mt-24 min-w-0 space-y-3">
               {faq.map((item) => (
                 <details
                   key={item.q}
@@ -844,7 +852,7 @@ export default function PaintPage() {
                 <p className="text-[12px] text-muted-foreground mt-3">2 液型ウレタン採用製品</p>
               </div>
             </aside>
-            <div className="lg:col-span-9 scroll-mt-24">
+            <div className="lg:col-span-9 scroll-mt-24 min-w-0">
               <p className="text-[15px] leading-[1.95] text-foreground/80 mb-8 max-w-2xl">
                 屋内設置の手すりは 2 液型ウレタン塗装で仕上げています。
                 屋外設置をご希望の場合は、溶融亜鉛メッキを重ねた二重防錆処理に切り替わります。
