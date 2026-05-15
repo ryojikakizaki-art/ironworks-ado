@@ -161,109 +161,122 @@ const flowSteps = [
   },
 ]
 
-// ════════════ SVG: 犠牲防食の仕組み ════════════
+// ════════════ 犠牲防食の仕組み — ad o 流ミニマル設計 v1 ════════════
+// 設計方針：白基調・抽象イラスト・ポイント強調。整然と並ぶテーブル / 単調説明は避け、
+// 「3 秒で塗装のみは錆びる／亜鉛メッキは守る」が伝わる構造。SVG ＋ Tailwind で
+// レスポンシブ自然対応（横長 PC でも縦長スマホでも崩れない）。
 function SacrificialProtectionDiagram() {
   return (
-    <svg viewBox="0 0 800 320" className="w-full h-auto">
-      <defs>
-        <marker id="arrow-zinc" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
-          <path d="M0,0 L8,4 L0,8 Z" fill="#8ab5cf" />
-        </marker>
-        <linearGradient id="rust-gradient" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor="#a44" stopOpacity="0.9" />
-          <stop offset="100%" stopColor="#722" stopOpacity="0.5" />
-        </linearGradient>
-        <linearGradient id="zinc-gradient" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#a8d4ec" />
-          <stop offset="100%" stopColor="#6a8a9f" />
-        </linearGradient>
-      </defs>
+    <div className="w-full max-w-[920px] mx-auto py-2 sm:py-6 lg:py-10">
+      {/* ① タイトル */}
+      <div className="text-center mb-10 sm:mb-14 lg:mb-16">
+        <div className="w-12 sm:w-16 h-px bg-gold mx-auto mb-4 sm:mb-5" />
+        <p className="text-[10px] sm:text-[11px] tracking-[0.4em] text-gold mb-4 sm:mb-5">
+          SACRIFICIAL PROTECTION
+        </p>
+        <h3 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-foreground leading-tight">
+          犠牲防食のしくみ
+        </h3>
+      </div>
 
-      {/* === 左：塗装のみ === */}
-      <text x="180" y="38" textAnchor="middle" fill="#888" fontSize="13" fontWeight="500">
-        塗装のみの場合
-      </text>
+      {/* ② 左右対比 */}
+      <div className="grid grid-cols-2 gap-0 relative">
+        {/* 中央の細い金色仕切り線 */}
+        <div className="absolute left-1/2 top-4 bottom-4 w-px bg-gold/40" aria-hidden="true" />
 
-      {/* 鉄素地 */}
-      <rect x="40" y="140" width="280" height="70" rx="3" fill="#4a4a4a" stroke="#666" strokeWidth="1" />
-      <text x="180" y="180" textAnchor="middle" fill="#bbb" fontSize="14" letterSpacing="0.3em">
-        鉄  素  地
-      </text>
+        {/* 左：塗装のみ */}
+        <div className="flex flex-col items-center px-3 sm:px-6 lg:px-10 text-center">
+          <svg viewBox="0 0 200 200" className="w-32 sm:w-44 lg:w-52 h-auto" aria-hidden="true">
+            {/* 円フレーム */}
+            <circle cx="100" cy="100" r="86" fill="none" stroke="#0E0E0E" strokeWidth="0.8" />
+            {/* 鉄素地 */}
+            <rect x="48" y="108" width="104" height="42" fill="#4a4a4a" />
+            {/* 塗膜（薄い） */}
+            <rect x="48" y="98" width="104" height="10" fill="#cfcfcf" />
+            {/* 傷（ジグザグの欠損） */}
+            <path
+              d="M92 92 L100 100 L96 108 L104 100 L100 92 Z"
+              fill="#0E0E0E"
+            />
+            {/* 錆のにじみ（不規則な楕円を重ねる） */}
+            <ellipse cx="100" cy="158" rx="40" ry="6" fill="#A44434" opacity="0.55" />
+            <ellipse cx="92" cy="165" rx="30" ry="4" fill="#A44434" opacity="0.4" />
+            <ellipse cx="110" cy="167" rx="22" ry="3" fill="#A44434" opacity="0.35" />
+          </svg>
+          <p className="mt-4 sm:mt-5 text-[10px] sm:text-xs tracking-[0.3em] text-foreground/60 uppercase">
+            塗装のみ
+          </p>
+          <p className="mt-3 sm:mt-4 font-bold text-lg sm:text-2xl lg:text-3xl leading-tight text-foreground whitespace-nowrap">
+            <span className="text-[#A44434] mr-1">×</span>
+            1〜3 年で錆
+          </p>
+        </div>
 
-      {/* 塗膜 */}
-      <rect x="40" y="115" width="280" height="25" rx="2" fill="#3a3a3a" stroke="#888" strokeWidth="0.8" />
-      <text x="180" y="131" textAnchor="middle" fill="#aaa" fontSize="11">塗膜</text>
+        {/* 右：亜鉛メッキ */}
+        <div className="flex flex-col items-center px-3 sm:px-6 lg:px-10 text-center">
+          <svg viewBox="0 0 200 200" className="w-32 sm:w-44 lg:w-52 h-auto" aria-hidden="true">
+            <defs>
+              <marker
+                id="ado-zinc-arrow"
+                markerWidth="6"
+                markerHeight="6"
+                refX="5"
+                refY="3"
+                orient="auto"
+              >
+                <path d="M0 0 L6 3 L0 6 Z" fill="#C8A96E" />
+              </marker>
+            </defs>
+            {/* 円フレーム（ゴールド） */}
+            <circle cx="100" cy="100" r="86" fill="none" stroke="#C8A96E" strokeWidth="0.8" />
+            {/* 鉄素地 */}
+            <rect x="48" y="118" width="104" height="32" fill="#4a4a4a" />
+            {/* 鉄-亜鉛合金層 */}
+            <rect x="48" y="108" width="104" height="10" fill="#6F7A8A" />
+            {/* 純亜鉛層 */}
+            <rect x="48" y="98" width="104" height="10" fill="#B8C5D1" />
+            {/* 傷（小さく、鉄まで届かない） */}
+            <path
+              d="M97 92 L100 98 L103 92 Z"
+              fill="#0E0E0E"
+            />
+            {/* 両側から流れ込む犠牲防食の矢印 */}
+            <path
+              d="M70 92 Q82 92 94 98"
+              stroke="#C8A96E"
+              strokeWidth="1.2"
+              fill="none"
+              markerEnd="url(#ado-zinc-arrow)"
+            />
+            <path
+              d="M130 92 Q118 92 106 98"
+              stroke="#C8A96E"
+              strokeWidth="1.2"
+              fill="none"
+              markerEnd="url(#ado-zinc-arrow)"
+            />
+          </svg>
+          <p className="mt-4 sm:mt-5 text-[10px] sm:text-xs tracking-[0.3em] text-foreground/60 uppercase">
+            亜鉛メッキ
+          </p>
+          <p className="mt-3 sm:mt-4 font-bold text-lg sm:text-2xl lg:text-3xl leading-tight text-foreground whitespace-nowrap">
+            <span className="text-gold mr-1">✓</span>
+            10 年以上 守る
+          </p>
+        </div>
+      </div>
 
-      {/* 傷 */}
-      <rect x="160" y="108" width="40" height="40" fill="#0e0e0e" stroke="none" />
-      <text x="180" y="98" textAnchor="middle" fill="#e55" fontSize="11">傷・剥がれ</text>
-
-      {/* 錆 */}
-      <ellipse cx="180" cy="232" rx="80" ry="14" fill="url(#rust-gradient)" opacity="0.7" />
-      <path
-        d="M120,235 Q140,225 160,238 Q180,222 200,238 Q220,225 240,235"
-        fill="url(#rust-gradient)"
-        opacity="0.9"
-      />
-      <text x="180" y="270" textAnchor="middle" fill="#c55" fontSize="12">
-        傷から水が入って錆びてしまう
-      </text>
-      <text x="180" y="290" textAnchor="middle" fill="#a55" fontSize="11">
-        塗膜が剥がれた瞬間にカウントダウン
-      </text>
-
-      {/* === 中央分割 === */}
-      <line x1="400" y1="20" x2="400" y2="300" stroke="#333" strokeDasharray="3 4" />
-
-      {/* === 右：溶融亜鉛メッキ === */}
-      <text x="600" y="38" textAnchor="middle" fill="#8ab5cf" fontSize="13" fontWeight="500">
-        溶融亜鉛メッキの場合
-      </text>
-
-      {/* 鉄素地 */}
-      <rect x="460" y="140" width="280" height="70" rx="3" fill="#4a4a4a" stroke="#666" strokeWidth="1" />
-      <text x="600" y="180" textAnchor="middle" fill="#bbb" fontSize="14" letterSpacing="0.3em">
-        鉄  素  地
-      </text>
-
-      {/* 合金層 */}
-      <rect x="460" y="125" width="280" height="15" rx="1" fill="#6a8a9f" />
-      <text x="450" y="135" textAnchor="end" fill="#8ab5cf" fontSize="10">合金層 →</text>
-
-      {/* 純亜鉛層 */}
-      <rect x="460" y="108" width="280" height="17" rx="1" fill="url(#zinc-gradient)" />
-      <text x="450" y="119" textAnchor="end" fill="#a8d4ec" fontSize="10">純亜鉛層 →</text>
-
-      {/* 傷 */}
-      <rect x="580" y="103" width="40" height="40" fill="#0e0e0e" stroke="none" />
-      <text x="600" y="93" textAnchor="middle" fill="#a8d4ec" fontSize="11">傷がついても</text>
-
-      {/* 犠牲防食の動き：亜鉛が傷に流れ込む */}
-      <path
-        d="M555,128 Q580,118 580,112"
-        stroke="#8ab5cf"
-        strokeWidth="1.5"
-        fill="none"
-        markerEnd="url(#arrow-zinc)"
-      />
-      <path
-        d="M645,128 Q620,118 620,112"
-        stroke="#8ab5cf"
-        strokeWidth="1.5"
-        fill="none"
-        markerEnd="url(#arrow-zinc)"
-      />
-
-      {/* 鉄が無傷であることを示す ✓ */}
-      <text x="600" y="195" textAnchor="middle" fill="#8ab5cf" fontSize="20" fontWeight="500">✓</text>
-
-      <text x="600" y="270" textAnchor="middle" fill="#8ab5cf" fontSize="12">
-        亜鉛が代わりに溶けて、鉄を守り続ける
-      </text>
-      <text x="600" y="290" textAnchor="middle" fill="#7a9bb5" fontSize="11">
-        ＝「犠牲防食（ぎせいぼうしょく）」のしくみ
-      </text>
-    </svg>
+      {/* ③ メッセージ */}
+      <div className="text-center mt-12 sm:mt-16 lg:mt-20">
+        <div className="w-12 sm:w-16 h-px bg-gold mx-auto mb-4 sm:mb-5" />
+        <p className="text-[12px] sm:text-[13px] text-foreground/75 leading-relaxed">
+          亜鉛が代わりに溶けて鉄を守り続ける
+        </p>
+        <p className="mt-2 font-serif text-base sm:text-lg text-gold tracking-wider">
+          ＝ 犠牲防食
+        </p>
+      </div>
+    </div>
   )
 }
 
@@ -698,7 +711,7 @@ export default function GalvanizingPage() {
                 <p className="text-[12px] text-muted-foreground mt-3">溶融亜鉛メッキとは</p>
               </div>
             </aside>
-            <div className="lg:col-span-9 scroll-mt-24">
+            <div className="lg:col-span-9 scroll-mt-24 min-w-0">
               <h3 className="font-serif text-xl lg:text-3xl text-foreground mb-6 leading-snug">
                 亜鉛が鉄と化学結合し、<br className="hidden lg:block" />
                 犠牲防食で守り続ける。
@@ -716,14 +729,15 @@ export default function GalvanizingPage() {
                   橋梁・鉄塔・ガードレールなど、屋外インフラで広く採用されている信頼性の高い技術です。
                 </p>
               </div>
-              <div className="border border-border bg-secondary/30 rounded-md p-5 lg:p-8 mb-6">
+              <div className="border border-border bg-white rounded-md p-5 sm:p-8 lg:p-10 mb-6">
                 <SacrificialProtectionDiagram />
-                <p className="text-[11px] text-muted-foreground mt-3 text-center tracking-wide">
-                  犠牲防食のしくみ — 傷がついても亜鉛が鉄を守り続けます
-                </p>
               </div>
               <div className="border border-border bg-secondary/30 rounded-md p-5 lg:p-8">
-                <CrossSectionDiagram />
+                <div className="overflow-x-auto">
+                  <div className="min-w-[680px]">
+                    <CrossSectionDiagram />
+                  </div>
+                </div>
                 <p className="text-[11px] text-muted-foreground mt-3 text-center tracking-wide">
                   ado の二重防錆 — 4 層構造で長期耐久を実現
                 </p>
@@ -742,7 +756,7 @@ export default function GalvanizingPage() {
                 <p className="text-[12px] text-muted-foreground mt-3">二重防錆の 4 工程</p>
               </div>
             </aside>
-            <div className="lg:col-span-9 scroll-mt-24">
+            <div className="lg:col-span-9 scroll-mt-24 min-w-0">
               <h3 className="font-serif text-xl lg:text-3xl text-foreground mb-6 leading-snug">
                 製作からお届けまで、<br className="hidden lg:block" />
                 すべて一貫して行います。
@@ -785,7 +799,7 @@ export default function GalvanizingPage() {
                 <p className="text-[12px] text-white/50 mt-3">自社工房・実映像</p>
               </div>
             </aside>
-            <div className="lg:col-span-9 scroll-mt-24">
+            <div className="lg:col-span-9 scroll-mt-24 min-w-0">
               <p className="text-[15px] leading-[1.95] text-white/80 mb-8 max-w-2xl">
                 ado の屋外用手すりが、自社工房で 1 本ずつ手作業で生まれていく様子。
                 製作 → メッキ工場 → 戻し作業 → 塗装の各工程を、実際の動画と作業写真でご覧いただけます。
@@ -873,7 +887,7 @@ export default function GalvanizingPage() {
                 <p className="text-[12px] text-muted-foreground mt-3">屋外設置のお悩みに応えます</p>
               </div>
             </aside>
-            <div className="lg:col-span-9 scroll-mt-24 space-y-12">
+            <div className="lg:col-span-9 scroll-mt-24 min-w-0 space-y-12">
               {voiceCases.map((c) => (
                 <div key={c.label}>
                   <div className="flex items-center gap-3 mb-5">
@@ -918,7 +932,7 @@ export default function GalvanizingPage() {
                 <p className="text-[12px] text-muted-foreground mt-3">屋外耐久・塩害・紫外線</p>
               </div>
             </aside>
-            <div className="lg:col-span-9 scroll-mt-24">
+            <div className="lg:col-span-9 scroll-mt-24 min-w-0">
               <h3 className="font-serif text-xl lg:text-3xl text-foreground mb-6 leading-snug">
                 塗装のみでは屋外で 1〜3 年。<br className="hidden lg:block" />
                 メッキ ＋ 塗装で 10 年以上。
@@ -932,7 +946,11 @@ export default function GalvanizingPage() {
               <div className="mb-10">
                 <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">経年変化イメージ</p>
                 <div className="border border-border bg-secondary/30 rounded-md p-6 lg:p-8">
-                  <DurabilityTimeline />
+                  <div className="overflow-x-auto">
+                    <div className="min-w-[680px]">
+                      <DurabilityTimeline />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -1019,7 +1037,7 @@ export default function GalvanizingPage() {
                 <p className="text-[12px] text-muted-foreground mt-3">ご注文から設置までの 3 ステップ</p>
               </div>
             </aside>
-            <div className="lg:col-span-9 scroll-mt-24">
+            <div className="lg:col-span-9 scroll-mt-24 min-w-0">
               <div className="space-y-0">
                 {flowSteps.map((s, i) => (
                   <div
@@ -1066,7 +1084,7 @@ export default function GalvanizingPage() {
                 <p className="text-[12px] text-muted-foreground mt-3">よくあるご質問</p>
               </div>
             </aside>
-            <div className="lg:col-span-9 scroll-mt-24 space-y-3">
+            <div className="lg:col-span-9 scroll-mt-24 min-w-0 space-y-3">
               {faq.map((item) => (
                 <details
                   key={item.q}
@@ -1103,7 +1121,7 @@ export default function GalvanizingPage() {
                 <p className="text-[12px] text-muted-foreground mt-3">二重防錆処理 採用製品</p>
               </div>
             </aside>
-            <div className="lg:col-span-9 scroll-mt-24">
+            <div className="lg:col-span-9 scroll-mt-24 min-w-0">
               <p className="text-[15px] leading-[1.95] text-foreground/80 mb-8 max-w-2xl">
                 屋外設置のアイアン製品には、溶融亜鉛メッキ ＋ 2 液型ウレタン塗装の二重防錆処理を施しています。
               </p>
