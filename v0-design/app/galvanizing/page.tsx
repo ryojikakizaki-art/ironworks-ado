@@ -727,7 +727,7 @@ function DurabilityTimeline() {
         </linearGradient>
       </defs>
 
-      <text x="400" y="30" textAnchor="middle" fill="#e8e8e8" fontSize="13" fontWeight="500">
+      <text x="400" y="30" textAnchor="middle" fill="#1a1a1a" fontSize="15" fontWeight="700">
         屋外設置から経過年数別のコンディション
       </text>
 
@@ -736,8 +736,8 @@ function DurabilityTimeline() {
         const x = 80 + (y / 20) * 640
         return (
           <g key={y}>
-            <line x1={x} y1="60" x2={x} y2="240" stroke="#333" strokeDasharray="2 4" strokeWidth="0.5" />
-            <text x={x} y="258" textAnchor="middle" fill="#888" fontSize="11">
+            <line x1={x} y1="60" x2={x} y2="240" stroke="#999" strokeDasharray="2 4" strokeWidth="0.5" />
+            <text x={x} y="258" textAnchor="middle" fill="#1a1a1a" fontSize="13" fontWeight="600">
               {y}年
             </text>
           </g>
@@ -745,45 +745,45 @@ function DurabilityTimeline() {
       })}
 
       {/* === レーン1: 2 液型のみ === */}
-      <text x="76" y="92" textAnchor="end" fill="#c89060" fontSize="11" fontWeight="500">2 液型のみ</text>
-      <text x="76" y="106" textAnchor="end" fill="#888" fontSize="9">（ado 屋内標準）</text>
+      <text x="76" y="92" textAnchor="end" fill="#1a1a1a" fontSize="13" fontWeight="700">2 液型のみ</text>
+      <text x="76" y="107" textAnchor="end" fill="#555" fontSize="11">（ado 屋内標準）</text>
       <rect x="80" y="80" width="640" height="32" rx="4" fill="url(#paint-gradient)" opacity="0.85" />
       {/* マイルストーン */}
       <g>
         <circle cx="80" cy="96" r="4" fill="#6a9a6a" stroke="#0e0e0e" strokeWidth="2" />
-        <text x="80" y="74" textAnchor="middle" fill="#7aa05a" fontSize="10">設置直後</text>
+        <text x="80" y="72" textAnchor="middle" fill="#1a1a1a" fontSize="12" fontWeight="600">設置直後</text>
 
         <circle cx={80 + 640 * 5 / 20} cy="96" r="4" fill="#7aa05a" stroke="#0e0e0e" strokeWidth="2" />
-        <text x={80 + 640 * 5 / 20} y="74" textAnchor="middle" fill="#7aa05a" fontSize="10">5年・問題なし</text>
+        <text x={80 + 640 * 5 / 20} y="72" textAnchor="middle" fill="#1a1a1a" fontSize="12" fontWeight="600">5年・問題なし</text>
 
         <circle cx={80 + 640 * 8 / 20} cy="96" r="4" fill="#a89040" stroke="#0e0e0e" strokeWidth="2" />
-        <text x={80 + 640 * 8 / 20} y="74" textAnchor="middle" fill="#a89040" fontSize="10">部分補修を始めるころ</text>
+        <text x={80 + 640 * 8 / 20} y="72" textAnchor="middle" fill="#1a1a1a" fontSize="12" fontWeight="600">部分補修を始めるころ</text>
 
         <circle cx={80 + 640 * 14 / 20} cy="96" r="4" fill="#b06840" stroke="#0e0e0e" strokeWidth="2" />
-        <text x={80 + 640 * 14 / 20} y="74" textAnchor="middle" fill="#c87040" fontSize="10">塗り直しを検討</text>
+        <text x={80 + 640 * 14 / 20} y="72" textAnchor="middle" fill="#a04030" fontSize="12" fontWeight="700">塗り直しを検討</text>
       </g>
 
       {/* === レーン2: 2 液型 + メッキ === */}
-      <text x="76" y="162" textAnchor="end" fill="#c8a96e" fontSize="11" fontWeight="500">2 液型 ＋ メッキ</text>
-      <text x="76" y="176" textAnchor="end" fill="#888" fontSize="9">（ado 屋外標準）</text>
+      <text x="76" y="162" textAnchor="end" fill="#1a1a1a" fontSize="13" fontWeight="700">2 液型 ＋ メッキ</text>
+      <text x="76" y="177" textAnchor="end" fill="#555" fontSize="11">（ado 屋外標準）</text>
       <rect x="80" y="150" width="640" height="32" rx="4" fill="url(#ado-gradient)" opacity="0.9" />
       {/* マイルストーン */}
       <g>
         <circle cx="80" cy="166" r="4" fill="#6a9a6a" stroke="#0e0e0e" strokeWidth="2" />
-        <text x="80" y="208" textAnchor="middle" fill="#7aa07a" fontSize="10">設置直後</text>
+        <text x="80" y="208" textAnchor="middle" fill="#1a1a1a" fontSize="12" fontWeight="600">設置直後</text>
 
         <circle cx={80 + 640 * 10 / 20} cy="166" r="4" fill="#7aa07a" stroke="#0e0e0e" strokeWidth="2" />
-        <text x={80 + 640 * 10 / 20} y="208" textAnchor="middle" fill="#7aa07a" fontSize="10">10年経過、まだ綺麗</text>
+        <text x={80 + 640 * 10 / 20} y="208" textAnchor="middle" fill="#1a6a3a" fontSize="12" fontWeight="700">10年経過、まだ綺麗</text>
 
         <circle cx={80 + 640 * 15 / 20} cy="166" r="4" fill="#a09060" stroke="#0e0e0e" strokeWidth="2" />
-        <text x={80 + 640 * 15 / 20} y="208" textAnchor="middle" fill="#a09060" fontSize="10">塗装の小傷を補修</text>
+        <text x={80 + 640 * 15 / 20} y="208" textAnchor="middle" fill="#1a1a1a" fontSize="12" fontWeight="600">塗装の小傷を補修</text>
 
         <circle cx={80 + 640 * 20 / 20} cy="166" r="4" fill="#b08050" stroke="#0e0e0e" strokeWidth="2" />
-        <text x={80 + 640 * 20 / 20} y="208" textAnchor="middle" fill="#b08050" fontSize="10">メッキ層で保護継続</text>
+        <text x={80 + 640 * 20 / 20} y="208" textAnchor="middle" fill="#1a1a1a" fontSize="12" fontWeight="600">メッキ層で保護継続</text>
       </g>
 
       {/* 参考線・凡例 */}
-      <text x="400" y="232" textAnchor="middle" fill="#666" fontSize="10">
+      <text x="400" y="232" textAnchor="middle" fill="#333" fontSize="12" fontWeight="500">
         ※ 設置環境・気候により実績は変動します。1 液型塗装の場合は 1〜3 年で錆発生
       </text>
     </svg>
@@ -813,8 +813,8 @@ function PerformanceRadar() {
       .join(" ")
 
   return (
-    <svg viewBox="0 0 400 400" className="w-full h-auto max-w-md mx-auto">
-      <text x="200" y="24" textAnchor="middle" fill="#f5f5f5" fontSize="13" fontWeight="500">
+    <svg viewBox="-40 0 480 400" className="w-full h-auto max-w-md mx-auto">
+      <text x="200" y="24" textAnchor="middle" fill="#1a1a1a" fontSize="15" fontWeight="700">
         屋外用途での性能比較
       </text>
 
@@ -824,7 +824,7 @@ function PerformanceRadar() {
         const points = angles
           .map((a) => `${(cx + r * Math.cos(a)).toFixed(1)},${(cy + r * Math.sin(a)).toFixed(1)}`)
           .join(" ")
-        return <polygon key={step} points={points} fill="none" stroke="#333" strokeWidth="0.5" />
+        return <polygon key={step} points={points} fill="none" stroke="#bbb" strokeWidth="0.5" />
       })}
 
       {/* 軸線 */}
@@ -835,7 +835,7 @@ function PerformanceRadar() {
           y1={cy}
           x2={cx + maxR * Math.cos(a)}
           y2={cy + maxR * Math.sin(a)}
-          stroke="#333"
+          stroke="#bbb"
           strokeWidth="0.5"
         />
       ))}
@@ -871,8 +871,9 @@ function PerformanceRadar() {
             y={y}
             textAnchor="middle"
             dominantBaseline="middle"
-            fill="#aaa"
-            fontSize="11"
+            fill="#1a1a1a"
+            fontSize="13"
+            fontWeight="700"
           >
             {label}
           </text>
@@ -882,11 +883,59 @@ function PerformanceRadar() {
       {/* 凡例 */}
       <g transform="translate(20 370)">
         <rect x="0" y="-10" width="14" height="14" fill="#c8a96e" fillOpacity="0.25" stroke="#c8a96e" strokeWidth="1.5" />
-        <text x="22" y="0" fill="#c8a96e" fontSize="10">2液型 ＋ メッキ（屋外）</text>
+        <text x="22" y="0" fill="#1a1a1a" fontSize="12" fontWeight="600">2液型 ＋ メッキ（屋外）</text>
         <rect x="200" y="-10" width="14" height="14" fill="#a07840" fillOpacity="0.22" stroke="#c89060" strokeWidth="1.5" />
-        <text x="222" y="0" fill="#c89060" fontSize="10">2液型のみ（屋内）</text>
+        <text x="222" y="0" fill="#555" fontSize="12" fontWeight="600">2液型のみ（屋内）</text>
       </g>
     </svg>
+  )
+}
+
+// ════════════ お客様アバター（Case ごとに違う人物） ════════════
+function PersonAvatar({ kind }: { kind: number }) {
+  if (kind === 0) {
+    // Case 01: 沿岸部のシニア男性風（青ベース）
+    return (
+      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#DDE9F0] border-2 border-[#5A8FAE] overflow-hidden shrink-0">
+        <svg viewBox="0 0 40 40" className="w-full h-full" aria-hidden="true">
+          {/* 髪（白髪短髪） */}
+          <ellipse cx="20" cy="13" rx="9" ry="5" fill="#B8C5D1" />
+          {/* 顔 */}
+          <circle cx="20" cy="19" r="8.5" fill="#F5DCC0" />
+          {/* 目 */}
+          <circle cx="17" cy="19" r="0.9" fill="#333" />
+          <circle cx="23" cy="19" r="0.9" fill="#333" />
+          {/* 眉 */}
+          <line x1="15.5" y1="16.5" x2="18.2" y2="16.8" stroke="#666" strokeWidth="0.8" strokeLinecap="round" />
+          <line x1="21.8" y1="16.8" x2="24.5" y2="16.5" stroke="#666" strokeWidth="0.8" strokeLinecap="round" />
+          {/* 口（軽い笑顔） */}
+          <path d="M17 23 Q20 24.5 23 23" stroke="#333" strokeWidth="0.8" fill="none" strokeLinecap="round" />
+          {/* 首・肩（青いシャツ） */}
+          <path d="M11 33 Q12 28 15 27.5 L25 27.5 Q28 28 29 33 L29 40 L11 40 Z" fill="#5A8FAE" />
+        </svg>
+      </div>
+    )
+  }
+  // Case 02: アプローチ手すりを検討する女性（暖色ベース）
+  return (
+    <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-[#F5E8D8] border-2 border-[#C97B5A] overflow-hidden shrink-0">
+      <svg viewBox="0 0 40 40" className="w-full h-full" aria-hidden="true">
+        {/* 髪（黒髪ロング） */}
+        <path d="M11 14 Q11 8 20 8 Q29 8 29 14 L29 28 L26 26 L26 19 L14 19 L14 26 L11 28 Z" fill="#3A2A1F" />
+        {/* 顔 */}
+        <circle cx="20" cy="20" r="8" fill="#FAE3C9" />
+        {/* 目 */}
+        <ellipse cx="17" cy="20" rx="0.9" ry="1.2" fill="#333" />
+        <ellipse cx="23" cy="20" rx="0.9" ry="1.2" fill="#333" />
+        {/* 眉（細い） */}
+        <path d="M15.5 17.5 Q17 17 18.2 17.3" stroke="#3A2A1F" strokeWidth="0.6" fill="none" strokeLinecap="round" />
+        <path d="M21.8 17.3 Q23 17 24.5 17.5" stroke="#3A2A1F" strokeWidth="0.6" fill="none" strokeLinecap="round" />
+        {/* 口（笑顔・口紅） */}
+        <path d="M17.5 23.5 Q20 25 22.5 23.5" stroke="#A04030" strokeWidth="1" fill="none" strokeLinecap="round" />
+        {/* 首・肩（オレンジトップス） */}
+        <path d="M11 33 Q12 28 15 27.5 L25 27.5 Q28 28 29 33 L29 40 L11 40 Z" fill="#C97B5A" />
+      </svg>
+    </div>
   )
 }
 
@@ -911,23 +960,41 @@ export default function GalvanizingPage() {
         <section className="border-b border-border">
           <div className="grid lg:grid-cols-12 lg:min-h-[60vh]">
             {/* Left: Text */}
-            <div className="lg:col-span-5 px-5 lg:px-12 py-12 lg:py-20 flex flex-col justify-center">
-              <p className="text-[10px] tracking-[0.5em] uppercase text-gold mb-5">Hot-Dip Galvanizing</p>
-              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl xl:text-6xl text-foreground leading-[1.15] mb-3">
-                屋外用アイアンの<br />
-                『亜鉛メッキ』
+            <div className="lg:col-span-6 px-5 lg:px-12 py-14 lg:py-24 flex flex-col justify-center">
+              <p className="text-[11px] tracking-[0.5em] uppercase text-gold mb-6">Why Galvanizing?</p>
+              <h1 className="font-sans font-black leading-tight mb-6 tracking-tight">
+                <span className="block text-3xl sm:text-4xl lg:text-5xl text-foreground mb-2">
+                  あなたの暮らしを、
+                </span>
+                <span className="flex items-baseline">
+                  <span className="text-6xl sm:text-7xl lg:text-[6.5rem] xl:text-[7.5rem] text-gold leading-none tracking-[-0.04em]">
+                    長く
+                  </span>
+                  <span className="text-3xl sm:text-4xl lg:text-[2.5rem] xl:text-5xl text-foreground ml-1 sm:ml-1.5 lg:ml-2">
+                    守るために。
+                  </span>
+                </span>
               </h1>
-              <p className="font-serif text-[14px] lg:text-base text-foreground/70 mb-8">
-                Double Anti-Rust Treatment
-              </p>
-              <p className="text-[14px] lg:text-[15px] leading-[1.95] text-foreground/80 max-w-md">
-                450℃ の亜鉛浴に浸して鉄を化学的に守る、橋梁・鉄塔と同じ防錆技術。
-                ado の屋外製品はすべて 2 液型ウレタン塗装と組み合わせた
-                二重防錆処理で、10 年以上の耐久性を実現します。
+              <div className="mb-8 flex items-center gap-3">
+                <span className="relative inline-block shrink-0">
+                  {/* ゴールド外枠（少しオフセット） */}
+                  <span className="absolute -top-1 -left-1 -bottom-1 -right-1 border-2 border-gold pointer-events-none" aria-hidden="true" />
+                  {/* 黒ベタ + 白文字 */}
+                  <span className="relative inline-block bg-foreground text-white font-bold text-base sm:text-lg lg:text-xl px-4 sm:px-5 py-2 sm:py-2.5 leading-snug tracking-wide">
+                    屋外でも錆びない、<span className="text-white">ado の</span><span className="text-gold">二重防錆。</span>
+                  </span>
+                </span>
+                {/* 右側に伸びるゴールド装飾線（白空白の解消） */}
+                <span className="flex-1 h-px bg-gold/40" aria-hidden="true" />
+              </div>
+              <p className="text-[15px] lg:text-[16px] leading-[1.9] text-foreground/80 max-w-md">
+                橋梁・鉄塔と同じ防錆技術 — 溶融亜鉛メッキ ＋ 2 液型ウレタン塗装。
+                <br className="hidden lg:block" />
+                10 年以上、屋外で錆びずに、暮らしを支え続けます。
               </p>
             </div>
             {/* Right: Hero photo (placeholder until ChatGPT image arrives) */}
-            <div className="lg:col-span-7 relative aspect-[3/2] lg:aspect-auto bg-secondary">
+            <div className="lg:col-span-6 relative aspect-[3/2] lg:aspect-auto bg-secondary">
               <Image
                 src="/images/process/galvanizing-hero.jpg"
                 alt="450℃ の亜鉛浴に鉄製手すりを浸漬している様子"
@@ -942,20 +1009,20 @@ export default function GalvanizingPage() {
 
         {/* ════════════ Stats banner ════════════ */}
         <section className="border-b border-border bg-card/30">
-          <div className="max-w-[1200px] mx-auto px-5 lg:px-8 py-10 lg:py-12">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8">
+          <div className="max-w-[1200px] mx-auto px-5 lg:px-8 py-12 lg:py-16">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 lg:gap-10">
               {stats.map((s) => {
                 const isWord = /[぀-ヿ一-鿿A-Z]/.test(s.value)
                 return (
                   <div key={s.label} className="text-center md:text-left">
                     <div className="flex items-baseline justify-center md:justify-start gap-1">
-                      <span className={`font-serif text-gold ${isWord ? "text-xl lg:text-2xl" : "text-3xl lg:text-4xl"}`}>
+                      <span className={`font-sans font-black text-gold leading-none ${isWord ? "text-3xl lg:text-4xl" : "text-5xl lg:text-6xl"}`}>
                         {s.value}
                       </span>
-                      <span className="text-[12px] text-gold/80">{s.unit}</span>
+                      <span className="text-[14px] lg:text-base text-gold/80 font-semibold">{s.unit}</span>
                     </div>
-                    <p className="text-[12px] font-medium text-foreground mt-1">{s.label}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{s.desc}</p>
+                    <p className="text-[13px] lg:text-sm font-bold text-foreground mt-2">{s.label}</p>
+                    <p className="text-[12px] text-muted-foreground mt-1 leading-relaxed">{s.desc}</p>
                   </div>
                 )
               })}
@@ -965,16 +1032,25 @@ export default function GalvanizingPage() {
 
         {/* ════════════ Sub-hero centered statement ════════════ */}
         <section className="relative max-w-[880px] mx-auto px-5 lg:px-8 py-20 lg:py-32 text-center overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] max-w-[600px] aspect-square rounded-full bg-gold/[0.03] pointer-events-none" />
-          <p className="relative font-serif text-base lg:text-2xl leading-[2.2] lg:leading-[2.4] text-foreground/90">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] max-w-[600px] aspect-square rounded-full bg-gold/[0.05] pointer-events-none" />
+          <p className="relative font-sans font-bold text-xl sm:text-2xl lg:text-4xl leading-[1.75] lg:leading-[1.7] text-foreground tracking-tight">
             屋外でも、塩害でも、紫外線でも、
             <br />
             錆びない手すりを。
-            <br />
-            <span className="text-gold">メッキ ＋ 塗装の二重防錆</span>で、
-            <br />
-            10 年以上の安心をお届けします。
           </p>
+          <div className="relative mt-8 lg:mt-10 flex flex-col items-center gap-5">
+            {/* マーカー風アンダーライン（薄ゴールド、少し斜め） */}
+            <span className="relative inline-block font-bold text-lg sm:text-xl lg:text-2xl text-foreground">
+              <span className="absolute inset-x-0 bottom-0 h-[0.5em] bg-gold/40 -skew-x-3 -z-0" aria-hidden="true" />
+              <span className="relative z-10">
+                <span className="text-gold">メッキ ＋ 塗装</span>の二重防錆で
+              </span>
+            </span>
+            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground leading-[1.5]">
+              <span className="font-black text-gold text-5xl sm:text-6xl lg:text-7xl align-middle leading-none">10 年以上</span>
+              <span className="ml-1.5">の安心を、お届け。</span>
+            </p>
+          </div>
         </section>
 
         {/* ════════════ Section 01 — Outline ════════════ */}
@@ -988,21 +1064,33 @@ export default function GalvanizingPage() {
               </div>
             </aside>
             <div className="lg:col-span-9 scroll-mt-24 min-w-0">
-              <h3 className="font-serif text-xl lg:text-3xl text-foreground mb-6 leading-snug">
-                亜鉛が鉄と化学結合し、<br className="hidden lg:block" />
+              <h3 className="font-sans font-black text-2xl sm:text-3xl lg:text-4xl text-foreground mb-8 leading-[1.3] tracking-tight">
+                亜鉛が鉄と<span className="text-gold">化学結合</span>し、<br className="hidden lg:block" />
                 犠牲防食で守り続ける。
               </h3>
               <div className="space-y-5 mb-10 max-w-2xl">
-                <p className="text-[15px] leading-[1.95] text-foreground/80">
-                  溶融亜鉛メッキ（ドブ漬けメッキ）は、約 450℃ に溶かした亜鉛の浴槽に
+                <p className="text-[15px] lg:text-base leading-[1.9] text-foreground/85">
+                  溶融亜鉛メッキ（ドブ漬けメッキ）は、約 <strong className="text-gold font-bold">450℃</strong> に溶かした亜鉛の浴槽に
                   鉄製品を丸ごと浸漬する処理です。鉄表面に
                   <strong className="text-gold">亜鉛と鉄の合金層</strong>が形成され、
                   化学結合により剥がれにくく耐久性に優れます。
                 </p>
-                <p className="text-[15px] leading-[1.95] text-foreground/80">
+                <p className="text-[15px] lg:text-base leading-[1.9] text-foreground/85">
                   単なる塗装と異なり、傷がついても周囲の亜鉛が先に溶けて鉄を守る
                   <strong className="text-gold">「犠牲防食」</strong>が働きます。
-                  橋梁・鉄塔・ガードレールなど、屋外インフラで広く採用されている信頼性の高い技術です。
+                  <strong className="text-foreground">橋梁・鉄塔・ガードレール</strong>など、屋外インフラで広く採用されている信頼性の高い技術です。
+                </p>
+              </div>
+              {/* 結論を印鑑風円形バッジで強調 */}
+              <div className="mb-10 flex items-center gap-4">
+                <span className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gold/15 border-2 border-gold shrink-0">
+                  <span className="font-black text-gold text-base sm:text-lg leading-tight text-center">
+                    剥がれ<br />ない
+                  </span>
+                </span>
+                <p className="text-[15px] sm:text-base lg:text-lg font-bold text-foreground leading-snug">
+                  化学結合した亜鉛は<br className="sm:hidden" />
+                  <span className="text-gold">物理的に剥がせない</span>
                 </p>
               </div>
               <div className="border border-border bg-white rounded-md p-5 sm:p-8 lg:p-10">
@@ -1023,25 +1111,33 @@ export default function GalvanizingPage() {
               </div>
             </aside>
             <div className="lg:col-span-9 scroll-mt-24 min-w-0">
-              <h3 className="font-serif text-xl lg:text-3xl text-foreground mb-6 leading-snug">
+              <h3 className="font-sans font-black text-2xl sm:text-3xl lg:text-4xl text-foreground mb-8 leading-[1.3] tracking-tight">
                 製作からお届けまで、<br className="hidden lg:block" />
-                すべて一貫して行います。
+                すべて<span className="relative inline-block">
+                  <span className="absolute inset-x-0 bottom-0 h-[0.45em] bg-gold/40 -skew-x-3 -z-0" aria-hidden="true" />
+                  <span className="relative z-10 text-gold">一貫</span>
+                </span>して行います。
               </h3>
-              <p className="text-[15px] leading-[1.95] text-foreground/80 mb-8 max-w-2xl">
-                鍛冶職人が一点ずつ手作業で製作した手すりを、専用工場で溶融亜鉛メッキ処理。
+              <p className="text-[15px] lg:text-base leading-[1.9] text-foreground/85 mb-10 max-w-2xl">
+                <strong className="text-foreground">鍛冶職人が一点ずつ手作業</strong>で製作した手すりを、専用工場で溶融亜鉛メッキ処理。
                 その上から 2 液型ウレタン塗装で美しく仕上げます。
               </p>
 
               {/* Process stage rows */}
               <div className="space-y-0">
                 {processSteps.map((s) => (
-                  <div key={s.no} className="grid grid-cols-12 gap-3 lg:gap-6 py-5 border-t border-border first:border-t-0">
-                    <div className="col-span-2 lg:col-span-2">
-                      <p className="text-[10px] tracking-[0.3em] text-muted-foreground">{`STEP ${s.no}`}</p>
+                  <div key={s.no} className="grid grid-cols-12 gap-3 lg:gap-6 py-6 border-t border-border first:border-t-0">
+                    <div className="col-span-2 lg:col-span-2 flex items-start justify-center lg:justify-start pt-1">
+                      <div className="flex flex-col items-center gap-1.5">
+                        <div className="w-11 h-11 lg:w-14 lg:h-14 rounded-full bg-gold/15 border-2 border-gold flex items-center justify-center">
+                          <span className="font-sans font-black text-gold text-lg lg:text-xl leading-none">{s.no}</span>
+                        </div>
+                        <span className="text-[9px] lg:text-[10px] tracking-[0.25em] font-bold text-gold/70">STEP</span>
+                      </div>
                     </div>
                     <div className="col-span-7 lg:col-span-7">
-                      <h4 className="font-serif text-base lg:text-xl text-foreground mb-1.5 leading-snug">{s.title}</h4>
-                      <p className="text-[13px] lg:text-[14px] leading-[1.85] text-muted-foreground">{s.desc}</p>
+                      <h4 className="font-sans font-bold text-lg lg:text-2xl text-foreground mb-2 leading-snug">{s.title}</h4>
+                      <p className="text-[14px] lg:text-[15px] leading-[1.85] text-muted-foreground">{s.desc}</p>
                     </div>
                     <div className="col-span-3 lg:col-span-3 flex items-center justify-end">
                       <div className="w-12 h-12 lg:w-16 lg:h-16 rounded-full border border-gold/30 bg-card flex items-center justify-center text-gold">
@@ -1074,7 +1170,10 @@ export default function GalvanizingPage() {
               {/* Craft notes — post-galvanizing grinding technique + primer application */}
               <div className="space-y-5 mb-8 max-w-2xl">
                 <div className="border-l-2 border-gold pl-5 lg:pl-6 py-1">
-                  <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">Craft Note 01 — グラインダー</p>
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gold/20 border border-gold text-gold font-black text-xs leading-none">01</span>
+                    <p className="text-xs sm:text-sm tracking-[0.25em] uppercase font-bold text-white">Craft Note — グラインダー</p>
+                  </div>
                   <p className="text-[13px] lg:text-[14px] leading-[1.95] text-white/75">
                     動画のグラインダー作業は、<strong className="text-white">メッキ工場から戻ってきた直後</strong>の手すりを仕上げる工程です。
                     亜鉛メッキ後はどうしてもバリや表面の凹凸が残るため、
@@ -1083,7 +1182,10 @@ export default function GalvanizingPage() {
                   </p>
                 </div>
                 <div className="border-l-2 border-gold pl-5 lg:pl-6 py-1">
-                  <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">Craft Note 02 — 密着剤</p>
+                  <div className="flex items-center gap-3 mb-3">
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gold/20 border border-gold text-gold font-black text-xs leading-none">02</span>
+                    <p className="text-xs sm:text-sm tracking-[0.25em] uppercase font-bold text-white">Craft Note — 密着剤</p>
+                  </div>
                   <p className="text-[13px] lg:text-[14px] leading-[1.95] text-white/75">
                     動画でスプレーガンから吹き付けている<strong className="text-white">無色の液体は「密着剤」</strong>です。
                     亜鉛メッキの表面と上塗りウレタン塗膜の橋渡しとなる下処理で、
@@ -1153,34 +1255,59 @@ export default function GalvanizingPage() {
                 <p className="text-[12px] text-muted-foreground mt-3">屋外設置のお悩みに応えます</p>
               </div>
             </aside>
-            <div className="lg:col-span-9 scroll-mt-24 min-w-0 space-y-12">
-              {voiceCases.map((c) => (
+            <div className="lg:col-span-9 scroll-mt-24 min-w-0 space-y-14">
+              {voiceCases.map((c, idx) => (
                 <div key={c.label}>
-                  <div className="flex items-center gap-3 mb-5">
-                    <span className="text-[12px] tracking-[0.3em] text-muted-foreground">{c.label}</span>
+                  {/* Case ラベル：番号バッジ + 顧客タイプ */}
+                  <div className="flex items-center gap-3 mb-6">
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gold/15 border border-gold text-gold font-black text-xs leading-none">
+                      {String(idx + 1).padStart(2, "0")}
+                    </span>
+                    <span className="text-xs sm:text-sm tracking-[0.25em] font-bold text-foreground">{c.label}</span>
                     <span className="flex-1 h-px bg-border" />
-                    <span className="text-[11px] text-muted-foreground">{c.customerType}</span>
+                    <span className="text-[11px] sm:text-xs font-medium text-muted-foreground">{c.customerType}</span>
                   </div>
-                  <div className="relative bg-background border border-border rounded-2xl px-6 lg:px-10 py-7 lg:py-9 mb-6">
-                    <p className="font-serif text-base lg:text-2xl leading-relaxed text-foreground/90 text-center">
-                      "{c.quote}"
-                    </p>
-                    <div className="absolute left-1/2 -translate-x-1/2 -bottom-3 w-6 h-6 rotate-45 bg-background border-r border-b border-border" />
-                  </div>
-                  <div className="bg-background/50 border border-border rounded-md p-5 lg:p-6">
-                    <div className="flex items-start gap-3 mb-3">
-                      <span className="inline-flex items-center justify-center w-7 h-7 rounded-full border border-gold/40 text-gold text-xs">
-                        ado
-                      </span>
-                      <p className="text-[12px] tracking-[0.2em] text-gold mt-1">職人からのアドバイス</p>
+
+                  {/* お客様の声：人物アバター（Caseごとに違う） + 丸い吹き出し */}
+                  <div className="flex items-start gap-3 sm:gap-4 mb-6">
+                    <PersonAvatar kind={idx} />
+
+                    {/* 丸い speech bubble + 左 tail */}
+                    <div className="relative flex-1 bg-background border-2 border-border rounded-[1.75rem] px-5 sm:px-7 py-4 sm:py-6">
+                      {/* 左 tail（吹き出し三角・正方形を 45 度回転） */}
+                      <div className="absolute -left-[7px] top-5 w-3 h-3 rotate-45 bg-background border-l-2 border-b-2 border-border" aria-hidden="true" />
+                      <p className="font-sans text-[15px] sm:text-base lg:text-lg leading-[1.75] text-foreground">
+                        {c.quote}
+                      </p>
                     </div>
-                    <p className="text-[14px] leading-[1.95] text-foreground/80 mb-4">{c.advice}</p>
-                    <Link
-                      href={c.link}
-                      className="inline-flex items-center gap-2 text-[12px] tracking-[0.2em] uppercase text-gold border-b border-gold pb-1 hover:opacity-70 transition-opacity"
-                    >
-                      {c.linkLabel} →
-                    </Link>
+                  </div>
+
+                  {/* 職人からのアドバイス：ado ロゴ + カード */}
+                  <div className="flex items-start gap-3 sm:gap-4 ml-6 sm:ml-8">
+                    {/* ado ロゴアバター */}
+                    <div className="shrink-0">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white border-2 border-gold flex items-center justify-center overflow-hidden p-1.5">
+                        <Image
+                          src="/images/ado_logo_K.png"
+                          alt="ado"
+                          width={40}
+                          height={40}
+                          className="w-full h-auto object-contain"
+                        />
+                      </div>
+                    </div>
+
+                    {/* アドバイスカード */}
+                    <div className="flex-1 bg-gold/[0.05] border border-gold/30 rounded-[1.5rem] px-5 sm:px-6 py-4 sm:py-5">
+                      <p className="text-[11px] sm:text-xs tracking-[0.2em] font-bold text-gold mb-2">職人からのアドバイス</p>
+                      <p className="text-[14px] sm:text-[15px] leading-[1.85] text-foreground/85 mb-3">{c.advice}</p>
+                      <Link
+                        href={c.link}
+                        className="inline-flex items-center gap-2 text-[12px] sm:text-[13px] font-bold tracking-[0.15em] uppercase text-gold border-b border-gold pb-1 hover:opacity-70 transition-opacity"
+                      >
+                        {c.linkLabel} →
+                      </Link>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -1199,18 +1326,21 @@ export default function GalvanizingPage() {
               </div>
             </aside>
             <div className="lg:col-span-9 scroll-mt-24 min-w-0">
-              <h3 className="font-serif text-xl lg:text-3xl text-foreground mb-6 leading-snug">
-                塗装のみでは屋外で 1〜3 年。<br className="hidden lg:block" />
-                メッキ ＋ 塗装で 10 年以上。
+              <h3 className="font-sans font-black text-2xl sm:text-3xl lg:text-4xl text-foreground mb-8 leading-[1.3] tracking-tight">
+                塗装のみでは屋外で <span className="text-foreground/60">1〜3 年</span>。<br className="hidden lg:block" />
+                メッキ ＋ 塗装で <span className="text-gold text-3xl sm:text-4xl lg:text-5xl">10 年以上</span>。
               </h3>
-              <p className="text-[15px] leading-[1.95] text-foreground/80 mb-10 max-w-2xl">
-                沿岸部の塩害、強い紫外線、雨ざらしの環境でも、
+              <p className="text-[15px] lg:text-base leading-[1.9] text-foreground/85 mb-10 max-w-2xl">
+                <strong className="text-foreground">沿岸部の塩害、強い紫外線、雨ざらし</strong>の環境でも、
                 ado の二重防錆処理なら長期にわたって美観と強度を保ちます。
               </p>
 
               {/* Timeline */}
-              <div className="mb-10">
-                <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">経年変化イメージ</p>
+              <div className="mb-12">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gold/15 border border-gold text-gold font-black text-xs leading-none">01</span>
+                  <p className="text-xs sm:text-sm tracking-[0.25em] uppercase font-bold text-foreground">経年変化イメージ</p>
+                </div>
                 <div className="border border-border bg-secondary/30 rounded-md p-6 lg:p-8">
                   <div className="overflow-x-auto">
                     <div className="min-w-[680px]">
@@ -1221,8 +1351,11 @@ export default function GalvanizingPage() {
               </div>
 
               {/* Radar */}
-              <div className="mb-10">
-                <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">5 軸性能チャート</p>
+              <div className="mb-12">
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gold/15 border border-gold text-gold font-black text-xs leading-none">02</span>
+                  <p className="text-xs sm:text-sm tracking-[0.25em] uppercase font-bold text-foreground">5 軸性能チャート</p>
+                </div>
                 <div className="max-w-[520px] mx-auto">
                   <PerformanceRadar />
                   <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center mt-5 text-[12px] md:text-[13px] font-bold">
@@ -1244,7 +1377,10 @@ export default function GalvanizingPage() {
 
               {/* Comparison table */}
               <div>
-                <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">屋外性能 6 項目比較</p>
+                <div className="flex items-center gap-3 mb-4">
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gold/15 border border-gold text-gold font-black text-xs leading-none">03</span>
+                  <p className="text-xs sm:text-sm tracking-[0.25em] uppercase font-bold text-foreground">屋外性能 6 項目比較</p>
+                </div>
                 <div className="overflow-x-auto">
                   <table className="w-full border-collapse text-[12px] min-w-[560px]">
                     <thead>
@@ -1310,23 +1446,20 @@ export default function GalvanizingPage() {
                     key={s.no}
                     className="grid grid-cols-12 gap-4 lg:gap-8 items-start py-8 border-t border-border first:border-t-0"
                   >
-                    <div className="col-span-3 lg:col-span-2">
-                      <p className="text-[12px] tracking-[0.3em] text-muted-foreground">{s.no}</p>
-                    </div>
-                    <div className="col-span-9 lg:col-span-7">
-                      <h3 className="font-serif text-lg lg:text-2xl text-foreground mb-3 leading-snug">
-                        {s.title}
-                      </h3>
-                      <p className="text-[14px] lg:text-[15px] leading-[1.95] text-foreground/75">
-                        {s.desc}
-                      </p>
-                    </div>
-                    <div className="col-span-12 lg:col-span-3 flex justify-center lg:justify-end">
-                      <div className="w-20 h-20 lg:w-28 lg:h-28 rounded-full bg-card border border-gold/20 flex items-center justify-center">
-                        <span className="font-serif text-3xl lg:text-5xl text-gold/40 leading-none">
+                    <div className="col-span-3 lg:col-span-2 flex items-start justify-center lg:justify-start">
+                      <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-gold/10 border-2 border-gold flex items-center justify-center shrink-0">
+                        <span className="font-sans font-black text-lg lg:text-xl text-gold leading-none">
                           {String(i + 1).padStart(2, "0")}
                         </span>
                       </div>
+                    </div>
+                    <div className="col-span-9 lg:col-span-10">
+                      <h3 className="font-sans font-bold text-xl lg:text-3xl text-foreground mb-3 leading-snug tracking-tight">
+                        {s.title}
+                      </h3>
+                      <p className="text-[14px] lg:text-[15px] leading-[1.85] text-foreground/80">
+                        {s.desc}
+                      </p>
                     </div>
                   </div>
                 ))}
