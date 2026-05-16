@@ -168,7 +168,7 @@ const flowSteps = [
 function SacrificialProtectionDiagram() {
   return (
     <div className="w-full max-w-[920px] mx-auto py-2 sm:py-6 lg:py-10">
-      {/* ① タイトル */}
+      {/* タイトル */}
       <div className="text-center mb-10 sm:mb-14 lg:mb-16">
         <div className="w-12 sm:w-16 h-px bg-gold mx-auto mb-4 sm:mb-5" />
         <p className="text-[10px] sm:text-[11px] tracking-[0.4em] text-gold mb-4 sm:mb-5">
@@ -177,96 +177,19 @@ function SacrificialProtectionDiagram() {
         <h3 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-foreground leading-tight">
           犠牲防食のしくみ
         </h3>
+        <p className="mt-5 sm:mt-6 text-[13px] sm:text-sm text-foreground/70 leading-relaxed max-w-xl mx-auto">
+          なぜ塗装だけだと錆び、なぜメッキは守るのか。<br className="hidden sm:inline" />
+          紫外線・水分・酸素にさらされる屋外で、何が起きているかを見てみましょう。
+        </p>
       </div>
 
-      {/* ② 左右対比 */}
-      <div className="grid grid-cols-2 gap-0 relative">
-        {/* 中央の細い金色仕切り線 */}
-        <div className="absolute left-1/2 top-4 bottom-4 w-px bg-gold/40" aria-hidden="true" />
-
-        {/* 左：塗装のみ */}
-        <div className="flex flex-col items-center px-3 sm:px-6 lg:px-10 text-center">
-          <svg viewBox="0 0 200 200" className="w-32 sm:w-44 lg:w-52 h-auto" aria-hidden="true">
-            {/* 円フレーム */}
-            <circle cx="100" cy="100" r="86" fill="none" stroke="#0E0E0E" strokeWidth="0.8" />
-            {/* 鉄素地 */}
-            <rect x="48" y="108" width="104" height="42" fill="#4a4a4a" />
-            {/* 塗膜（薄い） */}
-            <rect x="48" y="98" width="104" height="10" fill="#cfcfcf" />
-            {/* 傷（ジグザグの欠損） */}
-            <path
-              d="M92 92 L100 100 L96 108 L104 100 L100 92 Z"
-              fill="#0E0E0E"
-            />
-            {/* 錆のにじみ（不規則な楕円を重ねる） */}
-            <ellipse cx="100" cy="158" rx="40" ry="6" fill="#A44434" opacity="0.55" />
-            <ellipse cx="92" cy="165" rx="30" ry="4" fill="#A44434" opacity="0.4" />
-            <ellipse cx="110" cy="167" rx="22" ry="3" fill="#A44434" opacity="0.35" />
-          </svg>
-          <p className="mt-4 sm:mt-5 text-[10px] sm:text-xs tracking-[0.3em] text-foreground/60 uppercase">
-            塗装のみ
-          </p>
-          <p className="mt-3 sm:mt-4 font-bold text-lg sm:text-2xl lg:text-3xl leading-tight text-foreground whitespace-nowrap">
-            <span className="text-[#A44434] mr-1">×</span>
-            1〜3 年で錆
-          </p>
-        </div>
-
-        {/* 右：亜鉛メッキ */}
-        <div className="flex flex-col items-center px-3 sm:px-6 lg:px-10 text-center">
-          <svg viewBox="0 0 200 200" className="w-32 sm:w-44 lg:w-52 h-auto" aria-hidden="true">
-            <defs>
-              <marker
-                id="ado-zinc-arrow"
-                markerWidth="6"
-                markerHeight="6"
-                refX="5"
-                refY="3"
-                orient="auto"
-              >
-                <path d="M0 0 L6 3 L0 6 Z" fill="#C8A96E" />
-              </marker>
-            </defs>
-            {/* 円フレーム（ゴールド） */}
-            <circle cx="100" cy="100" r="86" fill="none" stroke="#C8A96E" strokeWidth="0.8" />
-            {/* 鉄素地 */}
-            <rect x="48" y="118" width="104" height="32" fill="#4a4a4a" />
-            {/* 鉄-亜鉛合金層 */}
-            <rect x="48" y="108" width="104" height="10" fill="#6F7A8A" />
-            {/* 純亜鉛層 */}
-            <rect x="48" y="98" width="104" height="10" fill="#B8C5D1" />
-            {/* 傷（小さく、鉄まで届かない） */}
-            <path
-              d="M97 92 L100 98 L103 92 Z"
-              fill="#0E0E0E"
-            />
-            {/* 両側から流れ込む犠牲防食の矢印 */}
-            <path
-              d="M70 92 Q82 92 94 98"
-              stroke="#C8A96E"
-              strokeWidth="1.2"
-              fill="none"
-              markerEnd="url(#ado-zinc-arrow)"
-            />
-            <path
-              d="M130 92 Q118 92 106 98"
-              stroke="#C8A96E"
-              strokeWidth="1.2"
-              fill="none"
-              markerEnd="url(#ado-zinc-arrow)"
-            />
-          </svg>
-          <p className="mt-4 sm:mt-5 text-[10px] sm:text-xs tracking-[0.3em] text-foreground/60 uppercase">
-            亜鉛メッキ
-          </p>
-          <p className="mt-3 sm:mt-4 font-bold text-lg sm:text-2xl lg:text-3xl leading-tight text-foreground whitespace-nowrap">
-            <span className="text-gold mr-1">✓</span>
-            10 年以上 守る
-          </p>
-        </div>
+      {/* 左右対比：塗装側 / 亜鉛メッキ側 */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-8">
+        <PaintCorrosionDetail />
+        <GalvanizedProtectionDetail />
       </div>
 
-      {/* ③ メッセージ */}
+      {/* ボトムメッセージ */}
       <div className="text-center mt-12 sm:mt-16 lg:mt-20">
         <div className="w-12 sm:w-16 h-px bg-gold mx-auto mb-4 sm:mb-5" />
         <p className="text-[12px] sm:text-[13px] text-foreground/75 leading-relaxed">
@@ -280,79 +203,432 @@ function SacrificialProtectionDiagram() {
   )
 }
 
-// ════════════ SVG: 4 層断面構造 ════════════
-function CrossSectionDiagram() {
-  // 各層: layer.y(中央) と stripeY/H(視覚的な厚み)
-  const layers = [
-    { y: 80,  stripeY: 70,  stripeH: 22, fill: "url(#cs-paint)", border: "#c8a96e", label: "2 液型ウレタン塗装", thickness: "約 40μm", desc: "美観 ＋ 紫外線防護", color: "#c8a96e" },
-    { y: 116, stripeY: 105, stripeH: 14, fill: "#666", border: undefined,           label: "プライマー",         thickness: "約 20μm", desc: "塗料の密着層",       color: "#aaa" },
-    { y: 152, stripeY: 140, stripeH: 22, fill: "url(#cs-zinc-pure)", border: undefined, label: "純亜鉛層",       thickness: "約 50μm", desc: "犠牲防食（鉄を守る）", color: "#a8d4ec" },
-    { y: 188, stripeY: 175, stripeH: 22, fill: "#6a8a9f", border: undefined,        label: "亜鉛 - 鉄 合金層",   thickness: "約 30μm", desc: "化学結合で剥がれない", color: "#8ab5cf" },
-    { y: 246, stripeY: 200, stripeH: 70, fill: "#4a4a4a", border: "#5a5a5a",        label: "鉄素地（SS400）",   thickness: "鋼材",     desc: "ado の手すり本体",   color: "#bbb" },
-  ]
+// ════════════ メカニズム詳細図解 — 塗装のみ ════════════
+function PaintCorrosionDetail() {
   return (
-    <svg viewBox="0 0 760 320" className="w-full h-auto">
-      <defs>
-        <linearGradient id="cs-zinc-pure" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#a8d4ec" />
-          <stop offset="100%" stopColor="#7a9bb5" />
-        </linearGradient>
-        <linearGradient id="cs-paint" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stopColor="#3a3a3a" />
-          <stop offset="100%" stopColor="#1f1f1f" />
-        </linearGradient>
-      </defs>
+    <div className="flex flex-col">
+      <p className="text-center mb-4 sm:mb-5 text-[10px] sm:text-xs tracking-[0.3em] text-foreground/60 uppercase">
+        塗装のみ
+      </p>
+      <div className="relative bg-white border border-border/50 rounded-md px-3 sm:px-5 py-4 sm:py-6">
+        <svg
+          viewBox="0 0 360 360"
+          className="w-full h-auto"
+          aria-label="塗装のみの場合：紫外線・水分・酸素が塗装を劣化させ、傷から鉄が錆びるメカニズム図解"
+        >
+          <defs>
+            <marker id="paint-arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#0E0E0E" />
+            </marker>
+            <radialGradient id="paint-sun" cx="0.45" cy="0.45" r="0.55">
+              <stop offset="0%" stopColor="#FFF1A8" />
+              <stop offset="50%" stopColor="#F2CC4D" />
+              <stop offset="100%" stopColor="#E8A82C" />
+            </radialGradient>
+            <linearGradient id="paint-uv-beam" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#F2CC4D" stopOpacity="0.85" />
+              <stop offset="100%" stopColor="#F2CC4D" stopOpacity="0" />
+            </linearGradient>
+            <linearGradient id="paint-iron" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#3a4148" />
+              <stop offset="40%" stopColor="#5a626a" />
+              <stop offset="100%" stopColor="#262a30" />
+            </linearGradient>
+            <linearGradient id="paint-water" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#7AC4E8" />
+              <stop offset="60%" stopColor="#3F8FC0" />
+              <stop offset="100%" stopColor="#1F5D8A" />
+            </linearGradient>
+            <radialGradient id="paint-oxygen" cx="0.32" cy="0.32" r="0.7">
+              <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.95" />
+              <stop offset="55%" stopColor="#DCEDF5" />
+              <stop offset="100%" stopColor="#9CC5D9" />
+            </radialGradient>
+            <linearGradient id="paint-rust" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#8B2E20" />
+              <stop offset="50%" stopColor="#A44434" />
+              <stop offset="100%" stopColor="#6E2418" />
+            </linearGradient>
+            {/* 塗装（基本色：両ブロック共通。劣化の差はひび・斑点の量で表現） */}
+            <linearGradient id="paint-layer" x1="0" y1="0" x2="0.3" y2="1">
+              <stop offset="0%" stopColor="#DCDCD8" />
+              <stop offset="45%" stopColor="#C8C6C0" />
+              <stop offset="100%" stopColor="#A8A59F" />
+            </linearGradient>
+          </defs>
 
-      {/* 各層の帯 */}
-      {layers.map((l, i) => (
-        <rect
-          key={i}
-          x="80"
-          y={l.stripeY}
-          width="380"
-          height={l.stripeH}
-          rx={l.border ? 2 : 0}
-          fill={l.fill}
-          stroke={l.border}
-          strokeWidth={l.border ? 1 : 0}
-        />
-      ))}
-
-      {/* 鉄素地ラベル（帯の中央） */}
-      <text x="270" y="245" textAnchor="middle" fill="#bbb" fontSize="14" letterSpacing="0.3em">
-        鉄  素  地
-      </text>
-
-      {/* 引き出し線 + ラベル（右側） */}
-      {layers.map((l, i) => (
-        <g key={`lbl-${i}`}>
-          <line x1="460" y1={l.y} x2="490" y2={l.y} stroke={l.color} strokeWidth="0.6" />
-          <text x="498" y={l.y - 2} fill={l.color} fontSize="12" fontWeight="500">
-            {l.label}
+          {/* === 太陽（紫外線の発生源）+ 光線束 === */}
+          {/* 太陽の放射スパイク（8 方向） */}
+          <g stroke="#E8A82C" strokeWidth="2" strokeLinecap="round">
+            <line x1="180" y1="2" x2="180" y2="10" />
+            <line x1="180" y1="50" x2="180" y2="58" />
+            <line x1="150" y1="30" x2="158" y2="30" />
+            <line x1="202" y1="30" x2="210" y2="30" />
+            <line x1="160" y1="10" x2="165" y2="15" />
+            <line x1="195" y1="45" x2="200" y2="50" />
+            <line x1="160" y1="50" x2="165" y2="45" />
+            <line x1="195" y1="15" x2="200" y2="10" />
+          </g>
+          {/* 太陽本体 */}
+          <circle cx="180" cy="30" r="22" fill="url(#paint-sun)" stroke="#C8A96E" strokeWidth="0.6" />
+          {/* 紫外線の文字（太陽の上に重ねる） */}
+          <text x="180" y="35" fontSize="13" textAnchor="middle" fill="#0E0E0E" fontWeight="700" letterSpacing="0.05em">
+            紫外線
           </text>
-          <text x="498" y={l.y + 14} fill="#888" fontSize="11">
-            {l.thickness}・{l.desc}
+          {/* 降り注ぐ光線束（太陽下端から塗装上面へ） */}
+          <g stroke="#F2CC4D" strokeWidth="2.2" strokeLinecap="round" opacity="0.75">
+            <line x1="166" y1="55" x2="160" y2="168" />
+            <line x1="173" y1="55" x2="170" y2="168" />
+            <line x1="180" y1="55" x2="180" y2="168" />
+            <line x1="187" y1="55" x2="190" y2="168" />
+            <line x1="194" y1="55" x2="200" y2="168" />
+          </g>
+          {/* 光線が当たる場所のフレア（塗装上面・薄い光の広がり） */}
+          <ellipse cx="180" cy="172" rx="38" ry="4" fill="#F2CC4D" opacity="0.35" />
+
+          {/* === 水分（左上、水滴 + 矢印で右下へ） === */}
+          <text x="90" y="58" fontSize="13" textAnchor="middle" fill="#0E0E0E" fontWeight="600">
+            水分
           </text>
-        </g>
-      ))}
+          <path
+            d="M90 75 Q78 90 78 105 Q78 122 90 122 Q102 122 102 105 Q102 90 90 75 Z"
+            fill="url(#paint-water)"
+            stroke="#1F5D8A"
+            strokeWidth="0.8"
+          />
+          {/* 水滴ハイライト */}
+          <ellipse cx="85" cy="94" rx="2.5" ry="5.5" fill="#FFFFFF" opacity="0.65" />
+          <path d="M105 122 L155 168" stroke="#0E0E0E" strokeWidth="1.4" fill="none" markerEnd="url(#paint-arrow)" />
 
-      {/* 左側ブレース：塗装層 (ウレタン+プライマー) */}
-      <path d="M 70,70 L 60,70 L 60,119 L 70,119" fill="none" stroke="#c8a96e" strokeWidth="1" />
-      <text x="55" y="98" textAnchor="end" fill="#c8a96e" fontSize="11" fontWeight="500">
-        塗装層
-      </text>
+          {/* === 酸素（右上、O₂ 分子的に 2 つの球を連結） + 矢印で左下へ === */}
+          <text x="270" y="58" fontSize="13" textAnchor="middle" fill="#0E0E0E" fontWeight="600">
+            酸素
+          </text>
+          <circle cx="263" cy="98" r="13" fill="url(#paint-oxygen)" stroke="#5A8FAE" strokeWidth="0.8" />
+          <circle cx="280" cy="108" r="11" fill="url(#paint-oxygen)" stroke="#5A8FAE" strokeWidth="0.8" />
+          <path d="M260 120 L205 168" stroke="#0E0E0E" strokeWidth="1.4" fill="none" markerEnd="url(#paint-arrow)" />
 
-      {/* 左側ブレース：メッキ層 (純亜鉛+合金) */}
-      <path d="M 70,140 L 60,140 L 60,197 L 70,197" fill="none" stroke="#a8d4ec" strokeWidth="1" />
-      <text x="55" y="172" textAnchor="end" fill="#a8d4ec" fontSize="11" fontWeight="500">
-        メッキ層
-      </text>
+          {/* === 塗装層（両ブロック共通の塗装基本色。劣化の差はひび・斑点の量で表現） === */}
+          {/* 左ブロック：塗装層 fill（傷側エッジはギザギザに割れている。stroke なし） */}
+          <path
+            d="M30 175 L150 175 Q160 173 168 173 L162 180 L172 186 L162 193 L172 201 L160 209 L168 215 L30 215 Z"
+            fill="url(#paint-layer)"
+          />
+          {/* 左ブロック：外周 stroke のみ（傷側のジグザグは除く） */}
+          <path
+            d="M168 173 Q160 173 150 175 L30 175 L30 215 L168 215"
+            stroke="#0E0E0E"
+            strokeWidth="0.8"
+            fill="none"
+          />
+          {/* 左ブロック：微妙な劣化の斑点（軽度） */}
+          <ellipse cx="60" cy="195" rx="14" ry="3" fill="#6B6660" opacity="0.15" />
+          <ellipse cx="120" cy="200" rx="10" ry="2.5" fill="#6B6660" opacity="0.18" />
+          <ellipse cx="90" cy="185" rx="7" ry="1.5" fill="#FFFFFF" opacity="0.25" />
+          {/* 左ブロック：細いひび（少数） */}
+          <path d="M70 180 L72 200" stroke="#6B6660" strokeWidth="0.4" opacity="0.55" fill="none" />
+          <path d="M135 178 L140 205" stroke="#6B6660" strokeWidth="0.4" opacity="0.55" fill="none" />
+          {/* 左ブロック：ラベル（左揃え） */}
+          <text x="40" y="201" fontSize="13" textAnchor="start" fill="#1a1a1a" fontWeight="500">
+            塗装層
+          </text>
 
-      {/* 凡例 */}
-      <text x="380" y="298" textAnchor="middle" fill="#888" fontSize="11">
-        ＝ 鉄を錆から守る「鎧」と、それを美しく保つ「コーティング」の二重構造
-      </text>
-    </svg>
+          {/* 右ブロック：塗装の劣化 fill（傷側エッジはギザギザに割れている。stroke なし） */}
+          <path
+            d="M192 173 Q200 173 210 175 L330 175 L330 215 L192 215 L184 209 L196 201 L186 193 L196 186 L186 180 Z"
+            fill="url(#paint-layer)"
+          />
+          {/* 右ブロック：外周 stroke のみ（傷側のジグザグは除く） */}
+          <path
+            d="M192 173 Q200 173 210 175 L330 175 L330 215 L192 215"
+            stroke="#0E0E0E"
+            strokeWidth="0.8"
+            fill="none"
+          />
+          {/* 右ブロック：劣化の斑点（多数・濃い） */}
+          <ellipse cx="225" cy="185" rx="10" ry="2.5" fill="#3A3328" opacity="0.35" />
+          <ellipse cx="260" cy="205" rx="14" ry="3" fill="#3A3328" opacity="0.32" />
+          <ellipse cx="295" cy="190" rx="9" ry="2" fill="#3A3328" opacity="0.4" />
+          <ellipse cx="240" cy="200" rx="6" ry="1.5" fill="#3A3328" opacity="0.35" />
+          <ellipse cx="285" cy="208" rx="8" ry="1.8" fill="#3A3328" opacity="0.3" />
+          {/* 右ブロック：ひびのネットワーク（密・深い） */}
+          <path d="M210 180 L216 195 L213 210" stroke="#3A3328" strokeWidth="0.7" opacity="0.85" fill="none" />
+          <path d="M245 178 L250 198 L246 213" stroke="#3A3328" strokeWidth="0.7" opacity="0.85" fill="none" />
+          <path d="M280 176 L283 200 L286 212" stroke="#3A3328" strokeWidth="0.6" opacity="0.8" fill="none" />
+          <path d="M312 180 L316 205" stroke="#3A3328" strokeWidth="0.6" opacity="0.75" fill="none" />
+          {/* 右ブロック：枝分かれの細いひび */}
+          <path d="M216 195 L222 198" stroke="#3A3328" strokeWidth="0.4" opacity="0.7" fill="none" />
+          <path d="M250 198 L255 196" stroke="#3A3328" strokeWidth="0.4" opacity="0.7" fill="none" />
+          <path d="M283 200 L289 198" stroke="#3A3328" strokeWidth="0.4" opacity="0.7" fill="none" />
+          {/* 右ブロック：横方向のひび（剥がれかけ） */}
+          <path d="M218 192 Q230 190 245 193 Q260 191 275 194 Q295 192 312 195" stroke="#3A3328" strokeWidth="0.5" opacity="0.65" fill="none" />
+          <path d="M222 205 Q240 207 260 205 Q280 207 305 205" stroke="#3A3328" strokeWidth="0.4" opacity="0.55" fill="none" />
+          {/* 右ブロック：ラベル（左揃え） */}
+          <text x="200" y="201" fontSize="13" textAnchor="start" fill="#1a1a1a" fontWeight="500">
+            塗装の劣化
+          </text>
+
+          {/* === 鉄層 === */}
+          <rect x="30" y="218" width="300" height="80" fill="url(#paint-iron)" />
+          {/* 鉄の光沢ハイライト（質感アップ） */}
+          <line x1="30" y1="226" x2="330" y2="226" stroke="#FFFFFF" strokeWidth="0.5" opacity="0.18" />
+          <text x="40" y="270" fontSize="15" textAnchor="start" fill="#E5E7EB" fontWeight="500">
+            鉄
+          </text>
+
+          {/* === 錆（塗装の表面に沿って広がる・塗装の中・鉄表面の 3 段構成） === */}
+          {/* 1. 塗装の表面に沿って横に広がる錆（盛り上がりの周辺に絞る） */}
+          {/* 1-a. 左半分：塗装層の上面・盛り上がり付近のみ */}
+          <path
+            d="M125 175 Q145 174 155 175 Q165 168 173 171 L173 177 Q165 173 155 177 Q145 178 125 177 Z"
+            fill="#A44434"
+            opacity="0.55"
+          />
+          {/* 1-b. 右半分：塗装の劣化の上面・盛り上がり付近のみ */}
+          <path
+            d="M187 171 Q195 168 205 174 Q215 174 235 175 Q235 178 215 178 Q195 178 187 177 Z"
+            fill="#A44434"
+            opacity="0.55"
+          />
+          {/* 1-c. 中央寄りの濃淡 */}
+          <ellipse cx="145" cy="176" rx="14" ry="2" fill="#A44434" opacity="0.45" />
+          <ellipse cx="215" cy="176" rx="14" ry="2" fill="#A44434" opacity="0.45" />
+          {/* 1-d. 表面に染み出した小さな斑点（傷の周辺のみ） */}
+          <circle cx="135" cy="175" r="1.4" fill="#A44434" opacity="0.7" />
+          <circle cx="155" cy="174" r="1.5" fill="#A44434" opacity="0.75" />
+          <circle cx="210" cy="174" r="1.5" fill="#A44434" opacity="0.75" />
+          <circle cx="228" cy="175" r="1.4" fill="#A44434" opacity="0.7" />
+          {/* 2. 割れたジグザグ塗装の隙間を通る錆（fill + 同色 stroke 2px でジグザグ境界を完全に覆う） */}
+          <path
+            d="M166 172 L160 180 L170 186 L160 193 L170 201 L158 209 L166 216 L194 216 L186 209 L198 201 L188 193 L198 186 L188 180 L194 172 Z"
+            fill="url(#paint-rust)"
+            stroke="#A44434"
+            strokeWidth="2"
+            strokeLinejoin="round"
+          />
+          {/* 3. 塗装の下端を錆色に変色（鉄との境界が腐食している証） */}
+          <path
+            d="M30 213 Q60 215 90 213 Q120 215 155 215 Q160 215 162 215 L155 218 L30 218 Z"
+            fill="#7A2A20"
+            opacity="0.65"
+          />
+          <path
+            d="M198 215 Q200 215 205 215 Q240 215 270 213 Q300 215 330 213 L330 218 L205 218 Z"
+            fill="#7A2A20"
+            opacity="0.65"
+          />
+          {/* 4. 鉄表面に広がる錆の主体（上に上げて塗装下端の白い隙間を覆う） */}
+          <path
+            d="M138 214 Q145 209 158 211 Q170 208 185 210 Q200 208 215 211 Q228 209 240 214 Q250 220 248 232 Q244 246 232 250 Q215 256 200 254 Q180 258 162 252 Q142 246 134 234 Q130 222 138 214 Z"
+            fill="url(#paint-rust)"
+            stroke="#5C1E14"
+            strokeWidth="0.6"
+          />
+          {/* 5. 鉄表面の凹凸（錆の盛り上がり線） */}
+          <path
+            d="M148 222 Q158 218 168 222 Q178 218 188 222 Q198 218 210 222 Q222 218 232 222"
+            stroke="#5C1E14"
+            strokeWidth="1"
+            fill="none"
+            opacity="0.6"
+          />
+          {/* 6. 錆の飛び散り（小さな斑点） */}
+          <circle cx="128" cy="226" r="2.5" fill="#A44434" />
+          <circle cx="124" cy="234" r="1.8" fill="#A44434" />
+          <circle cx="254" cy="230" r="2.2" fill="#A44434" />
+          <circle cx="258" cy="238" r="1.5" fill="#A44434" />
+          <circle cx="115" cy="242" r="1.5" fill="#8B2E20" />
+          <circle cx="265" cy="248" r="1.8" fill="#8B2E20" />
+          {/* 7. 錆の縁の滲み（半透明の広がり） */}
+          <ellipse cx="190" cy="235" rx="80" ry="22" fill="#A44434" opacity="0.15" />
+          <text x="195" y="237" fontSize="13" textAnchor="middle" fill="#FFFFFF" fontWeight="700">
+            さび
+          </text>
+
+          {/* === ボトムキャプション === */}
+          <text x="180" y="332" fontSize="12" textAnchor="middle" fill="#A44434" fontWeight="600">
+            塗膜が劣化 → 傷から水・酸素が侵入 → 鉄が錆びる
+          </text>
+        </svg>
+      </div>
+    </div>
+  )
+}
+
+// ════════════ メカニズム詳細図解 — 亜鉛メッキ ════════════
+function GalvanizedProtectionDetail() {
+  return (
+    <div className="flex flex-col">
+      <p className="text-center mb-4 sm:mb-5 text-[10px] sm:text-xs tracking-[0.3em] text-foreground/60 uppercase">
+        亜鉛メッキ
+      </p>
+      <div className="relative bg-white border border-border/50 rounded-md px-3 sm:px-5 py-4 sm:py-6">
+        <svg
+          viewBox="0 0 360 360"
+          className="w-full h-auto"
+          aria-label="亜鉛メッキの場合：紫外線・水分・酸素が降り注いでも、亜鉛が犠牲となって鉄を守るメカニズム図解"
+        >
+          <defs>
+            <marker id="gal-arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#0E0E0E" />
+            </marker>
+            <marker id="gal-gold-arrow" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+              <path d="M0 0 L6 3 L0 6 Z" fill="#C8A96E" />
+            </marker>
+            <radialGradient id="gal-sun" cx="0.45" cy="0.45" r="0.55">
+              <stop offset="0%" stopColor="#FFF1A8" />
+              <stop offset="50%" stopColor="#F2CC4D" />
+              <stop offset="100%" stopColor="#E8A82C" />
+            </radialGradient>
+            <linearGradient id="gal-iron" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#3a4148" />
+              <stop offset="40%" stopColor="#5a626a" />
+              <stop offset="100%" stopColor="#262a30" />
+            </linearGradient>
+            <linearGradient id="gal-water" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#7AC4E8" />
+              <stop offset="60%" stopColor="#3F8FC0" />
+              <stop offset="100%" stopColor="#1F5D8A" />
+            </linearGradient>
+            <radialGradient id="gal-oxygen" cx="0.32" cy="0.32" r="0.7">
+              <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.95" />
+              <stop offset="55%" stopColor="#DCEDF5" />
+              <stop offset="100%" stopColor="#9CC5D9" />
+            </radialGradient>
+            {/* 塗装（亜鉛メッキ側も同じ塗装基本色） */}
+            <linearGradient id="gal-paint-layer" x1="0" y1="0" x2="0.3" y2="1">
+              <stop offset="0%" stopColor="#DCDCD8" />
+              <stop offset="45%" stopColor="#C8C6C0" />
+              <stop offset="100%" stopColor="#A8A59F" />
+            </linearGradient>
+          </defs>
+
+          {/* === 太陽（紫外線の発生源）+ 光線束 === */}
+          <g stroke="#E8A82C" strokeWidth="2" strokeLinecap="round">
+            <line x1="180" y1="2" x2="180" y2="10" />
+            <line x1="180" y1="50" x2="180" y2="58" />
+            <line x1="150" y1="30" x2="158" y2="30" />
+            <line x1="202" y1="30" x2="210" y2="30" />
+            <line x1="160" y1="10" x2="165" y2="15" />
+            <line x1="195" y1="45" x2="200" y2="50" />
+            <line x1="160" y1="50" x2="165" y2="45" />
+            <line x1="195" y1="15" x2="200" y2="10" />
+          </g>
+          <circle cx="180" cy="30" r="22" fill="url(#gal-sun)" stroke="#C8A96E" strokeWidth="0.6" />
+          <text x="180" y="35" fontSize="13" textAnchor="middle" fill="#0E0E0E" fontWeight="700" letterSpacing="0.05em">
+            紫外線
+          </text>
+          {/* 降り注ぐ光線束（太陽下端から純亜鉛層上面へ） */}
+          <g stroke="#F2CC4D" strokeWidth="2.2" strokeLinecap="round" opacity="0.75">
+            <line x1="166" y1="55" x2="160" y2="168" />
+            <line x1="173" y1="55" x2="170" y2="168" />
+            <line x1="180" y1="55" x2="180" y2="168" />
+            <line x1="187" y1="55" x2="190" y2="168" />
+            <line x1="194" y1="55" x2="200" y2="168" />
+          </g>
+          {/* 光線が当たる場所のフレア（塗装層上面） */}
+          <ellipse cx="180" cy="173" rx="38" ry="4" fill="#F2CC4D" opacity="0.35" />
+
+          {/* === 水分（左上） === */}
+          <text x="90" y="58" fontSize="13" textAnchor="middle" fill="#0E0E0E" fontWeight="600">
+            水分
+          </text>
+          <path
+            d="M90 75 Q78 90 78 105 Q78 122 90 122 Q102 122 102 105 Q102 90 90 75 Z"
+            fill="url(#gal-water)"
+            stroke="#1F5D8A"
+            strokeWidth="0.8"
+          />
+          {/* 水滴ハイライト */}
+          <ellipse cx="85" cy="94" rx="2.5" ry="5.5" fill="#FFFFFF" opacity="0.65" />
+          <path d="M105 122 L155 168" stroke="#0E0E0E" strokeWidth="1.4" fill="none" markerEnd="url(#gal-arrow)" />
+
+          {/* === 酸素（右上、O₂ 分子的に 2 つの球を連結） === */}
+          <text x="270" y="58" fontSize="13" textAnchor="middle" fill="#0E0E0E" fontWeight="600">
+            酸素
+          </text>
+          <circle cx="263" cy="98" r="13" fill="url(#gal-oxygen)" stroke="#5A8FAE" strokeWidth="0.8" />
+          <circle cx="280" cy="108" r="11" fill="url(#gal-oxygen)" stroke="#5A8FAE" strokeWidth="0.8" />
+          <path d="M260 120 L205 168" stroke="#0E0E0E" strokeWidth="1.4" fill="none" markerEnd="url(#gal-arrow)" />
+
+          {/* === 純亜鉛層（薄青グレー、塗装層が割れた部分でも露出するため上方向に伸ばす） === */}
+          <rect x="30" y="189" width="300" height="14" fill="#B8C5D1" stroke="#0E0E0E" strokeWidth="0.8" />
+          <text x="40" y="199" fontSize="11" textAnchor="start" fill="#0E0E0E">
+            純亜鉛層
+          </text>
+
+          {/* === 鉄-亜鉛合金層（中青グレー） === */}
+          <rect x="30" y="203" width="300" height="14" fill="#6F7A8A" stroke="#0E0E0E" strokeWidth="0.8" />
+          <text x="40" y="213" fontSize="11" textAnchor="start" fill="#FFFFFF">
+            合金層
+          </text>
+
+          {/* === 塗装層左ブロック fill（傷側エッジはジグザグに割れている） === */}
+          <path
+            d="M30 175 L155 175 Q163 173 170 173 L165 179 L173 185 L168 189 L30 189 Z"
+            fill="url(#gal-paint-layer)"
+          />
+          {/* 塗装層左ブロック：外周のみ stroke（傷側ジグザグは除く） */}
+          <path
+            d="M170 173 Q163 173 155 175 L30 175 L30 189 L168 189"
+            stroke="#0E0E0E"
+            strokeWidth="0.8"
+            fill="none"
+          />
+
+          {/* === 塗装層右ブロック fill === */}
+          <path
+            d="M190 173 Q197 173 205 175 L330 175 L330 189 L192 189 L187 185 L195 179 Z"
+            fill="url(#gal-paint-layer)"
+          />
+          {/* 塗装層右ブロック：外周のみ stroke */}
+          <path
+            d="M190 173 Q197 173 205 175 L330 175 L330 189 L192 189"
+            stroke="#0E0E0E"
+            strokeWidth="0.8"
+            fill="none"
+          />
+
+          {/* 塗装層の隙間に純亜鉛層が露出（割れた隙間。塗装エッジに 1px 食い込ませて隙間を消す） */}
+          <path
+            d="M168 172 L163 179 L171 185 L166 190 L194 190 L189 185 L197 179 L192 172 Z"
+            fill="#B8C5D1"
+          />
+
+          {/* 塗装層の劣化（薄い斑点：左右ブロック内のみ） */}
+          <ellipse cx="80" cy="183" rx="10" ry="1.5" fill="#6B6660" opacity="0.2" />
+          <ellipse cx="130" cy="184" rx="12" ry="1.6" fill="#6B6660" opacity="0.2" />
+          <ellipse cx="225" cy="183" rx="11" ry="1.5" fill="#6B6660" opacity="0.2" />
+          <ellipse cx="285" cy="184" rx="10" ry="1.5" fill="#6B6660" opacity="0.2" />
+          {/* 塗装層の細いひび（左右ブロック内のみ） */}
+          <path d="M55 177 L57 188" stroke="#6B6660" strokeWidth="0.4" opacity="0.55" fill="none" />
+          <path d="M105 177 L107 188" stroke="#6B6660" strokeWidth="0.4" opacity="0.55" fill="none" />
+          <path d="M210 177 L213 188" stroke="#6B6660" strokeWidth="0.4" opacity="0.55" fill="none" />
+          <path d="M260 177 L263 188" stroke="#6B6660" strokeWidth="0.4" opacity="0.55" fill="none" />
+          <text x="40" y="185" fontSize="11" textAnchor="start" fill="#1a1a1a">
+            塗装層
+          </text>
+
+
+          {/* === 鉄層（無傷、合金層と隙間なく接続 y=217） === */}
+          <rect x="30" y="217" width="300" height="81" fill="url(#gal-iron)" />
+          {/* 鉄の光沢ハイライト（質感アップ） */}
+          <line x1="30" y1="225" x2="330" y2="225" stroke="#FFFFFF" strokeWidth="0.5" opacity="0.18" />
+          <text x="40" y="265" fontSize="15" textAnchor="start" fill="#E5E7EB" fontWeight="500">
+            鉄
+          </text>
+          {/* ✓ チェックマーク（鉄が守られている証） */}
+          <text x="270" y="265" fontSize="32" textAnchor="middle" fill="#C8A96E" fontWeight="600">
+            ✓
+          </text>
+
+          {/* === ボトムキャプション === */}
+          <text x="180" y="332" fontSize="12" textAnchor="middle" fill="#C8A96E" fontWeight="600">
+            亜鉛が先に犠牲となる → 鉄は錆びない
+          </text>
+        </svg>
+      </div>
+    </div>
   )
 }
 
@@ -729,18 +1005,8 @@ export default function GalvanizingPage() {
                   橋梁・鉄塔・ガードレールなど、屋外インフラで広く採用されている信頼性の高い技術です。
                 </p>
               </div>
-              <div className="border border-border bg-white rounded-md p-5 sm:p-8 lg:p-10 mb-6">
+              <div className="border border-border bg-white rounded-md p-5 sm:p-8 lg:p-10">
                 <SacrificialProtectionDiagram />
-              </div>
-              <div className="border border-border bg-secondary/30 rounded-md p-5 lg:p-8">
-                <div className="overflow-x-auto">
-                  <div className="min-w-[680px]">
-                    <CrossSectionDiagram />
-                  </div>
-                </div>
-                <p className="text-[11px] text-muted-foreground mt-3 text-center tracking-wide">
-                  ado の二重防錆 — 4 層構造で長期耐久を実現
-                </p>
               </div>
             </div>
           </div>
@@ -848,7 +1114,7 @@ export default function GalvanizingPage() {
                   { src: "P1700608", caption: "完成直前の手すり枠" },
                   { src: "P1700611", caption: "無色の密着剤をスプレーガンで均一に吹き付け" },
                   { src: "P1700609", caption: "鉄の馬と作業台" },
-                  { src: "P1700600", caption: "メッキ仕上げ面のテクスチャ" },
+                  { src: "P1700606", caption: "メッキ仕上げ面のテクスチャ" },
                 ].map((still) => (
                   <div
                     key={still.src}
