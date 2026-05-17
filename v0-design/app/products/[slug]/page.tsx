@@ -446,17 +446,6 @@ export default function ProductDetailPage() {
                   <div className="flex-1 h-px bg-gold/30" />
                 </div>
 
-                {/* ===== 相談誘導 CTA ② — 計算機の上（実証中: rene のみ） ===== */}
-                {slug === "rene" && (
-                  <p className="text-[13px] text-muted-foreground md:text-[14px]">
-                    💬 サイズに迷ったら、
-                    <Link href="/contact" className="text-gold underline underline-offset-2 hover:opacity-80">
-                      先に職人へご相談
-                    </Link>
-                    もどうぞ。写真があれば適切なサイズを提案します。
-                  </p>
-                )}
-
                 {/* Step 1: Length */}
                 <div className="relative pl-14">
                   <div className={`absolute left-0 top-0 w-11 h-11 flex items-center justify-center text-[16px] font-serif font-bold rounded-full shadow-sm transition-colors ${
