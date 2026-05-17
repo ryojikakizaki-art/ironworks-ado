@@ -629,6 +629,9 @@ export default function ProductDetailPage() {
                                 setZakin({ ...zakin, positions, customMode: true })
                               }
                             />
+                            <p className="md:hidden mt-2 px-1 text-[12px] text-muted-foreground leading-relaxed">
+                              📱 スマホではドラッグ調整はできません。下の数値入力で各座金の位置を調整してください。
+                            </p>
                             <ZakinEditor
                               lengthMm={length}
                               state={zakin}
