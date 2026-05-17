@@ -111,8 +111,6 @@ export interface SimpleProduct {
   /** 主 CTA 下の補足説明（添付物 / 下見可否など） */
   primaryCtaSub?: string
   badge?: string
-  /** 旧 STORES URL（参考・移行期間中の補助リンク） */
-  storesUrl?: string
   /** 「製品について」セクションの 4 点アイコン（縦型ページと同じ FB_* プリセット利用可） */
   featureBullets?: FeatureBullet[]
   /** よくある質問（強度/施工/納期/メンテ等） */
@@ -194,7 +192,6 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
     ],
     primaryCtaLabel: "無料で見積もりを依頼する",
     primaryCtaSub: "階段図面・写真の添付 OK／千葉県内なら現地下見も可能。後ほど見積書（送料込）をお送りします。",
-    storesUrl: "https://ironworks-ado.stores.jp/items/63ea2bfd34e01709f8fa4ac9",
     featureBullets: [
       { icon: "Hammer", title: "火造り鍛造", desc: "鍛冶職人が無垢鉄を熱しハンマーで一本ずつ鍛え上げます" },
       { icon: "Paintbrush", title: "古美仕上げ", desc: "2液型ウレタン艶消し黒の上に古美仕上げで深い表情に" },
@@ -271,7 +268,6 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       "210f572a0c70b0750889.jpg",
     ],
     basePrice: 88000,
-    storesUrl: "https://ironworks-ado.stores.jp/items/68f839882fa52af95b4e403e",
     featureBullets: [
       { icon: "Hammer", title: "火造り鍛造", desc: "無垢鉄を熱しハンマーで叩き締め、鎚目模様まで手仕事で仕上げます" },
       { icon: "Paintbrush", title: "古美仕上げ", desc: "2液型ウレタン艶消し黒塗装に古美仕上げを重ね、深い表情に" },
@@ -388,7 +384,6 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       "9c882dabcb0d103a485a.jpg",
     ],
     basePrice: 0,
-    storesUrl: "https://ironworks-ado.stores.jp/items/678f8682c6500803fc924386",
     featureBullets: [
       { icon: "Hammer", title: "鍛冶職人の手作り", desc: "32×12mm フラットバー＋19mm 角材を職人が手で組み美しく仕上げます" },
       { icon: "Paintbrush", title: "溶融亜鉛メッキ", desc: "下地メッキ処理＋2液ウレタン艶消し黒で屋外でも錆びにくい" },
@@ -448,7 +443,6 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       "9c882dabcb0d103a485a.jpg",
     ],
     basePrice: 0,
-    storesUrl: "https://ironworks-ado.stores.jp/items/64585625559798002e8072e2",
     featureBullets: [
       { icon: "Hammer", title: "細いラインの美", desc: "32×12mm + 9×25mm のフラットバーで細くスタイリッシュに仕上げ" },
       { icon: "Paintbrush", title: "マットホワイト", desc: "錆止め＋2液型ウレタン半艶消し白塗装で住宅外観に馴染ませます" },
@@ -509,7 +503,6 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
     ],
     basePrice: 132000,
     badge: "Artisan",
-    storesUrl: "https://ironworks-ado.stores.jp/items/64584887edfbca00302b343f",
     featureBullets: [
       { icon: "Hammer", title: "全面手打ち鎚目", desc: "無垢鉄丸鋼の全体を打ち残しなくハンマーで叩き美しいラインに" },
       { icon: "Paintbrush", title: "古美仕上げ", desc: "溶融亜鉛メッキ＋艶消し黒塗装＋古美仕上げで深い経年変化が楽しめる仕上げ" },
@@ -577,7 +570,6 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       "7ebdd431e2ba259f6fe9.jpg",
     ],
     basePrice: 0,
-    storesUrl: "https://ironworks-ado.stores.jp/items/63eaf4431c151869487fdc83",
     featureBullets: [
       { icon: "Hammer", title: "鍛冶職人の手作り", desc: "揺らぐラインを手仕事で 1 本ずつ曲げ、お客様の空間に合わせて製作します" },
       { icon: "Paintbrush", title: "2 液ウレタン塗装", desc: "錆止め吹付＋2 液型ウレタン艶消し黒で長期間美観を保ちます" },
@@ -646,7 +638,6 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       "fbd6806322f00d7a5536.jpg",
     ],
     basePrice: 0,
-    storesUrl: "https://ironworks-ado.stores.jp/items/645882ac32510f002d97ec96",
     featureBullets: [
       { icon: "Hammer", title: "鍛冶職人の手作り", desc: "シンプルで強度のあるフラットバー＋丸棒で構成、職人が一本ずつ仕上げます" },
       { icon: "Paintbrush", title: "溶融亜鉛メッキ", desc: "下地メッキ＋ 2 液ウレタン塗装で屋外でも長期間錆びにくい仕様" },
@@ -716,7 +707,6 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       "32885ce3e0d0478adb50.jpg",
     ],
     basePrice: 0,
-    storesUrl: "https://ironworks-ado.stores.jp/items/67959f99ce75b203a869f649",
     featureBullets: [
       { icon: "Hammer", title: "リベット接合", desc: "縦格子と横棒をリベット接合（かしめ）でしっかり固定。外れる心配なし" },
       { icon: "Paintbrush", title: "溶融亜鉛メッキ", desc: "下地メッキ＋ 2 液ウレタン塗装で屋外設置でも錆びにくい仕様" },
@@ -785,7 +775,6 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       "cb3b2bab45276e88c4af.jpg",
     ],
     basePrice: 275000,
-    storesUrl: "https://ironworks-ado.stores.jp/items/689dc80a62bb05fe83b69ed0",
     featureBullets: [
       { icon: "Hammer", title: "アイアン＋ガラス", desc: "マットブラックのフレームと優しく光を通すガラスパネルの絶妙な調和" },
       { icon: "Paintbrush", title: "2 液ウレタン塗装", desc: "錆止め下地＋ 2 液型ウレタン艶消し黒で長期間美観を保ちます" },
@@ -858,7 +847,6 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
     ],
     basePrice: 253000,
     badge: "Artisan",
-    storesUrl: "https://ironworks-ado.stores.jp/items/67bd6f532a10e40a2e61cc20",
     featureBullets: [
       { icon: "Hammer", title: "ロートアイアン手仕事", desc: "繊細な曲線美を職人が一本ずつ鍛造で形作ったクラシカルな門扉" },
       { icon: "Paintbrush", title: "古美仕上げ", desc: "錆止め＋ 2 液ウレタン艶消し黒＋古美仕上げで深い経年変化を楽しめる仕上げ" },
@@ -927,7 +915,6 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       "7b7bbb65e6e998e840fa.jpg",
     ],
     basePrice: 130000,
-    storesUrl: "https://ironworks-ado.stores.jp/items/645a32986ebf640035c692b3",
     featureBullets: [
       { icon: "Hammer", title: "シャープなライン", desc: "強度のあるアイアンだからこそ出せる無駄のないシャープなフレーム" },
       { icon: "Paintbrush", title: "2 液ウレタン塗装", desc: "錆止め下地＋ 2 液ウレタン艶消し黒で長期間使用に耐える仕上げ" },
@@ -994,7 +981,6 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       "f194a8754673123b3c8b.jpg",
     ],
     basePrice: 0,
-    storesUrl: "https://ironworks-ado.stores.jp/items/6458a2646e44950030b06a70",
     featureBullets: [
       { icon: "Hammer", title: "アイアン製力桁", desc: "100×50mm のフレームを 2 本配置し揺れを抑える安定構造" },
       { icon: "Paintbrush", title: "2 液ウレタン塗装", desc: "錆止め下地＋ 2 液型ウレタン艶消し黒で長期間美観を保ちます" },
@@ -1068,7 +1054,6 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
     ],
     basePrice: 1400000,
     badge: "Artisan",
-    storesUrl: "https://ironworks-ado.stores.jp/items/645b965813edcc003101fec5",
     featureBullets: [
       { icon: "Hammer", title: "頑丈な角パイプ構造", desc: "力桁 150×75mm（t4.5mm）、支柱 75×75mm（t3.2mm）の頑丈な構造" },
       { icon: "Paintbrush", title: "錆に強いマットブラック", desc: "錆止め下地塗装＋ 2 液ウレタン艶消し黒で落ち着いた雰囲気に" },
@@ -1133,7 +1118,6 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       "c6413eab30186c2e5562.jpg",
     ],
     basePrice: 0,
-    storesUrl: "https://ironworks-ado.stores.jp/items/6460dfe3418fdf00312349c1",
     featureBullets: [
       { icon: "Hammer", title: "鉄骨外階段製作", desc: "住宅 2 階アプローチ・二世帯住宅・店舗・アパートの外階段に対応" },
       { icon: "Paintbrush", title: "溶融亜鉛メッキ", desc: "下地メッキ＋ 2 液ウレタン塗装で屋外・雨ざらし環境でも長期間使用可" },
@@ -1199,7 +1183,6 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       "108d9f40b15da830bd29.jpg",
     ],
     basePrice: 0,
-    storesUrl: "https://ironworks-ado.stores.jp/items/645b851613edcc002b021dc9",
     featureBullets: [
       { icon: "Hammer", title: "アイアン＋アクリル", desc: "アイアンフレームとアクリルパネルが住空間に馴染む組み合わせ" },
       { icon: "Paintbrush", title: "2 液ウレタン塗装", desc: "錆止め下地＋ 2 液型ウレタン艶消し黒で長期間使える仕上げ" },
@@ -1266,7 +1249,6 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       "f868798fd0d13da78f15.jpg",
     ],
     basePrice: 0,
-    storesUrl: "https://ironworks-ado.stores.jp/items/64cc5d6bf55a3000329bb450",
     featureBullets: [
       { icon: "Hammer", title: "貫＋幕板の構造", desc: "横揺れを抑える「貫」と「幕板」の両方を取り入れた本格的な脚構造" },
       { icon: "Paintbrush", title: "銀古美仕上げ", desc: "錆止め＋ 2 液ウレタン艶消し黒＋銀古美仕上げで深みのある表情" },
@@ -1332,7 +1314,6 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       "4d592e4292c28b3ce6e6.jpg",
     ],
     basePrice: 0,
-    storesUrl: "https://ironworks-ado.stores.jp/items/64be2861d397ae002db004cd",
     featureBullets: [
       { icon: "Hammer", title: "鍛造ロートアイアン", desc: "鉄の無垢材を炉で赤くなるまで熱してから鍛造。要所にロートアイアン技術" },
       { icon: "Paintbrush", title: "2 液ウレタン塗装", desc: "錆止め下地＋ 2 液ウレタン艶消し黒で家具として長期使用に耐える仕上げ" },
@@ -1399,7 +1380,6 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
     ],
     basePrice: 2200,
     shippingIncluded: true,
-    storesUrl: "https://ironworks-ado.stores.jp/items/607d8989da019c1a3aab0de4",
     featureBullets: [
       { icon: "Hammer", title: "鍛冶職人の火造り", desc: "鍛冶職人がフラットバーを一本ずつ火造りで成形した手仕事の小物" },
       { icon: "Paintbrush", title: "黒皮蜜蝋仕上げ", desc: "鍛造後の黒皮に蜜蝋を熱して焼き付け、塗装にはない鉄本来の表情" },
