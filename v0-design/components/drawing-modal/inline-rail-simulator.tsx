@@ -199,7 +199,9 @@ export function InlineRailSimulator({
                   fill={COLOR_BRACKET}
                   stroke={COLOR_BRACKET}
                 />
-                {/* Larger transparent hit area for easier dragging */}
+                {/* Larger transparent hit area for easier dragging.
+                    モバイル(<md)はタッチ対象が小さすぎて事実上ドラッグ不可なので
+                    max-md:pointer-events-none で無効化し、数値編集側 (ZakinEditor) に委ねる。 */}
                 {interactive && (
                   <circle
                     cx={circleX}
@@ -211,6 +213,7 @@ export function InlineRailSimulator({
                     strokeDasharray={isDragging ? "2,2" : undefined}
                     style={{ cursor: interactive ? "ew-resize" : "default" }}
                     onPointerDown={handlePointerDown(item.origIdx)}
+                    className="max-md:pointer-events-none"
                   />
                 )}
               </g>
@@ -231,6 +234,7 @@ export function InlineRailSimulator({
                   strokeDasharray={isDragging ? "2,2" : undefined}
                   style={{ cursor: interactive ? "ew-resize" : "default" }}
                   onPointerDown={handlePointerDown(item.origIdx)}
+                  className="max-md:pointer-events-none"
                 />
               )}
             </g>
@@ -281,7 +285,7 @@ export function InlineRailSimulator({
       <div className="text-[14px] font-medium text-foreground mt-2 leading-relaxed">
         推奨座金数 {calcZakin(lengthMm, zakinRule)} 個（自動計算）
         {onPositionsChange && (
-          <span className="ml-2 text-gold">・座金をドラッグで位置調整できます</span>
+          <span className="ml-2 text-gold max-md:hidden">・座金をドラッグで位置調整できます</span>
         )}
         {(() => {
           const maxSpan = zakinRule?.maxSpanMm ?? (product.category === "horizontal" ? 850 : undefined)
