@@ -48,7 +48,9 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
   { cat: "handrail_h", label: "壁付け手すり ・ 横型", name: "Émile エミール", sub: "フラットバー 鎚目 銀古美仕上げ", price: 45800, priceFrom: true, img: "fa95f550baa05216d291", href: "/products/emile" },
 
   // 横型ロートアイアン (2 商品 — 外部)
-  { cat: "handrail_h", label: "ロートアイアン ・ 横型", name: "Élisabeth エリザベート", sub: "鍛冶職人手打ち ロートアイアン 22φ", price: 149000, priceFrom: true, badge: "Artisan", img: "9a24b2c661dea08ef6f4", href: "/products/elisabeth" },
+  // Élisabeth は 1m から発注可能な価格レンジ商品。フィード価格と一覧カードは最小単価 ¥36,000 で揃え、
+  // Merchant Center とサイトの価格整合性を担保する（ATF の「例 3m ¥168,000」は priceBuildup 側で表示）。
+  { cat: "handrail_h", label: "ロートアイアン ・ 横型", name: "Élisabeth エリザベート", sub: "鍛冶職人手打ち ロートアイアン 22φ", price: 36000, priceFrom: true, badge: "Artisan", img: "9a24b2c661dea08ef6f4", href: "/products/elisabeth" },
   { cat: "handrail_h", label: "ロートアイアン ・ L型", name: "Clémence クレマンス", sub: "L型 22φ 無垢鉄", price: 88000, priceFrom: true, img: "9c1e7cf67204880a41e2", href: "/products/clemence" },
 
   // 縦型手すり (4 商品 — 内部詳細ページあり)
