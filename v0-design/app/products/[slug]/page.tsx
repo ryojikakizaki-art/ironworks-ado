@@ -422,6 +422,38 @@ export default function ProductDetailPage() {
                   仕上げ spec からウレタン塗装／蜜蝋仕上げを自動で出し分け。 */}
               <FinishCommitment specs={specs} />
 
+              {/* ===== 相談誘導 CTA ① — 説明文直後（実証中: rene のみ） ===== */}
+              {slug === "rene" && (
+                <div className="rounded-lg border border-gold/20 bg-card p-6">
+                  <p className="mb-1 text-[12px] tracking-[0.2em] uppercase text-gold font-semibold">
+                    Before you order
+                  </p>
+                  <p className="mb-3 font-serif text-[18px] font-bold text-foreground">
+                    取り付けられるか、まず確認してみませんか？
+                  </p>
+                  <p className="mb-5 text-[14px] leading-relaxed text-muted-foreground">
+                    「コンクリート壁でも大丈夫？」「階段に合うサイズがわからない」——
+                    そんな疑問でも大歓迎です。写真 1 枚送るだけで職人が直接確認します。
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <a
+                      href="https://lin.ee/Tnjukrf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 rounded-md border-2 border-[#06C755] bg-white px-5 py-3 text-[14px] font-semibold text-[#06C755] transition hover:bg-[#06C755]/5"
+                    >
+                      LINE で写真を送る
+                    </a>
+                    <Link
+                      href="/contact"
+                      className="flex items-center justify-center gap-2 rounded-md border-2 border-gold/40 bg-white px-5 py-3 text-[14px] font-semibold text-foreground transition hover:border-gold hover:text-gold"
+                    >
+                      フォームで相談する
+                    </Link>
+                  </div>
+                </div>
+              )}
+
               {/* Divider */}
               <div className="border-t-2 border-gold/30 pt-6" />
 
@@ -433,6 +465,17 @@ export default function ProductDetailPage() {
                   </span>
                   <div className="flex-1 h-px bg-gold/30" />
                 </div>
+
+                {/* ===== 相談誘導 CTA ② — 計算機の上（実証中: rene のみ） ===== */}
+                {slug === "rene" && (
+                  <p className="text-[13px] text-muted-foreground md:text-[14px]">
+                    💬 サイズに迷ったら、
+                    <Link href="/contact" className="text-gold underline underline-offset-2 hover:opacity-80">
+                      先に職人へご相談
+                    </Link>
+                    もどうぞ。写真があれば適切なサイズを提案します。
+                  </p>
+                )}
 
                 {/* Step 1: Length */}
                 <div className="relative pl-14">
@@ -911,6 +954,18 @@ export default function ProductDetailPage() {
                       >
                         特殊な仕様について相談する
                       </Link>
+                      {/* ===== 相談誘導 CTA ③ — 購入ボタン下（実証中: rene のみ） ===== */}
+                      {slug === "rene" && (
+                        <p className="mt-3 text-center text-[13px] text-muted-foreground">
+                          まだ迷っている方へ —{" "}
+                          <Link
+                            href="/contact"
+                            className="font-medium text-foreground underline underline-offset-2 hover:text-gold"
+                          >
+                            注文前のご相談も無料で承ります
+                          </Link>
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>
