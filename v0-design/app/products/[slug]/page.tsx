@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback, useRef } from "react"
+import { useState, useCallback, useRef } from "react"
 import { useParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
@@ -91,11 +91,6 @@ export default function ProductDetailPage() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   // Embedded Checkout: clientSecret が入ったらモーダルが開く
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
-  const [isCtaInView, setIsCtaInView] = useState(false)
-  // 初回来訪者への配慮: フローティング購入バーは「一度 Step4（確認して購入）まで
-  // スクロールして到達した」後にのみ表示する。到達後はスクロールを戻しても表示し続ける。
-  const [hasSeenCta, setHasSeenCta] = useState(false)
-  const ctaRef = useRef<HTMLDivElement | null>(null)
   const prefectureRef = useRef<HTMLDivElement | null>(null)
   // 座金ルール (商品固有。未指定は旧式=横型ルール)
   const zakinRule = product.drawing.zakinRule
@@ -187,21 +182,6 @@ export default function ProductDetailPage() {
   // Lightbox は廃止 (2026-05-12) — モバイルで黒バック+×だけだと不便だったため、
   // ヒーロー画像はスワイプ+矢印で切替・サムネタップでヒーローに反映する方式に移行。
 
-
-  // CTA領域 (Step4 合計～ボタン) のビューポート監視でフローティング価格の表示制御
-  useEffect(() => {
-    const target = ctaRef.current
-    if (!target) return
-    const obs = new IntersectionObserver(
-      ([entry]) => {
-        setIsCtaInView(entry.isIntersecting)
-        if (entry.isIntersecting) setHasSeenCta(true)
-      },
-      { rootMargin: "0px 0px -20% 0px", threshold: 0.05 }
-    )
-    obs.observe(target)
-    return () => obs.disconnect()
-  }, [])
 
   // Stripe Checkout 遷移
   const handleCheckout = async () => {
@@ -799,7 +779,7 @@ export default function ProductDetailPage() {
                 </div>
 
                 {/* Step 4: Confirm & Purchase */}
-                <div ref={ctaRef} className="relative pl-14 pt-6">
+                <div className="relative pl-14 pt-6">
                   <div className={`absolute left-0 top-6 w-11 h-11 flex items-center justify-center text-[16px] font-serif font-bold rounded-full shadow-sm transition-colors ${
                     step4Ready ? "bg-gold text-white" : "bg-gold/15 text-gold"
                   }`}>
@@ -1061,41 +1041,6 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </main>
-
-      {/* Floating Price Bar (Step4 CTA が画面外の時だけ表示) */}
-      <AnimatePresence>
-        {hasSeenCta && !isCtaInView && !prices.shippingInquiry && (
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 40 }}
-            transition={{ duration: 0.25 }}
-            className="fixed bottom-4 right-4 left-4 sm:left-auto sm:bottom-6 sm:right-6 z-40 max-w-md sm:max-w-sm"
-          >
-            <div className="bg-white border-2 border-gold shadow-2xl rounded-xl p-4 flex items-center gap-3">
-              <div className="flex-1 min-w-0">
-                <div className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground">合計（税込）</div>
-                <div className="font-serif text-[22px] font-bold text-foreground leading-tight">
-                  ¥{prices.total.toLocaleString()}
-                </div>
-                <div className="text-[10px] text-muted-foreground truncate">
-                  {length}mm · {quantity}本{prefecture ? ` · ${prefecture}` : " · 配送先未選択"}
-                </div>
-              </div>
-              <PrimaryCTA
-                onClick={handleCheckout}
-                disabled={isCheckingOut}
-                variant="purchase"
-                size="md"
-                withArrow
-                className="shrink-0 whitespace-nowrap"
-              >
-                {isCheckingOut ? "移動中…" : "購入手続き"}
-              </PrimaryCTA>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
       <Footer />
 
