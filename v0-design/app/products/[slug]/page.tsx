@@ -919,25 +919,20 @@ export default function ProductDetailPage() {
                           </PrimaryCTA>
                         </div>
                       )}
-                      {/* 長さで価格が確定するため「見積もり」は不要。
-                          計算機で対応できない特殊仕様の相談導線として配置。
-                          contact 側で種別「特注・カスタムオーダー」＋当該商品が事前選択される。 */}
-                      <Link
-                        href={`/contact?product=${encodeURIComponent(slug)}&category=custom`}
-                        className="block w-full py-4 border border-gold/20 text-foreground text-[15px] font-medium rounded-md hover:border-gold hover:text-gold transition-colors text-center"
-                      >
-                        特殊な仕様について相談する
-                      </Link>
-                      {/* ===== 相談誘導 CTA ③ — 購入ボタン下 ===== */}
-                      <p className="mt-3 text-center text-[13px] text-muted-foreground">
-                        まだ迷っている方へ —{" "}
+                      {/* ===== 統合相談 CTA — 旧「特殊な仕様」ボタンと「まだ迷っている方へ」テキストを 1 つに ===== */}
+                      <div className="pt-1 space-y-2">
+                        <p className="text-center text-[13px] text-muted-foreground leading-relaxed">
+                          入力でつまずいた、特殊な仕様を相談したい、あと一歩で迷っている——
+                          <br className="hidden sm:inline" />
+                          そんな方は、お気軽にご相談ください。
+                        </p>
                         <Link
-                          href="/contact"
-                          className="font-medium text-foreground underline underline-offset-2 hover:text-gold"
+                          href={`/contact?product=${encodeURIComponent(slug)}`}
+                          className="block w-full py-4 border border-gold/40 text-foreground text-[15px] font-medium rounded-md hover:border-gold hover:bg-gold/5 hover:text-gold transition-colors text-center"
                         >
-                          注文前のご相談も無料で承ります
+                          購入前のご相談（無料）
                         </Link>
-                      </p>
+                      </div>
                     </div>
                   </div>
                 </div>
