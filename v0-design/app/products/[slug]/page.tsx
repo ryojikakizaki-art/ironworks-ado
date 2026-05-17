@@ -505,6 +505,10 @@ export default function ProductDetailPage() {
                       </>
                     ) : (
                       <>
+                        <p className="text-[13px] text-muted-foreground">
+                          <span className="font-medium text-foreground">〜{product.drawing.stdLengthMm}mm まで一律 ¥{BASE_PRICE.toLocaleString()}</span>
+                          <span className="ml-2 text-[12px] opacity-75">（超過分は 1mm あたり ¥{PRICE_PER_MM}）</span>
+                        </p>
                         <div className="flex items-center gap-4">
                           <div className="relative flex-1">
                             <input
