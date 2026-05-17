@@ -45,8 +45,9 @@ function PriceBlock({ product }: { product: SimpleProduct }) {
         <p className="text-xs text-muted-foreground mb-1 tracking-wider">PRICE</p>
         <p className="font-serif text-3xl text-dark">
           ¥{buildup.unitPrice.toLocaleString()}
+          <span className="text-3xl">〜</span>
           <span className="text-sm text-muted-foreground ml-1">/ {buildup.unitLabel}</span>
-          <span className="text-sm text-muted-foreground ml-2">〜（税込）</span>
+          <span className="text-sm text-muted-foreground ml-2">（税込）</span>
         </p>
         {buildup.unitNote && (
           <p className="text-[12px] md:text-[13px] text-muted-foreground leading-relaxed mt-2">

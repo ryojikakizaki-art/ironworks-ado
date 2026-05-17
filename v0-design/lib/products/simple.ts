@@ -137,13 +137,15 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       { label: "備考", value: "全てハンドメイドのため多少の誤差あり" },
       { label: "付属品", value: "取付用ビス M5×40mm・タッチアップ剤（1液ウレタン）" },
     ],
+    // 2026-05-17: STORES と並び順を揃え、「屋外用手すりの仕上げ方法」サムネイル
+    // （1900d5027eaece50d578.jpg）を Élisabeth のギャラリーから除外。
+    // 屋外仕上げの説明は別商品 /paint・/galvanizing 側にあるためここでは重複となる。
     images: [
       "9a24b2c661dea08ef6f4.jpg",
       "fb5d87842ccb3edbe94d.jpg",
       "ca8b847ba967280f8655.jpg",
       "010728a1313b8ddfc41e.jpg",
       "0257bb1b9e8c4a8147ba.jpg",
-      "1900d5027eaece50d578.jpg",
       "7dcf95166348ad44aad5.jpg",
       "210f572a0c70b0750889.jpg",
     ],

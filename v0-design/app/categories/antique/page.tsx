@@ -226,7 +226,7 @@ export default function AntiqueCategoryPage() {
                     オーダーメイドで階段の両側に施工した事例。階段の長さに合わせて、職人が一本ずつ熱し叩いて延ばし、現場で位置を合わせています。
                   </p>
                   <p>
-                    無垢鉄を 1000℃ で赤らめ、ハンマーで成形した本物のロートアイアン。<strong className="text-foreground font-medium">¥149,000〜</strong>
+                    無垢鉄を 1000℃ で赤らめ、ハンマーで成形した本物のロートアイアン。<strong className="text-foreground font-medium">¥36,000〜 / m</strong>（例：3m ¥168,000）
                   </p>
                 </div>
                 <div className="mt-10">
