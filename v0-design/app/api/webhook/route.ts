@@ -53,6 +53,71 @@ function formatJpAddress(addr: StripeAddress | null | undefined): string {
   return `${postal}${parts}` || '—';
 }
 
+/**
+ * 多本長さ違い対応 (PR #3): metadata から長さ情報を解析。
+ * - 新しい lengths_mm (CSV) があればそれを正
+ * - 無ければ length_mm + quantity から導出 (後方互換)
+ *
+ * Returns:
+ *   short: ラベル用短縮表記 (例 "1500mm" / "1500mm × 3本" / "3本（複数長さ）")
+ *   full:  詳細表記 (例 "1500mm" / "1500mm × 3本" / "1本目 1500mm / 2本目 1800mm / 3本目 2000mm")
+ *   perItemHtml: メール本文用 per-item 行 HTML (multi時のみ非空)
+ *   isMulti: 違う長さの本が含まれるか
+ *   lengths: 各本の長さ配列
+ *   qty: 本数
+ */
+function parseLengthsMeta(meta: Record<string, string>): {
+  short: string;
+  full: string;
+  perItemPlain: string;
+  isMulti: boolean;
+  lengths: number[];
+  qty: number;
+} {
+  const lengthsCsv = meta.lengths_mm || '';
+  let lengths: number[] = [];
+  if (lengthsCsv) {
+    lengths = lengthsCsv
+      .split(',')
+      .map(s => Math.round(Number(s)))
+      .filter(n => Number.isFinite(n) && n > 0);
+  }
+  if (lengths.length === 0) {
+    // 後方互換: 旧 metadata 形式
+    const L = Math.round(Number(meta.length_mm || 0));
+    const qty = Math.max(1, Math.min(6, Math.round(Number(meta.quantity || 1)) || 1));
+    if (L > 0) lengths = Array(qty).fill(L);
+  }
+  if (lengths.length === 0) {
+    return { short: '—', full: '—', perItemPlain: '', isMulti: false, lengths: [], qty: 0 };
+  }
+  const qty = lengths.length;
+  const allEqual = lengths.every(l => l === lengths[0]);
+  if (qty === 1) {
+    return { short: `${lengths[0]}mm`, full: `${lengths[0]}mm`, perItemPlain: '', isMulti: false, lengths, qty };
+  }
+  if (allEqual) {
+    return {
+      short: `${lengths[0]}mm × ${qty}本`,
+      full: `${lengths[0]}mm × ${qty}本`,
+      perItemPlain: '',
+      isMulti: false,
+      lengths,
+      qty,
+    };
+  }
+  // 多本長さ違い
+  const perItemPlain = lengths.map((l, i) => `${i + 1}本目: ${l}mm`).join(' / ');
+  return {
+    short: `${qty}本（複数長さ）`,
+    full: lengths.map((l, i) => `${i + 1}本目 ${l}mm`).join(' / '),
+    perItemPlain,
+    isMulti: true,
+    lengths,
+    qty,
+  };
+}
+
 async function sendOrderConfirmationEmail(session: Stripe.Checkout.Session) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -68,7 +133,9 @@ async function sendOrderConfirmationEmail(session: Stripe.Checkout.Session) {
 
   const meta = session.metadata || {};
   const name = session.customer_details?.name || 'お客様';
-  const productLabel = `${meta.product_name || meta.product} 壁付け手すり ${meta.length_mm}mm`;
+  // 多本長さ違い対応 (PR #3)
+  const lengthsInfo = parseLengthsMeta(meta);
+  const productLabel = `${meta.product_name || meta.product} 壁付け手すり ${lengthsInfo.short}`;
   const isRush = meta.rush_delivery === 'true';
   const deliveryLabel = isRush ? '特急配送（5営業日）' : '通常配送（10営業日）';
   const baseYen = Number(meta.base_total_yen || 0);
@@ -105,9 +172,10 @@ async function sendOrderConfirmationEmail(session: Stripe.Checkout.Session) {
 <div class="section-title">ご注文内容</div>
 <div class="summary">
 <div class="row"><span class="label">商品</span><span class="value">${esc(productLabel)}</span></div>
-<div class="row"><span class="label">仕上げ・座金</span><span class="value">座金 ${esc(String(meta.zakin_count || '—'))}個</span></div>
+${lengthsInfo.isMulti ? `<div class="row"><span class="label">各本の長さ</span><span class="value">${esc(lengthsInfo.full)}</span></div>` : ''}
+<div class="row"><span class="label">仕上げ・座金</span><span class="value">${lengthsInfo.isMulti ? '各本の長さに応じて自動配置' : `座金 ${esc(String(meta.zakin_count || '—'))}個`}</span></div>
 <div class="row"><span class="label">配送区分</span><span class="value">${esc(deliveryLabel)}</span></div>
-<div class="row"><span class="label">基本金額</span><span class="value">¥${baseYen.toLocaleString()}</span></div>
+${lengthsInfo.isMulti ? '' : `<div class="row"><span class="label">基本金額</span><span class="value">¥${baseYen.toLocaleString()}</span></div>`}
 ${isRush ? `<div class="row"><span class="label">特急割増</span><span class="value">¥${rushYen.toLocaleString()}</span></div>` : ''}
 <div class="total">合計: ¥${totalYen.toLocaleString()}（税込）</div>
 </div>
@@ -274,7 +342,9 @@ async function createCalendarEvents(session: Stripe.Checkout.Session) {
   const calendar = google.calendar({ version: 'v3', auth });
   const calendarId = process.env.GOOGLE_CALENDAR_ID;
 
-  const productLabel = `${meta.product_name || meta.product} ${meta.length_mm}mm`;
+  // 多本長さ違い対応 (PR #3)
+  const lengthsInfo = parseLengthsMeta(meta);
+  const productLabel = `${meta.product_name || meta.product} ${lengthsInfo.short}`;
   const rushLabel = meta.rush_delivery === 'true' ? '【特急】' : '';
   const arrivalPref = meta.preferred_arrival_date
     ? `\n到着希望日: ${meta.preferred_arrival_date} ${meta.preferred_time_slot || '指定なし'}`
@@ -283,7 +353,9 @@ async function createCalendarEvents(session: Stripe.Checkout.Session) {
   const description = [
     `商品: ${productLabel}`,
     `タイプ: ${meta.type}`,
-    `座金: ${meta.zakin_count}個`,
+    // 多本の場合は per-item 長さを別行で明示（蠣﨑さんの制作指示用）
+    lengthsInfo.isMulti ? `本数内訳: ${lengthsInfo.perItemPlain}` : '',
+    lengthsInfo.isMulti ? `座金: 各本の長さに応じて自動配置` : `座金: ${meta.zakin_count}個`,
     `合計: ¥${Number(meta.total_yen || 0).toLocaleString()}`,
     meta.rush_delivery === 'true' ? `特急割増: ¥${Number(meta.rush_surcharge_yen || 0).toLocaleString()}` : '',
     `お客様: ${email}`,
