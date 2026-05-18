@@ -230,7 +230,8 @@ export default function ProductDetailPage() {
   // ② が「完了」表示になっていた。実際の入力状況に直結する形に修正。
   // 多本対応 (PR #2): 全本数が範囲内である必要あり
   const step1Done = lengths.every(L => L >= minLength && L <= maxLength)
-  const step2Done = quantity > 0 && prefecture !== ""
+  // Step 2 は配送先のみ (数量は Step 1 へ移動)
+  const step2Done = prefecture !== ""
   const step3Done = deliveryType === "normal" || deliveryType === "express"
   const step4Ready = step1Done && step2Done && step3Done
 
@@ -511,9 +512,42 @@ export default function ProductDetailPage() {
                   <div className="absolute left-[21px] top-12 bottom-0 w-px bg-border" />
 
                   <div className="space-y-4">
-                    <h3 className="font-serif text-[22px] font-bold text-foreground tracking-tight">
-                      {product.drawing.category === "fixed" ? "サイズ" : "長さを選ぶ"}
-                    </h3>
+                    <div className="flex items-baseline justify-between gap-3 flex-wrap">
+                      <h3 className="font-serif text-[22px] font-bold text-foreground tracking-tight">
+                        {product.drawing.category === "fixed" ? "サイズ・本数を選ぶ" : "長さ・本数を選ぶ"}
+                      </h3>
+                      {/* 数量アジャスター: Step 1 内に配置して「違う長さで複数本注文」を発見しやすく */}
+                      <div className="flex items-center gap-2">
+                        <span className="text-[13px] text-muted-foreground">本数</span>
+                        <div className="flex items-center border border-gold/40 rounded-md bg-white">
+                          <button
+                            type="button"
+                            onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                            className="w-10 h-10 flex items-center justify-center hover:bg-gold/5 transition-colors disabled:opacity-30"
+                            disabled={quantity <= 1}
+                            aria-label="本数を減らす"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <span className="w-10 text-center font-mono text-lg">{quantity}</span>
+                          <button
+                            type="button"
+                            onClick={() => setQuantity(quantity + 1)}
+                            className="w-10 h-10 flex items-center justify-center hover:bg-gold/5 transition-colors disabled:opacity-30"
+                            disabled={quantity >= 6}
+                            aria-label="本数を増やす"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
+                        </div>
+                        <span className="text-[12px] text-muted-foreground">本</span>
+                      </div>
+                    </div>
+                    {!isMultiOrder && (
+                      <p className="text-[12px] text-muted-foreground -mt-2">
+                        ▸ 本数を <span className="font-medium text-foreground">2 本以上</span> にすると、本ごとに違う長さを指定できます
+                      </p>
+                    )}
                     {product.drawing.category === "fixed" ? (
                       <>
                         <div className="flex items-center gap-4">
@@ -639,7 +673,7 @@ export default function ProductDetailPage() {
                         {isMultiOrder && (
                           <div className="space-y-3">
                             <p className="text-[12px] text-muted-foreground">
-                              Step 02 で数量を変更すると本数が増減します。各本ごとに長さを入力してください（範囲 {minLength}〜{maxLength}mm）。
+                              本数を変更するには上の「本数」を増減してください。各本ごとに違う長さを入力できます（範囲 {minLength}〜{maxLength}mm）。
                             </p>
                             {lengths.map((L, i) => (
                               <div key={i} className="flex items-center gap-3 border border-gold/20 bg-card rounded-md p-3">
@@ -783,78 +817,54 @@ export default function ProductDetailPage() {
 
                   <div className="space-y-4">
                     <h3 className="font-serif text-[22px] font-bold text-foreground tracking-tight">
-                      数量・配送先
+                      配送先
                       {!prefecture && (
                         <span className="ml-2 text-[11px] font-sans font-medium text-red-600 align-middle tracking-wider">必須</span>
                       )}
                     </h3>
-                    <div ref={prefectureRef} className="flex flex-col sm:flex-row gap-4">
-                      {/* Quantity */}
-                      <div className="flex items-center border border-gold/20 rounded-md">
-                        <button
-                          onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                          className="w-12 h-12 flex items-center justify-center hover:bg-muted transition-colors"
-                          aria-label="数量を減らす"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </button>
-                        <span className="w-12 text-center font-mono text-lg">{quantity}</span>
-                        <button
-                          onClick={() => setQuantity(quantity + 1)}
-                          className="w-12 h-12 flex items-center justify-center hover:bg-muted transition-colors"
-                          aria-label="数量を増やす"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
-                      </div>
-
-                      {/* Prefecture Dropdown */}
-                      <div className="relative flex-1">
-                        <button
-                          onClick={() => setIsPrefectureOpen(!isPrefectureOpen)}
-                          className={`w-full h-12 px-4 flex items-center justify-between border-2 rounded-md text-[14px] font-medium transition-colors ${
-                            prefecture
-                              ? "border-gold bg-gold/5 text-foreground"
-                              : "border-gold/60 bg-white text-foreground hover:border-gold"
-                          }`}
-                        >
-                          <span className="flex items-center gap-2">
-                            {!prefecture && (
-                              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gold/15 text-gold text-[11px] font-bold">
-                                ▼
-                              </span>
-                            )}
-                            <span>{prefecture || "配送先都道府県を選択 ▸"}</span>
-                          </span>
-                          <ChevronDown className={`w-5 h-5 text-gold transition-transform ${isPrefectureOpen ? "rotate-180" : ""}`} />
-                        </button>
-                        
-                        <AnimatePresence>
-                          {isPrefectureOpen && (
-                            <motion.div
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                              className="absolute top-full left-0 right-0 mt-1 bg-white border border-gold/20 rounded-md shadow-lg max-h-60 overflow-y-auto z-20"
-                            >
-                              {prefectures.map((pref) => (
-                                <button
-                                  key={pref}
-                                  onClick={() => { setPrefecture(pref); setIsPrefectureOpen(false); setCheckoutError(null); }}
-                                  className="w-full px-4 py-2 text-left text-[13px] hover:bg-muted transition-colors flex items-center justify-between"
-                                >
-                                  {pref}
-                                  {prefecture === pref && <Check className="w-4 h-4 text-gold" />}
-                                </button>
-                              ))}
-                            </motion.div>
+                    {/* Prefecture Dropdown — 数量は Step 01 へ移動 (PR #2 UX 改善) */}
+                    <div ref={prefectureRef} className="relative">
+                      <button
+                        onClick={() => setIsPrefectureOpen(!isPrefectureOpen)}
+                        className={`w-full h-12 px-4 flex items-center justify-between border-2 rounded-md text-[14px] font-medium transition-colors ${
+                          prefecture
+                            ? "border-gold bg-gold/5 text-foreground"
+                            : "border-gold/60 bg-white text-foreground hover:border-gold"
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          {!prefecture && (
+                            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gold/15 text-gold text-[11px] font-bold">
+                              ▼
+                            </span>
                           )}
-                        </AnimatePresence>
-                      </div>
+                          <span>{prefecture || "配送先都道府県を選択 ▸"}</span>
+                        </span>
+                        <ChevronDown className={`w-5 h-5 text-gold transition-transform ${isPrefectureOpen ? "rotate-180" : ""}`} />
+                      </button>
+
+                      <AnimatePresence>
+                        {isPrefectureOpen && (
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="absolute top-full left-0 right-0 mt-1 bg-white border border-gold/20 rounded-md shadow-lg max-h-60 overflow-y-auto z-20"
+                          >
+                            {prefectures.map((pref) => (
+                              <button
+                                key={pref}
+                                onClick={() => { setPrefecture(pref); setIsPrefectureOpen(false); setCheckoutError(null); }}
+                                className="w-full px-4 py-2 text-left text-[13px] hover:bg-muted transition-colors flex items-center justify-between"
+                              >
+                                {pref}
+                                {prefecture === pref && <Check className="w-4 h-4 text-gold" />}
+                              </button>
+                            ))}
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
-                    <p className="text-[12px] text-muted-foreground leading-relaxed">
-                      ※ 数量を 2 本以上にすると、Step 01 で <span className="font-medium text-foreground">本ごとに違う長さ</span> を入力できます（座金位置は自動配置）。
-                    </p>
                   </div>
                 </div>
 
