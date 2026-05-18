@@ -3,6 +3,14 @@ import Stripe from 'stripe';
 import { getScheduleDates, formatDateISO } from '@/lib/business-days';
 import { calcShipping, type ProductType } from '@/lib/shipping/sagawa';
 import { getOrCreateConsumptionTaxRate } from '@/lib/stripe/tax-rate';
+import {
+  RENE_PRICE_TABLE,
+  CLAIRE_PRICE_TABLE,
+  MARCEL_PRICE_TABLE,
+  EMILE_PRICE_TABLE,
+  lookupPriceFromTable,
+  type PricePoint,
+} from '@/lib/drawing-modal/products';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -33,6 +41,7 @@ interface Product {
   includedZakin: number;
   zakinRule?: ZakinRule;
   pricePerMm?: number; // 商品別オーバーライド (未指定なら全商品共通 25)
+  priceTable?: PricePoint[]; // 長さ別固定価格テーブル (横型 4 商品)
 }
 
 const VERTICAL_STANDARD_RULE: ZakinRule = {
@@ -50,10 +59,10 @@ const ALEXANDRE_RULE: ZakinRule = {
 };
 
 const PRODUCTS: Record<string, Product> = {
-  rene:       { name: 'René ルネ',               type: '横型', basePrice: 36500, stdLengthMm: 1500, maxMm: 5000, finish: 'マットブラック', includedZakin: 3 },
-  claire:     { name: 'Claire クレール',          type: '横型', basePrice: 42000, stdLengthMm: 1500, maxMm: 5000, finish: 'マットホワイト', includedZakin: 3 },
-  emile:      { name: 'Émile エミール',           type: '横型', basePrice: 45800, stdLengthMm: 1500, maxMm: 5000, finish: '鎚目仕上げ 銀古美', includedZakin: 3 },
-  marcel:     { name: 'Marcel マルセル',          type: '横型', basePrice: 36000, stdLengthMm: 1500, maxMm: 5000, finish: 'マットブラック', includedZakin: 3 },
+  rene:       { name: 'René ルネ',               type: '横型', basePrice: 36500, stdLengthMm: 1500, maxMm: 5000, finish: 'マットブラック', includedZakin: 3, priceTable: RENE_PRICE_TABLE },
+  claire:     { name: 'Claire クレール',          type: '横型', basePrice: 42000, stdLengthMm: 1500, maxMm: 5000, finish: 'マットホワイト', includedZakin: 3, priceTable: CLAIRE_PRICE_TABLE },
+  emile:      { name: 'Émile エミール',           type: '横型', basePrice: 45800, stdLengthMm: 1500, maxMm: 5000, finish: '鎚目仕上げ 銀古美', includedZakin: 3, priceTable: EMILE_PRICE_TABLE },
+  marcel:     { name: 'Marcel マルセル',          type: '横型', basePrice: 36000, stdLengthMm: 1500, maxMm: 5000, finish: 'マットブラック', includedZakin: 3, priceTable: MARCEL_PRICE_TABLE },
   alexandre:  { name: 'Alexandre アレクサンドル', type: '縦型', basePrice: 32000, stdLengthMm: 1000, maxMm: 3000, finish: 'マットブラック', includedZakin: 3, zakinRule: ALEXANDRE_RULE, pricePerMm: 30 },
   catherine:  { name: 'Catherine カトリーヌ',     type: '縦型', basePrice: 34500, stdLengthMm: 1000, maxMm: 1500, finish: 'マットホワイト', includedZakin: 3, zakinRule: VERTICAL_STANDARD_RULE },
   claude:     { name: 'Claude クロード',          type: '縦型', basePrice: 30000, stdLengthMm: 1000, maxMm: 1500, finish: 'マットブラック', includedZakin: 3, zakinRule: VERTICAL_STANDARD_RULE },
@@ -91,15 +100,28 @@ function calcZakin(L_mm: number, rule?: ZakinRule): number {
 }
 
 function calcPrice(L_mm: number, prod: Product) {
-  const pricePerMm = prod.pricePerMm ?? PRICE_PER_MM;
-  const addon    = Math.max(0, L_mm - prod.stdLengthMm) * pricePerMm;
-  const longM    = L_mm > SURGE_START_MM
-                 ? Math.pow(SURGE_BASE, (L_mm - SURGE_START_MM) / SURGE_INTERVAL_MM)
-                 : 1;
-  const surcharge = L_mm > SURGE_START_MM ? addon * (longM - 1) : 0;
-  const zakin     = calcZakin(L_mm, prod.zakinRule);
-  const addZakin  = Math.max(0, zakin - prod.includedZakin) * ZAKIN_PRICE;
-  const total     = prod.basePrice + addon + addZakin + surcharge;
+  // 価格テーブル指定商品 (René/Claire/Marcel/Émile) はテーブル参照、それ以外は式計算。
+  let addon: number;
+  let surcharge: number;
+  if (prod.priceTable) {
+    const tablePrice = lookupPriceFromTable(L_mm, prod.priceTable);
+    addon = tablePrice - prod.basePrice;
+    surcharge = 0;
+  } else {
+    const pricePerMm = prod.pricePerMm ?? PRICE_PER_MM;
+    addon = Math.max(0, L_mm - prod.stdLengthMm) * pricePerMm;
+    const longM = L_mm > SURGE_START_MM
+                ? Math.pow(SURGE_BASE, (L_mm - SURGE_START_MM) / SURGE_INTERVAL_MM)
+                : 1;
+    surcharge = L_mm > SURGE_START_MM ? addon * (longM - 1) : 0;
+  }
+  const zakin    = calcZakin(L_mm, prod.zakinRule);
+  // 価格テーブル指定商品は標準座金本数を含む価格のため追加座金料金 0 円。
+  // 式計算商品は INCLUDED_ZAKIN を超えた本数を加算 (従来通り)。
+  const addZakin = prod.priceTable
+    ? 0
+    : Math.max(0, zakin - prod.includedZakin) * ZAKIN_PRICE;
+  const total    = prod.basePrice + addon + addZakin + surcharge;
   return { addon, surcharge, addZakin, zakin, total };
 }
 

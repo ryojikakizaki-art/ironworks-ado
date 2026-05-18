@@ -21,6 +21,7 @@ import { EmbeddedCheckoutModal } from "@/components/checkout/embedded-checkout-m
 import { FinishCommitment } from "@/components/finish-commitment"
 import { calcShipping, type ProductType } from "@/lib/shipping/sagawa"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
+import { lookupPriceFromTable } from "@/lib/drawing-modal/products"
 import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench } from "lucide-react"
 
 // productImages / specs は商品ごとに display.ts から取得
@@ -167,19 +168,38 @@ export default function ProductDetailPage() {
     : product.drawing.category === "vertical" ? "tategata"
     : "fixed"
 
+  const PRICE_TABLE = product.drawing.priceTable
+
   const calculatePrice = useCallback(() => {
     // 本ごとに per-item で計算 (多本長さ違い対応 PR #2)
     // - 多本注文時は座金カスタム禁止 (簡素化) — 各本とも auto 計算
     const items = lengths.map(L => {
-      const addon = Math.max(0, L - STD_LENGTH) * PRICE_PER_MM
-      const longM = L > SURGE_START
-        ? Math.pow(SURGE_BASE, (L - SURGE_START) / SURGE_INTERVAL)
-        : 1
-      const surcharge = L > SURGE_START ? addon * (longM - 1) : 0
+      // 価格テーブル指定商品 (René/Claire/Marcel/Émile) は段階式テーブルを参照、
+      // それ以外は従来の (basePrice + 25円/mm + 長尺サーチャージ) 式計算。
+      let addon: number
+      let surcharge: number
+      if (PRICE_TABLE) {
+        const tablePrice = lookupPriceFromTable(L, PRICE_TABLE)
+        addon = tablePrice - BASE_PRICE
+        surcharge = 0
+      } else {
+        addon = Math.max(0, L - STD_LENGTH) * PRICE_PER_MM
+        const longM = L > SURGE_START
+          ? Math.pow(SURGE_BASE, (L - SURGE_START) / SURGE_INTERVAL)
+          : 1
+        surcharge = L > SURGE_START ? addon * (longM - 1) : 0
+      }
+      const autoZakinCount = calcZakin(L, zakinRule)
       const zakinCount = isMultiOrder
-        ? calcZakin(L, zakinRule)
-        : (zakin.customMode ? zakin.positions.length : calcZakin(L, zakinRule))
-      const addZakin = Math.max(0, zakinCount - INCLUDED_ZAKIN) * ZAKIN_PRICE
+        ? autoZakinCount
+        : (zakin.customMode ? zakin.positions.length : autoZakinCount)
+      // 価格テーブル指定商品: テーブル価格に長さに応じた標準座金本数が既に含まれる。
+      //   - auto / 多本: 追加料金なし (zakinCount == autoZakinCount)
+      //   - カスタムモード: auto 本数を超えて追加した分だけ加算
+      // 式計算商品: 従来通り INCLUDED_ZAKIN を超えた分を加算。
+      const addZakin = PRICE_TABLE
+        ? Math.max(0, zakinCount - autoZakinCount) * ZAKIN_PRICE
+        : Math.max(0, zakinCount - INCLUDED_ZAKIN) * ZAKIN_PRICE
       const angleCost = (!isMultiOrder && zakin.angleDeg > 0) ? zakinCount * ANGLE_PRICE : 0
       const unitPrice = BASE_PRICE + addon + addZakin + surcharge + angleCost
       return {
@@ -221,7 +241,7 @@ export default function ProductDetailPage() {
       total,
       zakinCount: first?.zakinCount ?? 0,
     }
-  }, [lengths, isMultiOrder, deliveryType, prefecture, zakin, productType, STD_LENGTH, PRICE_PER_MM, BASE_PRICE, INCLUDED_ZAKIN, zakinRule])
+  }, [lengths, isMultiOrder, deliveryType, prefecture, zakin, productType, STD_LENGTH, PRICE_PER_MM, BASE_PRICE, INCLUDED_ZAKIN, zakinRule, PRICE_TABLE])
 
   const prices = calculatePrice()
 
@@ -603,7 +623,11 @@ export default function ProductDetailPage() {
                       <>
                         <p className="text-[13px] text-muted-foreground">
                           <span className="font-medium text-foreground">〜{product.drawing.stdLengthMm}mm まで一律 ¥{BASE_PRICE.toLocaleString()}</span>
-                          <span className="ml-2 text-[12px] opacity-75">（超過分は 1mm あたり ¥{PRICE_PER_MM}）</span>
+                          <span className="ml-2 text-[12px] opacity-75">
+                            {PRICE_TABLE
+                              ? `（${PRICE_TABLE[0].mm}mm 超は長さ別 段階価格表 / 標準座金本数込み）`
+                              : `（超過分は 1mm あたり ¥${PRICE_PER_MM}）`}
+                          </span>
                         </p>
                         {/* 単本モード: スライダー + 数値入力 (qty=1) */}
                         {!isMultiOrder && (
@@ -938,7 +962,9 @@ export default function ProductDetailPage() {
                           {prices.addon > 0 && (
                             <div className="flex justify-between text-[15px]">
                               <span className="text-muted-foreground">
-                                長さ追加料金（+{length - product.drawing.stdLengthMm}mm × ¥{PRICE_PER_MM}）
+                                {PRICE_TABLE
+                                  ? `長さ追加料金（${length}mm 段階価格）`
+                                  : `長さ追加料金（+${length - product.drawing.stdLengthMm}mm × ¥${PRICE_PER_MM}）`}
                               </span>
                               <span className="font-mono">+¥{prices.addon.toLocaleString()}</span>
                             </div>

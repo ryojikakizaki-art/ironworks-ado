@@ -75,6 +75,14 @@ export interface TitleBlockSpec {
   material: string // "stkm25.4 t2.3"
 }
 
+// 長さ別固定価格テーブル。指定された商品は (basePrice + addon + surcharge) ではなく
+// テーブル内挿で本体価格を決める (STORES era 方式)。標準座金本数は含む価格。
+// 中間長は隣接2点間で線形補間。表外 (>最終 mm) は最終値で頭打ち。
+export interface PricePoint {
+  mm: number
+  price: number
+}
+
 export interface DrawingProductConfig {
   slug: string
   nameJa: string // 「René 横型手すり」など
@@ -94,6 +102,26 @@ export interface DrawingProductConfig {
   // 縦型CAD精密図用 (未指定なら旧シンプル schematic にフォールバック)
   washerSpec?: WasherSpec
   titleBlock?: TitleBlockSpec
+  // 長さ別固定価格テーブル。指定すると addon/surcharge の式計算をスキップしテーブル参照に。
+  priceTable?: PricePoint[]
+}
+
+// 長さ L_mm に対する本体価格をテーブルから線形補間で取得。
+// L が範囲外なら最近端の値を返す (extrapolate しない)。
+export function lookupPriceFromTable(L_mm: number, table: PricePoint[]): number {
+  if (table.length === 0) return 0
+  const sorted = [...table].sort((a, b) => a.mm - b.mm)
+  if (L_mm <= sorted[0].mm) return sorted[0].price
+  if (L_mm >= sorted[sorted.length - 1].mm) return sorted[sorted.length - 1].price
+  for (let i = 1; i < sorted.length; i++) {
+    if (L_mm <= sorted[i].mm) {
+      const lo = sorted[i - 1]
+      const hi = sorted[i]
+      const t = (L_mm - lo.mm) / (hi.mm - lo.mm)
+      return Math.round(lo.price + t * (hi.price - lo.price))
+    }
+  }
+  return sorted[sorted.length - 1].price
 }
 
 const ROUND_25_4: RailShape = {
@@ -109,6 +137,55 @@ const FLAT_9x32: RailShape = {
   totalProjection: 56,
 }
 
+// 横型 4 商品の長さ別価格テーブル (2026-05-18 改定・STORES era 方式復活)。
+// 旧 ado サイトは「basePrice + 25円/mm + 2m超で指数サーチャージ」の式計算で
+// 長尺になるほど価格が急騰していた (例: René 5m ≒ ¥31.2 万円)。
+// 旧 STORES の段階式テーブルに近い価格に戻し、お客様に予測可能な価格を提示する。
+// 標準座金本数 (includedZakin=3) は含む。カスタム座金追加分は別途加算。
+export const RENE_PRICE_TABLE: PricePoint[] = [
+  { mm: 1500, price: 36500 },
+  { mm: 2000, price: 50000 },
+  { mm: 2500, price: 60000 },
+  { mm: 3000, price: 75000 },
+  { mm: 3500, price: 88000 },
+  { mm: 4000, price: 102000 },
+  { mm: 4500, price: 118000 },
+  { mm: 5000, price: 135000 },
+]
+
+export const CLAIRE_PRICE_TABLE: PricePoint[] = [
+  { mm: 1500, price: 42000 },
+  { mm: 2000, price: 55000 },
+  { mm: 2500, price: 65000 },
+  { mm: 3000, price: 82000 },
+  { mm: 3500, price: 95000 },
+  { mm: 4000, price: 110000 },
+  { mm: 4500, price: 127000 },
+  { mm: 5000, price: 145000 },
+]
+
+export const MARCEL_PRICE_TABLE: PricePoint[] = [
+  { mm: 1500, price: 36000 },
+  { mm: 2000, price: 50000 },
+  { mm: 2500, price: 60000 },
+  { mm: 3000, price: 75000 },
+  { mm: 3500, price: 88000 },
+  { mm: 4000, price: 102000 },
+  { mm: 4500, price: 118000 },
+  { mm: 5000, price: 135000 },
+]
+
+export const EMILE_PRICE_TABLE: PricePoint[] = [
+  { mm: 1500, price: 45800 },
+  { mm: 2000, price: 58000 },
+  { mm: 2500, price: 73000 },
+  { mm: 3000, price: 92000 },
+  { mm: 3500, price: 122000 },
+  { mm: 4000, price: 150000 },
+  { mm: 4500, price: 178000 },
+  { mm: 5000, price: 210000 },
+]
+
 export const DRAWING_PRODUCTS: Record<string, DrawingProductConfig> = {
   rene: {
     slug: "rene",
@@ -122,6 +199,7 @@ export const DRAWING_PRODUCTS: Record<string, DrawingProductConfig> = {
     stdLengthMm: 1500,
     maxMm: 5000,
     includedZakin: 3,
+    priceTable: RENE_PRICE_TABLE,
   },
   claire: {
     slug: "claire",
@@ -135,6 +213,7 @@ export const DRAWING_PRODUCTS: Record<string, DrawingProductConfig> = {
     stdLengthMm: 1500,
     maxMm: 5000,
     includedZakin: 3,
+    priceTable: CLAIRE_PRICE_TABLE,
   },
   marcel: {
     slug: "marcel",
@@ -148,6 +227,7 @@ export const DRAWING_PRODUCTS: Record<string, DrawingProductConfig> = {
     stdLengthMm: 1500,
     maxMm: 5000,
     includedZakin: 3,
+    priceTable: MARCEL_PRICE_TABLE,
   },
   emile: {
     slug: "emile",
@@ -161,6 +241,7 @@ export const DRAWING_PRODUCTS: Record<string, DrawingProductConfig> = {
     stdLengthMm: 1500,
     maxMm: 5000,
     includedZakin: 3,
+    priceTable: EMILE_PRICE_TABLE,
   },
 }
 
