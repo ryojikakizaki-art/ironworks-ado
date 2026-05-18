@@ -73,11 +73,48 @@ export default function ProductDetailPage() {
   // X/Y 両方記録して縦スクロールと区別する
   const touchStartXRef = useRef<number | null>(null)
   const touchStartYRef = useRef<number | null>(null)
-  const [length, setLength] = useState(product.drawing.stdLengthMm)
-  // 入力欄は length とは独立した文字列 state。空文字や min 未満の途中入力も許容し、
-  // Blur 時にのみ範囲内へクランプする（クリア → 再入力ができないと報告された問題への対処）。
-  const [lengthInput, setLengthInput] = useState<string>(String(product.drawing.stdLengthMm))
-  const [quantity, setQuantity] = useState(1)
+  // 多本注文対応 (PR #2): 本数分の長さを個別配列で持つ。quantity = lengths.length。
+  // 入力欄文字列も同じ index で配列保持し、Blur 時にのみクランプする。
+  const [lengths, setLengths] = useState<number[]>([product.drawing.stdLengthMm])
+  const [lengthInputs, setLengthInputs] = useState<string[]>([String(product.drawing.stdLengthMm)])
+  const quantity = lengths.length
+  // 数量変更: 増→末尾に最後の値をコピー、減→末尾切り捨て (calcShipping 上限 6 本)
+  const setQuantity = useCallback((n: number) => {
+    const target = Math.max(1, Math.min(6, n))
+    setLengths(prev => {
+      if (target === prev.length) return prev
+      if (target > prev.length) {
+        const last = prev[prev.length - 1] ?? product.drawing.stdLengthMm
+        return [...prev, ...Array(target - prev.length).fill(last)]
+      }
+      return prev.slice(0, target)
+    })
+    setLengthInputs(prev => {
+      if (target === prev.length) return prev
+      if (target > prev.length) {
+        const last = prev[prev.length - 1] ?? String(product.drawing.stdLengthMm)
+        return [...prev, ...Array(target - prev.length).fill(last)]
+      }
+      return prev.slice(0, target)
+    })
+  }, [product.drawing.stdLengthMm])
+  // 第一本目を「主」として扱う既存ロジック互換シム (スライダー・座金エディタ等)
+  const length = lengths[0] ?? product.drawing.stdLengthMm
+  const lengthInput = lengthInputs[0] ?? String(product.drawing.stdLengthMm)
+  const setLength = useCallback((v: number) => {
+    setLengths(prev => [v, ...prev.slice(1)])
+  }, [])
+  const setLengthInput = useCallback((s: string) => {
+    setLengthInputs(prev => [s, ...prev.slice(1)])
+  }, [])
+  // 個別の本に対する長さ更新 (qty>1 時の per-item input 用)
+  const updateLengthAt = useCallback((i: number, v: number) => {
+    setLengths(prev => prev.map((p, idx) => idx === i ? v : p))
+  }, [])
+  const updateLengthInputAt = useCallback((i: number, s: string) => {
+    setLengthInputs(prev => prev.map((p, idx) => idx === i ? s : p))
+  }, [])
+  const isMultiOrder = lengths.length > 1
   const [prefecture, setPrefecture] = useState("")
   const [deliveryType, setDeliveryType] = useState<"normal" | "express">("normal")
   const [isPrefectureOpen, setIsPrefectureOpen] = useState(false)
@@ -130,31 +167,48 @@ export default function ProductDetailPage() {
     : "fixed"
 
   const calculatePrice = useCallback(() => {
-    const addon = Math.max(0, length - STD_LENGTH) * PRICE_PER_MM
-    const longM = length > SURGE_START
-      ? Math.pow(SURGE_BASE, (length - SURGE_START) / SURGE_INTERVAL)
-      : 1
-    const surcharge = length > SURGE_START ? addon * (longM - 1) : 0
-    const zakinCount = zakin.customMode
-      ? zakin.positions.length
-      : calcZakin(length, zakinRule)
-    const addZakin = Math.max(0, zakinCount - INCLUDED_ZAKIN) * ZAKIN_PRICE
-    const angleCost = zakin.angleDeg > 0 ? zakinCount * ANGLE_PRICE : 0
-    const unitPrice = BASE_PRICE + addon + addZakin + surcharge + angleCost
-    const subtotal = Math.round(unitPrice) * quantity
+    // 本ごとに per-item で計算 (多本長さ違い対応 PR #2)
+    // - 多本注文時は座金カスタム禁止 (簡素化) — 各本とも auto 計算
+    const items = lengths.map(L => {
+      const addon = Math.max(0, L - STD_LENGTH) * PRICE_PER_MM
+      const longM = L > SURGE_START
+        ? Math.pow(SURGE_BASE, (L - SURGE_START) / SURGE_INTERVAL)
+        : 1
+      const surcharge = L > SURGE_START ? addon * (longM - 1) : 0
+      const zakinCount = isMultiOrder
+        ? calcZakin(L, zakinRule)
+        : (zakin.customMode ? zakin.positions.length : calcZakin(L, zakinRule))
+      const addZakin = Math.max(0, zakinCount - INCLUDED_ZAKIN) * ZAKIN_PRICE
+      const angleCost = (!isMultiOrder && zakin.angleDeg > 0) ? zakinCount * ANGLE_PRICE : 0
+      const unitPrice = BASE_PRICE + addon + addZakin + surcharge + angleCost
+      return {
+        length: L,
+        addon: Math.round(addon),
+        addZakin,
+        surcharge: Math.round(surcharge),
+        angleCost,
+        unitPrice: Math.round(unitPrice),
+        zakinCount,
+      }
+    })
+    const subtotal = items.reduce((s, it) => s + it.unitPrice, 0)
     const expressAddon = deliveryType === "express" ? Math.round(subtotal * RUSH_RATE) : 0
-    const shippingResult = calcShipping(length, prefecture, quantity, productType)
+    // 送料は最大長さで判定 (多本梱包時、最も長い本がコンテナサイズ決定)
+    const maxLengthInOrder = Math.max(...lengths)
+    const shippingResult = calcShipping(maxLengthInOrder, prefecture, lengths.length, productType)
     const shipping = shippingResult.shipping
-    // 送料は外税 → 消費税 10% を上乗せ
     const shippingTax = Math.round(shipping * 0.1)
     const total = subtotal + expressAddon + shipping + shippingTax
+    // 単一商品互換用 (qty=1 では first item の値が直接表示される)
+    const first = items[0]
     return {
+      items,
       basePrice: BASE_PRICE,
-      addon: Math.round(addon),
-      addZakin,
-      surcharge: Math.round(surcharge),
-      angleCost,
-      unitPrice: Math.round(unitPrice),
+      addon: first?.addon ?? 0,
+      addZakin: first?.addZakin ?? 0,
+      surcharge: first?.surcharge ?? 0,
+      angleCost: first?.angleCost ?? 0,
+      unitPrice: first?.unitPrice ?? 0,
       subtotal,
       expressAddon,
       shipping,
@@ -165,16 +219,17 @@ export default function ProductDetailPage() {
       shippingBundles: shippingResult.bundles,
       shippingRate: shippingResult.rate,
       total,
-      zakinCount,
+      zakinCount: first?.zakinCount ?? 0,
     }
-  }, [length, quantity, deliveryType, prefecture, zakin, productType])
+  }, [lengths, isMultiOrder, deliveryType, prefecture, zakin, productType, STD_LENGTH, PRICE_PER_MM, BASE_PRICE, INCLUDED_ZAKIN, zakinRule])
 
   const prices = calculatePrice()
 
   // 各ステップの入力が満たされているか（番号サークルの進捗表示用）。
   // 以前は単調増加カウンタで、初期値のある長さ・配送のせいで未入力でも
   // ② が「完了」表示になっていた。実際の入力状況に直結する形に修正。
-  const step1Done = length >= minLength && length <= maxLength
+  // 多本対応 (PR #2): 全本数が範囲内である必要あり
+  const step1Done = lengths.every(L => L >= minLength && L <= maxLength)
   const step2Done = quantity > 0 && prefecture !== ""
   const step3Done = deliveryType === "normal" || deliveryType === "express"
   const step4Ready = step1Done && step2Done && step3Done
@@ -200,6 +255,8 @@ export default function ProductDetailPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           product: slug,
+          // 多本対応 (PR #2): lengths 配列を主、lengthMm + quantity は後方互換
+          lengths,
           lengthMm: length,
           quantity,
           rushDelivery: deliveryType === "express",
@@ -509,72 +566,136 @@ export default function ProductDetailPage() {
                           <span className="font-medium text-foreground">〜{product.drawing.stdLengthMm}mm まで一律 ¥{BASE_PRICE.toLocaleString()}</span>
                           <span className="ml-2 text-[12px] opacity-75">（超過分は 1mm あたり ¥{PRICE_PER_MM}）</span>
                         </p>
-                        <div className="flex items-center gap-4">
-                          <div className="relative flex-1">
-                            <input
-                              type="range"
-                              min={minLength}
-                              max={maxLength}
-                              step={1}
-                              value={length}
-                              onChange={(e) => {
-                                const v = Number(e.target.value)
-                                setLength(v)
-                                setLengthInput(String(v))
-                              }}
-                              style={{
-                                ["--ado-range-fill" as string]: `${Math.max(0, Math.min(100, ((length - minLength) / (maxLength - minLength)) * 100))}%`,
-                              }}
-                              className="ado-range-thumb w-full h-2 rounded-full cursor-pointer"
-                            />
-                            <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
-                              <span>{minLength}mm</span>
-                              <span>{maxLength}mm</span>
+                        {/* 単本モード: スライダー + 数値入力 (qty=1) */}
+                        {!isMultiOrder && (
+                          <div className="flex items-center gap-4">
+                            <div className="relative flex-1">
+                              <input
+                                type="range"
+                                min={minLength}
+                                max={maxLength}
+                                step={1}
+                                value={length}
+                                onChange={(e) => {
+                                  const v = Number(e.target.value)
+                                  setLength(v)
+                                  setLengthInput(String(v))
+                                }}
+                                style={{
+                                  ["--ado-range-fill" as string]: `${Math.max(0, Math.min(100, ((length - minLength) / (maxLength - minLength)) * 100))}%`,
+                                }}
+                                className="ado-range-thumb w-full h-2 rounded-full cursor-pointer"
+                              />
+                              <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                                <span>{minLength}mm</span>
+                                <span>{maxLength}mm</span>
+                              </div>
+                            </div>
+                            <div className="relative">
+                              <input
+                                type="number"
+                                min={minLength}
+                                max={maxLength}
+                                step={1}
+                                value={lengthInput}
+                                onFocus={(e) => e.currentTarget.select()}
+                                onChange={(e) => {
+                                  const raw = e.target.value
+                                  setLengthInput(raw)
+                                  if (raw === "") return
+                                  const n = Number(raw)
+                                  if (Number.isFinite(n) && n >= minLength && n <= maxLength) {
+                                    setLength(n)
+                                  }
+                                }}
+                                onBlur={() => {
+                                  if (lengthInput === "") {
+                                    setLengthInput(String(length))
+                                    return
+                                  }
+                                  const n = Number(lengthInput)
+                                  if (!Number.isFinite(n)) {
+                                    setLengthInput(String(length))
+                                    return
+                                  }
+                                  const clamped = Math.min(maxLength, Math.max(minLength, Math.round(n)))
+                                  setLength(clamped)
+                                  setLengthInput(String(clamped))
+                                }}
+                                onKeyDown={(e) => {
+                                  if (e.key === "Enter") {
+                                    e.currentTarget.blur()
+                                  }
+                                }}
+                                className="w-28 h-12 bg-gold/10 border-2 border-gold text-center font-mono text-lg text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
+                              />
+                              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">
+                                mm
+                              </span>
                             </div>
                           </div>
-                          <div className="relative">
-                            <input
-                              type="number"
-                              min={minLength}
-                              max={maxLength}
-                              step={1}
-                              value={lengthInput}
-                              onFocus={(e) => e.currentTarget.select()}
-                              onChange={(e) => {
-                                const raw = e.target.value
-                                setLengthInput(raw)
-                                if (raw === "") return
-                                const n = Number(raw)
-                                if (Number.isFinite(n) && n >= minLength && n <= maxLength) {
-                                  setLength(n)
-                                }
-                              }}
-                              onBlur={() => {
-                                if (lengthInput === "") {
-                                  setLengthInput(String(length))
-                                  return
-                                }
-                                const n = Number(lengthInput)
-                                if (!Number.isFinite(n)) {
-                                  setLengthInput(String(length))
-                                  return
-                                }
-                                const clamped = Math.min(maxLength, Math.max(minLength, Math.round(n)))
-                                setLength(clamped)
-                                setLengthInput(String(clamped))
-                              }}
-                              onKeyDown={(e) => {
-                                if (e.key === "Enter") {
-                                  e.currentTarget.blur()
-                                }
-                              }}
-                              className="w-28 h-12 bg-gold/10 border-2 border-gold text-center font-mono text-lg text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
-                            />
-                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">
-                              mm
-                            </span>
+                        )}
+                        {/* 多本モード: 本数分の数値入力 (qty>1) */}
+                        {isMultiOrder && (
+                          <div className="space-y-3">
+                            <p className="text-[12px] text-muted-foreground">
+                              Step 02 で数量を変更すると本数が増減します。各本ごとに長さを入力してください（範囲 {minLength}〜{maxLength}mm）。
+                            </p>
+                            {lengths.map((L, i) => (
+                              <div key={i} className="flex items-center gap-3 border border-gold/20 bg-card rounded-md p-3">
+                                <span className="font-serif text-[15px] font-medium text-foreground min-w-[64px]">
+                                  {i + 1}本目
+                                </span>
+                                <div className="relative flex-1">
+                                  <input
+                                    type="number"
+                                    min={minLength}
+                                    max={maxLength}
+                                    step={1}
+                                    value={lengthInputs[i] ?? String(L)}
+                                    onFocus={(e) => e.currentTarget.select()}
+                                    onChange={(e) => {
+                                      const raw = e.target.value
+                                      updateLengthInputAt(i, raw)
+                                      if (raw === "") return
+                                      const n = Number(raw)
+                                      if (Number.isFinite(n) && n >= minLength && n <= maxLength) {
+                                        updateLengthAt(i, n)
+                                      }
+                                    }}
+                                    onBlur={() => {
+                                      const raw = lengthInputs[i] ?? ""
+                                      if (raw === "") {
+                                        updateLengthInputAt(i, String(L))
+                                        return
+                                      }
+                                      const n = Number(raw)
+                                      if (!Number.isFinite(n)) {
+                                        updateLengthInputAt(i, String(L))
+                                        return
+                                      }
+                                      const clamped = Math.min(maxLength, Math.max(minLength, Math.round(n)))
+                                      updateLengthAt(i, clamped)
+                                      updateLengthInputAt(i, String(clamped))
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") {
+                                        e.currentTarget.blur()
+                                      }
+                                    }}
+                                    className="w-full h-12 bg-gold/10 border-2 border-gold text-center font-mono text-lg text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
+                                  />
+                                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">
+                                    mm
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                            <p className="text-[12px] text-muted-foreground">
+                              ※ 複数本ご注文時は座金位置のカスタマイズができません（自動配置）。
+                            </p>
                           </div>
-                        </div>
+                        )}
                         {/* 座金タイプ選択 (縦型CAD精密図対応商品のみ) — 長さの直下に常時表示 */}
                         {product.drawing.category === "vertical" && product.drawing.washerSpec && (
                           <div className="mt-3 border border-gold/20 bg-card p-4">
@@ -611,7 +732,9 @@ export default function ProductDetailPage() {
                         )}
                         {/* 座金の位置調整（シミュレーター＋エディタ）は任意操作のため、
                             初見の情報量を抑える目的で details に格納し初期は畳む。
-                            制作図プレビューは Step4（確認して購入）へ移動。 */}
+                            制作図プレビューは Step4（確認して購入）へ移動。
+                            多本注文時は per-item でカスタマイズ不可なので非表示 (PR #2 制約) */}
+                        {!isMultiOrder && (
                         <details className="group mt-3 border border-gold/20 rounded-md overflow-hidden">
                           <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between hover:bg-gold/[0.03] transition-colors">
                             <span className="text-[14px] font-medium tracking-wider text-foreground">座金の位置を調整する（任意）</span>
@@ -643,6 +766,7 @@ export default function ProductDetailPage() {
                             />
                           </div>
                         </details>
+                        )}
                       </>
                     )}
                   </div>
@@ -729,7 +853,7 @@ export default function ProductDetailPage() {
                       </div>
                     </div>
                     <p className="text-[12px] text-muted-foreground leading-relaxed">
-                      ※ 数量は <span className="font-medium text-foreground">同じ長さの本数</span> です。違う長さで複数本ご注文される場合は、下の「購入前のご相談」からお問い合わせください。
+                      ※ 数量を 2 本以上にすると、Step 01 で <span className="font-medium text-foreground">本ごとに違う長さ</span> を入力できます（座金位置は自動配置）。
                     </p>
                   </div>
                 </div>
@@ -788,45 +912,65 @@ export default function ProductDetailPage() {
                     
                     {/* Price Breakdown (詳細内訳) */}
                     <div className="bg-white border border-gold/20 rounded-lg p-5 space-y-2.5">
-                      <div className="flex justify-between text-[15px]">
-                        <span className="text-muted-foreground">
-                          基本料金（〜{product.drawing.stdLengthMm}mm）
-                        </span>
-                        <span className="font-mono">¥{prices.basePrice.toLocaleString()}</span>
-                      </div>
-                      {prices.addon > 0 && (
-                        <div className="flex justify-between text-[15px]">
-                          <span className="text-muted-foreground">
-                            長さ追加料金（+{length - product.drawing.stdLengthMm}mm × ¥{PRICE_PER_MM}）
-                          </span>
-                          <span className="font-mono">+¥{prices.addon.toLocaleString()}</span>
-                        </div>
+                      {!isMultiOrder && (
+                        <>
+                          <div className="flex justify-between text-[15px]">
+                            <span className="text-muted-foreground">
+                              基本料金（〜{product.drawing.stdLengthMm}mm）
+                            </span>
+                            <span className="font-mono">¥{prices.basePrice.toLocaleString()}</span>
+                          </div>
+                          {prices.addon > 0 && (
+                            <div className="flex justify-between text-[15px]">
+                              <span className="text-muted-foreground">
+                                長さ追加料金（+{length - product.drawing.stdLengthMm}mm × ¥{PRICE_PER_MM}）
+                              </span>
+                              <span className="font-mono">+¥{prices.addon.toLocaleString()}</span>
+                            </div>
+                          )}
+                          {prices.addZakin > 0 && (
+                            <div className="flex justify-between text-[15px]">
+                              <span className="text-muted-foreground">
+                                追加座金料金（{prices.zakinCount - INCLUDED_ZAKIN}個 × ¥{ZAKIN_PRICE.toLocaleString()}）
+                              </span>
+                              <span className="font-mono">+¥{prices.addZakin.toLocaleString()}</span>
+                            </div>
+                          )}
+                          {prices.surcharge > 0 && (
+                            <div className="flex justify-between text-[15px]">
+                              <span className="text-muted-foreground">
+                                長尺割増（{length}mm）
+                              </span>
+                              <span className="font-mono">+¥{prices.surcharge.toLocaleString()}</span>
+                            </div>
+                          )}
+                          {prices.angleCost > 0 && (
+                            <div className="flex justify-between text-[15px]">
+                              <span className="text-muted-foreground">
+                                角度加工料金（{prices.zakinCount}個 × ¥{ANGLE_PRICE.toLocaleString()}、{zakin.angleDir === "left" ? "左" : "右"}{zakin.angleDeg}°）
+                              </span>
+                              <span className="font-mono">+¥{prices.angleCost.toLocaleString()}</span>
+                            </div>
+                          )}
+                        </>
                       )}
-                      {prices.addZakin > 0 && (
-                        <div className="flex justify-between text-[15px]">
-                          <span className="text-muted-foreground">
-                            追加座金料金（{prices.zakinCount - INCLUDED_ZAKIN}個 × ¥{ZAKIN_PRICE.toLocaleString()}）
-                          </span>
-                          <span className="font-mono">+¥{prices.addZakin.toLocaleString()}</span>
-                        </div>
+                      {isMultiOrder && (
+                        <>
+                          {prices.items.map((it, i) => (
+                            <div key={i} className="flex justify-between text-[15px]">
+                              <span className="text-muted-foreground">
+                                {i + 1}本目（{it.length}mm）
+                              </span>
+                              <span className="font-mono">¥{it.unitPrice.toLocaleString()}</span>
+                            </div>
+                          ))}
+                          <div className="flex justify-between text-[15px] pt-2 border-t border-border/60">
+                            <span className="text-muted-foreground">本体小計</span>
+                            <span className="font-mono">¥{prices.subtotal.toLocaleString()}</span>
+                          </div>
+                        </>
                       )}
-                      {prices.surcharge > 0 && (
-                        <div className="flex justify-between text-[15px]">
-                          <span className="text-muted-foreground">
-                            長尺割増（{length}mm）
-                          </span>
-                          <span className="font-mono">+¥{prices.surcharge.toLocaleString()}</span>
-                        </div>
-                      )}
-                      {prices.angleCost > 0 && (
-                        <div className="flex justify-between text-[15px]">
-                          <span className="text-muted-foreground">
-                            角度加工料金（{prices.zakinCount}個 × ¥{ANGLE_PRICE.toLocaleString()}、{zakin.angleDir === "left" ? "左" : "右"}{zakin.angleDeg}°）
-                          </span>
-                          <span className="font-mono">+¥{prices.angleCost.toLocaleString()}</span>
-                        </div>
-                      )}
-                      {quantity > 1 && (
+                      {!isMultiOrder && quantity > 1 && (
                         <div className="flex justify-between text-[15px] pt-2 border-t border-border/60">
                           <span className="text-muted-foreground">
                             単価 × {quantity}
@@ -890,7 +1034,9 @@ export default function ProductDetailPage() {
                         onClick={() => setIsDrawingOpen(true)}
                         className="block w-full py-4 border border-gold/20 text-gold text-[15px] font-medium rounded-md hover:border-gold transition-colors text-center"
                       >
-                        制作図プレビューで最終確認 ▸
+                        {isMultiOrder
+                          ? `制作図プレビュー（1本目 ${length}mm・他${lengths.length - 1}本も同仕様）▸`
+                          : "制作図プレビューで最終確認 ▸"}
                       </button>
                     )}
 
@@ -1051,19 +1197,34 @@ export default function ProductDetailPage() {
         clientSecret={checkoutClientSecret}
         onClose={() => setCheckoutClientSecret(null)}
         summary={{
-          productName: `${product.nameEn} ${product.nameJaShort} 壁付け手すり ${length}mm${hasOrientation ? `（${orientation === "left" ? "左向き" : "右向き"}）` : ""}`,
-          productNote: `座金 ${prices.zakinCount}個 / ${deliveryType === "express" ? "特急配送 5営業日" : "通常配送 10営業日"}`,
-          lines: [
-            { label: `基本料金（〜${product.drawing.stdLengthMm}mm）`, amount: prices.basePrice },
-            ...(prices.addon > 0 ? [{ label: "長さ追加料金", note: `+${length - product.drawing.stdLengthMm}mm × ¥${PRICE_PER_MM}`, amount: prices.addon }] : []),
-            ...(prices.addZakin > 0 ? [{ label: "追加座金料金", note: `${prices.zakinCount - INCLUDED_ZAKIN}個 × ¥${ZAKIN_PRICE.toLocaleString()}`, amount: prices.addZakin }] : []),
-            ...(prices.surcharge > 0 ? [{ label: "長尺割増", note: `${length}mm`, amount: prices.surcharge }] : []),
-            ...(prices.angleCost > 0 ? [{ label: "角度加工料金", note: `${prices.zakinCount}個 × ¥${ANGLE_PRICE.toLocaleString()}`, amount: prices.angleCost }] : []),
-            ...(quantity > 1 ? [{ label: `数量 × ${quantity}`, amount: prices.subtotal, emphasize: true }] : []),
-            ...(prices.expressAddon > 0 ? [{ label: "特急割増（+20%）", amount: prices.expressAddon }] : []),
-            ...(prices.shipping > 0 ? [{ label: `送料（佐川急便・${prefecture}・税抜）`, amount: prices.shipping }] : []),
-            ...(prices.shippingTax > 0 ? [{ label: "送料消費税（10%）", amount: prices.shippingTax }] : []),
-          ],
+          productName: isMultiOrder
+            ? `${product.nameEn} ${product.nameJaShort} 壁付け手すり ${lengths.length}本（複数長さ）${hasOrientation ? `（${orientation === "left" ? "左向き" : "右向き"}）` : ""}`
+            : `${product.nameEn} ${product.nameJaShort} 壁付け手すり ${length}mm${hasOrientation ? `（${orientation === "left" ? "左向き" : "右向き"}）` : ""}`,
+          productNote: isMultiOrder
+            ? `${lengths.length}本制作 / ${deliveryType === "express" ? "特急配送 5営業日" : "通常配送 10営業日"}`
+            : `座金 ${prices.zakinCount}個 / ${deliveryType === "express" ? "特急配送 5営業日" : "通常配送 10営業日"}`,
+          lines: isMultiOrder
+            ? [
+                ...prices.items.map((it, i) => ({
+                  label: `${i + 1}本目（${it.length}mm）`,
+                  amount: it.unitPrice,
+                })),
+                { label: "本体小計", amount: prices.subtotal, emphasize: true },
+                ...(prices.expressAddon > 0 ? [{ label: "特急割増（+20%）", amount: prices.expressAddon }] : []),
+                ...(prices.shipping > 0 ? [{ label: `送料（佐川急便・${prefecture}・税抜）`, amount: prices.shipping }] : []),
+                ...(prices.shippingTax > 0 ? [{ label: "送料消費税（10%）", amount: prices.shippingTax }] : []),
+              ]
+            : [
+                { label: `基本料金（〜${product.drawing.stdLengthMm}mm）`, amount: prices.basePrice },
+                ...(prices.addon > 0 ? [{ label: "長さ追加料金", note: `+${length - product.drawing.stdLengthMm}mm × ¥${PRICE_PER_MM}`, amount: prices.addon }] : []),
+                ...(prices.addZakin > 0 ? [{ label: "追加座金料金", note: `${prices.zakinCount - INCLUDED_ZAKIN}個 × ¥${ZAKIN_PRICE.toLocaleString()}`, amount: prices.addZakin }] : []),
+                ...(prices.surcharge > 0 ? [{ label: "長尺割増", note: `${length}mm`, amount: prices.surcharge }] : []),
+                ...(prices.angleCost > 0 ? [{ label: "角度加工料金", note: `${prices.zakinCount}個 × ¥${ANGLE_PRICE.toLocaleString()}`, amount: prices.angleCost }] : []),
+                ...(quantity > 1 ? [{ label: `数量 × ${quantity}`, amount: prices.subtotal, emphasize: true }] : []),
+                ...(prices.expressAddon > 0 ? [{ label: "特急割増（+20%）", amount: prices.expressAddon }] : []),
+                ...(prices.shipping > 0 ? [{ label: `送料（佐川急便・${prefecture}・税抜）`, amount: prices.shipping }] : []),
+                ...(prices.shippingTax > 0 ? [{ label: "送料消費税（10%）", amount: prices.shippingTax }] : []),
+              ],
           totalLabel: "合計（税込）",
           totalAmount: prices.total,
         }}

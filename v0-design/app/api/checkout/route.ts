@@ -122,25 +122,43 @@ export async function POST(request: NextRequest) {
       ? (orientation === 'left' ? '左向き' : '右向き')
       : '';
 
-    const raw = body?.lengthMm || (body?.lengthCm && body.lengthCm * 10);
     const minL = prod.zakinRule?.minLengthMm ?? 500;
-    const L   = Math.max(minL, Math.min(prod.maxMm, Math.round(Number(raw) || prod.stdLengthMm)));
-    const p   = calcPrice(L, prod);
 
-    // 数量 (1 本基本)
-    const qty = Math.max(1, Math.min(6, parseInt(String(body?.quantity || 1), 10) || 1));
+    // 多本長さ違い対応 (PR #2): lengths[] が来たらそれを正、無ければ lengthMm + quantity から導出。
+    // 各 length は商品ごとの min..max にクランプ。
+    const rawLengths: number[] = Array.isArray(body?.lengths) && body.lengths.length > 0
+      ? body.lengths.map((v: unknown) => Math.max(minL, Math.min(prod.maxMm, Math.round(Number(v) || prod.stdLengthMm))))
+      : (() => {
+          const raw = body?.lengthMm || (body?.lengthCm && body.lengthCm * 10);
+          const L0 = Math.max(minL, Math.min(prod.maxMm, Math.round(Number(raw) || prod.stdLengthMm)));
+          const qty0 = Math.max(1, Math.min(6, parseInt(String(body?.quantity || 1), 10) || 1));
+          return Array(qty0).fill(L0);
+        })();
 
-    // 特急配送
+    const qty = Math.max(1, Math.min(6, rawLengths.length));
+    const lengths = rawLengths.slice(0, qty);
+    // 旧コード互換: 単一 L (= 第一本目) と単一価格計算
+    const L = lengths[0];
+    const p = calcPrice(L, prod);
+    // 多本注文判定
+    const isMultiOrder = lengths.length > 1;
+    // per-item 計算 (line items 構築・metadata 用)
+    const perItem = lengths.map(itemL => ({ L: itemL, ...calcPrice(itemL, prod) }));
+    const itemsSubtotalRaw = perItem.reduce((s, it) => s + Math.round(it.total), 0);
+
+    // 特急配送 — per-item 合計に対して 20%
     const rushDelivery = !!body?.rushDelivery;
-    const rushSurcharge = rushDelivery ? Math.round(p.total * RUSH_RATE) : 0;
+    const rushSurcharge = rushDelivery ? Math.round(itemsSubtotalRaw * RUSH_RATE) : 0;
 
     // 佐川急便 送料 (prefecture 必須, inquiry 時はエラー返却)
+    // 多本注文時は最大長さで判定 (最も長い本がコンテナサイズを決定)
+    const maxLengthInOrder = Math.max(...lengths);
     const prefecture = String(body?.prefecture || '').trim();
     const productCategory: ProductType =
       prod.type.includes('横型') ? 'yokogata'
       : prod.type.includes('縦型') ? 'tategata'
       : 'fixed';
-    const shippingResult = calcShipping(L, prefecture, qty, productCategory);
+    const shippingResult = calcShipping(maxLengthInOrder, prefecture, qty, productCategory);
     if (shippingResult.inquiry) {
       return NextResponse.json({
         error: shippingResult.inquiryReason || '配送条件により別途お見積もりが必要です',
@@ -154,7 +172,7 @@ export async function POST(request: NextRequest) {
     const shippingYen = shippingResult.shipping;
     const shippingTaxYen = Math.round(shippingYen * 0.1);
 
-    const subtotalYen = Math.round(p.total * qty + rushSurcharge);
+    const subtotalYen = itemsSubtotalRaw + rushSurcharge;
     const totalYen = subtotalYen + shippingYen + shippingTaxYen;
 
     // 配送希望
@@ -167,13 +185,14 @@ export async function POST(request: NextRequest) {
     const deliveryDays = rushDelivery ? 5 : 10;
 
     const deliveryDesc = rushDelivery
-      ? `${prod.finish} / 座金${p.zakin}個 / 特急配送 ${deliveryDays}営業日`
-      : `${prod.finish} / 座金${p.zakin}個 / 通常配送 ${deliveryDays}営業日`;
+      ? `${prod.finish} / 特急配送 ${deliveryDays}営業日`
+      : `${prod.finish} / 通常配送 ${deliveryDays}営業日`;
 
     const host    = request.headers.get('host') || 'ironworks-ado.vercel.app';
     const baseUrl = `https://${host}`;
 
-    const unitYen = Math.round(p.total + rushSurcharge / qty);
+    // 特急割増を per-item に均等配分 (Stripe 上 unit_amount に均すため)
+    const rushPerItem = qty > 0 ? rushSurcharge / qty : 0;
 
     // 消費税 10% の Tax Rate を取得または自動作成
     // - 本体: 税込 (inclusive) → 決済画面に「内消費税」内訳表示
@@ -184,24 +203,36 @@ export async function POST(request: NextRequest) {
     const inclusiveTaxRates = taxInclusiveId ? { tax_rates: [taxInclusiveId] } : {};
     const exclusiveTaxRates = taxExclusiveId ? { tax_rates: [taxExclusiveId] } : {};
 
+    // 本体の line_items を構築:
+    // - 全本同じ長さなら 1 行 × qty (既存挙動)
+    // - 違う長さがあれば 長さごとに集約して複数行
+    type LengthGroup = { L: number; count: number; perItem: typeof perItem[0] };
+    const groups = new Map<number, LengthGroup>();
+    for (const it of perItem) {
+      const g = groups.get(it.L);
+      if (g) g.count += 1;
+      else groups.set(it.L, { L: it.L, count: 1, perItem: it });
+    }
+    const itemLineItems = Array.from(groups.values()).map(({ L: gL, count, perItem: gp }) => ({
+      price_data: {
+        currency: 'jpy' as const,
+        product_data: {
+          name: `${prod.name} 壁付け手すり ${gL}mm${orientationLabel ? ` ${orientationLabel}` : ''}`,
+          description: `座金${gp.zakin}個 / ${deliveryDesc}`,
+        },
+        unit_amount: Math.round(gp.total + rushPerItem),
+        tax_behavior: 'inclusive' as const,
+      },
+      quantity: count,
+      ...inclusiveTaxRates,
+    }));
+
     const session = await stripeClient.checkout.sessions.create({
       // ui_mode: 'embedded' で client_secret を返し、自社サイト内に決済 UI を埋め込む。
       // 旧 hosted モードへ戻したい場合は ui_mode を消し、success_url/cancel_url を復活させる。
       ui_mode: 'embedded',
       line_items: [
-        {
-          price_data: {
-            currency: 'jpy',
-            product_data: {
-              name: `${prod.name} 壁付け手すり ${L}mm${orientationLabel ? ` ${orientationLabel}` : ''}`,
-              description: deliveryDesc,
-            },
-            unit_amount: unitYen,
-            tax_behavior: 'inclusive',
-          },
-          quantity: qty,
-          ...inclusiveTaxRates,
-        },
+        ...itemLineItems,
         {
           price_data: {
             currency: 'jpy',
@@ -223,7 +254,11 @@ export async function POST(request: NextRequest) {
         product:                productKey,
         product_name:           prod.name,
         type:                   prod.type,
+        // 多本長さ違い対応 (PR #2): lengths_mm に CSV で全本の長さを格納。
+        // length_mm は後方互換で第一本の値を保持。
         length_mm:              String(L),
+        lengths_mm:             lengths.join(','),
+        is_multi_order:         isMultiOrder ? 'true' : 'false',
         quantity:               String(qty),
         zakin_count:            String(p.zakin),
         base_total_yen:         String(Math.round(p.total)),
