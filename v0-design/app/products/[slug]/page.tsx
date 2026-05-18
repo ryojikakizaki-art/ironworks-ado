@@ -728,6 +728,9 @@ export default function ProductDetailPage() {
                         </AnimatePresence>
                       </div>
                     </div>
+                    <p className="text-[12px] text-muted-foreground leading-relaxed">
+                      ※ 数量は <span className="font-medium text-foreground">同じ長さの本数</span> です。違う長さで複数本ご注文される場合は、下の「購入前のご相談」からお問い合わせください。
+                    </p>
                   </div>
                 </div>
 
