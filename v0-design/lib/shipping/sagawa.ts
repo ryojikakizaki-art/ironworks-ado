@@ -61,44 +61,95 @@ function getSizeBracket(shipMm: number): SizeBracket | null {
   return null
 }
 
+export interface BundleDetail {
+  /** この梱包の最長サイズ (mm) */
+  maxLength: number
+  /** この梱包に含まれる本数 */
+  count: number
+  /** この梱包の送料単価 (円) */
+  rate: number
+}
+
 export interface ShippingResult {
-  /** 送料 (円)。inquiry モード時は 0 */
+  /** 送料合計 (円)。inquiry モード時は 0 */
   shipping: number
-  /** 単梱包単価 (円) */
+  /** 第一梱包の rate (後方互換用、aggregateNote/bundleDetails で詳細確認推奨) */
   rate: number
   /** 梱包数 */
   bundles: number
-  /** 注記 (例: "発送サイズ 1200mm → 140サイズ（3本まで同一梱包）") */
+  /** 注記 (例: "梱包1 (3本・最長 2500mm) ¥3,300 + 梱包2 (1本・最長 1500mm) ¥2,200") */
   note: string
-  /** 要問合せモードか (沖縄・7本以上・3001mm以上) */
+  /** 要問合せモードか (沖縄・7本以上・3501mm以上) */
   inquiry: boolean
   /** 要問合せの理由 */
   inquiryReason?: string
+  /** 梱包ごとの詳細 (多本注文時の per-bundle 内訳) */
+  bundleDetails?: BundleDetail[]
 }
 
 /**
- * 送料を計算する。
- * - lengthMm: 製品長さ
- * - prefecture: 配送先都道府県 (空なら 未選択)
- * - quantity: 本数
- * - productType: 縦型/横型/固定
+ * 1 梱包あたりの送料単価を計算する（内部用 helper）。
+ */
+function calcSingleBundleRate(
+  maxLengthMm: number,
+  region: Region,
+  productType: ProductType
+): { rate: number; note: string } | { inquiry: true; reason: string } {
+  if (maxLengthMm <= 1000) {
+    return { rate: 1000, note: "1,000mm以下: 全国一律 ¥1,000" }
+  }
+  if (productType === "fixed") {
+    // 固定長装飾商品 (scroll等) は短いので一律 ¥1,000 で扱う
+    return { rate: 1000, note: "固定サイズ: 全国一律 ¥1,000" }
+  }
+  // 縦型・横型ともに「長さ + 200mm」で発送サイズ区分を決定 (佐川急便3辺合計)
+  const shipSize = maxLengthMm + 200
+  const bracket = getSizeBracket(shipSize)
+  if (!bracket) {
+    return { inquiry: true, reason: "このサイズは通常配送できません。別途お見積もりとなります" }
+  }
+  return {
+    rate: SHIPPING_RATES[bracket][region],
+    note: `発送サイズ ${shipSize}mm → ${bracket}サイズ`,
+  }
+}
+
+/**
+ * 送料を計算する (多本対応 / 梱包ごとに最長サイズで rate 決定)。
+ *
+ * ルール:
+ * - 各本の長さは長い順にソートして 3 本ずつ梱包
+ * - 各梱包の最長サイズで rate を計算 → 合算
+ * - 1-3 本: 1 梱包、4-6 本: 2 梱包
+ * - 7 本以上: 要問合せ (invoice 振込フローへ)
+ *
+ * 例: lengths=[1500, 1800, 3000, 4000] →
+ *   ソート [4000, 3000, 1800, 1500] →
+ *   梱包1 [4000, 3000, 1800] → rate(4000mm) →
+ *   梱包2 [1500] → rate(1500mm) →
+ *   合計送料 = rate(4000mm) + rate(1500mm)
  */
 export function calcShipping(
-  lengthMm: number,
+  lengths: number[],
   prefecture: string,
-  quantity: number,
   productType: ProductType
 ): ShippingResult {
-  if (lengthMm > 3500) {
+  if (lengths.length === 0) {
+    return { shipping: 0, rate: 0, bundles: 0, note: "本数が指定されていません", inquiry: false }
+  }
+  // 7 本以上は invoice 振込フローへ
+  if (lengths.length > 6) {
     return {
       shipping: 0, rate: 0, bundles: 0, note: "", inquiry: true,
-      inquiryReason: "3,501mm以上のご注文は別途お見積もりとなります",
+      inquiryReason: "7本以上のご注文は送料を別途お見積もりとなるため、請求書振込でのご注文をお願いしております",
     }
   }
-  if (quantity > 6) {
+  // どれか 1 本でも 3501mm 以上は要問合せ (梱包サイズ上限)
+  const overSize = lengths.find(L => L > 3500)
+  if (overSize !== undefined) {
     return {
       shipping: 0, rate: 0, bundles: 0, note: "", inquiry: true,
-      inquiryReason: "7本以上のご注文は別途お見積もりとなります",
+      inquiryReason: `${overSize}mm のご注文は別途お見積もりとなります（3,501mm以上）`,
     }
   }
 
@@ -113,32 +164,43 @@ export function calcShipping(
     return { shipping: 0, rate: 0, bundles: 0, note: "配送先都道府県を選択してください", inquiry: false }
   }
 
-  let rate = 0
-  let note = ""
-  if (lengthMm <= 1000) {
-    rate = 1000
-    note = "1,000mm以下: 全国一律 ¥1,000"
-  } else if (productType === "fixed") {
-    // 固定長装飾商品 (scroll等) は短いので一律 ¥1,000 で扱う
-    rate = 1000
-    note = "固定サイズ: 全国一律 ¥1,000"
-  } else {
-    // 縦型・横型ともに「長さ + 200mm」で発送サイズ区分を決定 (佐川急便3辺合計)
-    const shipSize = lengthMm + 200
-    const bracket = getSizeBracket(shipSize)
-    if (!bracket) {
-      return {
-        shipping: 0, rate: 0, bundles: 0, note: "", inquiry: true,
-        inquiryReason: "このサイズは通常配送できません。別途お見積もりとなります",
-      }
-    }
-    rate = SHIPPING_RATES[bracket][region]
-    note = `発送サイズ ${shipSize}mm → ${bracket}サイズ`
+  // 長い順にソートして 3 本ずつ梱包
+  const sorted = [...lengths].sort((a, b) => b - a)
+  const bundleChunks: number[][] = []
+  for (let i = 0; i < sorted.length; i += 3) {
+    bundleChunks.push(sorted.slice(i, i + 3))
   }
 
-  const bundles = quantity <= 3 ? 1 : 2
-  const shipping = rate * bundles
-  if (bundles > 1) note += `（${bundles}梱包・3本まで同一梱包）`
+  // 各梱包の rate を計算
+  const bundleDetails: BundleDetail[] = []
+  const noteParts: string[] = []
+  let totalShipping = 0
+  for (let i = 0; i < bundleChunks.length; i++) {
+    const chunk = bundleChunks[i]
+    const maxL = Math.max(...chunk)
+    const result = calcSingleBundleRate(maxL, region, productType)
+    if ("inquiry" in result) {
+      return {
+        shipping: 0, rate: 0, bundles: 0, note: "", inquiry: true,
+        inquiryReason: result.reason,
+      }
+    }
+    bundleDetails.push({ maxLength: maxL, count: chunk.length, rate: result.rate })
+    totalShipping += result.rate
+    if (bundleChunks.length === 1) {
+      // 1 梱包のみ: シンプルな note
+      noteParts.push(result.note)
+    } else {
+      noteParts.push(`梱包${i + 1} (${chunk.length}本・最長 ${maxL}mm) ¥${result.rate.toLocaleString()}`)
+    }
+  }
 
-  return { shipping, rate, bundles, note, inquiry: false }
+  return {
+    shipping: totalShipping,
+    rate: bundleDetails[0]?.rate ?? 0,
+    bundles: bundleChunks.length,
+    note: noteParts.join(" + "),
+    inquiry: false,
+    bundleDetails,
+  }
 }

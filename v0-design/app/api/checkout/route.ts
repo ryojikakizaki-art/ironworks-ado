@@ -135,8 +135,16 @@ export async function POST(request: NextRequest) {
           return Array(qty0).fill(L0);
         })();
 
-    const qty = Math.max(1, Math.min(6, rawLengths.length));
-    const lengths = rawLengths.slice(0, qty);
+    // 7 本以上は請求書振込フローへ (Stripe 決済不可、UI 側で /contact?type=invoice に誘導)
+    if (rawLengths.length > 6) {
+      return NextResponse.json({
+        error: '7本以上のご注文は請求書振込でお受けしております。お問い合わせフォームからご注文情報をお送りください。',
+        inquiry: true,
+        invoiceFlow: true,
+      }, { status: 400 });
+    }
+    const qty = Math.max(1, rawLengths.length);
+    const lengths = rawLengths;
     // 旧コード互換: 単一 L (= 第一本目) と単一価格計算
     const L = lengths[0];
     const p = calcPrice(L, prod);
@@ -151,14 +159,13 @@ export async function POST(request: NextRequest) {
     const rushSurcharge = rushDelivery ? Math.round(itemsSubtotalRaw * RUSH_RATE) : 0;
 
     // 佐川急便 送料 (prefecture 必須, inquiry 時はエラー返却)
-    // 多本注文時は最大長さで判定 (最も長い本がコンテナサイズを決定)
-    const maxLengthInOrder = Math.max(...lengths);
+    // 多本注文時は梱包ごとに最長サイズで rate 計算 → 合算 (3 本/梱包)
     const prefecture = String(body?.prefecture || '').trim();
     const productCategory: ProductType =
       prod.type.includes('横型') ? 'yokogata'
       : prod.type.includes('縦型') ? 'tategata'
       : 'fixed';
-    const shippingResult = calcShipping(maxLengthInOrder, prefecture, qty, productCategory);
+    const shippingResult = calcShipping(lengths, prefecture, productCategory);
     if (shippingResult.inquiry) {
       return NextResponse.json({
         error: shippingResult.inquiryReason || '配送条件により別途お見積もりが必要です',
