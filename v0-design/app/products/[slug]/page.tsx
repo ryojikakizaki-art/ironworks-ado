@@ -78,9 +78,10 @@ export default function ProductDetailPage() {
   const [lengths, setLengths] = useState<number[]>([product.drawing.stdLengthMm])
   const [lengthInputs, setLengthInputs] = useState<string[]>([String(product.drawing.stdLengthMm)])
   const quantity = lengths.length
-  // 数量変更: 増→末尾に最後の値をコピー、減→末尾切り捨て (calcShipping 上限 6 本)
+  // 数量変更: 増→末尾に最後の値をコピー、減→末尾切り捨て
+  // 1-6 本: 通常 Stripe 決済 / 7-12 本: 請求書振込フロー (calcShipping が inquiry を返す)
   const setQuantity = useCallback((n: number) => {
-    const target = Math.max(1, Math.min(6, n))
+    const target = Math.max(1, Math.min(12, n))
     setLengths(prev => {
       if (target === prev.length) return prev
       if (target > prev.length) {
@@ -193,9 +194,8 @@ export default function ProductDetailPage() {
     })
     const subtotal = items.reduce((s, it) => s + it.unitPrice, 0)
     const expressAddon = deliveryType === "express" ? Math.round(subtotal * RUSH_RATE) : 0
-    // 送料は最大長さで判定 (多本梱包時、最も長い本がコンテナサイズ決定)
-    const maxLengthInOrder = Math.max(...lengths)
-    const shippingResult = calcShipping(maxLengthInOrder, prefecture, lengths.length, productType)
+    // 送料: 梱包ごとに最長サイズで rate 計算 → 合算 (多本注文の正確な送料)
+    const shippingResult = calcShipping(lengths, prefecture, productType)
     const shipping = shippingResult.shipping
     const shippingTax = Math.round(shipping * 0.1)
     const total = subtotal + expressAddon + shipping + shippingTax
@@ -534,7 +534,7 @@ export default function ProductDetailPage() {
                             type="button"
                             onClick={() => setQuantity(quantity + 1)}
                             className="w-10 h-10 flex items-center justify-center hover:bg-gold/5 transition-colors disabled:opacity-30"
-                            disabled={quantity >= 6}
+                            disabled={quantity >= 12}
                             aria-label="本数を増やす"
                           >
                             <Plus className="w-4 h-4" />
@@ -546,6 +546,11 @@ export default function ProductDetailPage() {
                     {!isMultiOrder && (
                       <p className="text-[12px] text-muted-foreground -mt-2">
                         ▸ 本数を <span className="font-medium text-foreground">2 本以上</span> にすると、本ごとに違う長さを指定できます
+                      </p>
+                    )}
+                    {quantity >= 7 && (
+                      <p className="text-[12px] text-yellow-700 -mt-2 leading-relaxed bg-yellow-50/60 border border-yellow-200 rounded px-3 py-2">
+                        📋 7 本以上のご注文は <span className="font-medium">請求書振込</span> でお受けします。送料はサイズ・本数を確認して別途お見積もりとなります（下の「請求書振込でご注文する」ボタンへ進んでください）。
                       </p>
                     )}
                     {product.drawing.category === "fixed" ? (
@@ -1011,18 +1016,26 @@ export default function ProductDetailPage() {
                       )}
                     </div>
 
-                    {/* Shipping Inquiry Banner (沖縄・7本以上・3001mm以上) */}
+                    {/* Shipping Inquiry Banner — 7 本以上 vs その他 (沖縄/3501mm+) で文言切替 */}
                     {prices.shippingInquiry && (
                       <div className="border-2 border-yellow-500/60 bg-yellow-500/5 rounded-lg p-4">
-                        <p className="text-[14px] text-yellow-600 font-medium mb-2">
+                        <p className="text-[14px] text-yellow-700 font-medium mb-2">
                           ⚠ {prices.shippingInquiryReason}
                         </p>
-                        <a
-                          href="mailto:info@tantetuzest.com"
-                          className="inline-flex items-center gap-1 text-[14px] text-gold hover:text-gold/80 underline"
-                        >
-                          お問い合わせよりご相談ください
-                        </a>
+                        {lengths.length > 6 ? (
+                          <p className="text-[13px] text-yellow-700/90 leading-relaxed">
+                            下の「請求書振込でご注文する」ボタンから注文情報を送信してください。
+                            送料を含む合計金額のお見積もりと振込先のご案内をメールにてお送りいたします。
+                            ご入金確認後に制作を開始いたします。
+                          </p>
+                        ) : (
+                          <a
+                            href="mailto:info@tantetuzest.com"
+                            className="inline-flex items-center gap-1 text-[14px] text-gold hover:text-gold/80 underline"
+                          >
+                            お問い合わせよりご相談ください
+                          </a>
+                        )}
                       </div>
                     )}
 
@@ -1058,12 +1071,22 @@ export default function ProductDetailPage() {
                         </div>
                       )}
                       {prices.shippingInquiry ? (
-                        <button
-                          disabled
-                          className="w-full py-5 font-serif text-[17px] font-bold rounded-md bg-muted text-muted-foreground cursor-not-allowed"
-                        >
-                          要問い合わせ（別途見積もり）
-                        </button>
+                        lengths.length > 6 ? (
+                          // 7 本以上: 請求書振込フローへ pre-fill 付きで誘導
+                          <Link
+                            href={`/contact?product=${encodeURIComponent(slug)}&type=invoice&qty=${lengths.length}&lengths=${lengths.join(',')}`}
+                            className="block w-full py-5 text-center font-serif text-[17px] font-bold rounded-md border-2 border-gold bg-gold/5 text-gold hover:bg-gold hover:text-white transition-colors"
+                          >
+                            請求書振込でご注文する ▸
+                          </Link>
+                        ) : (
+                          <button
+                            disabled
+                            className="w-full py-5 font-serif text-[17px] font-bold rounded-md bg-muted text-muted-foreground cursor-not-allowed"
+                          >
+                            要問い合わせ（別途見積もり）
+                          </button>
+                        )
                       ) : (
                         <div className="flex justify-center">
                           <PrimaryCTA

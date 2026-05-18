@@ -156,21 +156,33 @@ export default function ContactPage() {
   // お問い合わせ種別とご興味のある商品を事前選択する。
   // 不正・未知の値は無視（category は CATEGORY_OPTIONS、product は
   // PRODUCT_OPTIONS に無ければ「その他・複数」へフォールバック）。
+  //
+  // 7 本以上の請求書振込ご注文の場合は ?type=invoice&qty=N&lengths=L1,L2,... が来るので、
+  // message 欄に注文サマリを pre-fill する。
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const category = params.get("category")
     const product = params.get("product")
+    const type = params.get("type")
+    const qty = params.get("qty")
+    const lengthsCsv = params.get("lengths")
+    const prefillMessage = type === "invoice" && qty && lengthsCsv
+      ? `【請求書振込でのご注文（7本以上）】\n\n本数: ${qty} 本\n各本の長さ: ${lengthsCsv.split(',').map((L, i) => `${i + 1}本目 ${L}mm`).join(' / ')}\n\n上記内容で請求書振込でのご注文を希望します。送料を含む合計金額のお見積もりと振込先のご案内をお願いいたします。\n\n配送先住所:\n（ご住所をご記入ください）\n\nその他ご要望:\n`
+      : ""
     setForm((prev) => ({
       ...prev,
       category:
         category && CATEGORY_OPTIONS.some((o) => o.value === category)
           ? category
-          : prev.category,
+          : type === "invoice"
+            ? "order"
+            : prev.category,
       product: product
         ? PRODUCT_OPTIONS.some((o) => o.value === product)
           ? product
           : "other"
         : prev.product,
+      message: prefillMessage || prev.message,
     }))
   }, [])
 
