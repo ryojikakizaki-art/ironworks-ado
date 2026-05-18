@@ -1045,7 +1045,7 @@ export default function ProductDetailPage() {
                         className="block w-full py-4 border border-gold/20 text-gold text-[15px] font-medium rounded-md hover:border-gold transition-colors text-center"
                       >
                         {isMultiOrder
-                          ? `制作図プレビュー（1本目 ${length}mm・他${lengths.length - 1}本も同仕様）▸`
+                          ? `制作図プレビュー（${lengths.length} 本それぞれ確認できます）▸`
                           : "制作図プレビューで最終確認 ▸"}
                       </button>
                     )}
@@ -1200,6 +1200,7 @@ export default function ProductDetailPage() {
         angleDir={zakin.angleDir}
         zakinRule={zakinRule}
         washerType={washerType}
+        lengths={isMultiOrder ? lengths : undefined}
       />
 
       <EmbeddedCheckoutModal
