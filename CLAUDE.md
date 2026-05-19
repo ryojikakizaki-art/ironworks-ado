@@ -26,7 +26,8 @@
 3. **UI変更前に必ず skill を起動** — `anthropic-skills:ado-ui-change-review`（落とし穴チェック）、新規ページ・刷新は `anthropic-skills:ec-site-handmade-art` を併用。
 4. **React管理下のSSR DOMを vanilla JS で操作しない** — `.remove()` 厳禁。CSS class/attribute トグルで隠す。破るとナビゲーションが壊れる。
 5. **背景・カード地色は薄いグレー** — ベージュ系（`#f9f7f4` `#f0eeeb`）禁止。`#f3f4f6` / `#e5e7eb` に統一。
-6. **触らないもの** — `ironworks-ado-calendar-*.json`（鍵）、`item/`・`_archive_legacy/`（旧版）。
+6. **画像・動画は掲載前に必ず圧縮** — カメラ原画を裸で入れない。JPEG 長辺1600px・q=80、動画 720p・CRF26。商品画像 1MB 超 / 動画 5MB 超は NG。詳細は `ec-rules-ui-design.md` の「画像・動画の掲載標準」セクション。
+7. **触らないもの** — `ironworks-ado-calendar-*.json`（鍵）、`item/`・`_archive_legacy/`（旧版）。
 
 ## ファイル構成（概要）
 - `v0-design/` — 本番コード（Next.js App Router / Tailwind v4）
