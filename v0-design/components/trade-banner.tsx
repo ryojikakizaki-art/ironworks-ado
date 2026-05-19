@@ -44,15 +44,15 @@ export function TradeBanner() {
                 For Builders
               </p>
               <p className="font-serif text-[15px] md:text-[17px] leading-snug text-foreground">
-                工務店・設計事務所の方へ。
+                工務店様・設計事務所様へ。
                 <span className="text-foreground/70">
-                  「無理」と言われた図面こそ、ado で形にしませんか。
+                  他では難しいご依頼こそ、鍛冶職人がお引き受けいたします。
                 </span>
               </p>
             </div>
           </div>
           <span className="self-end md:self-auto shrink-0 inline-flex items-center gap-2 px-4 py-2 md:px-5 md:py-2.5 rounded-full border border-foreground/30 text-foreground group-hover:border-gold group-hover:bg-gold group-hover:text-white transition-colors text-[12px] md:text-[13px] tracking-wide">
-            業者専用ページへ
+            業者様専用ページへ
             <ArrowRight className="w-4 h-4" />
           </span>
         </Link>

@@ -23,7 +23,7 @@ const footerLinks = {
       { label: "ご注文について", href: "/about" },
       { label: "よくあるご質問", href: "/faq" },
       { label: "お問い合わせ", href: "/contact" },
-      { label: "業者の方へ", href: "/trade" },
+      { label: "業者様へ", href: "/trade" },
       { label: "塗装について", href: "/paint" },
       { label: "溶融亜鉛めっき", href: "/galvanizing" },
     ],

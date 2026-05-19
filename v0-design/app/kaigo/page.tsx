@@ -566,7 +566,7 @@ export default function KaigoPage() {
                   For Care Professionals
                 </p>
                 <h2 className="text-2xl lg:text-3xl leading-[1.6] mb-5" style={{ color: C.text }}>
-                  ケアマネ様・福祉用具事業者の方へ
+                  ケアマネ様・福祉用具事業者様へ
                 </h2>
                 <p className="text-[15px] md:text-[16px] leading-[2] mb-6" style={{ color: C.muted }}>
                   「白いプラではなく意匠性のある手すりが欲しい」というご家族のニーズにお応えできる事業者として、千葉市内の地域包括支援センター・福祉用具事業者様からの紹介を承っております。

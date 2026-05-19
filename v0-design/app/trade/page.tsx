@@ -71,8 +71,8 @@ const pillars = [
   },
   {
     icon: Award,
-    title: "業者割引・卸価格をご用意",
-    desc: "継続取引のある工務店・設計事務所・リフォーム会社様には、数量と取引頻度に応じた卸価格 / 業者割引を設定しています。初回お取引時にお見積もりとともにご案内します。",
+    title: "業者様向け割引・卸価格をご用意",
+    desc: "継続取引のある工務店様・設計事務所様・リフォーム会社様には、数量と取引頻度に応じた卸価格 / 業者様向け割引を設定しています。初回お取引時にお見積もりとともにご案内します。",
   },
   {
     icon: FileText,
@@ -94,8 +94,8 @@ const pillars = [
 // ── 業者向け FAQ ──
 const tradeFaqs = [
   {
-    q: "業者登録は必要ですか？",
-    a: "事前登録は不要です。最初のお問い合わせ時に「業者の方」とご記載いただければ、見積もり段階から業者向けの価格・条件でご案内します。継続取引が見込まれる場合は、社判の入った会社情報を一度頂戴し、与信枠の設定も承ります。",
+    q: "業者様の登録は必要ですか？",
+    a: "事前登録は不要です。最初のお問い合わせ時に「業者様」とご記載いただければ、見積もり段階から業者様向けの価格・条件でご案内します。継続取引が見込まれる場合は、社判の入った会社情報を一度頂戴し、与信枠の設定も承ります。",
   },
   {
     q: "卸価格・割引率はどのくらいですか？",
@@ -103,7 +103,7 @@ const tradeFaqs = [
   },
   {
     q: "支払い条件は？",
-    a: "業者取引は銀行振込のみでお願いしております（クレジットカード決済は承っておりません）。初回取引は前金または着金確認後の発送が原則です。継続取引のお客様には月末締め翌月末払い（請求書払い）の与信を設定可能です。法人・個人事業主どちらも対応します。適格請求書（インボイス）対応事業者です（登録番号 T7810771171765）。決済手数料を価格に上乗せせず卸価格を維持するため、業者取引は振込一本に絞っております。",
+    a: "業者様とのお取引は銀行振込のみでお願いしております（クレジットカード決済は承っておりません）。初回取引は前金または着金確認後の発送が原則です。継続取引のお客様には月末締め翌月末払い（請求書払い）の与信を設定可能です。法人・個人事業主どちらも対応します。適格請求書（インボイス）対応事業者です（登録番号 T7810771171765）。決済手数料を価格に上乗せせず卸価格を維持するため、業者様とのお取引は振込一本に絞っております。",
   },
   {
     q: "OEM・サンプル提供は可能ですか？",
@@ -234,15 +234,15 @@ export default function TradePage() {
         if (quoteTotal > 0) {
           quoteBlock.push(
             "",
-            `参考見積もり合計（税込・業者割引未適用）: ¥${quoteTotal.toLocaleString()}`,
-            "※ 業者割引・送料・取付費・特注対応費は別途算定。確定金額は折り返しの見積書にてご案内します。",
+            `参考見積もり合計（税込・業者様向け割引未適用）: ¥${quoteTotal.toLocaleString()}`,
+            "※ 業者様向け割引・送料・取付費・特注対応費は別途算定。確定金額は折り返しの見積書にてご案内します。",
             "※ お支払いは銀行振込のみでお願いしております。"
           )
         }
       }
 
       const composed = [
-        "【業者の方からのお問い合わせ】",
+        "【業者様からのお問い合わせ】",
         `会社名: ${company}`,
         `ご担当者: ${contact}`,
         `お電話: ${phone || "未入力"}`,
@@ -291,26 +291,28 @@ export default function TradePage() {
         <section className="border-b border-border bg-dark text-white">
           <div className="max-w-[1200px] mx-auto px-4 lg:px-8 py-16 lg:py-24">
             <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-4">For Builders</p>
-            <h1 className="font-serif text-3xl md:text-4xl lg:text-6xl leading-[1.25] mb-6">
-              工務店・設計事務所の方へ。
+            <h1 className="font-serif text-[26px] md:text-4xl lg:text-6xl leading-[1.35] md:leading-[1.25] mb-6">
+              工務店様・設計事務所様へ。
               <br />
-              <span className="text-gold">「無理」と言われた図面</span>こそ、
-              <br className="hidden md:inline" />
-              ado で形にしませんか。
+              <span className="text-gold">他では難しいご依頼</span>こそ、
+              <br />
+              鍛冶職人が
+              <span className="md:hidden"><br /></span>
+              お引き受けいたします。
             </h1>
             <p className="text-[14px] lg:text-[16px] leading-[1.95] text-white/80 max-w-2xl mb-6">
               鍛鉄・焼付塗装・レーザーカット・機械加工・溶融亜鉛めっき。一般的な鉄工所では断られがちな仕様も、自社工房で職人本人が一貫して請け負います。卸価格・図面 / CAD 対応・特急納期にも対応。
             </p>
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold/40 bg-gold/10 text-gold text-[12px] tracking-wide mb-8">
               <Banknote className="w-4 h-4" strokeWidth={1.5} />
-              <span>業者取引は銀行振込のみ・適格請求書（インボイス）対応</span>
+              <span>業者様とのお取引は銀行振込のみ・適格請求書（インボイス）対応</span>
             </div>
             <div className="flex flex-wrap gap-3">
               <PrimaryCTA href="#trade-form" variant="gold" size="md" withArrow>
-                業者専用フォームへ
+                業者様専用フォームへ
               </PrimaryCTA>
               <PrimaryCTA href="#trade-faq" variant="gold-glass" size="md">
-                業者向けFAQを見る
+                業者様向け FAQ を見る
               </PrimaryCTA>
             </div>
           </div>
@@ -358,7 +360,7 @@ export default function TradePage() {
             <div className="mb-12 text-center">
               <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-3">Trade FAQ</p>
               <h2 className="font-serif text-3xl lg:text-4xl text-foreground">
-                業者の方からよくいただく質問
+                業者様からよくいただく質問
               </h2>
             </div>
             <div className="space-y-3">
@@ -423,7 +425,7 @@ export default function TradePage() {
               </div>
               <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-3">Contact</p>
               <h2 className="font-serif text-3xl lg:text-4xl text-foreground mb-4">
-                業者専用お問い合わせ
+                業者様専用お問い合わせ
               </h2>
               <p className="text-[14px] leading-[1.95] text-muted-foreground max-w-[640px] mx-auto">
                 通常 1〜2 営業日以内に職人が直接ご返答します。図面・現場写真の添付は、まずこちらから送信後の返信メールに添付してください。
@@ -564,7 +566,7 @@ export default function TradePage() {
                   </div>
                 </div>
                 <p className="text-[12px] text-muted-foreground leading-[1.85] mb-5">
-                  商品と数量・長さを選ぶと、参考金額を自動表示します。<span className="text-foreground">業者割引・送料・取付費・特注対応費は別途</span>。確定金額は折り返しの見積書にてご案内します。
+                  商品と数量・長さを選ぶと、参考金額を自動表示します。<span className="text-foreground">業者様向け割引・送料・取付費・特注対応費は別途</span>。確定金額は折り返しの見積書にてご案内します。
                 </p>
 
                 {quoteLines.length === 0 ? (
@@ -699,7 +701,7 @@ export default function TradePage() {
                           </span>
                         </div>
                         <p className="text-[11px] leading-[1.85] text-muted-foreground">
-                          ※ 業者割引（10〜25%）・送料・取付費・特注対応費は別途算定します。
+                          ※ 業者様向け割引（10〜25%）・送料・取付費・特注対応費は別途算定します。
                           <br />
                           ※ 確定金額は折り返しの見積書にてご案内します。お支払いは銀行振込のみ。
                         </p>

@@ -278,7 +278,7 @@ export function Header() {
                     </div>
                     {[
                       { label: "お問い合わせ", href: "/contact" },
-                      { label: "業者の方へ", href: "/trade" },
+                      { label: "業者様へ", href: "/trade" },
                       { label: "ご挨拶", href: "/greeting" },
                       { label: "塗装について", href: "/paint" },
                     ].map((item, index) => (
