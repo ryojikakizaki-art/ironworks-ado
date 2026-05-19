@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, FormEvent } from "react"
+import { useState, FormEvent, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
@@ -13,10 +13,54 @@ import {
   Plus,
   Building2,
   ArrowRight,
+  Banknote,
+  Trash2,
 } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
+import { CATALOG_PRODUCTS } from "@/lib/products/catalog"
+
+// /trade からの参考見積もり用：catalog から /products/{slug} 形式の商品のみ抜き出す
+const QUOTE_PRODUCTS = CATALOG_PRODUCTS
+  .filter((p) => p.href.startsWith("/products/"))
+  .map((p) => ({
+    slug: p.href.replace("/products/", ""),
+    name: p.name,
+    sub: p.sub,
+    price: p.price,
+    priceFrom: p.priceFrom ?? false,
+  }))
+
+type QuoteLine = {
+  id: string
+  slug: string // 空文字 = 未選択
+  qty: number
+  length: number // メートル。固定価格商品では未使用
+}
+
+function findQuoteProduct(slug: string) {
+  return QUOTE_PRODUCTS.find((p) => p.slug === slug)
+}
+
+function calcLineTotal(line: QuoteLine): number | null {
+  const p = findQuoteProduct(line.slug)
+  if (!p || p.price === 0) return null
+  const qty = Math.max(1, Number(line.qty) || 0)
+  if (p.priceFrom) {
+    const length = Math.max(0.1, Number(line.length) || 0)
+    return Math.round(p.price * length * qty)
+  }
+  return p.price * qty
+}
+
+function newQuoteLine(): QuoteLine {
+  const id =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `q_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+  return { id, slug: "", qty: 1, length: 1.5 }
+}
 
 // ── 5 本の柱（業者向け訴求） ──
 const pillars = [
@@ -59,7 +103,7 @@ const tradeFaqs = [
   },
   {
     q: "支払い条件は？",
-    a: "初回取引は前金または着金確認後の発送が原則です。継続取引のお客様には月末締め翌月末払い（請求書払い）の与信を設定可能です。法人・個人事業主どちらも対応します。適格請求書（インボイス）対応事業者です（登録番号 T7810771171765）。",
+    a: "業者取引は銀行振込のみでお願いしております（クレジットカード決済は承っておりません）。初回取引は前金または着金確認後の発送が原則です。継続取引のお客様には月末締め翌月末払い（請求書払い）の与信を設定可能です。法人・個人事業主どちらも対応します。適格請求書（インボイス）対応事業者です（登録番号 T7810771171765）。決済手数料を価格に上乗せせず卸価格を維持するため、業者取引は振込一本に絞っております。",
   },
   {
     q: "OEM・サンプル提供は可能ですか？",
@@ -110,6 +154,31 @@ export default function TradePage() {
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
+  // ── ご相談中の商品（参考見積もり） ──
+  const [quoteLines, setQuoteLines] = useState<QuoteLine[]>([])
+  const addQuoteLine = () => setQuoteLines((prev) => [...prev, newQuoteLine()])
+  const removeQuoteLine = (id: string) =>
+    setQuoteLines((prev) => prev.filter((l) => l.id !== id))
+  const updateQuoteLine = (id: string, patch: Partial<QuoteLine>) =>
+    setQuoteLines((prev) => prev.map((l) => (l.id === id ? { ...l, ...patch } : l)))
+
+  const quoteTotal = useMemo(
+    () =>
+      quoteLines.reduce((sum, l) => {
+        const t = calcLineTotal(l)
+        return sum + (t ?? 0)
+      }, 0),
+    [quoteLines]
+  )
+  const hasCustomLine = useMemo(
+    () =>
+      quoteLines.some((l) => {
+        const p = findQuoteProduct(l.slug)
+        return p && p.price === 0
+      }),
+    [quoteLines]
+  )
+
   const toggleInquiry = (v: string) => {
     setInquiryType((prev) =>
       prev.includes(v) ? prev.filter((x) => x !== v) : [...prev, v]
@@ -134,6 +203,44 @@ export default function TradePage() {
       const projectLabel =
         PROJECT_TYPES.find((t) => t.value === projectType)?.label || "未選択"
 
+      // 商品ライン → 参考見積もり明細
+      const filledLines = quoteLines.filter((l) => l.slug)
+      const quoteBlock: string[] = []
+      if (filledLines.length > 0) {
+        quoteBlock.push("", "── ご相談中の商品（参考見積もり） ──")
+        filledLines.forEach((l, i) => {
+          const p = findQuoteProduct(l.slug)
+          if (!p) return
+          const lineNo = i + 1
+          if (p.price === 0) {
+            quoteBlock.push(
+              `${lineNo}. ${p.name}（${p.sub}）`,
+              `   個別お見積もり（数量 ${l.qty}）`
+            )
+          } else if (p.priceFrom) {
+            const total = calcLineTotal(l) ?? 0
+            quoteBlock.push(
+              `${lineNo}. ${p.name}（${p.sub}）`,
+              `   数量 ${l.qty} 本 × 長さ ${l.length}m / 単価 ¥${p.price.toLocaleString()}/m → ¥${total.toLocaleString()}`
+            )
+          } else {
+            const total = calcLineTotal(l) ?? 0
+            quoteBlock.push(
+              `${lineNo}. ${p.name}（${p.sub}）`,
+              `   数量 ${l.qty} × 単価 ¥${p.price.toLocaleString()} → ¥${total.toLocaleString()}`
+            )
+          }
+        })
+        if (quoteTotal > 0) {
+          quoteBlock.push(
+            "",
+            `参考見積もり合計（税込・業者割引未適用）: ¥${quoteTotal.toLocaleString()}`,
+            "※ 業者割引・送料・取付費・特注対応費は別途算定。確定金額は折り返しの見積書にてご案内します。",
+            "※ お支払いは銀行振込のみでお願いしております。"
+          )
+        }
+      }
+
       const composed = [
         "【業者の方からのお問い合わせ】",
         `会社名: ${company}`,
@@ -143,6 +250,7 @@ export default function TradePage() {
         `物件種別: ${projectLabel}`,
         `ご依頼内容: ${inquiryLabels || "未選択"}`,
         `希望納期: ${deadline || "未指定"}`,
+        ...quoteBlock,
         "",
         "── ご相談内容 ──",
         message,
@@ -190,9 +298,13 @@ export default function TradePage() {
               <br className="hidden md:inline" />
               ado で形にしませんか。
             </h1>
-            <p className="text-[14px] lg:text-[16px] leading-[1.95] text-white/80 max-w-2xl mb-8">
+            <p className="text-[14px] lg:text-[16px] leading-[1.95] text-white/80 max-w-2xl mb-6">
               鍛鉄・焼付塗装・レーザーカット・機械加工・溶融亜鉛めっき。一般的な鉄工所では断られがちな仕様も、自社工房で職人本人が一貫して請け負います。卸価格・図面 / CAD 対応・特急納期にも対応。
             </p>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold/40 bg-gold/10 text-gold text-[12px] tracking-wide mb-8">
+              <Banknote className="w-4 h-4" strokeWidth={1.5} />
+              <span>業者取引は銀行振込のみ・適格請求書（インボイス）対応</span>
+            </div>
             <div className="flex flex-wrap gap-3">
               <PrimaryCTA href="#trade-form" variant="gold" size="md" withArrow>
                 業者専用フォームへ
@@ -315,6 +427,8 @@ export default function TradePage() {
               </h2>
               <p className="text-[14px] leading-[1.95] text-muted-foreground max-w-[640px] mx-auto">
                 通常 1〜2 営業日以内に職人が直接ご返答します。図面・現場写真の添付は、まずこちらから送信後の返信メールに添付してください。
+                <br className="hidden md:inline" />
+                お支払いは銀行振込のみ・適格請求書（インボイス）対応です。
               </p>
             </div>
 
@@ -437,6 +551,167 @@ export default function TradePage() {
                     )
                   })}
                 </div>
+              </div>
+
+              {/* ご相談中の商品（参考見積もり） */}
+              <div className="border border-border rounded-xl bg-card/40 p-5 lg:p-6">
+                <div className="flex items-start justify-between gap-3 mb-1">
+                  <div>
+                    <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-1">Quote</p>
+                    <h3 className="font-serif text-[16px] lg:text-[18px] text-foreground">
+                      ご相談中の商品（参考見積もり）
+                    </h3>
+                  </div>
+                </div>
+                <p className="text-[12px] text-muted-foreground leading-[1.85] mb-5">
+                  商品と数量・長さを選ぶと、参考金額を自動表示します。<span className="text-foreground">業者割引・送料・取付費・特注対応費は別途</span>。確定金額は折り返しの見積書にてご案内します。
+                </p>
+
+                {quoteLines.length === 0 ? (
+                  <button
+                    type="button"
+                    onClick={addQuoteLine}
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 border border-dashed border-border rounded-md text-[13px] text-muted-foreground hover:border-gold hover:text-gold transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    商品を追加して参考金額を見る
+                  </button>
+                ) : (
+                  <div className="space-y-4">
+                    {quoteLines.map((line, index) => {
+                      const product = findQuoteProduct(line.slug)
+                      const lineTotal = calcLineTotal(line)
+                      return (
+                        <div
+                          key={line.id}
+                          className="border border-border rounded-lg bg-background p-4 lg:p-5"
+                        >
+                          <div className="flex items-center justify-between gap-3 mb-3">
+                            <span className="text-[11px] tracking-wide text-muted-foreground">
+                              商品 #{index + 1}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => removeQuoteLine(line.id)}
+                              className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-red-600 transition-colors"
+                              aria-label="この商品を削除"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              削除
+                            </button>
+                          </div>
+                          <select
+                            value={line.slug}
+                            onChange={(e) => updateQuoteLine(line.id, { slug: e.target.value })}
+                            className="w-full px-4 py-3 border border-border rounded-md bg-background text-[13px] focus:outline-none focus:border-gold transition-colors mb-3"
+                          >
+                            <option value="">- 商品を選択してください -</option>
+                            {QUOTE_PRODUCTS.map((p) => (
+                              <option key={p.slug} value={p.slug}>
+                                {p.name} — {p.sub}
+                                {p.price === 0
+                                  ? "（個別お見積もり）"
+                                  : p.priceFrom
+                                  ? `（¥${p.price.toLocaleString()} / m〜）`
+                                  : `（¥${p.price.toLocaleString()}）`}
+                              </option>
+                            ))}
+                          </select>
+                          {product && (
+                            <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-[11px] text-muted-foreground mb-1">
+                                  数量（本 / 台）
+                                </label>
+                                <input
+                                  type="number"
+                                  min={1}
+                                  step={1}
+                                  value={line.qty}
+                                  onChange={(e) =>
+                                    updateQuoteLine(line.id, {
+                                      qty: Math.max(1, Number(e.target.value) || 1),
+                                    })
+                                  }
+                                  className="w-full px-3 py-2.5 border border-border rounded-md bg-background text-[14px] focus:outline-none focus:border-gold transition-colors"
+                                />
+                              </div>
+                              {product.priceFrom && (
+                                <div>
+                                  <label className="block text-[11px] text-muted-foreground mb-1">
+                                    長さ（m / 1 本あたり）
+                                  </label>
+                                  <input
+                                    type="number"
+                                    min={0.5}
+                                    step={0.1}
+                                    value={line.length}
+                                    onChange={(e) =>
+                                      updateQuoteLine(line.id, {
+                                        length: Math.max(0.1, Number(e.target.value) || 0.1),
+                                      })
+                                    }
+                                    className="w-full px-3 py-2.5 border border-border rounded-md bg-background text-[14px] focus:outline-none focus:border-gold transition-colors"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          )}
+                          {product && (
+                            <div className="mt-3 pt-3 border-t border-border text-[13px]">
+                              {product.price === 0 ? (
+                                <span className="text-muted-foreground">
+                                  個別お見積もり（折り返し見積書でご案内）
+                                </span>
+                              ) : (
+                                <div className="flex items-baseline justify-between">
+                                  <span className="text-[11px] text-muted-foreground">
+                                    参考金額（税込）
+                                  </span>
+                                  <span className="font-serif text-[18px] text-foreground">
+                                    ¥{lineTotal?.toLocaleString() ?? "—"}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )
+                    })}
+
+                    <button
+                      type="button"
+                      onClick={addQuoteLine}
+                      className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 border border-dashed border-border rounded-md text-[13px] text-muted-foreground hover:border-gold hover:text-gold transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      商品を追加
+                    </button>
+
+                    {quoteTotal > 0 && (
+                      <div className="bg-gold/5 border border-gold/30 rounded-lg p-5">
+                        <div className="flex items-baseline justify-between mb-2">
+                          <span className="text-[11px] tracking-wide text-muted-foreground">
+                            参考見積もり合計（税込）
+                          </span>
+                          <span className="font-serif text-[22px] lg:text-[26px] text-foreground">
+                            ¥{quoteTotal.toLocaleString()}
+                          </span>
+                        </div>
+                        <p className="text-[11px] leading-[1.85] text-muted-foreground">
+                          ※ 業者割引（10〜25%）・送料・取付費・特注対応費は別途算定します。
+                          <br />
+                          ※ 確定金額は折り返しの見積書にてご案内します。お支払いは銀行振込のみ。
+                        </p>
+                        {hasCustomLine && (
+                          <p className="text-[11px] text-gold mt-2">
+                            ※「個別お見積もり」商品は上記合計に含まれていません。
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* 希望納期 */}
