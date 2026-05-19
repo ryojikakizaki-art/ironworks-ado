@@ -51,20 +51,31 @@ export function IntroSplash() {
       setStage("gone")
       return
     }
-    // 初回: React splash を visible に。pre-splash は React splash 描画後に
-    // data-splash-skip="1" で隠す（DOM からは削除しない）。
+    // 初回: React splash を visible に。pre-splash の非表示化は
+    // 下の useEffect で stage が "visible" に commit されたあと行う。
+    //
+    // 過去の実装は同じ useEffect 内で requestAnimationFrame で
+    // data-splash-skip を立てていたが、rAF は React の commit より先に
+    // 走るタイミングがあり、pre-splash が消えた瞬間に splash JSX が
+    // まだ DOM に無く、ヒーロー画像が 1 フレーム透けて見える FOUC が
+    // 発生していた（2026-05-19 蠣﨑さん報告）。
     setStage("visible")
     const prevOverflow = document.body.style.overflow
     document.body.style.overflow = "hidden"
-    requestAnimationFrame(() => {
-      document.documentElement.setAttribute("data-splash-skip", "1")
-    })
     const auto = window.setTimeout(() => dismiss(), TOTAL_MS)
     return () => {
       window.clearTimeout(auto)
       document.body.style.overflow = prevOverflow
     }
   }, [])
+
+  // stage が "visible" に commit された後 = splash JSX が DOM に
+  // 入った後にだけ pre-splash を隠す。これで rAF レースで起きていた
+  // ヒーロー一瞬透け を防ぐ。
+  useEffect(() => {
+    if (stage !== "visible") return
+    document.documentElement.setAttribute("data-splash-skip", "1")
+  }, [stage])
 
   function dismiss() {
     if (dismissedRef.current) return
