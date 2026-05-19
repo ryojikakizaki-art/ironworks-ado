@@ -19,7 +19,7 @@ const faqs: { q: string; a: string }[] = [
   },
   {
     q: "取り付けは自分でできますか？",
-    a: "付属の取付ビス（M5×40mm 等）と、壁の下地確認ができれば DIY 可能です。製作図面と取付ガイドを商品に同梱します。施工に不安がある場合は、千葉県全域および関東一部エリアであれば ado による現地施工にも対応可能（別途お見積もり）。施工エリア外でも、お近くの工務店向けに取付指示書をお渡しできます。",
+    a: "付属の取付ビス（M5×40mm 等）と、壁の下地確認ができれば DIY 可能です。製作図面と取付ガイドを商品に同梱します。施工に不安がある場合は、千葉県全域および関東一部エリアであれば ado による現地施工にも対応可能（別途お見積もり）。施工エリア外でも、お近くの工務店様向けに取付指示書をお渡しできます。",
   },
   {
     q: "オーダーメイドは可能ですか？",
@@ -146,14 +146,14 @@ export default function FaqPage() {
             <div>
               <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">For Builders</p>
               <h2 className="font-serif text-xl lg:text-2xl text-foreground mb-2">
-                工務店・設計事務所の方へ
+                工務店様・設計事務所様へ
               </h2>
               <p className="text-[13px] leading-[1.85] text-muted-foreground">
-                業者向けの卸価格・図面 / CAD 対応・特急納期・施工事例については、業者専用ページをご用意しております。
+                業者様向けの卸価格・図面 / CAD 対応・特急納期・施工事例については、業者様専用ページをご用意しております。
               </p>
             </div>
             <PrimaryCTA href="/trade" variant="dark" size="md" withArrow>
-              業者の方へ
+              業者様専用ページへ
             </PrimaryCTA>
           </div>
         </section>
