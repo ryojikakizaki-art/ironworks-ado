@@ -277,6 +277,10 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: 'payment',
+      // 配送先住所・電話番号を必ず収集する。手すりは全国配送のため発送に必須。
+      // （簡易商品 checkout/simple には既に有り。手すり側で抜けていたのを補完）
+      shipping_address_collection: { allowed_countries: ['JP'] },
+      phone_number_collection: { enabled: true },
       // embedded モードは return_url のみ。決済成功/失敗どちらもここに戻る (status を thanks 側で判定)
       return_url: `${baseUrl}/thanks?session_id={CHECKOUT_SESSION_ID}&product=${productKey}&length=${L}&rush=${rushDelivery ? '1' : '0'}`,
       metadata: {
