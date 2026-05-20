@@ -435,6 +435,64 @@ async function createSimpleCalendarEvent(session: Stripe.Checkout.Session) {
   console.log('[webhook] Created shipping TODO calendar event for ' + productLabel + ' on ' + shipDate);
 }
 
+/**
+ * 受注台帳（Google スプレッドシート）に注文を 1 行追記する。
+ * ORDER_LEDGER_SHEET_ID 未設定なら何もしない（Calendar 連携と同じ任意機能扱い）。
+ * 列順: 受注日 / 区分 / 顧客名 / 都道府県 / 住所 / メール / 電話 / 商品 / 仕様 / 金額 / 注文番号 / メモ
+ */
+async function appendToOrderLedger(session: Stripe.Checkout.Session) {
+  const sheetId = process.env.ORDER_LEDGER_SHEET_ID;
+  if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY || !sheetId) {
+    console.log('[webhook] Order ledger not configured, skipping');
+    return;
+  }
+
+  const { google } = await import('googleapis');
+  const meta = session.metadata || {};
+  const isSimple = meta.product_type === 'simple';
+  const lengthsInfo = parseLengthsMeta(meta);
+
+  const shipping = (session as unknown as { shipping_details?: { address?: StripeAddress; name?: string } }).shipping_details;
+  const addr = shipping?.address || (session.customer_details?.address as StripeAddress | undefined);
+
+  const orderDate = new Date((session.created ?? Math.floor(Date.now() / 1000)) * 1000)
+    .toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' });
+  const productName = String(meta.product_name || meta.product || 'ご注文商品');
+  const spec = isSimple
+    ? `数量 ${meta.quantity || 1}`
+    : [lengthsInfo.full, meta.zakin_count ? `座金${meta.zakin_count}個` : '', meta.rush_delivery === 'true' ? '特急' : '']
+        .filter(Boolean).join(' / ');
+
+  const row = [
+    orderDate,                                                        // 受注日
+    '個人',                                                            // 区分（Stripe 決済は個人）
+    shipping?.name || session.customer_details?.name || '—',          // 顧客名
+    addr?.state || meta.prefecture || '',                             // 都道府県
+    formatJpAddress(addr),                                            // 住所
+    session.customer_details?.email || '',                            // メール
+    session.customer_details?.phone || '',                            // 電話
+    productName,                                                      // 商品
+    spec,                                                             // 仕様
+    Number(meta.total_yen || session.amount_total || 0),              // 金額
+    session.id,                                                       // 注文番号
+    '',                                                               // メモ
+  ];
+
+  const auth = new google.auth.GoogleAuth({
+    credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY),
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  });
+  const sheets = google.sheets({ version: 'v4', auth });
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: sheetId,
+    range: 'A1',
+    valueInputOption: 'USER_ENTERED',
+    requestBody: { values: [row] },
+  });
+
+  console.log('[webhook] Order ledger row appended for', session.id);
+}
+
 export async function POST(request: NextRequest) {
   const sig = request.headers.get('stripe-signature');
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -494,6 +552,14 @@ export async function POST(request: NextRequest) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       console.error('[webhook] Order email error:', message);
       // メール送信エラーでもwebhookは成功応答を返す
+    }
+
+    try {
+      await appendToOrderLedger(session);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      console.error('[webhook] Order ledger error:', message);
+      // 台帳追記エラーでもwebhookは成功応答を返す
     }
   }
 
