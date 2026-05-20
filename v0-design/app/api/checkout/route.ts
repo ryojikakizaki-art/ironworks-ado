@@ -144,6 +144,12 @@ export async function POST(request: NextRequest) {
       ? (orientation === 'left' ? '左向き' : '右向き')
       : '';
 
+    // 座金タイプ A/B — 縦型CAD商品 (zakinRule を持つ Antoine/Claude/Catherine/Alexandre)
+    // のみ商品ページにセレクタが出る。製作時に必須の仕様なので必ず注文に記録する。
+    const supportsWasher = !!prod.zakinRule;
+    const washerType: 'A' | 'B' =
+      String(body?.washerType || 'A').toUpperCase() === 'B' ? 'B' : 'A';
+
     const minL = prod.zakinRule?.minLengthMm ?? 500;
 
     // 多本長さ違い対応 (PR #2): lengths[] が来たらそれを正、無ければ lengthMm + quantity から導出。
@@ -247,7 +253,7 @@ export async function POST(request: NextRequest) {
         currency: 'jpy' as const,
         product_data: {
           name: `${prod.name} 壁付け手すり ${gL}mm${orientationLabel ? ` ${orientationLabel}` : ''}`,
-          description: `座金${gp.zakin}個 / ${deliveryDesc}`,
+          description: `座金${gp.zakin}個${supportsWasher ? `（${washerType}タイプ）` : ''} / ${deliveryDesc}`,
         },
         unit_amount: Math.round(gp.total + rushPerItem),
         tax_behavior: 'inclusive' as const,
@@ -294,6 +300,7 @@ export async function POST(request: NextRequest) {
         is_multi_order:         isMultiOrder ? 'true' : 'false',
         quantity:               String(qty),
         zakin_count:            String(p.zakin),
+        ...(supportsWasher ? { washer_type: washerType } : {}),
         base_total_yen:         String(Math.round(p.total)),
         rush_delivery:          rushDelivery ? 'true' : 'false',
         rush_surcharge_yen:     String(rushSurcharge),

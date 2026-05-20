@@ -311,6 +311,7 @@ export default function ProductDetailPage() {
           quantity,
           rushDelivery: deliveryType === "express",
           prefecture,
+          washerType,
           ...(hasOrientation ? { orientation } : {}),
         }),
       })

@@ -173,7 +173,7 @@ async function sendOrderConfirmationEmail(session: Stripe.Checkout.Session) {
 <div class="summary">
 <div class="row"><span class="label">商品</span><span class="value">${esc(productLabel)}</span></div>
 ${lengthsInfo.isMulti ? `<div class="row"><span class="label">各本の長さ</span><span class="value">${esc(lengthsInfo.full)}</span></div>` : ''}
-<div class="row"><span class="label">仕上げ・座金</span><span class="value">${lengthsInfo.isMulti ? '各本の長さに応じて自動配置' : `座金 ${esc(String(meta.zakin_count || '—'))}個`}</span></div>
+<div class="row"><span class="label">仕上げ・座金</span><span class="value">${lengthsInfo.isMulti ? `各本の長さに応じて自動配置${meta.washer_type ? ` / 座金${esc(meta.washer_type)}タイプ` : ''}` : `座金 ${esc(String(meta.zakin_count || '—'))}個${meta.washer_type ? `・${esc(meta.washer_type)}タイプ` : ''}`}</span></div>
 <div class="row"><span class="label">配送区分</span><span class="value">${esc(deliveryLabel)}</span></div>
 ${lengthsInfo.isMulti ? '' : `<div class="row"><span class="label">基本金額</span><span class="value">¥${baseYen.toLocaleString()}</span></div>`}
 ${isRush ? `<div class="row"><span class="label">特急割増</span><span class="value">¥${rushYen.toLocaleString()}</span></div>` : ''}
@@ -355,7 +355,9 @@ async function createCalendarEvents(session: Stripe.Checkout.Session) {
     `タイプ: ${meta.type}`,
     // 多本の場合は per-item 長さを別行で明示（蠣﨑さんの制作指示用）
     lengthsInfo.isMulti ? `本数内訳: ${lengthsInfo.perItemPlain}` : '',
-    lengthsInfo.isMulti ? `座金: 各本の長さに応じて自動配置` : `座金: ${meta.zakin_count}個`,
+    lengthsInfo.isMulti
+      ? `座金: 各本の長さに応じて自動配置${meta.washer_type ? ` / 座金${meta.washer_type}タイプ` : ''}`
+      : `座金: ${meta.zakin_count}個${meta.washer_type ? `・${meta.washer_type}タイプ` : ''}`,
     `合計: ¥${Number(meta.total_yen || 0).toLocaleString()}`,
     meta.rush_delivery === 'true' ? `特急割増: ¥${Number(meta.rush_surcharge_yen || 0).toLocaleString()}` : '',
     `お客様: ${email}`,
@@ -461,7 +463,7 @@ async function prependOrderToLedger(session: Stripe.Checkout.Session) {
   const productName = String(meta.product_name || meta.product || 'ご注文商品');
   const spec = isSimple
     ? `数量 ${meta.quantity || 1}`
-    : [lengthsInfo.full, meta.zakin_count ? `座金${meta.zakin_count}個` : '', meta.rush_delivery === 'true' ? '特急' : '']
+    : [lengthsInfo.full, meta.zakin_count ? `座金${meta.zakin_count}個` : '', meta.washer_type ? `座金${meta.washer_type}タイプ` : '', meta.rush_delivery === 'true' ? '特急' : '']
         .filter(Boolean).join(' / ');
 
   const row = [
