@@ -436,11 +436,12 @@ async function createSimpleCalendarEvent(session: Stripe.Checkout.Session) {
 }
 
 /**
- * 受注台帳（Google スプレッドシート）に注文を 1 行追記する。
+ * 受注台帳（Google スプレッドシート）の 2 行目に注文を 1 行挿入する。
+ * 1 行目はヘッダー。新しい注文ほど上に来るよう、末尾追記ではなく 2 行目への挿入にしている。
  * ORDER_LEDGER_SHEET_ID 未設定なら何もしない（Calendar 連携と同じ任意機能扱い）。
  * 列順: 受注日 / 区分 / 顧客名 / 都道府県 / 住所 / メール / 電話 / 商品 / 仕様 / 金額 / 注文番号 / メモ
  */
-async function appendToOrderLedger(session: Stripe.Checkout.Session) {
+async function prependOrderToLedger(session: Stripe.Checkout.Session) {
   const sheetId = process.env.ORDER_LEDGER_SHEET_ID;
   if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY || !sheetId) {
     console.log('[webhook] Order ledger not configured, skipping');
@@ -473,7 +474,7 @@ async function appendToOrderLedger(session: Stripe.Checkout.Session) {
     session.customer_details?.phone || '',                            // 電話
     productName,                                                      // 商品
     spec,                                                             // 仕様
-    Number(meta.total_yen || session.amount_total || 0),              // 金額
+    String(meta.total_yen || session.amount_total || 0),              // 金額
     session.id,                                                       // 注文番号
     '',                                                               // メモ
   ];
@@ -483,14 +484,28 @@ async function appendToOrderLedger(session: Stripe.Checkout.Session) {
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
   });
   const sheets = google.sheets({ version: 'v4', auth });
-  await sheets.spreadsheets.values.append({
+
+  // 1 行目（ヘッダー）の直下に空行を 1 行挿入してから書き込む = 新しい注文を常に一番上に。
+  // sheetId 0 = 先頭シート（受注台帳は単一シート運用のため固定で問題ない）。
+  await sheets.spreadsheets.batchUpdate({
     spreadsheetId: sheetId,
-    range: 'A1',
-    valueInputOption: 'USER_ENTERED',
+    requestBody: {
+      requests: [{
+        insertDimension: {
+          range: { sheetId: 0, dimension: 'ROWS', startIndex: 1, endIndex: 2 },
+          inheritFromBefore: false,
+        },
+      }],
+    },
+  });
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: sheetId,
+    range: 'A2:L2',
+    valueInputOption: 'RAW',
     requestBody: { values: [row] },
   });
 
-  console.log('[webhook] Order ledger row appended for', session.id);
+  console.log('[webhook] Order ledger row inserted at row 2 for', session.id);
 }
 
 export async function POST(request: NextRequest) {
@@ -555,7 +570,7 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      await appendToOrderLedger(session);
+      await prependOrderToLedger(session);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       console.error('[webhook] Order ledger error:', message);
