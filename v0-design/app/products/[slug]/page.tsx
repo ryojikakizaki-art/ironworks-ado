@@ -21,7 +21,7 @@ import { EmbeddedCheckoutModal } from "@/components/checkout/embedded-checkout-m
 import { FinishCommitment } from "@/components/finish-commitment"
 import { calcShipping, type ProductType } from "@/lib/shipping/sagawa"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
-import { lookupPriceFromTable } from "@/lib/drawing-modal/products"
+import { lookupPriceFromTable, type DrawingProductConfig } from "@/lib/drawing-modal/products"
 import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench } from "lucide-react"
 
 // productImages / specs は商品ごとに display.ts から取得
@@ -47,6 +47,21 @@ const prefectures = [
 function priceLabel(price: number, priceFrom = false): string {
   if (price <= 0) return "お見積もり"
   return `¥${price.toLocaleString()}${priceFrom ? "〜" : ""}`
+}
+
+// 導入部「価格の目安」用ヘルパー。
+// 計算機 (calculatePrice) と同じロジックで本体価格を算出し、表示の食い違いを防ぐ。
+function bodyPriceAt(d: DrawingProductConfig, lengthMm: number): number {
+  if (d.priceTable) return lookupPriceFromTable(lengthMm, d.priceTable)
+  const perMm = d.pricePerMm ?? 25
+  const addon = Math.max(0, lengthMm - d.stdLengthMm) * perMm
+  const longMult = lengthMm > 2000 ? Math.pow(1.2, (lengthMm - 2000) / 500) : 1
+  const surcharge = lengthMm > 2000 ? addon * (longMult - 1) : 0
+  return Math.round(d.basePrice + addon + surcharge)
+}
+
+function formatMeters(mm: number): string {
+  return `${mm / 1000}m`
 }
 
 export default function ProductDetailPage() {
@@ -83,6 +98,8 @@ export default function ProductDetailPage() {
   // 1-6 本: 通常 Stripe 決済 / 7-12 本: 請求書振込フロー (calcShipping が inquiry を返す)
   const setQuantity = useCallback((n: number) => {
     const target = Math.max(1, Math.min(12, n))
+    // 特急は 3 本まで。4 本以上に増やしたら通常配送へ自動で戻す
+    if (target > 3) setDeliveryType("normal")
     setLengths(prev => {
       if (target === prev.length) return prev
       if (target > prev.length) {
@@ -117,6 +134,8 @@ export default function ProductDetailPage() {
     setLengthInputs(prev => prev.map((p, idx) => idx === i ? s : p))
   }, [])
   const isMultiOrder = lengths.length > 1
+  // 特急配送は 3 本までのご注文のみ対象（4 本以上は工程上 通常配送のみ）
+  const expressAllowed = lengths.length <= 3
   const [prefecture, setPrefecture] = useState("")
   const [deliveryType, setDeliveryType] = useState<"normal" | "express">("normal")
   const [isPrefectureOpen, setIsPrefectureOpen] = useState(false)
@@ -170,6 +189,16 @@ export default function ProductDetailPage() {
 
   const PRICE_TABLE = product.drawing.priceTable
 
+  // 価格の目安ブロック用: 固定長商品は例示なし、可変長は std から +0.5m 刻みで最大 3 例
+  const isFixedLength = product.drawing.category === "fixed"
+  const priceGuideLengths = isFixedLength
+    ? []
+    : [
+        product.drawing.stdLengthMm,
+        product.drawing.stdLengthMm + 500,
+        product.drawing.stdLengthMm + 1000,
+      ].filter((L) => L <= product.drawing.maxMm)
+
   const calculatePrice = useCallback(() => {
     // 本ごとに per-item で計算 (多本長さ違い対応 PR #2)
     // - 多本注文時は座金カスタム禁止 (簡素化) — 各本とも auto 計算
@@ -213,7 +242,7 @@ export default function ProductDetailPage() {
       }
     })
     const subtotal = items.reduce((s, it) => s + it.unitPrice, 0)
-    const expressAddon = deliveryType === "express" ? Math.round(subtotal * RUSH_RATE) : 0
+    const expressAddon = deliveryType === "express" && lengths.length <= 3 ? Math.round(subtotal * RUSH_RATE) : 0
     // 送料: 梱包ごとに最長サイズで rate 計算 → 合算 (多本注文の正確な送料)
     const shippingResult = calcShipping(lengths, prefecture, productType)
     const shipping = shippingResult.shipping
@@ -473,6 +502,42 @@ export default function ProductDetailPage() {
                 </p>
                 <p className="text-[15px] leading-relaxed text-foreground whitespace-pre-line">
                   {product.longDescription}
+                </p>
+              </div>
+
+              {/* ===== 価格の目安 — 広告流入が計算機の前に「いくらか」を掴めるように ===== */}
+              <div className="rounded-lg border border-gold/20 bg-card p-6">
+                <p className="mb-2 text-[12px] tracking-[0.2em] text-gold font-semibold">
+                  価格の目安
+                </p>
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className="font-serif text-3xl lg:text-4xl text-foreground">
+                    ¥{BASE_PRICE.toLocaleString()}
+                    {!isFixedLength && <span className="text-2xl lg:text-3xl">〜</span>}
+                  </span>
+                  <span className="text-[13px] text-muted-foreground">本体価格・税込</span>
+                </div>
+                <p className="mt-2 text-[13px] md:text-[14px] text-muted-foreground leading-relaxed">
+                  {isFixedLength
+                    ? `${product.drawing.stdLengthMm}mm 固定サイズの一点物です。`
+                    : `〜${formatMeters(product.drawing.stdLengthMm)} まで一律。長さに応じて価格が変わります。`}
+                </p>
+                {priceGuideLengths.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-3">
+                    {priceGuideLengths.map((L) => (
+                      <div key={L} className="flex items-baseline gap-1.5">
+                        <span className="text-[13px] text-muted-foreground">{formatMeters(L)}</span>
+                        <span className="font-serif text-[17px] md:text-[19px] text-foreground">
+                          ¥{bodyPriceAt(product.drawing, L).toLocaleString()}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <p className="mt-3 text-[13px] md:text-[14px] text-muted-foreground leading-relaxed">
+                  別途送料がかかります。下の計算機で配送先を選ぶと
+                  <span className="text-foreground font-medium">送料込みの総額がその場で</span>
+                  分かります。
                 </p>
               </div>
 
@@ -922,8 +987,11 @@ export default function ProductDetailPage() {
                       </button>
                       <button
                         onClick={() => setDeliveryType("express")}
+                        disabled={!expressAllowed}
                         className={`flex-1 py-4 px-4 rounded-md border-2 transition-all ${
-                          deliveryType === "express"
+                          !expressAllowed
+                            ? "border-border opacity-50 cursor-not-allowed"
+                            : deliveryType === "express"
                             ? "border-gold bg-gold/5"
                             : "border-gold/20 hover:border-gold/50"
                         }`}
@@ -932,6 +1000,11 @@ export default function ProductDetailPage() {
                         <div className="text-[12px] text-muted-foreground mt-0.5">5営業日</div>
                       </button>
                     </div>
+                    {!expressAllowed && (
+                      <p className="text-[13px] text-muted-foreground leading-relaxed">
+                        特急配送は <span className="text-foreground font-medium">3 本まで</span> のご注文が対象です。4 本以上は通常配送をお選びください。
+                      </p>
+                    )}
                     <p className="text-[14px] text-muted-foreground">
                       お届け予定日: <span className="text-foreground font-medium">{getDeliveryDate()}頃</span>
                     </p>
