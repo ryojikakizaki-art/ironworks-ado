@@ -49,55 +49,7 @@ export function getProductStructuredData(slug: string): Record<string, unknown> 
 
   const productUrl = `${SITE_URL}/products/${slug}`
 
-  const offers: Record<string, unknown> = {
-    "@type": "Offer",
-    priceCurrency: "JPY",
-    availability: "https://schema.org/InStock",
-    itemCondition: "https://schema.org/NewCondition",
-    url: productUrl,
-    seller: {
-      "@type": "Organization",
-      name: BRAND,
-    },
-    shippingDetails: {
-      "@type": "OfferShippingDetails",
-      shippingRate: {
-        "@type": "MonetaryAmount",
-        value: "0",
-        currency: "JPY",
-      },
-      shippingDestination: {
-        "@type": "DefinedRegion",
-        addressCountry: "JP",
-      },
-      deliveryTime: {
-        "@type": "ShippingDeliveryTime",
-        handlingTime: {
-          "@type": "QuantitativeValue",
-          minValue: 0,
-          maxValue: 1,
-          unitCode: "DAY",
-        },
-        transitTime: {
-          "@type": "QuantitativeValue",
-          minValue: 7,
-          maxValue: 14,
-          unitCode: "DAY",
-        },
-      },
-    },
-    hasMerchantReturnPolicy: {
-      "@type": "MerchantReturnPolicy",
-      applicableCountry: "JP",
-      returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
-    },
-  }
-
-  if (price > 0) {
-    offers.price = String(price)
-  }
-
-  return {
+  const product: Record<string, unknown> = {
     "@context": "https://schema.org/",
     "@type": "Product",
     name,
@@ -109,6 +61,58 @@ export function getProductStructuredData(slug: string): Record<string, unknown> 
       "@type": "Brand",
       name: BRAND,
     },
-    offers,
   }
+
+  // 価格が確定している商品だけ offers を付与する。
+  // price 0 = 要見積もり（オーダーメイド）の商品で offers を出すと、
+  // price 欠落により「商品スニペット / 販売者のリスティング」が無効判定になる。
+  // offers 無しの Product は schema.org 的に正常（価格リッチリザルトの対象外になるだけ）。
+  if (price > 0) {
+    product.offers = {
+      "@type": "Offer",
+      priceCurrency: "JPY",
+      price: String(price),
+      availability: "https://schema.org/InStock",
+      itemCondition: "https://schema.org/NewCondition",
+      url: productUrl,
+      seller: {
+        "@type": "Organization",
+        name: BRAND,
+      },
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        shippingRate: {
+          "@type": "MonetaryAmount",
+          value: "0",
+          currency: "JPY",
+        },
+        shippingDestination: {
+          "@type": "DefinedRegion",
+          addressCountry: "JP",
+        },
+        deliveryTime: {
+          "@type": "ShippingDeliveryTime",
+          handlingTime: {
+            "@type": "QuantitativeValue",
+            minValue: 0,
+            maxValue: 1,
+            unitCode: "DAY",
+          },
+          transitTime: {
+            "@type": "QuantitativeValue",
+            minValue: 7,
+            maxValue: 14,
+            unitCode: "DAY",
+          },
+        },
+      },
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        applicableCountry: "JP",
+        returnPolicyCategory: "https://schema.org/MerchantReturnNotPermitted",
+      },
+    }
+  }
+
+  return product
 }
