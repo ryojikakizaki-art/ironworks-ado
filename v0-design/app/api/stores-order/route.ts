@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { writeOrderRow } from '@/lib/order-ledger';
 
 // googleapis を使うため Node ランタイム固定（webhook と同じ）
 export const runtime = 'nodejs';
@@ -11,7 +12,8 @@ export const runtime = 'nodejs';
  * このエンドポイントへ POST する。台帳書き込みに使うサービスアカウント鍵は
  * Vercel env にのみ存在し、ローカルからは触れない設計。
  *
- * 認証: ヘッダー `x-stores-sync-secret` が env `STORES_SYNC_SECRET` と一致すること。
+ * 認証: ヘッダー `x-order-entry-secret` が env `ORDER_ENTRY_SECRET` と一致すること
+ *（受注記帳系エンドポイント共通。/api/manual-order も同じ env を使う）。
  * 受注台帳: webhook と同じ Sheet（env `ORDER_LEDGER_SHEET_ID`）の 2 行目に挿入。
  * カレンダー: env `GOOGLE_CALENDAR_ID`（未設定ならスキップ）。
  *
@@ -53,55 +55,6 @@ function jstCalendarDate(iso: string | undefined): string {
   return valid.toLocaleDateString('en-CA', { timeZone: 'Asia/Tokyo' });
 }
 
-/**
- * 受注台帳の 2 行目に 1 行挿入する。1 行目はヘッダー。
- * K 列に同じ注文番号が既にあれば 'duplicate' を返し、二重計上を防ぐ。
- * 列順: 受注日 / 区分 / 顧客名 / 都道府県 / 住所 / メール / 電話 / 商品 / 仕様 / 金額 / 注文番号 / メモ
- */
-async function writeToLedger(orderKey: string, row: string[]): Promise<'created' | 'duplicate'> {
-  const sheetId = process.env.ORDER_LEDGER_SHEET_ID;
-  const keyJson = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
-  if (!sheetId || !keyJson) {
-    throw new Error('Order ledger not configured (ORDER_LEDGER_SHEET_ID / GOOGLE_SERVICE_ACCOUNT_KEY)');
-  }
-
-  const { google } = await import('googleapis');
-  const auth = new google.auth.GoogleAuth({
-    credentials: JSON.parse(keyJson),
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-  });
-  const sheets = google.sheets({ version: 'v4', auth });
-
-  // K 列（注文番号）を読み、既出ならスキップ。
-  const existing = await sheets.spreadsheets.values.get({
-    spreadsheetId: sheetId,
-    range: 'K:K',
-  });
-  const known = (existing.data.values || []).some((r) => String(r[0] || '') === orderKey);
-  if (known) return 'duplicate';
-
-  // ヘッダー直下に空行を 1 行挿入 = 新しい注文を常に一番上に。
-  // sheetId 0 = 先頭シート（受注台帳本体）。集計タブは別 sheetId なので影響しない。
-  await sheets.spreadsheets.batchUpdate({
-    spreadsheetId: sheetId,
-    requestBody: {
-      requests: [{
-        insertDimension: {
-          range: { sheetId: 0, dimension: 'ROWS', startIndex: 1, endIndex: 2 },
-          inheritFromBefore: false,
-        },
-      }],
-    },
-  });
-  await sheets.spreadsheets.values.update({
-    spreadsheetId: sheetId,
-    range: 'A2:L2',
-    valueInputOption: 'RAW',
-    requestBody: { values: [row] },
-  });
-  return 'created';
-}
-
 async function createCalendarEvent(summary: string, description: string, dateIso: string): Promise<void> {
   const keyJson = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
   const calendarId = process.env.GOOGLE_CALENDAR_ID;
@@ -129,12 +82,12 @@ async function createCalendarEvent(summary: string, description: string, dateIso
 }
 
 export async function POST(request: NextRequest) {
-  const secret = process.env.STORES_SYNC_SECRET;
+  const secret = process.env.ORDER_ENTRY_SECRET;
   if (!secret) {
-    console.error('[stores-order] STORES_SYNC_SECRET not configured');
+    console.error('[stores-order] ORDER_ENTRY_SECRET not configured');
     return NextResponse.json({ ok: false, error: 'endpoint not configured' }, { status: 503 });
   }
-  if (request.headers.get('x-stores-sync-secret') !== secret) {
+  if (request.headers.get('x-order-entry-secret') !== secret) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
 
@@ -190,7 +143,7 @@ export async function POST(request: NextRequest) {
 
   let ledgerStatus: 'created' | 'duplicate';
   try {
-    ledgerStatus = await writeToLedger(orderKey, row);
+    ledgerStatus = await writeOrderRow(orderKey, row);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('[stores-order] Ledger error:', message);
