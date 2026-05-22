@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
     const sheets = google.sheets({ version: 'v4', auth });
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: sheetId,
-      range: 'A2:L',
+      range: 'A2:O',
     });
     const rows = res.data.values || [];
 
@@ -83,14 +83,24 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // 受注台帳は新しい注文を 2 行目に挿入するため、先頭 8 行 = 直近の受注。
-    const recent = rows.slice(0, 8).map((r) => ({
-      date: String(r[0] ?? ''),
-      channel: String(r[1] ?? ''),
-      customer: String(r[2] ?? ''),
-      product: truncate(String(r[7] ?? ''), 44),
-      yen: parseYen(r[9]),
-    }));
+    // O 列（発送・取付の対応状況）に記入のある注文は「対応済み」とみなし一覧から除外する。
+    // 空欄 = 対応中。チェックボックス未チェックの "FALSE" も対応中扱い。
+    const isDone = (r: string[]): boolean => {
+      const o = String(r[14] ?? '').trim();
+      return o !== '' && o.toUpperCase() !== 'FALSE';
+    };
+    // 受注台帳は新しい注文を 2 行目に挿入するため、上から見て対応中の先頭 8 件。
+    // 金額の集計（this_month / this_year）は対応済みも含む全件で行う（売上は変わらない）。
+    const recent = rows
+      .filter((r) => !isDone(r))
+      .slice(0, 8)
+      .map((r) => ({
+        date: String(r[0] ?? ''),
+        channel: String(r[1] ?? ''),
+        customer: String(r[2] ?? ''),
+        product: truncate(String(r[7] ?? ''), 44),
+        yen: parseYen(r[9]),
+      }));
 
     return NextResponse.json(
       {
