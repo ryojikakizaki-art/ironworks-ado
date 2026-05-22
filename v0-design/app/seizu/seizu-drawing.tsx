@@ -35,11 +35,13 @@ export function SeizuDrawing(props: SeizuDrawingProps) {
   const product = getDrawingProduct(props.product)
 
   const lengthsArr = useMemo(() => parseCsvNumbers(props.lengths), [props.lengths])
+  // positions クエリが無い注文（座金カスタム指定なし）は null を返し、
+  // 描画側で長さに応じた自動配置にフォールバックさせる。
+  // 空文字列を split すると [""] → [0] になり「座金1点」と誤描画されるため、
+  // 明示的に空判定し、座金位置は 0 より大きい値だけ採用する。
   const customPositions = useMemo(() => {
-    const arr = props.positions
-      .split(",")
-      .map((s) => Math.round(Number(s.trim())))
-      .filter((n) => Number.isFinite(n) && n >= 0)
+    if (!props.positions.trim()) return null
+    const arr = parseCsvNumbers(props.positions)
     return arr.length ? arr : null
   }, [props.positions])
 
