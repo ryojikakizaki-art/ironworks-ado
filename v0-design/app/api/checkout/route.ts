@@ -77,6 +77,7 @@ const PRODUCTS: Record<string, Product> = {
 // ── 共通価格パラメータ（mm単位）──
 const PRICE_PER_MM    = 25;
 const ZAKIN_PRICE     = 3500;
+const ANGLE_PRICE     = 2000;
 const END_DIST_MM     = 100;
 const MAX_SPAN_MM     = 850;
 const SURGE_START_MM  = 2000;
@@ -99,7 +100,11 @@ function calcZakin(L_mm: number, rule?: ZakinRule): number {
   return 1 + Math.ceil(inner / span);
 }
 
-function calcPrice(L_mm: number, prod: Product) {
+function calcPrice(
+  L_mm: number,
+  prod: Product,
+  opts?: { zakinCount?: number; angleDeg?: number }
+) {
   // 価格テーブル指定商品 (René/Claire/Marcel/Émile) はテーブル参照、それ以外は式計算。
   let addon: number;
   let surcharge: number;
@@ -115,14 +120,18 @@ function calcPrice(L_mm: number, prod: Product) {
                 : 1;
     surcharge = L_mm > SURGE_START_MM ? addon * (longM - 1) : 0;
   }
-  const zakin    = calcZakin(L_mm, prod.zakinRule);
-  // 価格テーブル指定商品は標準座金本数を含む価格のため追加座金料金 0 円。
+  const autoZakin = calcZakin(L_mm, prod.zakinRule);
+  // お客様が座金本数をカスタムした場合はその本数を使う (商品ページ calculatePrice と一致させる)。
+  const zakin = opts?.zakinCount && opts.zakinCount > 0 ? opts.zakinCount : autoZakin;
+  // 価格テーブル指定商品はテーブルに標準座金本数が含まれる → auto を超えた追加分のみ加算。
   // 式計算商品は INCLUDED_ZAKIN を超えた本数を加算 (従来通り)。
   const addZakin = prod.priceTable
-    ? 0
+    ? Math.max(0, zakin - autoZakin) * ZAKIN_PRICE
     : Math.max(0, zakin - prod.includedZakin) * ZAKIN_PRICE;
-  const total    = prod.basePrice + addon + addZakin + surcharge;
-  return { addon, surcharge, addZakin, zakin, total };
+  // 角度加工料金: 座金1箇所あたり ANGLE_PRICE (単品・横型のみ。商品ページ準拠)。
+  const angleCost = opts?.angleDeg && opts.angleDeg > 0 ? zakin * ANGLE_PRICE : 0;
+  const total    = prod.basePrice + addon + addZakin + surcharge + angleCost;
+  return { addon, surcharge, addZakin, angleCost, zakin, total };
 }
 
 export async function POST(request: NextRequest) {
@@ -173,13 +182,34 @@ export async function POST(request: NextRequest) {
     }
     const qty = Math.max(1, rawLengths.length);
     const lengths = rawLengths;
-    // 旧コード互換: 単一 L (= 第一本目) と単一価格計算
+    // 旧コード互換: 単一 L (= 第一本目)
     const L = lengths[0];
-    const p = calcPrice(L, prod);
     // 多本注文判定
     const isMultiOrder = lengths.length > 1;
+
+    // お客様が指定した座金位置・座金カスタム有無・角度 (単品注文のみ。多本は本ごとに自動配置)。
+    // - positions / angle は制作図再現用に metadata へ記録する。
+    // - zakinCustom が true なら座金本数・角度料金を商品ページ calculatePrice と同じ式で課金する。
+    const customPositions: number[] = (!isMultiOrder && Array.isArray(body?.positions))
+      ? body.positions
+          .map((v: unknown) => Math.round(Number(v)))
+          .filter((n: number) => Number.isFinite(n) && n >= 0 && n <= L)
+      : [];
+    const zakinCustom = !isMultiOrder && body?.zakinCustom === true;
+    const drawAngleDeg = isMultiOrder
+      ? 0
+      : Math.max(0, Math.min(60, Math.round(Number(body?.angleDeg) || 0)));
+    const drawAngleDir: 'left' | 'right' =
+      String(body?.angleDir || 'left') === 'right' ? 'right' : 'left';
+
+    // 価格計算オプション: 座金カスタム時の本数と角度。多本注文では空 (= 自動・角度なし)。
+    const priceOpts = {
+      zakinCount: zakinCustom && customPositions.length > 0 ? customPositions.length : undefined,
+      angleDeg: drawAngleDeg,
+    };
+    const p = calcPrice(L, prod, priceOpts);
     // per-item 計算 (line items 構築・metadata 用)
-    const perItem = lengths.map(itemL => ({ L: itemL, ...calcPrice(itemL, prod) }));
+    const perItem = lengths.map(itemL => ({ L: itemL, ...calcPrice(itemL, prod, priceOpts) }));
     const itemsSubtotalRaw = perItem.reduce((s, it) => s + Math.round(it.total), 0);
 
     // 特急配送 — per-item 合計に対して 20%
@@ -253,7 +283,7 @@ export async function POST(request: NextRequest) {
         currency: 'jpy' as const,
         product_data: {
           name: `${prod.name} 壁付け手すり ${gL}mm${orientationLabel ? ` ${orientationLabel}` : ''}`,
-          description: `座金${gp.zakin}個${supportsWasher ? `（${washerType}タイプ）` : ''} / ${deliveryDesc}`,
+          description: `座金${gp.zakin}個${supportsWasher ? `（${washerType}タイプ）` : ''}${drawAngleDeg > 0 ? ` / 角度加工 ${drawAngleDir === 'left' ? '左' : '右'}${drawAngleDeg}°` : ''} / ${deliveryDesc}`,
         },
         unit_amount: Math.round(gp.total + rushPerItem),
         tax_behavior: 'inclusive' as const,
@@ -301,6 +331,9 @@ export async function POST(request: NextRequest) {
         quantity:               String(qty),
         zakin_count:            String(p.zakin),
         ...(supportsWasher ? { washer_type: washerType } : {}),
+        // 制作図再現用 (価格に影響しない). 単品注文時のみ。
+        ...(customPositions.length ? { positions_mm: customPositions.join(',') } : {}),
+        ...(drawAngleDeg > 0 ? { angle_deg: String(drawAngleDeg), angle_dir: drawAngleDir } : {}),
         base_total_yen:         String(Math.round(p.total)),
         rush_delivery:          rushDelivery ? 'true' : 'false',
         rush_surcharge_yen:     String(rushSurcharge),

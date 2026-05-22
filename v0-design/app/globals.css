@@ -231,9 +231,9 @@
   line-height: 1.6;
 }
 
-/* 印刷時: モーダルだけ表示 */
+/* 印刷時: モーダル / 制作図ページ (/seizu) だけ表示 */
 @media print {
-  body > *:not(.dm-overlay) { display: none !important; }
+  body > *:not(.dm-overlay):not(.seizu-root) { display: none !important; }
   .dm-overlay.open {
     position: static;
     background: #fff;

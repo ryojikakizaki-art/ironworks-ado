@@ -209,7 +209,7 @@ ${isRush ? `<div class="row"><span class="label">特急割増</span><span class=
     body: JSON.stringify({
       from: fromAddress,
       to: [email],
-      bcc: ['ado@tantetuzest.com'],
+      // 工房（蠣﨑さん）への控えは sendWorkshopEmail が別途送るため BCC しない
       subject: `【IRONWORKS ado】ご注文を承りました — ${productLabel}`,
       html,
     }),
@@ -311,7 +311,7 @@ async function sendSimpleOrderEmail(session: Stripe.Checkout.Session) {
     body: JSON.stringify({
       from: fromAddress,
       to: [email],
-      bcc: ['ado@tantetuzest.com'],
+      // 工房（蠣﨑さん）への控えは sendWorkshopEmail が別途送るため BCC しない
       subject: `【IRONWORKS ado】ご注文を承りました — ${productLabel} × ${qty}`,
       html,
     }),
@@ -323,6 +323,174 @@ async function sendSimpleOrderEmail(session: Stripe.Checkout.Session) {
   }
 
   console.log('[webhook] Simple order confirmation email sent to', email);
+}
+
+// 長さを指定できる手すり = 工房控えメールに制作図リンクを付ける対象。
+// Scroll / Fabrice / 鎚目（固定長）と SimpleProduct は制作図モーダルの対象外。
+const DRAWING_LINK_PRODUCTS = new Set([
+  'rene', 'claire', 'emile', 'marcel',
+  'alexandre', 'catherine', 'claude', 'antoine',
+]);
+const SITE_ORIGIN = 'https://ado.tantetuzest.com';
+const WORKSHOP_EMAIL = 'ado@tantetuzest.com';
+
+/**
+ * 工房（蠣﨑さん）宛の受注控えメール。全注文で送る。お客様宛の確認メールとは別物で、
+ * ご注文内容・お客様情報（氏名/メール/電話/お届け先住所）・スケジュールをまとめる。
+ * 長さ可変の手すりには、この注文の制作図ページ /seizu へのリンクボタンを付ける。
+ * 顧客には届かない（to は工房のみ）。
+ */
+async function sendWorkshopEmail(session: Stripe.Checkout.Session, isSimple: boolean) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.log('[webhook] RESEND_API_KEY not configured, skipping workshop email');
+    return;
+  }
+
+  const meta = session.metadata || {};
+  const productKey = String(meta.product || '').toLowerCase();
+  const productName = String(meta.product_name || meta.product || 'ご注文商品');
+
+  // お客様情報（発送・連絡用）
+  const shipping = (session as unknown as { shipping_details?: { address?: StripeAddress; name?: string } }).shipping_details;
+  const addr = shipping?.address || (session.customer_details?.address as StripeAddress | undefined);
+  const recipientName = shipping?.name || session.customer_details?.name || '—';
+  const email = session.customer_details?.email || '—';
+  const phone = session.customer_details?.phone || '—';
+  const totalYen = Number(meta.total_yen || session.amount_total || 0);
+
+  // ── 注文内容・スケジュール・制作図リンクを商品種別で組み立てる ──
+  const orderRows: Array<[string, string]> = [];
+  const scheduleRows: Array<[string, string]> = [];
+  let drawingUrl = '';
+  let productLabel = productName;
+
+  if (isSimple) {
+    const qty = Number(meta.quantity || 1);
+    const unitYen = Number(meta.unit_yen || 0);
+    const shippingMethod = String(meta.shipping_method || 'クリックポスト（送料込）');
+    const shipDate = toIsoDate(addBusinessDays(new Date(), 3));
+    productLabel = `${productName} × ${qty}`;
+    orderRows.push(['商品', productName], ['数量', `${qty}個`]);
+    orderRows.push(['単価', `¥${unitYen.toLocaleString()}（税込・送料込）`]);
+    orderRows.push(['配送方法', shippingMethod]);
+    scheduleRows.push(['発送予定', `${formatJpDate(shipDate)}頃`]);
+  } else {
+    const lengthsInfo = parseLengthsMeta(meta);
+    productLabel = `${productName} ${lengthsInfo.short}`;
+    const isRush = meta.rush_delivery === 'true';
+    orderRows.push(['商品', productName], ['長さ', lengthsInfo.full]);
+    orderRows.push(['座金', lengthsInfo.isMulti
+      ? `各本の長さに応じて自動配置${meta.washer_type ? ` / ${meta.washer_type}タイプ` : ''}`
+      : `${meta.zakin_count || '—'}個${meta.washer_type ? ` / ${meta.washer_type}タイプ` : ''}`]);
+    if (meta.angle_deg) {
+      orderRows.push(['角度加工', `${meta.angle_dir === 'right' ? '右' : '左'}${meta.angle_deg}°`]);
+    }
+    orderRows.push(['配送区分', isRush ? '特急配送（5営業日）' : '通常配送（10営業日）']);
+    scheduleRows.push(['制作開始', formatJpDate(meta.production_start)]);
+    scheduleRows.push(['制作完了予定', formatJpDate(meta.production_complete)]);
+    scheduleRows.push(['発送予定', formatJpDate(meta.shipping_date)]);
+    scheduleRows.push(['お届け予定', formatJpDate(meta.preferred_arrival_date || meta.arrival_estimate)]);
+    // 長さ可変の手すりだけ /seizu 制作図リンクを付ける
+    if (DRAWING_LINK_PRODUCTS.has(productKey) && lengthsInfo.lengths.length > 0) {
+      const params = new URLSearchParams();
+      params.set('product', productKey);
+      params.set('lengths', lengthsInfo.lengths.join(','));
+      if (meta.washer_type) params.set('washer', meta.washer_type);
+      if (meta.positions_mm) params.set('positions', meta.positions_mm);
+      if (meta.angle_deg) {
+        params.set('angle', meta.angle_deg);
+        params.set('dir', meta.angle_dir || 'left');
+      }
+      params.set('order', session.id);
+      drawingUrl = `${SITE_ORIGIN}/seizu?${params.toString()}`;
+    }
+  }
+
+  const customerRows: Array<[string, string]> = [
+    ['お名前', `${recipientName} 様`],
+    ['メール', email],
+    ['電話', phone],
+    ['お届け先', formatJpAddress(addr)],
+  ];
+
+  const renderRows = (rows: Array<[string, string]>) =>
+    rows
+      .map(([l, v]) => `<div class="row"><span class="label">${esc(l)}</span><span class="value">${esc(v)}</span></div>`)
+      .join('');
+
+  const fromAddress = process.env.CONTACT_FROM || 'IRONWORKS ado <noreply@tantetuzest.com>';
+
+  const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+<style>body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f3f4f6;color:#333;margin:0;padding:0;}
+.wrap{max-width:600px;margin:32px auto;background:#fff;border:1px solid #e5e7eb;}
+.header{background:#0e0e0e;color:#f5f5f5;padding:22px 32px;}
+.header h1{font-size:13px;letter-spacing:0.25em;margin:0;font-weight:400;}
+.header span{color:#c8a96e;}
+.body{padding:28px 32px;font-size:14px;line-height:1.9;color:#444;}
+.body p{margin:0 0 16px;}
+.section-title{font-size:12px;letter-spacing:0.15em;color:#888;margin:22px 0 10px;}
+.summary{background:#f3f4f6;border-left:3px solid #c8a96e;padding:12px 20px;font-size:13px;color:#555;}
+.row{display:flex;gap:12px;padding:7px 0;border-bottom:1px solid #e5e7eb;}
+.row:last-child{border-bottom:none;}
+.label{color:#888;font-size:12px;min-width:96px;}
+.value{color:#222;font-size:13px;flex:1;}
+.total{font-size:17px;color:#0e0e0e;font-weight:600;text-align:right;padding:14px 4px 2px;}
+.btn-wrap{text-align:center;margin:24px 0 4px;}
+.btn{display:inline-block;background:#0e0e0e;color:#f5f5f5;text-decoration:none;
+padding:15px 36px;font-size:14px;letter-spacing:0.06em;}
+.btn span{color:#c8a96e;}
+.note{font-size:11px;color:#999;line-height:1.8;margin-top:18px;}
+.footer{background:#0e0e0e;padding:16px 32px;text-align:center;}
+.footer p{font-size:11px;color:#999;letter-spacing:0.08em;margin:0;}
+.footer span{color:#c8a96e;}</style>
+</head><body><div class="wrap">
+<div class="header"><h1>IRONWORKS <span>ado</span> — 受注（工房控え）</h1></div>
+<div class="body">
+<p>EC サイトから新しいご注文が入りました。</p>
+
+<div class="section-title">ご注文内容</div>
+<div class="summary">
+${renderRows(orderRows)}
+<div class="total">合計: ¥${totalYen.toLocaleString()}（税込）</div>
+</div>
+
+<div class="section-title">${isSimple ? '発送' : '制作・配送スケジュール'}</div>
+<div class="summary">${renderRows(scheduleRows)}</div>
+
+<div class="section-title">お客様情報</div>
+<div class="summary">${renderRows(customerRows)}</div>
+
+${drawingUrl
+  ? `<div class="btn-wrap"><a class="btn" href="${esc(drawingUrl)}">▶ 制作図を開く</a></div>
+<p class="note" style="text-align:center;margin-top:8px;">ブラウザで表示 → PDF保存 / 印刷できます。座金位置・角度はご注文時の設定で作図されます。</p>`
+  : ''}
+
+<p class="note">
+注文番号: ${esc(session.id)}<br>
+※ このメールは工房用の控えです。お客様には届きません。
+</p>
+</div>
+<div class="footer"><p>鍛鉄工房ZEST（蠣﨑 良治） / IRONWORKS <span>ado</span></p></div>
+</div></body></html>`;
+
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: fromAddress,
+      to: [WORKSHOP_EMAIL],
+      subject: `【受注${drawingUrl ? '・制作図' : ''}】${productLabel} — ${recipientName}様`,
+      html,
+    }),
+  });
+
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error((e as { message?: string }).message || 'workshop email failed');
+  }
+
+  console.log('[webhook] Workshop email sent for', session.id);
 }
 
 async function createCalendarEvents(session: Stripe.Checkout.Session) {
@@ -570,6 +738,14 @@ export async function POST(request: NextRequest) {
       const message = err instanceof Error ? err.message : 'Unknown error';
       console.error('[webhook] Order email error:', message);
       // メール送信エラーでもwebhookは成功応答を返す
+    }
+
+    try {
+      await sendWorkshopEmail(session, isSimpleProduct);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Unknown error';
+      console.error('[webhook] Workshop email error:', message);
+      // 工房控えメールのエラーでも webhook は成功応答を返す
     }
 
     try {

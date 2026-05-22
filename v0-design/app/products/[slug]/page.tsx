@@ -312,6 +312,17 @@ export default function ProductDetailPage() {
           rushDelivery: deliveryType === "express",
           prefecture,
           washerType,
+          // 単品注文のみ お客様が指定した座金位置・カスタム有無・角度を同送する。
+          // positions/angle は制作図の再現に、zakinCustom/angleDeg は座金本数・角度料金の課金に使う。
+          // 多本注文は本ごとに長さが異なり座金は自動配置のため送らない。
+          ...(isMultiOrder
+            ? {}
+            : {
+                positions: zakin.positions,
+                zakinCustom: zakin.customMode,
+                angleDeg: zakin.angleDeg,
+                angleDir: zakin.angleDir,
+              }),
           ...(hasOrientation ? { orientation } : {}),
         }),
       })
