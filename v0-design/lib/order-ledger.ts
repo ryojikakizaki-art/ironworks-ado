@@ -14,13 +14,12 @@
 
 /**
  * 受注台帳スプレッドシートの ID。
- * 通常は env `ORDER_LEDGER_SHEET_ID` で渡すが、Vercel 環境変数の手入力ミスで
- * 度々壊れたため、確定値をコード内の既定値として持つ。Sheet ID は資格情報ではなく
- *（アクセス可否はサービスアカウント鍵で制御）固定値で問題ない。
- * env が正しく設定されていればそちらを優先する。
+ * Vercel 環境変数 `ORDER_LEDGER_SHEET_ID` の手入力ミス（誤った値の混入）で
+ * 受注記帳系が度々連鎖停止したため、env を一切参照せずコードに直書きする。
+ * Sheet ID は資格情報ではなく（アクセス可否はサービスアカウント鍵で制御）、
+ * 固定値で問題ない。シートを移設する場合のみこの定数を変更すること。
  */
-export const LEDGER_SHEET_ID =
-  process.env.ORDER_LEDGER_SHEET_ID || '1-8yr9fW-JDtS_FpCicoZ5-xDD2Y9Bwro4hhovPvRFJc';
+export const LEDGER_SHEET_ID = '1-8yr9fW-JDtS_FpCicoZ5-xDD2Y9Bwro4hhovPvRFJc';
 
 /**
  * 受注台帳「シート1」のヘッダー直下（2 行目）に 1 行挿入する。
