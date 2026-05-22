@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { LEDGER_SHEET_ID } from '@/lib/order-ledger';
 
 // googleapis を使うため Node ランタイム固定。
 export const runtime = 'nodejs';
@@ -39,9 +40,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ ok: false, error: 'unauthorized' }, { status: 401 });
   }
 
-  const sheetId = process.env.ORDER_LEDGER_SHEET_ID;
+  const sheetId = LEDGER_SHEET_ID;
   const keyJson = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
-  if (!sheetId || !keyJson) {
+  if (!keyJson) {
     return NextResponse.json({ ok: false, error: 'ledger not configured' }, { status: 503 });
   }
 

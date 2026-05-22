@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { LEDGER_SHEET_ID } from '@/lib/order-ledger';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -444,8 +445,8 @@ async function createSimpleCalendarEvent(session: Stripe.Checkout.Session) {
  * 列順: 受注日 / 区分 / 顧客名 / 都道府県 / 住所 / メール / 電話 / 商品 / 仕様 / 金額 / 注文番号 / メモ
  */
 async function prependOrderToLedger(session: Stripe.Checkout.Session) {
-  const sheetId = process.env.ORDER_LEDGER_SHEET_ID;
-  if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY || !sheetId) {
+  const sheetId = LEDGER_SHEET_ID;
+  if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
     console.log('[webhook] Order ledger not configured, skipping');
     return;
   }
