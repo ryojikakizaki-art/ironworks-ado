@@ -340,7 +340,7 @@ const WORKSHOP_EMAIL = 'ado@tantetuzest.com';
  * 長さ可変の手すりには、この注文の制作図ページ /seizu へのリンクボタンを付ける。
  * 顧客には届かない（to は工房のみ）。
  */
-async function sendWorkshopEmail(session: Stripe.Checkout.Session, isSimple: boolean) {
+export async function sendWorkshopEmail(session: Stripe.Checkout.Session, isSimple: boolean) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     console.log('[webhook] RESEND_API_KEY not configured, skipping workshop email');
