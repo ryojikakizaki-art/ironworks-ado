@@ -184,7 +184,12 @@ export function CategoryDock() {
   }
 
   return (
-    <div className="absolute inset-x-0 bottom-0 z-20">
+    // ラッパ全体で onMouseLeave。ナビからサムネイルへカーソルを動かしても
+    // activeKey が外れず、選択中カテゴリの商品を見続けられる。
+    <div
+      className="absolute inset-x-0 bottom-0 z-20"
+      onMouseLeave={() => setActiveKey(null)}
+    >
       {/* 商品マーキー（自動スクロール・触れている間は一時停止して手動スクロール可） */}
       <div className="relative bg-black/75 backdrop-blur-sm border-t border-white/10 overflow-hidden">
         {/* 左右のフェードマスク（端で商品が突然出現しないよう） */}
@@ -257,10 +262,9 @@ export function CategoryDock() {
       </div>
 
       {/* カテゴリーラベル（常時表示・ホバー/タップで上のマーキー商品を切替）
-          nav から外れたら activeKey を null に戻して全商品マーキーへ復帰 */}
+          activeKey 解除はラッパ全体の onMouseLeave に集約（サムネイル側へ移動しても外れない） */}
       <nav
         className="bg-black/85 backdrop-blur-sm border-t border-white/15"
-        onMouseLeave={() => setActiveKey(null)}
       >
         <div className="max-w-[1400px] mx-auto px-2 lg:px-6">
           <ul className="flex items-stretch overflow-x-auto scrollbar-hide">
