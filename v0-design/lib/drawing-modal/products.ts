@@ -51,11 +51,11 @@ export const WASHER_SPEC_A: WasherSpec = {
   wallGap: 40,
 }
 
-// 座金B: 幅広薄型 楕円 60×25mm
+// 座金B: 幅広薄型 楕円 60×25mm (太径 31.8φ 用・支柱 13φ)
 export const WASHER_SPEC_B: WasherSpec = {
   id: "B",
   label: "座金B",
-  postDiameter: 9,
+  postDiameter: 13,
   plateThickness: 4.5,
   plateWidth: 60,
   plateHeight: 25,
