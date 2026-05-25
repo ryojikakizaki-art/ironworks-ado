@@ -65,8 +65,10 @@ export function CategoryDock() {
   const activeProducts = activeKey
     ? CATALOG_PRODUCTS.filter((p) => p.cat === activeKey)
     : CATALOG_PRODUCTS
-  // マーキー連続再生のため 2 列分複製
-  const marqueeProducts = [...activeProducts, ...activeProducts]
+  // 全件表示（activeKey=null）時はシームレスループのため 2 周分複製。
+  // カテゴリ選択中は商品数が少なく（最少 2 点〜最多 5 点）、複製するとビューポートに
+  // 同じ商品が並んで「重複」に見えるので 1 周のみ（自動スクロールも停止）。
+  const marqueeProducts = activeKey ? activeProducts : [...activeProducts, ...activeProducts]
 
   // シームレスループの周期 = 商品 1 周分の幅。
   // scrollWidth/2 だとトラックの px-4 パディングや複製の境目に入る gap のぶん
@@ -82,8 +84,10 @@ export function CategoryDock() {
     return secondCopyFirst.offsetLeft - first.offsetLeft
   }
 
-  // スクロール位置を「1 周分の範囲内」に補正してシームレスループ
+  // スクロール位置を「1 周分の範囲内」に補正してシームレスループ。
+  // カテゴリ選択中は複製なし＝ループ不要なのでスキップ。
   const normalizeScroll = () => {
+    if (activeKey) return
     const el = scrollRef.current
     if (!el) return
     const period = getLoopPeriod()
@@ -101,7 +105,8 @@ export function CategoryDock() {
       // バックグラウンド復帰時の巨大 dt で飛びすぎないよう上限を設ける
       const dt = Math.min(now - prev, 50)
       prev = now
-      if (el && !hoverPausedRef.current && !dragPausedRef.current) {
+      // カテゴリ選択中は自動スクロールを停止（複製していないため周回不可・必要もない）
+      if (el && !hoverPausedRef.current && !dragPausedRef.current && !activeKey) {
         // iOS Safari は scrollLeft が整数に丸められ、サブピクセルの +=
         // （約 0.75px/frame）が読み戻しで詰まって自動スクロールが進まない。
         // 端数を accumRef に貯め、1px 以上たまったら整数分だけ進める。
@@ -197,7 +202,7 @@ export function CategoryDock() {
           onPointerUp={endPointer}
           onPointerCancel={endPointer}
           onClickCapture={handleClickCapture}
-          className="flex gap-3 md:gap-4 py-3 md:py-4 px-4 overflow-x-auto scrollbar-hide"
+          className={`flex gap-3 md:gap-4 py-3 md:py-4 px-4 overflow-x-auto scrollbar-hide ${activeKey ? "justify-center" : ""}`}
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {marqueeProducts.map((p, idx) => {
