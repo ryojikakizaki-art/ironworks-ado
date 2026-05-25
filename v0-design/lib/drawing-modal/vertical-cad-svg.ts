@@ -392,8 +392,10 @@ function buildSideView(
   ]
   g.appendChild(mkPolygon(barPolyPts, COLOR_LINE, STROKE_W, FILL_BAR))
 
-  // 全座金位置のプレート側面 (A: 35mm × 4.5mm / B: 25mm × 4.5mm) + 連結線
+  // 全座金位置のプレート側面 (A: 35mm × 4.5mm / B: 25mm × 4.5mm) + 支柱連結線
   const plateHalfH = (washerType === "B" ? WASHER_SPEC_B.plateHeight : WASHER_SPEC_A.plateHeight) / 2
+  // 支柱径 (A: 9φ / B: 13φ) の半径 — 側面図でプレート⇔バーをつなぐ 2 本の連結線間隔
+  const postR = (washerType === "B" ? WASHER_SPEC_B.postDiameter : WASHER_SPEC_A.postDiameter) / 2
   for (const washerY of washerYs) {
     const platePts = [
       [SIDE_PLATE_X1, washerY + plateHalfH],
@@ -403,7 +405,7 @@ function buildSideView(
     ]
     g.appendChild(mkPolygon(platePts, COLOR_LINE, STROKE_W, FILL_BAR))
     for (const offsetSign of [1, -1]) {
-      const y = washerY + offsetSign * (PLATE_HALF_T * 2)
+      const y = washerY + offsetSign * postR
       g.appendChild(mkLine(SIDE_PLATE_X2, y, SIDE_BAR_X1, y, COLOR_LINE, STROKE_W))
     }
   }
@@ -687,6 +689,7 @@ function transformDetailToTypeB(detailSvg: SVGSVGElement): void {
     const txt = t.textContent || ""
     if (txt === "55") t.textContent = String(WASHER_SPEC_B.plateWidth)
     else if (txt === "35") t.textContent = String(WASHER_SPEC_B.plateHeight)
+    else if (txt === "9φ") t.textContent = `${WASHER_SPEC_B.postDiameter}φ`
     else if (txt === "座金A詳細図") t.textContent = "座金B詳細図"
   })
   // 55 寸法線 (楕円長径) と 35 寸法線 (楕円短径) の端点を新しい楕円に合わせる
@@ -732,6 +735,63 @@ function transformDetailToTypeB(detailSvg: SVGSVGElement): void {
       if (Math.abs(y - (cyFlipped + aHalfH)) < 0.5) y = cyFlipped + bHalfH
       else if (Math.abs(y - (cyFlipped - aHalfH)) < 0.5) y = cyFlipped - bHalfH
       return `${x},${y}`
+    })
+    poly.setAttribute("points", newPts)
+  })
+
+  // ------------------------------------------------------------
+  // 支柱径 9φ → 13φ (B): 上面図中央円 + 側面図支柱縦線 + 「9φ」引出し矢印
+  // ------------------------------------------------------------
+  const A_POST_R = WASHER_SPEC_A.postDiameter / 2   // 4.5
+  const B_POST_R = WASHER_SPEC_B.postDiameter / 2   // 6.5
+  const POST_CX = 87.671                             // 側面図支柱中心 x = (83.171 + 92.171) / 2
+  const POST_LEFT_A = POST_CX - A_POST_R             // 83.171
+  const POST_RIGHT_A = POST_CX + A_POST_R            // 92.171
+  const POST_LEFT_B = POST_CX - B_POST_R             // 81.171
+  const POST_RIGHT_B = POST_CX + B_POST_R            // 94.171
+  const POST_DX = POST_LEFT_B - POST_LEFT_A          // -2 (左端の移動量)
+
+  // (a) 上面図中央円 (cx≈87.225, r=4.5) を r=6.5 へ
+  detailSvg.querySelectorAll("circle").forEach((c) => {
+    const cxv = parseFloat(c.getAttribute("cx") || "0")
+    const r = parseFloat(c.getAttribute("r") || "0")
+    if (Math.abs(cxv - WASHER_A_CX) < 0.5 && Math.abs(r - A_POST_R) < 0.1) {
+      c.setAttribute("r", String(B_POST_R))
+    }
+  })
+
+  // (b) 側面図支柱縦線 (x=83.171/92.171, y∈[-91,-49]) と「9φ」引出し線の終点
+  detailSvg.querySelectorAll("line").forEach((line) => {
+    const lx1 = parseFloat(line.getAttribute("x1") || "0")
+    const lx2 = parseFloat(line.getAttribute("x2") || "0")
+    const ly1 = parseFloat(line.getAttribute("y1") || "0")
+    const ly2 = parseFloat(line.getAttribute("y2") || "0")
+    // 縦線 (x1==x2) で支柱範囲内 → 左右へ拡幅
+    if (Math.abs(lx1 - lx2) < 0.01) {
+      const yMin = Math.min(ly1, ly2)
+      const yMax = Math.max(ly1, ly2)
+      if (yMin > -91 && yMax < -49) {
+        if (Math.abs(lx1 - POST_LEFT_A) < 0.01) {
+          line.setAttribute("x1", String(POST_LEFT_B))
+          line.setAttribute("x2", String(POST_LEFT_B))
+        } else if (Math.abs(lx1 - POST_RIGHT_A) < 0.01) {
+          line.setAttribute("x1", String(POST_RIGHT_B))
+          line.setAttribute("x2", String(POST_RIGHT_B))
+        }
+      }
+    }
+    // 「9φ」引出し線の終点 (x2≈83.171, y2≈-66.622) は支柱新左端へ追随
+    if (Math.abs(lx2 - POST_LEFT_A) < 0.01 && Math.abs(ly2 - (-66.622)) < 0.5) {
+      line.setAttribute("x2", String(POST_LEFT_B))
+    }
+  })
+
+  // (c) 「9φ」引出し矢印 polygon (始点 83.171,-66.622) を X 方向 POST_DX シフト
+  detailSvg.querySelectorAll("polygon").forEach((poly) => {
+    const pts = poly.getAttribute("points") || ""
+    if (!pts.trim().startsWith("83.171,-66.622")) return
+    const newPts = pts.replace(/(-?\d+\.?\d*),(-?\d+\.?\d*)/g, (_, xs, ys) => {
+      return `${(parseFloat(xs) + POST_DX).toFixed(3)},${ys}`
     })
     poly.setAttribute("points", newPts)
   })
