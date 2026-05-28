@@ -16,8 +16,9 @@ export const CARRIERS: Record<CarrierCode, Carrier> = {
   sagawa: {
     name: '佐川急便',
     // 追跡番号はハイフンを除いた数字のみで投げる（佐川の追跡フォームの仕様）。
+    // エンドポイントは okurijosearch.do（okurijoinput.do は 404）。
     trackingUrl: (no) =>
-      `https://k2k.sagawa-exp.co.jp/p/web/okurijoinput.do?okurijoNo=${no.replace(/\D/g, '')}`,
+      `https://k2k.sagawa-exp.co.jp/p/web/okurijosearch.do?okurijoNo=${no.replace(/\D/g, '')}`,
   },
 };
 
