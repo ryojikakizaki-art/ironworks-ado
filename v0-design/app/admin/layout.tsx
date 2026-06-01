@@ -38,12 +38,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         body:has(.admin-root) > [data-cart-dock],
         body:has(.admin-root) > [data-category-dock] { display: none !important; }
 
-        /* globals.css の @media print に
-           body > *:not(.dm-overlay):not(.seizu-root) { display: none !important; }
-           があるため、admin-root も対象に含まれて消えてしまう。
-           ここで !important で再表示を強制する。 */
+        /* 印刷時の admin-root 非表示は globals.css 側の allowlist
+           （body > *:not(.dm-overlay):not(.seizu-root):not(.admin-root)）で
+           対応済みなので、本来この保険ルールは無くても消えない。
+           万一 globals 側が将来戻された場合に備え、globals の
+           body > *:not()×3 = 詳細度 (0,3,1) を確実に上回るよう
+           class を 3 つ重ねて (0,3,2) にしておく（:not() で消すルールに勝つ）。 */
         @media print {
-          body > .admin-root { display: block !important; }
+          html body > .admin-root.admin-root.admin-root { display: block !important; }
         }
       `}</style>
       {children}

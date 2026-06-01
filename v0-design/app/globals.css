@@ -231,9 +231,11 @@
   line-height: 1.6;
 }
 
-/* 印刷時: モーダル / 制作図ページ (/seizu) だけ表示 */
+/* 印刷時: モーダル / 制作図ページ (/seizu) / 管理画面 (.admin-root) だけ表示。
+   .admin-root を allowlist に加えないと、納品書 (/admin/delivery-note) が
+   body 直下の子として print 時に display:none で消え「真っ白」になる。 */
 @media print {
-  body > *:not(.dm-overlay):not(.seizu-root) { display: none !important; }
+  body > *:not(.dm-overlay):not(.seizu-root):not(.admin-root) { display: none !important; }
   .dm-overlay.open {
     position: static;
     background: #fff;
