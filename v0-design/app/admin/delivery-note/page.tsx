@@ -180,16 +180,26 @@ function DeliveryNoteInner() {
           落ちることがあるため、ページ内 <style> に直接書く（admin/layout.tsx と同じ方針）。
           @page も dev / prod 両環境で確実に効くよう @layer 外に置く必要がある。 */}
       <style>{`
-        @page { size: A4; margin: 15mm; }
+        /* dn-paper 自身が 15mm の内側余白を持つので @page margin は 0。
+           二重余白で A4 からはみ出して 2 ページ目（真っ白）が出るのを防ぐ。 */
+        @page { size: A4 portrait; margin: 0; }
 
-        .delivery-note { font-family: var(--font-rounded-body, "Zen Kaku Gothic New"), "Hiragino Sans", "Yu Gothic", sans-serif; color: #111; }
+        .delivery-note {
+          font-family: var(--font-rounded-body, "Zen Kaku Gothic New"), "Hiragino Sans", "Yu Gothic", sans-serif;
+          color: #111;
+          background: #fff;
+        }
+        /* dn-paper を物理 A4 縦（210×297mm）の白紙に固定する。
+           画面でも印刷でも同一サイズにして @media print への依存を最小化し、
+           「画面では正常・印刷/PDF で背景グレー・縦長に崩れる」ズレを根絶する。 */
         .dn-paper {
-          width: 180mm;
+          width: 210mm;
+          min-height: 297mm;
           margin: 0 auto;
-          padding: 12mm 10mm;
+          padding: 15mm;
+          box-sizing: border-box;
           background: #fff;
           border: 1px solid #e5e7eb;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.05);
           font-size: 11pt;
           line-height: 1.55;
           color-adjust: exact;
@@ -202,6 +212,7 @@ function DeliveryNoteInner() {
             background: #fff !important;
             margin: 0 !important;
             padding: 0 !important;
+            width: auto !important;
             min-height: 0 !important;
             height: auto !important;
             color-adjust: exact;
@@ -215,14 +226,16 @@ function DeliveryNoteInner() {
           }
           .dn-toolbar { display: none !important; }
           .dn-scroll {
+            background: #fff !important;
             overflow: visible !important;
             padding: 0 !important;
             margin: 0 !important;
           }
           .dn-paper {
-            width: auto !important;
-            margin: 0 !important;
-            padding: 0 !important;
+            width: 210mm !important;
+            min-height: 297mm !important;
+            margin: 0 auto !important;
+            padding: 15mm !important;
             border: none !important;
             box-shadow: none !important;
             page-break-inside: avoid;
@@ -235,7 +248,7 @@ function DeliveryNoteInner() {
         }
       `}</style>
 
-      <main className="delivery-note bg-gray-50 print:bg-white">
+      <main className="delivery-note bg-white">
         {/* 印刷時には隠れるツールバー */}
         <div className="dn-toolbar sticky top-0 z-10 border-b border-gray-200 bg-white px-4 py-3 shadow-sm print:hidden">
           <div className="mx-auto flex max-w-4xl items-center justify-between gap-3">
@@ -326,13 +339,7 @@ function DeliveryNoteInner() {
                       className="h-auto w-[60px]"
                       unoptimized
                     />
-                    {/* 印鑑欄（空白で配置・蠣﨑さんが紙に手押し） */}
-                    <div
-                      aria-hidden="true"
-                      className="mt-1 h-[54px] w-[54px] rounded-full border border-gray-400 text-center text-[9px] leading-[54px] text-gray-400"
-                    >
-                      印
-                    </div>
+                    {/* 印鑑欄は蠣﨑さんの指示で削除（◯印を出さない） */}
                   </div>
                 </div>
               </div>
