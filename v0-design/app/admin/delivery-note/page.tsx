@@ -183,11 +183,6 @@ function DeliveryNoteInner() {
         @page { size: A4; margin: 15mm; }
 
         .delivery-note { font-family: var(--font-rounded-body, "Zen Kaku Gothic New"), "Hiragino Sans", "Yu Gothic", sans-serif; color: #111; }
-        /*
-         * A4 印刷を主目的とするため .dn-paper は A4 縦の本文幅 180mm 固定。
-         * mobile / 狭い画面で開いた場合は親が overflow-x:auto で横スクロールする。
-         * 「スマホで縦に潰れる」より「PC / 印刷で一定の体裁」を優先する設計。
-         */
         .dn-paper {
           width: 180mm;
           margin: 0 auto;
@@ -197,17 +192,50 @@ function DeliveryNoteInner() {
           box-shadow: 0 1px 3px rgba(0,0,0,0.05);
           font-size: 11pt;
           line-height: 1.55;
+          color-adjust: exact;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
         }
 
         @media print {
-          html, body { background: #fff !important; }
+          html, body {
+            background: #fff !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            min-height: 0 !important;
+            height: auto !important;
+            color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          .delivery-note, main.delivery-note {
+            min-height: 0 !important;
+            height: auto !important;
+            background: #fff !important;
+          }
           .dn-toolbar { display: none !important; }
-          .dn-scroll { overflow: visible !important; padding: 0 !important; }
-          .dn-paper { width: auto; margin: 0; padding: 0; border: none; box-shadow: none; }
+          .dn-scroll {
+            overflow: visible !important;
+            padding: 0 !important;
+            margin: 0 !important;
+          }
+          .dn-paper {
+            width: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            page-break-inside: avoid;
+          }
+          .dn-paper * {
+            color-adjust: exact;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
         }
       `}</style>
 
-      <main className="delivery-note min-h-screen bg-gray-50 print:bg-white">
+      <main className="delivery-note bg-gray-50 print:bg-white">
         {/* 印刷時には隠れるツールバー */}
         <div className="dn-toolbar sticky top-0 z-10 border-b border-gray-200 bg-white px-4 py-3 shadow-sm print:hidden">
           <div className="mx-auto flex max-w-4xl items-center justify-between gap-3">
