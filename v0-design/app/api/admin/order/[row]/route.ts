@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { LEDGER_SHEET_ID } from '@/lib/order-ledger';
+import { LEDGER_SHEET_ID, updateOrderStatus } from '@/lib/order-ledger';
 
 export const runtime = 'nodejs';
 
@@ -103,6 +103,65 @@ export async function GET(
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('[admin/order/:row] error:', message);
+    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+  }
+}
+
+/**
+ * 受注台帳の指定行の O 列（対応状況）を更新する。
+ * /admin/orders 一覧の「発送済みにする」ボタンが呼ぶ。
+ *
+ * 認証は middleware.ts の Basic 認証で済むためここでは追加チェックしない。
+ *
+ * 入力（JSON body）:
+ *   { status: string }  O 列に書き込む文字列。省略時は「発送 YYYY/MM/DD」(当日) を入れる。
+ * 返却: { ok: true, row, status }
+ *
+ * 安全策: O 列の該当 1 セルだけを更新する（lib の updateOrderStatus）。
+ * 他列・他行・数式列（M/N 等）には一切触れない。
+ */
+export async function PATCH(
+  request: NextRequest,
+  context: { params: Promise<{ row: string }> },
+) {
+  const { row: rowParam } = await context.params;
+  const row = Number(rowParam);
+  if (!Number.isInteger(row) || row < 2) {
+    return NextResponse.json({ ok: false, error: 'row must be an integer >= 2' }, { status: 400 });
+  }
+
+  // 当日の発送日（日本時間）を既定値にする。
+  const today = new Date().toLocaleDateString('ja-JP', {
+    timeZone: 'Asia/Tokyo',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  let status = `発送 ${today.replace(/-/g, '/')}`;
+
+  try {
+    const body = (await request.json().catch(() => ({}))) as { status?: unknown };
+    if (typeof body.status === 'string' && body.status.trim() !== '') {
+      status = body.status.trim();
+    }
+  } catch {
+    // body 無し = 既定値（当日発送）で続行
+  }
+
+  const keyJson = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+  if (!keyJson) {
+    return NextResponse.json({ ok: false, error: 'ledger not configured' }, { status: 503 });
+  }
+
+  try {
+    await updateOrderStatus(row, status);
+    return NextResponse.json(
+      { ok: true, row, status },
+      { headers: { 'Cache-Control': 'no-store' } },
+    );
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    console.error('[admin/order/:row PATCH] error:', message);
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }
