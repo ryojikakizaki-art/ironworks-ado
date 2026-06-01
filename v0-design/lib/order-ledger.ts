@@ -75,3 +75,39 @@ export async function writeOrderRow(
   });
   return 'created';
 }
+
+/**
+ * 受注台帳の指定行の O 列（対応状況）に値を書き込む。
+ * 発送・取付が済んだ注文を「対応済み」にするための更新処理。
+ *
+ * O 列に空でない文字列が入ると、/api/admin/orders（未発送一覧）と
+ * /api/order-summary（対応中の受注 = Übersicht ウィジェット）の双方が
+ * その行を「対応中」から除外する（判定: 空 / FALSE 以外なら対応済み）。
+ *
+ * @param row    シート上の行番号（2 始まり・受注台帳本体「シート1」の行）
+ * @param status O 列に書き込む文字列（例: '発送 2026/05/31'）
+ */
+export async function updateOrderStatus(row: number, status: string): Promise<void> {
+  if (!Number.isInteger(row) || row < 2) {
+    throw new Error('row must be an integer >= 2');
+  }
+  const keyJson = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+  if (!keyJson) {
+    throw new Error('Order ledger not configured (GOOGLE_SERVICE_ACCOUNT_KEY)');
+  }
+
+  const { google } = await import('googleapis');
+  const auth = new google.auth.GoogleAuth({
+    credentials: JSON.parse(keyJson),
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  });
+  const sheets = google.sheets({ version: 'v4', auth });
+
+  // O 列の該当 1 セルだけを更新する（他列・他行には触れない）。
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: LEDGER_SHEET_ID,
+    range: `O${row}`,
+    valueInputOption: 'RAW',
+    requestBody: { values: [[status]] },
+  });
+}

@@ -65,6 +65,8 @@ function AdminOrdersInner() {
   const demo = params.get('demo') === '1';
   const [orders, setOrders] = useState<AdminOrderRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // 行ごとの「発送済みにする」操作状態（row → 状態）。
+  const [shipping, setShipping] = useState<Record<number, 'idle' | 'sending' | 'error'>>({});
 
   useEffect(() => {
     if (demo) {
@@ -87,6 +89,35 @@ function AdminOrdersInner() {
       }
     })();
   }, [demo]);
+
+  // O列に「発送 (当日)」を書き、成功したらその行を一覧から外す。
+  const markShipped = async (row: number) => {
+    if (demo) {
+      // デモモードでは書き込まず、見た目だけ一覧から外す。
+      setOrders((prev) => (prev ? prev.filter((o) => o.row !== row) : prev));
+      return;
+    }
+    setShipping((s) => ({ ...s, [row]: 'sending' }));
+    try {
+      const res = await fetch(`/api/admin/order/${row}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}', // body 省略 = サーバ側で当日の「発送 YYYY/MM/DD」を入れる
+        cache: 'no-store',
+      });
+      const data = (await res.json()) as
+        | { ok: true; row: number; status: string }
+        | { ok: false; error: string };
+      if (!res.ok || !('ok' in data) || !data.ok) {
+        setShipping((s) => ({ ...s, [row]: 'error' }));
+        return;
+      }
+      // 書き込み成功 → 一覧から外す。
+      setOrders((prev) => (prev ? prev.filter((o) => o.row !== row) : prev));
+    } catch {
+      setShipping((s) => ({ ...s, [row]: 'error' }));
+    }
+  };
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-8 md:px-8 md:py-12">
@@ -128,6 +159,7 @@ function AdminOrdersInner() {
                 <th className="px-4 py-3 text-right font-medium">税込</th>
                 <th className="px-4 py-3 font-medium">注文番号</th>
                 <th className="px-4 py-3 font-medium">納品書</th>
+                <th className="px-4 py-3 font-medium">対応</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
@@ -164,10 +196,25 @@ function AdminOrdersInner() {
                   <td className="whitespace-nowrap px-4 py-3">
                     <Link
                       href={`/admin/delivery-note?row=${o.row}${demo ? '&demo=1' : ''}`}
-                      className="inline-flex items-center gap-1 rounded-md border border-gray-900 bg-gray-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-gray-700"
+                      className="inline-flex items-center gap-1 rounded-md border border-gray-900 bg-gray-900 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-gray-700"
                     >
                       納品書
                     </Link>
+                  </td>
+                  <td className="whitespace-nowrap px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={() => markShipped(o.row)}
+                      disabled={shipping[o.row] === 'sending'}
+                      className="inline-flex items-center gap-1 rounded-md border border-emerald-700 bg-emerald-600 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {shipping[o.row] === 'sending' ? '更新中…' : '発送済みにする'}
+                    </button>
+                    {shipping[o.row] === 'error' && (
+                      <div className="mt-1 text-[11px] text-red-600">
+                        更新に失敗しました。再度お試しください。
+                      </div>
+                    )}
                   </td>
                 </tr>
               ))}
