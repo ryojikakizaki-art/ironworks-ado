@@ -8,7 +8,7 @@ import { Footer } from "@/components/footer"
 import { TradeBanner } from "@/components/trade-banner"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
 import { LineIcon } from "@/components/ui/line-icon"
-import { Mail, FileText } from "lucide-react"
+import { Mail, FileText, Phone } from "lucide-react"
 
 const CATEGORY_OPTIONS: { value: string; label: string }[] = [
   { value: "product", label: "製品について" },
@@ -55,7 +55,7 @@ function formatBytes(b: number): string {
 const stats = [
   { value: "1〜2", unit: "営業日", label: "返信目安", desc: "通常はおおよそこの目安でご返信" },
   { value: "個別", unit: "対応", label: "見積り方式", desc: "サイズ・配送先で内容変動のため" },
-  { value: "3", unit: "経路", label: "ご相談手段", desc: "フォーム / LINE / メール" },
+  { value: "4", unit: "経路", label: "ご相談手段", desc: "電話 / フォーム / LINE / メール" },
   { value: "無料", unit: "相談", label: "見積り費用", desc: "ご相談・お見積りは無料" },
 ]
 
@@ -116,6 +116,15 @@ const channels = [
     desc: "詳細な仕様や寸法、図面・写真を添付してご相談されたい方に。",
     note: "本ページ下部",
     accent: "gold" as const,
+  },
+  {
+    icon: Phone,
+    label: "Tel",
+    title: "お電話で相談",
+    desc: "サイズのご相談や、まず話して相談したい方に。職人が直接お電話で承ります。",
+    note: "070-3817-0659",
+    href: "tel:07038170659",
+    accent: "neutral" as const,
   },
   {
     icon: LineIcon,
@@ -299,6 +308,15 @@ export default function ContactPage() {
               </div>
               <p className="text-[11px] text-muted-foreground mt-3 max-w-md">
                 個人情報の入力なしで LINE からも相談できます。
+                <br />
+                お急ぎの方・お電話でのご相談は{" "}
+                <a
+                  href="tel:07038170659"
+                  className="text-gold hover:underline whitespace-nowrap font-medium"
+                >
+                  070-3817-0659
+                </a>
+                {" "}まで。
               </p>
             </div>
             {/* Right: workshop photo */}
@@ -368,7 +386,7 @@ export default function ContactPage() {
                 <h2 className="font-serif text-3xl lg:text-5xl text-foreground leading-none">
                   Channels
                 </h2>
-                <p className="text-[12px] text-muted-foreground mt-3">3 つのご相談手段</p>
+                <p className="text-[12px] text-muted-foreground mt-3">4 つのご相談手段</p>
               </div>
             </aside>
             <div className="lg:col-span-9 scroll-mt-24">
@@ -380,7 +398,7 @@ export default function ContactPage() {
                 どの経路から頂いても、対応する職人は同じです。
               </p>
 
-              <div className="grid md:grid-cols-3 gap-4 lg:gap-5">
+              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
                 {channels.map((c) => {
                   const Icon = c.icon
                   const accentBg =
