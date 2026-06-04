@@ -20,38 +20,68 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
 import { CATALOG_PRODUCTS } from "@/lib/products/catalog"
+import {
+  getQuoteUnitPrice,
+  isFixedLengthProduct,
+  isQuotableProduct,
+  getStandardLengthM,
+  getMaxLengthM,
+} from "@/lib/products/quote-pricing"
 
-// /trade からの参考見積もり用：catalog から /products/{slug} 形式の商品のみ抜き出す
+// /trade からの参考見積もり用：catalog から /products/{slug} 形式の商品のみ抜き出す。
+// quotable=true の商品は商品ページ・本番決済と同じ価格ロジック (quote-pricing.ts) で
+// 単価を計算する。quotable=false (Élisabeth/Clémence/長さ要相談商品) は「個別お見積もり」表示。
 const QUOTE_PRODUCTS = CATALOG_PRODUCTS
   .filter((p) => p.href.startsWith("/products/"))
-  .map((p) => ({
-    slug: p.href.replace("/products/", ""),
-    name: p.name,
-    sub: p.sub,
-    price: p.price,
-    priceFrom: p.priceFrom ?? false,
-  }))
+  .map((p) => {
+    const slug = p.href.replace("/products/", "")
+    const quotable = isQuotableProduct(slug)
+    const fixedLength = quotable && isFixedLengthProduct(slug)
+    return {
+      slug,
+      name: p.name,
+      sub: p.sub,
+      price: p.price,
+      priceFrom: p.priceFrom ?? false,
+      quotable,
+      fixedLength,
+      stdLengthM: quotable ? getStandardLengthM(slug) : 1.5,
+      maxLengthM: quotable ? getMaxLengthM(slug) : 5.0,
+    }
+  })
 
 type QuoteLine = {
   id: string
   slug: string // 空文字 = 未選択
   qty: number
-  length: number // メートル。固定価格商品では未使用
+  length: number // メートル。固定長商品・非 quotable 商品では未使用
 }
 
 function findQuoteProduct(slug: string) {
   return QUOTE_PRODUCTS.find((p) => p.slug === slug)
 }
 
+/**
+ * 行の参考見積もり合計を返す。
+ * - 非 quotable (Élisabeth/Clémence 等) は null → 「個別お見積もり」表示
+ * - 固定価格商品 (price=0 以外で priceFrom=false) は basePrice × qty
+ * - quotable 商品は quote-pricing.ts の getQuoteUnitPrice で単価を出して qty 倍
+ */
 function calcLineTotal(line: QuoteLine): number | null {
   const p = findQuoteProduct(line.slug)
   if (!p || p.price === 0) return null
   const qty = Math.max(1, Number(line.qty) || 0)
-  if (p.priceFrom) {
-    const length = Math.max(0.1, Number(line.length) || 0)
-    return Math.round(p.price * length * qty)
+  if (!p.priceFrom) {
+    return p.price * qty
   }
-  return p.price * qty
+  if (!p.quotable) {
+    // priceFrom だが計算機未対応 (Élisabeth/Clémence) → 個別お見積もり
+    return null
+  }
+  const length = p.fixedLength ? p.stdLengthM : Math.max(0.1, Number(line.length) || 0)
+  const result = getQuoteUnitPrice(p.slug, length)
+  if (!result) return null
+  return result.unitPrice * qty
 }
 
 function newQuoteLine(): QuoteLine {
@@ -174,7 +204,9 @@ export default function TradePage() {
     () =>
       quoteLines.some((l) => {
         const p = findQuoteProduct(l.slug)
-        return p && p.price === 0
+        // price=0 (Simple/フェンス/面格子等) と quotable=false の priceFrom 商品
+        // (Élisabeth/Clémence) は機械計算できず個別見積もり扱いになる
+        return p && (p.price === 0 || (p.priceFrom && !p.quotable))
       }),
     [quoteLines]
   )
@@ -212,19 +244,22 @@ export default function TradePage() {
           const p = findQuoteProduct(l.slug)
           if (!p) return
           const lineNo = i + 1
-          if (p.price === 0) {
+          const total = calcLineTotal(l)
+          if (p.price === 0 || total === null) {
+            // 価格不定商品 / 計算機未対応商品 (Élisabeth/Clémence 等) は個別見積もり
             quoteBlock.push(
               `${lineNo}. ${p.name}（${p.sub}）`,
-              `   個別お見積もり（数量 ${l.qty}）`
+              `   個別お見積もり（数量 ${l.qty}${p.priceFrom && !p.quotable && l.length ? ` / ご希望長さ ${l.length}m` : ""}）`
             )
-          } else if (p.priceFrom) {
-            const total = calcLineTotal(l) ?? 0
+          } else if (p.priceFrom && p.quotable && !p.fixedLength) {
+            const result = getQuoteUnitPrice(p.slug, Math.max(0.1, Number(l.length) || 0))
+            const unit = result?.unitPrice ?? 0
             quoteBlock.push(
               `${lineNo}. ${p.name}（${p.sub}）`,
-              `   数量 ${l.qty} 本 × 長さ ${l.length}m / 単価 ¥${p.price.toLocaleString()}/m → ¥${total.toLocaleString()}`
+              `   数量 ${l.qty} 本 × 長さ ${l.length}m / 1 本あたり ¥${unit.toLocaleString()} → ¥${total.toLocaleString()}`
             )
           } else {
-            const total = calcLineTotal(l) ?? 0
+            // 固定価格商品 (priceFrom=false) または固定長商品 (Scroll/Fabrice/鎚目)
             quoteBlock.push(
               `${lineNo}. ${p.name}（${p.sub}）`,
               `   数量 ${l.qty} × 単価 ¥${p.price.toLocaleString()} → ¥${total.toLocaleString()}`
@@ -608,16 +643,29 @@ export default function TradePage() {
                             className="w-full px-4 py-3 border border-border rounded-md bg-background text-[13px] focus:outline-none focus:border-gold transition-colors mb-3"
                           >
                             <option value="">- 商品を選択してください -</option>
-                            {QUOTE_PRODUCTS.map((p) => (
-                              <option key={p.slug} value={p.slug}>
-                                {p.name} — {p.sub}
-                                {p.price === 0
-                                  ? "（個別お見積もり）"
-                                  : p.priceFrom
-                                  ? `（¥${p.price.toLocaleString()} / m〜）`
-                                  : `（¥${p.price.toLocaleString()}）`}
-                              </option>
-                            ))}
+                            {QUOTE_PRODUCTS.map((p) => {
+                              // 価格ラベル: priceFrom は商品ごとに表記が違う
+                              // - 計算機未対応 (Élisabeth/Clémence): 「¥XX,000〜（個別お見積もり）」
+                              // - 固定長 (Scroll/Fabrice/鎚目): 「¥XX,000」一律
+                              // - 横型/縦型 quotable: 「〜N.Nm まで ¥XX,000〜」(N = stdLengthM)
+                              let label: string
+                              if (p.price === 0) {
+                                label = "（個別お見積もり）"
+                              } else if (!p.priceFrom) {
+                                label = `（¥${p.price.toLocaleString()}）`
+                              } else if (!p.quotable) {
+                                label = `（¥${p.price.toLocaleString()}〜 / 個別お見積もり）`
+                              } else if (p.fixedLength) {
+                                label = `（¥${p.price.toLocaleString()}）`
+                              } else {
+                                label = `（〜${p.stdLengthM}m まで ¥${p.price.toLocaleString()}〜）`
+                              }
+                              return (
+                                <option key={p.slug} value={p.slug}>
+                                  {p.name} — {p.sub}{label}
+                                </option>
+                              )
+                            })}
                           </select>
                           {product && (
                             <div className="grid grid-cols-2 gap-3">
@@ -638,14 +686,20 @@ export default function TradePage() {
                                   className="w-full px-3 py-2.5 border border-border rounded-md bg-background text-[14px] focus:outline-none focus:border-gold transition-colors"
                                 />
                               </div>
-                              {product.priceFrom && (
+                              {product.priceFrom && !product.fixedLength && (
                                 <div>
                                   <label className="block text-[11px] text-muted-foreground mb-1">
                                     長さ（m / 1 本あたり）
+                                    {product.quotable && (
+                                      <span className="text-muted-foreground/70">
+                                        {" "}〜{product.stdLengthM}m まで一律
+                                      </span>
+                                    )}
                                   </label>
                                   <input
                                     type="number"
                                     min={0.5}
+                                    max={product.maxLengthM}
                                     step={0.1}
                                     value={line.length}
                                     onChange={(e) =>
@@ -661,7 +715,7 @@ export default function TradePage() {
                           )}
                           {product && (
                             <div className="mt-3 pt-3 border-t border-border text-[13px]">
-                              {product.price === 0 ? (
+                              {product.price === 0 || (product.priceFrom && !product.quotable) ? (
                                 <span className="text-muted-foreground">
                                   個別お見積もり（折り返し見積書でご案内）
                                 </span>
