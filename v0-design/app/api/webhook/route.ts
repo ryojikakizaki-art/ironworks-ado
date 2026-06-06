@@ -55,6 +55,45 @@ function formatJpAddress(addr: StripeAddress | null | undefined): string {
 }
 
 /**
+ * 配送先（お届け先）の宛名と住所を取り出す。
+ *
+ * ★重要・2026-06-06 修正★
+ * Stripe SDK v22 以降、Checkout Session の配送先は
+ *   session.collected_information.shipping_details
+ * に移動した（旧 session.shipping_details は廃止）。
+ * 旧コードは存在しない session.shipping_details を読んでいたため常に undefined となり、
+ * 請求先 (customer_details.address) にフォールバックしていた。通常は請求先＝配送先で
+ * 偶然一致していたが、Stripe Link 決済等で「Link 保存の古い請求先住所 ≠ 入力された配送先」
+ * の場合に "請求先へ発送" する重大事故になった（温文様・新座市誤発送）。
+ *
+ * 方針: 台帳・受注控えには「配送先住所のみ」を載せる。請求先には決してフォールバックしない。
+ *       配送先が取得できなかった場合は address を null で返し、呼び出し側で警告表記する。
+ */
+function getShippingRecipient(
+  session: Stripe.Checkout.Session
+): { name: string | null; address: StripeAddress | null } {
+  const ci = session.collected_information?.shipping_details;
+  // 後方互換: 旧 API バージョンのイベントは top-level shipping_details を持つ場合がある。
+  const legacy = (session as unknown as {
+    shipping_details?: { address?: StripeAddress; name?: string } | null;
+  }).shipping_details;
+  const sd = ci ?? legacy ?? null;
+  return {
+    name: sd?.name ?? null,
+    address: (sd?.address as StripeAddress | undefined) ?? null,
+  };
+}
+
+/**
+ * 配送先住所の表示用。取得できなかった場合は請求先で埋めず、はっきり警告を出す。
+ * （誤発送の再発防止 — 黙って「—」や請求先を出さない）
+ */
+function formatShippingAddress(addr: StripeAddress | null | undefined): string {
+  if (!addr) return '⚠️配送先住所が取得できませんでした（Stripe管理画面でご確認ください）';
+  return formatJpAddress(addr);
+}
+
+/**
  * 多本長さ違い対応 (PR #3): metadata から長さ情報を解析。
  * - 新しい lengths_mm (CSV) があればそれを正
  * - 無ければ length_mm + quantity から導出 (後方互換)
@@ -245,9 +284,9 @@ async function sendSimpleOrderEmail(session: Stripe.Checkout.Session) {
   const shippingMethod = String(meta.shipping_method || 'クリックポスト（送料込）');
   const shipDate = toIsoDate(addBusinessDays(new Date(), 3));
 
-  const shipping = (session as unknown as { shipping_details?: { address?: StripeAddress; name?: string } }).shipping_details;
-  const addr = shipping?.address || (session.customer_details?.address as StripeAddress | undefined);
-  const recipientName = shipping?.name || name;
+  // 配送先のみを使う（請求先にはフォールバックしない）
+  const { name: shipName, address: addr } = getShippingRecipient(session);
+  const recipientName = shipName || name;
 
   const fromAddress = process.env.CONTACT_FROM || 'IRONWORKS ado <noreply@tantetuzest.com>';
 
@@ -286,7 +325,7 @@ async function sendSimpleOrderEmail(session: Stripe.Checkout.Session) {
 <div class="section-title">お届け先</div>
 <div class="summary">
 <div class="row"><span class="label">お名前</span><span class="value">${esc(recipientName)} 様</span></div>
-<div class="row"><span class="label">ご住所</span><span class="value">${esc(formatJpAddress(addr))}</span></div>
+<div class="row"><span class="label">ご住所</span><span class="value">${esc(formatShippingAddress(addr))}</span></div>
 <div class="row"><span class="label">発送予定</span><span class="value">${formatJpDate(shipDate)}頃（${esc(shippingMethod)}）</span></div>
 </div>
 
@@ -351,10 +390,9 @@ export async function sendWorkshopEmail(session: Stripe.Checkout.Session, isSimp
   const productKey = String(meta.product || '').toLowerCase();
   const productName = String(meta.product_name || meta.product || 'ご注文商品');
 
-  // お客様情報（発送・連絡用）
-  const shipping = (session as unknown as { shipping_details?: { address?: StripeAddress; name?: string } }).shipping_details;
-  const addr = shipping?.address || (session.customer_details?.address as StripeAddress | undefined);
-  const recipientName = shipping?.name || session.customer_details?.name || '—';
+  // お客様情報（発送・連絡用）— 配送先のみを使う（請求先にはフォールバックしない）
+  const { name: shipName, address: addr } = getShippingRecipient(session);
+  const recipientName = shipName || session.customer_details?.name || '—';
   const email = session.customer_details?.email || '—';
   const phone = session.customer_details?.phone || '—';
   const totalYen = Number(meta.total_yen || session.amount_total || 0);
@@ -411,7 +449,7 @@ export async function sendWorkshopEmail(session: Stripe.Checkout.Session, isSimp
     ['お名前', `${recipientName} 様`],
     ['メール', email],
     ['電話', phone],
-    ['お届け先', formatJpAddress(addr)],
+    ['お届け先', formatShippingAddress(addr)],
   ];
 
   const renderRows = (rows: Array<[string, string]>) =>
@@ -568,9 +606,9 @@ async function createSimpleCalendarEvent(session: Stripe.Checkout.Session) {
   const email = session.customer_details?.email || '不明';
   const name = session.customer_details?.name || '—';
 
-  const shipping = (session as unknown as { shipping_details?: { address?: StripeAddress; name?: string } }).shipping_details;
-  const addr = shipping?.address || (session.customer_details?.address as StripeAddress | undefined);
-  const recipientName = shipping?.name || name;
+  // 配送先のみを使う（請求先にはフォールバックしない）
+  const { name: shipName, address: addr } = getShippingRecipient(session);
+  const recipientName = shipName || name;
 
   const productLabel = String(meta.product_name || meta.product || 'ご注文商品');
   const qty = Number(meta.quantity || 1);
@@ -589,7 +627,7 @@ async function createSimpleCalendarEvent(session: Stripe.Checkout.Session) {
     `合計: ¥${totalYen.toLocaleString()}（税込・送料込）`,
     `配送: ${shippingMethod}`,
     `お客様: ${recipientName} <${email}>`,
-    `住所: ${formatJpAddress(addr)}`,
+    `住所: ${formatShippingAddress(addr)}`,
     `\nStripe Session: ${session.id}`,
   ].filter(Boolean).join('\n');
 
@@ -624,8 +662,8 @@ async function prependOrderToLedger(session: Stripe.Checkout.Session) {
   const isSimple = meta.product_type === 'simple';
   const lengthsInfo = parseLengthsMeta(meta);
 
-  const shipping = (session as unknown as { shipping_details?: { address?: StripeAddress; name?: string } }).shipping_details;
-  const addr = shipping?.address || (session.customer_details?.address as StripeAddress | undefined);
+  // 配送先のみを使う（請求先にはフォールバックしない）
+  const { name: shipName, address: addr } = getShippingRecipient(session);
 
   const orderDate = new Date((session.created ?? Math.floor(Date.now() / 1000)) * 1000)
     .toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' });
@@ -638,9 +676,9 @@ async function prependOrderToLedger(session: Stripe.Checkout.Session) {
   const row = [
     orderDate,                                                        // 受注日
     '個人',                                                            // 区分（Stripe 決済は個人）
-    shipping?.name || session.customer_details?.name || '—',          // 顧客名
-    addr?.state || meta.prefecture || '',                             // 都道府県
-    formatJpAddress(addr),                                            // 住所
+    shipName || session.customer_details?.name || '—',                // 顧客名（配送先宛名）
+    addr?.state || meta.prefecture || '',                             // 都道府県（配送先）
+    formatShippingAddress(addr),                                      // 住所（配送先のみ）
     session.customer_details?.email || '',                            // メール
     session.customer_details?.phone || '',                            // 電話
     productName,                                                      // 商品
