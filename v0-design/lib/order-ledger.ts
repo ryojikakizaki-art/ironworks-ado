@@ -111,3 +111,35 @@ export async function updateOrderStatus(row: number, status: string): Promise<vo
     requestBody: { values: [[status]] },
   });
 }
+
+/**
+ * 受注台帳の指定行の L 列（メモ）を書き換える。
+ * 銀行振込の「入金待ち」→「入金確認 YYYY/MM/DD」更新（Phase 2 の入金確認ボタン）で使う。
+ * L 列の該当 1 セルだけを更新し、他列・他行・数式列（M/N）には触れない。
+ *
+ * @param row  シート上の行番号（2 始まり）
+ * @param note L 列に書き込む文字列
+ */
+export async function updateOrderNote(row: number, note: string): Promise<void> {
+  if (!Number.isInteger(row) || row < 2) {
+    throw new Error('row must be an integer >= 2');
+  }
+  const keyJson = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+  if (!keyJson) {
+    throw new Error('Order ledger not configured (GOOGLE_SERVICE_ACCOUNT_KEY)');
+  }
+
+  const { google } = await import('googleapis');
+  const auth = new google.auth.GoogleAuth({
+    credentials: JSON.parse(keyJson),
+    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+  });
+  const sheets = google.sheets({ version: 'v4', auth });
+
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: LEDGER_SHEET_ID,
+    range: `L${row}`,
+    valueInputOption: 'RAW',
+    requestBody: { values: [[note]] },
+  });
+}

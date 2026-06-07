@@ -19,6 +19,7 @@ type AdminOrderRow = {
   spec: string;
   totalYen: number;
   orderRef: string;
+  note: string;
   status: string;
 };
 
@@ -36,6 +37,7 @@ const DEMO_ORDERS: AdminOrderRow[] = [
     spec: '25φ 1500mm 座金2個 マットブラック',
     totalYen: 48685,
     orderRef: 'cs_live_b1EFAkgij7kMBfDgJ6BolywH52tPZUQWXMvAz6AKD4KW6iOODvXNQx3xLT',
+    note: '',
     status: '',
   },
   {
@@ -48,6 +50,20 @@ const DEMO_ORDERS: AdminOrderRow[] = [
     spec: '25φ 1200mm 座金3個 マットブラック',
     totalYen: 38040,
     orderRef: 'cs_live_b1OhgaqY8ZmT4PLHlFguUzMu2tYjaSCy9cAxJImH9PIJG3TU7vW143Lm3k',
+    note: '',
+    status: '',
+  },
+  {
+    row: 4,
+    date: '2026/06/07',
+    channel: '銀行振込',
+    customer: '田中 花子',
+    prefecture: '東京都',
+    product: 'René ルネ 壁付け手すり 1500mm',
+    spec: '座金3個 / 通常配送 / マットブラック',
+    totalYen: 40185,
+    orderRef: 'BT-260607-XXXX',
+    note: '入金待ち',
     status: '',
   },
 ];
@@ -73,6 +89,9 @@ function AdminOrdersInner() {
   const [notify, setNotify] = useState<Record<number, 'idle' | 'sending' | 'error'>>({});
   // 発送通知メール送信時のエラーメッセージ（row → 文字列）。
   const [notifyErr, setNotifyErr] = useState<Record<number, string>>({});
+  // 銀行振込の「入金確認」操作状態（row → 状態）。
+  const [confirming, setConfirming] = useState<Record<number, 'idle' | 'sending' | 'error'>>({});
+  const [confirmErr, setConfirmErr] = useState<Record<number, string>>({});
 
   useEffect(() => {
     if (demo) {
@@ -122,6 +141,43 @@ function AdminOrdersInner() {
       setOrders((prev) => (prev ? prev.filter((o) => o.row !== row) : prev));
     } catch {
       setShipping((s) => ({ ...s, [row]: 'error' }));
+    }
+  };
+
+  // 銀行振込の入金確認: カレンダー登録＋制作開始メール＋台帳メモ更新。
+  // 成功したらその行の note から「入金待ち」を消し、通常の発送フロー（追跡番号入力）に切り替える。
+  const confirmPayment = async (row: number) => {
+    if (demo) {
+      setOrders((prev) =>
+        prev ? prev.map((o) => (o.row === row ? { ...o, note: '入金確認 2026/06/07' } : o)) : prev,
+      );
+      return;
+    }
+    setConfirming((s) => ({ ...s, [row]: 'sending' }));
+    setConfirmErr((s) => ({ ...s, [row]: '' }));
+    try {
+      const res = await fetch(`/api/admin/order/${row}/confirm-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}',
+        cache: 'no-store',
+      });
+      const data = (await res.json()) as
+        | { ok: true; row: number; status: string; eventsCreated: number; emailSent: boolean }
+        | { ok: false; error: string };
+      if (!res.ok || !('ok' in data) || !data.ok) {
+        setConfirming((s) => ({ ...s, [row]: 'error' }));
+        setConfirmErr((s) => ({ ...s, [row]: 'error' in data ? data.error : '入金確認に失敗しました' }));
+        return;
+      }
+      // 成功 → note を更新（入金待ち→入金確認）。行は残し、発送フローに切り替わる。
+      setConfirming((s) => ({ ...s, [row]: 'idle' }));
+      setOrders((prev) =>
+        prev ? prev.map((o) => (o.row === row ? { ...o, note: data.status } : o)) : prev,
+      );
+    } catch (e) {
+      setConfirming((s) => ({ ...s, [row]: 'error' }));
+      setConfirmErr((s) => ({ ...s, [row]: e instanceof Error ? e.message : '入金確認に失敗しました' }));
     }
   };
 
@@ -179,6 +235,9 @@ function AdminOrdersInner() {
           <p className="mt-1 text-sm text-gray-600">
             対応状況（O列）が空欄の注文を表示しています。発送したら追跡番号を入れて
             「発送通知メール」を押すと、お客様に追跡番号入りの発送メールが届き、台帳にも記録されます。
+            <br />
+            銀行振込で「入金待ち」の注文は、入金を確認してから「入金確認 → 制作開始」を押してください
+            （制作スケジュールに登録し、お客様へ制作開始メールを送ります）。
           </p>
         </div>
       </header>
@@ -255,6 +314,28 @@ function AdminOrdersInner() {
                   </td>
                   <td className="px-4 py-3 align-top">
                     <div className="flex w-44 flex-col gap-1.5">
+                      {o.channel.includes('銀行振込') && o.note.includes('入金待ち') ? (
+                        <>
+                          <span className="inline-flex w-fit items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-medium text-amber-800">
+                            入金待ち
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => confirmPayment(o.row)}
+                            disabled={confirming[o.row] === 'sending'}
+                            className="inline-flex items-center justify-center gap-1 rounded-md border border-amber-700 bg-amber-600 px-3 py-1.5 text-[13px] font-medium text-white hover:bg-amber-700 disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {confirming[o.row] === 'sending' ? '確認中…' : '入金確認 → 制作開始'}
+                          </button>
+                          <p className="text-[11px] leading-snug text-gray-500">
+                            押すと制作スケジュール（カレンダー）に登録し、お客様へ制作開始メールを送ります。
+                          </p>
+                          {confirming[o.row] === 'error' && confirmErr[o.row] && (
+                            <div className="text-[11px] leading-snug text-red-600">{confirmErr[o.row]}</div>
+                          )}
+                        </>
+                      ) : (
+                        <>
                       <input
                         type="text"
                         inputMode="numeric"
@@ -293,6 +374,8 @@ function AdminOrdersInner() {
                         <div className="text-[11px] text-red-600">
                           更新に失敗しました。再度お試しください。
                         </div>
+                      )}
+                        </>
                       )}
                     </div>
                   </td>
