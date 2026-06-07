@@ -1,20 +1,12 @@
 "use client"
 
 import { useState } from "react"
+import { BANK_ACCOUNT as BANK_INFO } from "@/lib/bank-account"
 
 /**
  * 銀行振込のお振込み先口座カード（コピー機能つき）。
- *
- * ⚠️ 口座情報の正本はこの定数。蠣﨑さんが必ず目視で正誤を確認すること。
- *    （誤記は入金喪失に直結するため、公開前チェック必須）
+ * 口座情報の正本は lib/bank-account.ts（/bank-transfer ページとメールで共有）。
  */
-const BANK_INFO: { label: string; value: string; emphasize?: boolean }[] = [
-  { label: "銀行名", value: "楽天銀行" },
-  { label: "支店名", value: "ラテン支店" },
-  { label: "口座種別", value: "普通預金" },
-  { label: "口座番号", value: "5015300", emphasize: true },
-  { label: "口座名義", value: "タンテツコウボウゼスト　カキザキリョウジ" },
-]
 
 export function BankTransferDetails() {
   const [copied, setCopied] = useState<string | null>(null)

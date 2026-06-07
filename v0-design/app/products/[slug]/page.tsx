@@ -18,6 +18,7 @@ import { getRelatedProducts } from "@/lib/products/catalog"
 import { getProductStructuredData } from "@/lib/products/structured-data"
 import { SimpleProductPage } from "@/components/simple-product-page"
 import { EmbeddedCheckoutModal } from "@/components/checkout/embedded-checkout-modal"
+import { BankOrderModal } from "@/components/checkout/bank-order-modal"
 import { FinishCommitment } from "@/components/finish-commitment"
 import { calcShipping, type ProductType } from "@/lib/shipping/sagawa"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
@@ -149,6 +150,8 @@ export default function ProductDetailPage() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   // Embedded Checkout: clientSecret が入ったらモーダルが開く
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
+  // 銀行振込での注文モーダル
+  const [bankOrderOpen, setBankOrderOpen] = useState(false)
   const prefectureRef = useRef<HTMLDivElement | null>(null)
   // 座金ルール (商品固有。未指定は旧式=横型ルール)
   const zakinRule = product.drawing.zakinRule
@@ -288,6 +291,78 @@ export default function ProductDetailPage() {
   // ヒーロー画像はスワイプ+矢印で切替・サムネタップでヒーローに反映する方式に移行。
 
 
+  // カード決済 (/api/checkout) と銀行振込 (/api/bank-order) で共有する注文ペイロード。
+  // 両フローで完全に同じ入力をサーバへ送ることで、価格計算のズレを構造的に防ぐ。
+  const orderPayload = {
+    product: slug,
+    // 多本対応 (PR #2): lengths 配列を主、lengthMm + quantity は後方互換
+    lengths,
+    lengthMm: length,
+    quantity,
+    rushDelivery: deliveryType === "express",
+    prefecture,
+    washerType,
+    // 単品注文のみ お客様が指定した座金位置・カスタム有無・角度を同送する。
+    // positions/angle は制作図の再現に、zakinCustom/angleDeg は座金本数・角度料金の課金に使う。
+    // 多本注文は本ごとに長さが異なり座金は自動配置のため送らない。
+    ...(isMultiOrder
+      ? {}
+      : {
+          positions: zakin.positions,
+          zakinCustom: zakin.customMode,
+          angleDeg: zakin.angleDeg,
+          angleDir: zakin.angleDir,
+        }),
+    ...(hasOrientation ? { orientation } : {}),
+  }
+
+  // 注文内訳（カード決済・銀行振込モーダルで共用）
+  const checkoutSummary = {
+    productName: isMultiOrder
+      ? `${product.nameEn} ${product.nameJaShort} 壁付け手すり ${lengths.length}本（複数長さ）${hasOrientation ? `（${orientation === "left" ? "左向き" : "右向き"}）` : ""}`
+      : `${product.nameEn} ${product.nameJaShort} 壁付け手すり ${length}mm${hasOrientation ? `（${orientation === "left" ? "左向き" : "右向き"}）` : ""}`,
+    productNote: isMultiOrder
+      ? `${lengths.length}本制作 / ${deliveryType === "express" ? "特急配送 5営業日" : "通常配送 10営業日"}`
+      : `座金 ${prices.zakinCount}個 / ${deliveryType === "express" ? "特急配送 5営業日" : "通常配送 10営業日"}`,
+    lines: isMultiOrder
+      ? [
+          ...prices.items.map((it, i) => ({
+            label: `${i + 1}本目（${it.length}mm）`,
+            amount: it.unitPrice,
+          })),
+          { label: "本体小計", amount: prices.subtotal, emphasize: true },
+          ...(prices.expressAddon > 0 ? [{ label: "特急割増（+20%）", amount: prices.expressAddon }] : []),
+          ...(prices.shipping > 0 ? [{ label: `送料（佐川急便・${prefecture}・税抜）`, amount: prices.shipping }] : []),
+          ...(prices.shippingTax > 0 ? [{ label: "送料消費税（10%）", amount: prices.shippingTax }] : []),
+        ]
+      : [
+          { label: `基本料金（〜${product.drawing.stdLengthMm}mm）`, amount: prices.basePrice },
+          ...(prices.addon > 0 ? [{ label: "長さ追加料金", note: `+${length - product.drawing.stdLengthMm}mm × ¥${PRICE_PER_MM}`, amount: prices.addon }] : []),
+          ...(prices.addZakin > 0 ? [{ label: "追加座金料金", note: `${prices.zakinCount - INCLUDED_ZAKIN}個 × ¥${ZAKIN_PRICE.toLocaleString()}`, amount: prices.addZakin }] : []),
+          ...(prices.surcharge > 0 ? [{ label: "長尺割増", note: `${length}mm`, amount: prices.surcharge }] : []),
+          ...(prices.angleCost > 0 ? [{ label: "角度加工料金", note: `${prices.zakinCount}個 × ¥${ANGLE_PRICE.toLocaleString()}`, amount: prices.angleCost }] : []),
+          ...(quantity > 1 ? [{ label: `数量 × ${quantity}`, amount: prices.subtotal, emphasize: true }] : []),
+          ...(prices.expressAddon > 0 ? [{ label: "特急割増（+20%）", amount: prices.expressAddon }] : []),
+          ...(prices.shipping > 0 ? [{ label: `送料（佐川急便・${prefecture}・税抜）`, amount: prices.shipping }] : []),
+          ...(prices.shippingTax > 0 ? [{ label: "送料消費税（10%）", amount: prices.shippingTax }] : []),
+        ],
+    totalLabel: "合計（税込）",
+    totalAmount: prices.total,
+  }
+
+  // 銀行振込ボタン: 都道府県チェックのみ行い、注文フォームモーダルを開く
+  const handleBankOrder = () => {
+    if (prices.shippingInquiry) return
+    if (!prefecture) {
+      setCheckoutError("配送先都道府県を選択してください")
+      prefectureRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+      setIsPrefectureOpen(true)
+      return
+    }
+    setCheckoutError(null)
+    setBankOrderOpen(true)
+  }
+
   // Stripe Checkout 遷移
   const handleCheckout = async () => {
     if (prices.shippingInquiry || isCheckingOut) return
@@ -303,28 +378,7 @@ export default function ProductDetailPage() {
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          product: slug,
-          // 多本対応 (PR #2): lengths 配列を主、lengthMm + quantity は後方互換
-          lengths,
-          lengthMm: length,
-          quantity,
-          rushDelivery: deliveryType === "express",
-          prefecture,
-          washerType,
-          // 単品注文のみ お客様が指定した座金位置・カスタム有無・角度を同送する。
-          // positions/angle は制作図の再現に、zakinCustom/angleDeg は座金本数・角度料金の課金に使う。
-          // 多本注文は本ごとに長さが異なり座金は自動配置のため送らない。
-          ...(isMultiOrder
-            ? {}
-            : {
-                positions: zakin.positions,
-                zakinCustom: zakin.customMode,
-                angleDeg: zakin.angleDeg,
-                angleDir: zakin.angleDir,
-              }),
-          ...(hasOrientation ? { orientation } : {}),
-        }),
+        body: JSON.stringify(orderPayload),
       })
       const data = await res.json()
       if (!res.ok || !data?.clientSecret) {
@@ -1199,17 +1253,27 @@ export default function ProductDetailPage() {
                           </button>
                         )
                       ) : (
-                        <div className="flex justify-center">
-                          <PrimaryCTA
-                            onClick={handleCheckout}
-                            disabled={isCheckingOut}
-                            variant="purchase"
-                            size="lg"
-                            withArrow
-                            className={isCheckingOut ? "cursor-wait" : ""}
+                        <div className="space-y-3">
+                          <div className="flex justify-center">
+                            <PrimaryCTA
+                              onClick={handleCheckout}
+                              disabled={isCheckingOut}
+                              variant="purchase"
+                              size="lg"
+                              withArrow
+                              className={isCheckingOut ? "cursor-wait" : ""}
+                            >
+                              {isCheckingOut ? "購入ページへ移動中…" : "クレジットカードで購入"}
+                            </PrimaryCTA>
+                          </div>
+                          {/* 銀行振込での注文 — カード決済の代替手段 */}
+                          <button
+                            type="button"
+                            onClick={handleBankOrder}
+                            className="block w-full rounded-md border-2 border-dark py-4 text-center font-serif text-[16px] font-bold text-dark transition-colors hover:bg-dark hover:text-white"
                           >
-                            {isCheckingOut ? "購入ページへ移動中…" : "購入手続きへ進む"}
-                          </PrimaryCTA>
+                            銀行振込で注文する ▸
+                          </button>
                         </div>
                       )}
                       {/* ===== 統合相談 CTA — 旧「特殊な仕様」ボタンと「まだ迷っている方へ」テキストを 1 つに ===== */}
@@ -1341,38 +1405,14 @@ export default function ProductDetailPage() {
         open={!!checkoutClientSecret}
         clientSecret={checkoutClientSecret}
         onClose={() => setCheckoutClientSecret(null)}
-        summary={{
-          productName: isMultiOrder
-            ? `${product.nameEn} ${product.nameJaShort} 壁付け手すり ${lengths.length}本（複数長さ）${hasOrientation ? `（${orientation === "left" ? "左向き" : "右向き"}）` : ""}`
-            : `${product.nameEn} ${product.nameJaShort} 壁付け手すり ${length}mm${hasOrientation ? `（${orientation === "left" ? "左向き" : "右向き"}）` : ""}`,
-          productNote: isMultiOrder
-            ? `${lengths.length}本制作 / ${deliveryType === "express" ? "特急配送 5営業日" : "通常配送 10営業日"}`
-            : `座金 ${prices.zakinCount}個 / ${deliveryType === "express" ? "特急配送 5営業日" : "通常配送 10営業日"}`,
-          lines: isMultiOrder
-            ? [
-                ...prices.items.map((it, i) => ({
-                  label: `${i + 1}本目（${it.length}mm）`,
-                  amount: it.unitPrice,
-                })),
-                { label: "本体小計", amount: prices.subtotal, emphasize: true },
-                ...(prices.expressAddon > 0 ? [{ label: "特急割増（+20%）", amount: prices.expressAddon }] : []),
-                ...(prices.shipping > 0 ? [{ label: `送料（佐川急便・${prefecture}・税抜）`, amount: prices.shipping }] : []),
-                ...(prices.shippingTax > 0 ? [{ label: "送料消費税（10%）", amount: prices.shippingTax }] : []),
-              ]
-            : [
-                { label: `基本料金（〜${product.drawing.stdLengthMm}mm）`, amount: prices.basePrice },
-                ...(prices.addon > 0 ? [{ label: "長さ追加料金", note: `+${length - product.drawing.stdLengthMm}mm × ¥${PRICE_PER_MM}`, amount: prices.addon }] : []),
-                ...(prices.addZakin > 0 ? [{ label: "追加座金料金", note: `${prices.zakinCount - INCLUDED_ZAKIN}個 × ¥${ZAKIN_PRICE.toLocaleString()}`, amount: prices.addZakin }] : []),
-                ...(prices.surcharge > 0 ? [{ label: "長尺割増", note: `${length}mm`, amount: prices.surcharge }] : []),
-                ...(prices.angleCost > 0 ? [{ label: "角度加工料金", note: `${prices.zakinCount}個 × ¥${ANGLE_PRICE.toLocaleString()}`, amount: prices.angleCost }] : []),
-                ...(quantity > 1 ? [{ label: `数量 × ${quantity}`, amount: prices.subtotal, emphasize: true }] : []),
-                ...(prices.expressAddon > 0 ? [{ label: "特急割増（+20%）", amount: prices.expressAddon }] : []),
-                ...(prices.shipping > 0 ? [{ label: `送料（佐川急便・${prefecture}・税抜）`, amount: prices.shipping }] : []),
-                ...(prices.shippingTax > 0 ? [{ label: "送料消費税（10%）", amount: prices.shippingTax }] : []),
-              ],
-          totalLabel: "合計（税込）",
-          totalAmount: prices.total,
-        }}
+        summary={checkoutSummary}
+      />
+
+      <BankOrderModal
+        open={bankOrderOpen}
+        onClose={() => setBankOrderOpen(false)}
+        orderPayload={orderPayload}
+        summary={checkoutSummary}
       />
     </>
   )
