@@ -24,6 +24,7 @@ export type AdminOrderRow = {
   spec: string;           // I 仕様
   totalYen: number;       // J 税込合計
   orderRef: string;       // K 注文番号
+  note: string;           // L メモ（銀行振込の「入金待ち」判定に使う）
   status: string;         // O 対応状況（空 = 未対応）
 };
 
@@ -67,6 +68,7 @@ export async function GET() {
         spec: String(r[8] ?? ''),
         totalYen: parseYen(r[9]),
         orderRef: String(r[10] ?? ''),
+        note: String(r[11] ?? ''),
         status: String(r[14] ?? ''),
       }))
       // 未対応のみ
