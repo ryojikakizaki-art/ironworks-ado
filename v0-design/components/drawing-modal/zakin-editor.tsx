@@ -21,6 +21,8 @@ interface ZakinEditorProps {
   disableAngle?: boolean
   /** 座金数の上限 (縦型 Claude は3、横型は20) */
   maxCount?: number
+  /** 商品ページの details 内に直接埋め込む。内側トグルを廃し常時展開＋初見向け補足を表示 */
+  embedded?: boolean
 }
 
 /**
@@ -39,8 +41,10 @@ export function ZakinEditor({
   zakinRule,
   disableAngle = false,
   maxCount = 20,
+  embedded = false,
 }: ZakinEditorProps) {
   const [open, setOpen] = useState(false)
+  const showPanel = embedded || open
   const ruleMaxSpan = zakinRule?.maxSpanMm ?? MAX_SPAN_MM
   const ruleEndMin = zakinRule?.endMinMm ?? END_DIST_MM
 
@@ -94,24 +98,31 @@ export function ZakinEditor({
 
   return (
     <div className={className ?? ""}>
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className={`w-full flex items-center justify-between gap-2 px-4 py-3 text-[14px] font-medium tracking-[0.05em] border transition-colors ${
-          open || state.customMode
-            ? "border-gold text-gold bg-gold/5"
-            : "border-border text-muted-foreground hover:border-gold hover:text-gold"
-        }`}
-      >
-        <span>▸ 座金{disableAngle ? "位置" : "位置・角度"}を設定する{state.customMode ? "（カスタム）" : ""}</span>
-        <span className={`transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
-      </button>
+      {!embedded && (
+        <button
+          type="button"
+          onClick={() => setOpen((o) => !o)}
+          className={`w-full flex items-center justify-between gap-2 px-4 py-3 text-[14px] font-medium tracking-[0.05em] border transition-colors ${
+            open || state.customMode
+              ? "border-gold text-gold bg-gold/5"
+              : "border-border text-muted-foreground hover:border-gold hover:text-gold"
+          }`}
+        >
+          <span>▸ 座金{disableAngle ? "位置" : "位置・角度"}を設定する{state.customMode ? "（カスタム）" : ""}</span>
+          <span className={`transition-transform ${open ? "rotate-180" : ""}`}>▾</span>
+        </button>
+      )}
 
-      {open && (
-        <div className="border border-border bg-card p-4 mt-2 space-y-4">
+      {showPanel && (
+        <div className={`space-y-4 ${embedded ? "" : "border border-border bg-card p-4 mt-2"}`}>
           {/* Quantity */}
-          <div className="flex items-center gap-3 pb-3 border-b border-border">
-            <span className="text-[12px] text-foreground min-w-[60px]">座金数</span>
+          <div className="flex items-center gap-3 pb-3 border-b border-border flex-wrap">
+            <span className="min-w-[88px]">
+              <span className="block text-[12px] text-foreground font-medium">座金数</span>
+              {embedded && (
+                <span className="block text-[11px] text-muted-foreground">壁にとめる金具の数</span>
+              )}
+            </span>
             <div className="flex items-center">
               <button
                 type="button"
@@ -145,7 +156,8 @@ export function ZakinEditor({
 
           {/* Angle (縦型は非表示) */}
           {!disableAngle && (
-            <div className="flex items-center gap-3 pb-3 border-b border-border flex-wrap">
+            <div className="pb-3 border-b border-border">
+              <div className="flex items-center gap-3 flex-wrap">
               <span className="text-[12px] text-foreground min-w-[60px]">角度</span>
               <div className="flex">
                 <button
@@ -192,12 +204,28 @@ export function ZakinEditor({
               />
               <span className="text-[11px] text-muted-foreground">°</span>
               <span className="text-[10px] text-muted-foreground ml-auto">+¥2,000/座金</span>
+              </div>
+              {embedded && (
+                <div className="flex items-center gap-3 mt-2.5">
+                  <AngleHintDiagram />
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    階段に沿って手すりを<span className="font-semibold text-foreground">斜めに取り付けたいとき</span>、
+                    手すりに対する支柱の接続角度を変えます。水平にまっすぐ付けるなら
+                    <span className="font-semibold text-foreground"> 0° のまま</span>でOKです。
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
           {/* Position list */}
           <div>
-            <div className="text-[11px] text-muted-foreground mb-2">座金位置 (mm)</div>
+            <div className="text-[11px] text-muted-foreground mb-2">
+              座金位置 (mm)
+              {embedded && (
+                <span className="ml-1">— 各金具を壁の端から何mmの位置に付けるか</span>
+              )}
+            </div>
             <div className="flex flex-wrap gap-2">
               {state.positions.map((pos, idx) => (
                 <div key={idx} className="flex items-center gap-1">
@@ -251,5 +279,48 @@ export function ZakinEditor({
         </div>
       )}
     </div>
+  )
+}
+
+/** 階段に沿って手すりを斜めに付けるとき、手すりへの支柱の接続角度を変えることを示す側面イラスト */
+function AngleHintDiagram() {
+  return (
+    <svg
+      viewBox="0 0 124 86"
+      className="w-[84px] h-auto shrink-0"
+      role="img"
+      aria-label="階段に沿って手すりを斜めに付けるとき支柱の接続角度を変えるイメージ"
+    >
+      {/* 壁（取付面） */}
+      <rect x="0" y="70" width="124" height="16" fill="#e5e7eb" />
+      <line x1="0" y1="70" x2="124" y2="70" stroke="#9ca3af" strokeWidth="1.4" />
+      <g stroke="#cbd0d6" strokeWidth="1">
+        <line x1="6" y1="86" x2="18" y2="70" />
+        <line x1="30" y1="86" x2="42" y2="70" />
+        <line x1="54" y1="86" x2="66" y2="70" />
+        <line x1="78" y1="86" x2="90" y2="70" />
+        <line x1="102" y1="86" x2="114" y2="70" />
+      </g>
+
+      {/* 手すりバー（斜め） */}
+      <line x1="12" y1="54" x2="112" y2="16" stroke="#333" strokeWidth="5" strokeLinecap="round" />
+      <line x1="14" y1="52" x2="110" y2="15" stroke="#fff" strokeOpacity="0.18" strokeWidth="1.2" strokeLinecap="round" />
+
+      {/* 座金（壁付けプレート） */}
+      <rect x="34" y="66" width="16" height="6" rx="2.5" fill="#c8a96e" stroke="#b2925a" strokeWidth="0.7" />
+      <rect x="80" y="66" width="16" height="6" rx="2.5" fill="#c8a96e" stroke="#b2925a" strokeWidth="0.7" />
+
+      {/* 支柱（手すりへの接続角度を持つ） */}
+      <line x1="42" y1="66" x2="48" y2="40" stroke="#555" strokeWidth="2.6" />
+      <line x1="88" y1="66" x2="93" y2="23" stroke="#555" strokeWidth="2.6" />
+
+      {/* 角度弧（手すりと支柱の接続部） */}
+      <path d="M 57 37 A 11 11 0 0 0 47 41" fill="none" stroke="#b2925a" strokeWidth="1.4" />
+
+      {/* ラベル */}
+      <text x="92" y="12" fontSize="9.5" fill="#555" fontFamily="sans-serif" textAnchor="middle" fontWeight="600">手すり</text>
+      <text x="13" y="44" fontSize="9" fill="#555" fontFamily="sans-serif">支柱</text>
+      <text x="60" y="33" fontSize="9" fill="#b2925a" fontFamily="sans-serif" fontWeight="700">角度</text>
+    </svg>
   )
 }

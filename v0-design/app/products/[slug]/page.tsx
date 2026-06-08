@@ -11,6 +11,7 @@ import { PrimaryCTA } from "@/components/ui/primary-cta"
 import { ReneDrawingModal } from "@/components/drawing-modal/rene-drawing-modal"
 import { InlineRailSimulator } from "@/components/drawing-modal/inline-rail-simulator"
 import { ZakinEditor, type ZakinState } from "@/components/drawing-modal/zakin-editor"
+import { ZakinGuide } from "@/components/drawing-modal/zakin-guide"
 import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants"
 import { getProductFull, galleryUrl, type FeatureIconName } from "@/lib/products/display"
 import { getSimpleProduct } from "@/lib/products/simple"
@@ -23,7 +24,7 @@ import { FinishCommitment } from "@/components/finish-commitment"
 import { calcShipping, type ProductType } from "@/lib/shipping/sagawa"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
 import { lookupPriceFromTable, type DrawingProductConfig } from "@/lib/drawing-modal/products"
-import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench } from "lucide-react"
+import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench, Camera } from "lucide-react"
 
 // productImages / specs は商品ごとに display.ts から取得
 
@@ -558,16 +559,13 @@ export default function ProductDetailPage() {
                 </span>
               </div>
 
-              {/* Product Name + Description */}
+              {/* Product Name + 短い補足（長文は価格・仕上げの後へ移動） */}
               <div>
                 <h1 className="font-serif text-4xl lg:text-5xl text-foreground mb-3 leading-tight">
                   {product.nameEn} {product.nameJaShort}
                 </h1>
-                <p className="text-[16px] text-muted-foreground leading-relaxed mb-5">
+                <p className="text-[16px] text-muted-foreground leading-relaxed">
                   {product.shortDescription}
-                </p>
-                <p className="text-[15px] leading-relaxed text-foreground whitespace-pre-line">
-                  {product.longDescription}
                 </p>
               </div>
 
@@ -611,9 +609,17 @@ export default function ProductDetailPage() {
                   仕上げ spec からウレタン塗装／蜜蝋仕上げを自動で出し分け。 */}
               <FinishCommitment specs={specs} />
 
+              {/* 商品説明（長文）— 価格の目安・FINISHING の後に配置 */}
+              <div>
+                <p className="text-[15px] leading-relaxed text-foreground whitespace-pre-line">
+                  {product.longDescription}
+                </p>
+              </div>
+
               {/* ===== 相談誘導 CTA ① — 説明文直後 ===== */}
-              <div className="rounded-lg border border-gold/20 bg-card p-6">
-                <p className="mb-1 text-[12px] tracking-[0.2em] uppercase text-gold font-semibold">
+              <div className="rounded-lg border-2 border-gold/50 bg-gold/[0.05] p-6 shadow-sm">
+                <p className="mb-1 flex items-center gap-2 text-[12px] tracking-[0.2em] uppercase text-gold font-semibold">
+                  <Camera className="w-4 h-4 shrink-0" />
                   Before you order
                 </p>
                 <p className="mb-3 font-serif text-[18px] font-bold text-foreground">
@@ -931,10 +937,17 @@ export default function ProductDetailPage() {
                         {!isMultiOrder && (
                         <details className="group mt-3 border border-gold/20 rounded-md overflow-hidden">
                           <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between hover:bg-gold/[0.03] transition-colors">
-                            <span className="text-[14px] font-medium tracking-wider text-foreground">座金の位置を調整する（任意）</span>
+                            <span className="text-[14px] font-medium tracking-wider text-foreground">
+                              座金（取り付け金具）の位置{product.drawing.category === "vertical" ? "" : "・角度"}を調整する
+                              <span className="text-muted-foreground font-normal">（任意）</span>
+                            </span>
                             <span className="text-gold text-lg leading-none transition-transform group-open:rotate-45">＋</span>
                           </summary>
                           <div className="border-t border-gold/20 p-4">
+                            <ZakinGuide
+                              category={product.drawing.category === "vertical" ? "vertical" : "horizontal"}
+                              className="mb-4"
+                            />
                             <InlineRailSimulator
                               product={product.drawing}
                               lengthMm={length}
@@ -956,6 +969,7 @@ export default function ProductDetailPage() {
                               zakinRule={zakinRule}
                               disableAngle={product.drawing.category === "vertical"}
                               maxCount={product.drawing.category === "vertical" ? 3 : 20}
+                              embedded
                               className="mt-3"
                             />
                           </div>
@@ -963,6 +977,20 @@ export default function ProductDetailPage() {
                         )}
                       </>
                     )}
+                    {/* 購入前のご相談（無料）— 座金（取り付け金具）調整の下に配置 */}
+                    <div className="space-y-2 pt-1">
+                      <p className="text-center text-[13px] text-muted-foreground leading-relaxed">
+                        入力でつまずいた、特殊な仕様を相談したい、あと一歩で迷っている——
+                        <br className="hidden sm:inline" />
+                        そんな方は、お気軽にご相談ください。
+                      </p>
+                      <Link
+                        href={`/contact?product=${encodeURIComponent(slug)}`}
+                        className="block w-full py-4 border border-gold/40 text-foreground text-[15px] font-medium rounded-md hover:border-gold hover:bg-gold/5 hover:text-gold transition-colors text-center"
+                      >
+                        購入前のご相談（無料）
+                      </Link>
+                    </div>
                   </div>
                 </div>
 
@@ -1204,6 +1232,20 @@ export default function ProductDetailPage() {
                       </div>
                     )}
 
+                    {/* 制作図プレビュー — 合計金額の上で最終確認（fixed 商品は図面なし） */}
+                    {product.drawing.category !== "fixed" && (
+                      <button
+                        type="button"
+                        onClick={() => setIsDrawingOpen(true)}
+                        className="flex w-full items-center justify-center gap-2 py-4 border-2 border-gold/50 bg-gold/[0.05] text-gold text-[15px] font-semibold rounded-md hover:border-gold hover:bg-gold/10 transition-colors text-center"
+                      >
+                        <Ruler className="w-4 h-4 shrink-0" />
+                        {isMultiOrder
+                          ? `制作図プレビュー（${lengths.length} 本それぞれ確認できます）▸`
+                          : "制作図プレビューで最終確認 ▸"}
+                      </button>
+                    )}
+
                     {/* Total Price */}
                     <div className="flex items-center gap-4 py-5">
                       <div className="w-2 h-14 bg-gold rounded-full" />
@@ -1214,19 +1256,6 @@ export default function ProductDetailPage() {
                         </span>
                       </div>
                     </div>
-
-                    {/* 制作図プレビュー — 購入前の最終確認として（fixed 商品は図面なし） */}
-                    {product.drawing.category !== "fixed" && (
-                      <button
-                        type="button"
-                        onClick={() => setIsDrawingOpen(true)}
-                        className="block w-full py-4 border border-gold/20 text-gold text-[15px] font-medium rounded-md hover:border-gold transition-colors text-center"
-                      >
-                        {isMultiOrder
-                          ? `制作図プレビュー（${lengths.length} 本それぞれ確認できます）▸`
-                          : "制作図プレビューで最終確認 ▸"}
-                      </button>
-                    )}
 
                     {/* CTA Buttons */}
                     <div className="space-y-3">
@@ -1261,35 +1290,26 @@ export default function ProductDetailPage() {
                               variant="purchase"
                               size="lg"
                               withArrow
-                              className={isCheckingOut ? "cursor-wait" : ""}
+                              className={`font-sans w-full max-w-[340px] ${isCheckingOut ? "cursor-wait" : ""}`}
                             >
                               {isCheckingOut ? "購入ページへ移動中…" : "クレジットカードで購入"}
                             </PrimaryCTA>
                           </div>
-                          {/* 銀行振込での注文 — カード決済の代替手段 */}
-                          <button
-                            type="button"
-                            onClick={handleBankOrder}
-                            className="block w-full rounded-md border-2 border-dark py-4 text-center font-serif text-[16px] font-bold text-dark transition-colors hover:bg-dark hover:text-white"
-                          >
-                            銀行振込で注文する ▸
-                          </button>
+                          {/* 銀行振込での注文 — クレジットカードと同形状・濃いグレー（白抜き・ゴシック太字） */}
+                          <div className="flex justify-center">
+                            <PrimaryCTA
+                              type="button"
+                              onClick={handleBankOrder}
+                              variant="purchase-steel"
+                              size="lg"
+                              withArrow
+                              className="font-sans w-full max-w-[340px]"
+                            >
+                              銀行振込で注文する
+                            </PrimaryCTA>
+                          </div>
                         </div>
                       )}
-                      {/* ===== 統合相談 CTA — 旧「特殊な仕様」ボタンと「まだ迷っている方へ」テキストを 1 つに ===== */}
-                      <div className="pt-1 space-y-2">
-                        <p className="text-center text-[13px] text-muted-foreground leading-relaxed">
-                          入力でつまずいた、特殊な仕様を相談したい、あと一歩で迷っている——
-                          <br className="hidden sm:inline" />
-                          そんな方は、お気軽にご相談ください。
-                        </p>
-                        <Link
-                          href={`/contact?product=${encodeURIComponent(slug)}`}
-                          className="block w-full py-4 border border-gold/40 text-foreground text-[15px] font-medium rounded-md hover:border-gold hover:bg-gold/5 hover:text-gold transition-colors text-center"
-                        >
-                          購入前のご相談（無料）
-                        </Link>
-                      </div>
                     </div>
                   </div>
                 </div>
