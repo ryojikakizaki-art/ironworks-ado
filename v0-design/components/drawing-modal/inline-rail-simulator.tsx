@@ -128,8 +128,9 @@ export function InlineRailSimulator({
     <div
       className={`bg-card border border-border rounded-md p-4 ${className ?? ""}`}
     >
-      <div className="text-[12px] tracking-[0.2em] uppercase text-muted-foreground mb-2 font-medium">
-        Simulator
+      <div className="mb-2 flex items-baseline gap-2">
+        <span className="text-[12px] tracking-[0.2em] uppercase text-muted-foreground font-medium">Simulator</span>
+        <span className="text-[11px] text-muted-foreground">取り付けイメージ図</span>
       </div>
       <svg
         viewBox={`0 0 ${VB_W} ${VB_H}`}

@@ -33,6 +33,7 @@ type CTAVariant =
   | "outline"
   | "ghost-light"
   | "purchase"
+  | "purchase-steel"
   | "line"
   | "gold-glass"
   | "line-glass"
@@ -109,6 +110,21 @@ const variantStyles: Record<CTAVariant, string> = {
     "active:translate-y-[5px]",
     "active:shadow-[inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(0,0,0,0.3),inset_0_4px_6px_-4px_rgba(255,255,255,0.3),inset_0_-3px_4px_-3px_rgba(0,0,0,0.3),0_0_0_-1px_#7a5d20,0_1px_0_-2px_#3d2f0f,0_2px_4px_-2px_rgba(0,0,0,0.3),0_4px_8px_-4px_rgba(0,0,0,0.25)]",
   ].join(" "),
+  /**
+   * purchase-steel: purchase（金）と同形状・同質感の立体ピルボタンの「濃いグレー（鉄）」版。
+   * 銀行振込ボタン専用 — クレジットカード（purchase）と並べたとき形を揃え、色で役割を分ける。
+   */
+  "purchase-steel": [
+    "text-white",
+    "!rounded-full",
+    "bg-gradient-to-b from-[#60646a] via-[#3c4046] to-[#1b1d20]",
+    "shadow-[inset_0_1px_0_rgba(255,255,255,0.4),inset_0_-1px_0_rgba(0,0,0,0.4),inset_0_8px_10px_-8px_rgba(255,255,255,0.3),inset_0_-6px_8px_-6px_rgba(0,0,0,0.4),0_2px_0_-1px_#33363b,0_5px_0_-2px_#141518,0_10px_16px_-4px_rgba(0,0,0,0.45),0_18px_30px_-8px_rgba(0,0,0,0.35)]",
+    "hover:from-[#6b6f76] hover:via-[#464a51] hover:to-[#26282c]",
+    "hover:-translate-y-[1px]",
+    "hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.45),inset_0_-1px_0_rgba(0,0,0,0.4),inset_0_10px_12px_-8px_rgba(255,255,255,0.35),inset_0_-7px_9px_-7px_rgba(0,0,0,0.4),0_3px_0_-1px_#33363b,0_7px_0_-2px_#141518,0_14px_22px_-4px_rgba(0,0,0,0.5),0_22px_36px_-8px_rgba(0,0,0,0.4)]",
+    "active:translate-y-[5px]",
+    "active:shadow-[inset_0_1px_0_rgba(255,255,255,0.3),inset_0_-1px_0_rgba(0,0,0,0.35),inset_0_4px_6px_-4px_rgba(255,255,255,0.25),inset_0_-3px_4px_-3px_rgba(0,0,0,0.35),0_0_0_-1px_#33363b,0_1px_0_-2px_#141518,0_2px_4px_-2px_rgba(0,0,0,0.3),0_4px_8px_-4px_rgba(0,0,0,0.25)]",
+  ].join(" "),
 }
 
 const sizeStyles: Record<CTASize, string> = {
@@ -165,6 +181,7 @@ function CTAInner({
     variant === "gold" ||
     variant === "dark" ||
     variant === "purchase" ||
+    variant === "purchase-steel" ||
     variant === "line" ||
     variant === "gold-glass" ||
     variant === "line-glass"
