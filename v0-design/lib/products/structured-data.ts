@@ -7,6 +7,14 @@ import { getSimpleProduct } from "./simple"
 const SITE_URL = "https://ado.tantetuzest.com"
 const BRAND = "IRONWORKS ado"
 
+// Offer.priceValidUntil 用。Google は将来日付を推奨（無いと「価格情報が古い」警告が出る）。
+// この関数は client component の描画中に走るため、"now" の時刻そのものを使うと
+// SSR と hydration で文字列がズレてハイドレーションミスマッチになりうる。
+// 「翌年の年末」固定にして 1 年に一度しか変わらないようにし、常に未来日付を保証する。
+function priceValidUntil(): string {
+  return `${new Date().getFullYear() + 1}-12-31`
+}
+
 function imgUrl(img: string): string {
   if (img.startsWith("/")) return `${SITE_URL}${img}`
   // 画像ID（拡張子あり/なし両対応）
@@ -72,6 +80,7 @@ export function getProductStructuredData(slug: string): Record<string, unknown> 
       "@type": "Offer",
       priceCurrency: "JPY",
       price: String(price),
+      priceValidUntil: priceValidUntil(),
       availability: "https://schema.org/InStock",
       itemCondition: "https://schema.org/NewCondition",
       url: productUrl,
