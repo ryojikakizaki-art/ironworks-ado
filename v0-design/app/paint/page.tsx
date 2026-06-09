@@ -457,6 +457,76 @@ export default function PaintPage() {
           </p>
         </section>
 
+        {/* ════════════ Story — 職人の二本柱（塗装 × 防錆） ════════════ */}
+        <section id="craftsman" className="border-y border-border bg-background py-20 lg:py-28">
+          <div className="max-w-[1200px] mx-auto px-5 lg:px-8 grid lg:grid-cols-12 gap-8 lg:gap-12">
+            {/* Sticky side label */}
+            <aside className="lg:col-span-3">
+              <div className="lg:sticky lg:top-24">
+                <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Story</p>
+                <h2 className="font-serif text-3xl lg:text-5xl text-foreground leading-none">
+                  仕上げに<br />かける
+                </h2>
+                <p className="text-[12px] text-muted-foreground mt-3">塗装と防錆、二つの専門性</p>
+              </div>
+            </aside>
+            {/* Body */}
+            <div className="lg:col-span-9 scroll-mt-24 min-w-0">
+              <h3 className="font-serif text-xl lg:text-3xl text-foreground mb-6 leading-snug">
+                鉄を打つ技術と、仕上げる技術。<br className="hidden lg:block" />
+                その両方を持つこと。
+              </h3>
+              <div className="space-y-5 mb-10 max-w-2xl">
+                <p className="text-[15px] leading-[1.95] text-foreground/80">
+                  多くの鉄工所は、鉄を加工することには長けていても、「仕上げる」——塗装や表面処理——は
+                  外注したり、後回しにしがちです。私は、その仕上げにこそ職人人生をかけてきました。
+                </p>
+              </div>
+
+              {/* Two pillars */}
+              <div className="grid md:grid-cols-2 gap-4 lg:gap-6 mb-10">
+                <div className="rounded-lg border border-border bg-card/30 p-6 lg:p-7">
+                  <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-3">Pillar 01 — 美しさ</p>
+                  <h4 className="font-serif text-lg lg:text-xl text-foreground mb-3 leading-snug">
+                    塗装は、学びと実践で
+                  </h4>
+                  <p className="text-[14px] leading-[1.9] text-foreground/75">
+                    楽器制作を専門学校で学ぶなかで、塗装の基礎と美意識を身につけました。
+                    塗装の腕そのものは、趣味で長く手がけてきたバイクパーツの塗装で磨いたものです。
+                    雨風や紫外線にさらされ、耐久が問われるバイクのパーツは、美しさと丈夫さを
+                    同時に求められる、実用の塗装でした。
+                  </p>
+                </div>
+                <div className="rounded-lg border border-border bg-card/30 p-6 lg:p-7">
+                  <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-3">Pillar 02 — 錆びなさ</p>
+                  <h4 className="font-serif text-lg lg:text-xl text-foreground mb-3 leading-snug">
+                    メッキ工程を 10 年、内側から
+                  </h4>
+                  <p className="text-[14px] leading-[1.9] text-foreground/75">
+                    その後、表面処理の自動機械を手がける会社で十年、現場監督として、設計・製造から、
+                    実際にメッキが施される工程までを統括してきました。鉄を錆から守る「メッキ」を、
+                    装置の内側から知り尽くしています。
+                  </p>
+                </div>
+              </div>
+
+              {/* Philosophy pull-quote */}
+              <blockquote className="border-l-2 border-gold pl-5 lg:pl-6 mb-8 max-w-2xl">
+                <p className="font-serif text-base lg:text-xl leading-[2.1] text-foreground/90">
+                  鉄が錆びるのは、鉄がふたたび地球へ還ろうとする、静かな営みなのかもしれません。
+                  その大きな力に、完全に抗うことはできない。だからこそ、人の手で鉄を守り、
+                  できるだけ長くその美しい姿をとどめてあげることに、私たちの仕事の意味があると考えています。
+                </p>
+              </blockquote>
+
+              <p className="text-[15px] leading-[1.95] text-foreground/80 max-w-2xl">
+                近代の工業が培った確かな防錆技術と、工芸の美意識。相反するように見えるこの二つを、
+                一本の手すりの中に共存させること。それが、私の考えるものづくりです。
+              </p>
+            </div>
+          </div>
+        </section>
+
         {/* ════════════ Section 01 — Outline ════════════ */}
         <section id="outline" className="border-y border-border bg-card/20 py-20 lg:py-28">
           <div className="max-w-[1200px] mx-auto px-5 lg:px-8 grid lg:grid-cols-12 gap-8 lg:gap-12">
