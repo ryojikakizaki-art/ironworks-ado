@@ -3,7 +3,7 @@
 import { useEffect } from "react"
 
 /**
- * LeadClickTracker — サイト全体のリード経路（LINE / 電話）クリックを計測する。
+ * LeadClickTracker — サイト全体のリード経路（LINE / 電話 / メール）クリックを計測する。
  *
  * なぜ必要か:
  *   ado は高単価・長検討のため、広告クリック後にフォーム送信（/contact/thanks）まで
@@ -31,6 +31,7 @@ declare global {
 const ADS_ID = process.env.NEXT_PUBLIC_ADS_ID
 const LINE_CV_LABEL = process.env.NEXT_PUBLIC_ADS_LINE_CV_LABEL
 const TEL_CV_LABEL = process.env.NEXT_PUBLIC_ADS_TEL_CV_LABEL
+const EMAIL_CV_LABEL = process.env.NEXT_PUBLIC_ADS_EMAIL_CV_LABEL
 
 function fireGtagEvent(name: string, params: Record<string, unknown>) {
   if (typeof window === "undefined") return
@@ -73,6 +74,21 @@ export function LeadClickTracker() {
         })
         if (ADS_ID && TEL_CV_LABEL) {
           fireGtagEvent("conversion", { send_to: `${ADS_ID}/${TEL_CV_LABEL}` })
+        }
+        return
+      }
+
+      // メール（mailto: リンクのクリック）
+      // ※ サイト上のメールリンクのクリックのみ計測可。メールアプリで直接打った
+      //   送信や、番号を見て手で発信した電話は原理的に計測できない。
+      if (href.startsWith("mailto:")) {
+        fireGtagEvent("email_click", {
+          event_category: "contact",
+          event_label: "email_click",
+          link_url: href,
+        })
+        if (ADS_ID && EMAIL_CV_LABEL) {
+          fireGtagEvent("conversion", { send_to: `${ADS_ID}/${EMAIL_CV_LABEL}` })
         }
         return
       }
