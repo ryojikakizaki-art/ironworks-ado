@@ -21,6 +21,7 @@ import { SimpleProductPage } from "@/components/simple-product-page"
 import { EmbeddedCheckoutModal } from "@/components/checkout/embedded-checkout-modal"
 import { BankOrderModal } from "@/components/checkout/bank-order-modal"
 import { FinishCommitment } from "@/components/finish-commitment"
+import { KaigoNotice } from "@/components/kaigo-notice"
 import { calcShipping, type ProductType } from "@/lib/shipping/sagawa"
 import { getEarliestArrival } from "@/lib/business-days"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
@@ -605,6 +606,9 @@ export default function ProductDetailPage() {
                   分かります。
                 </p>
               </div>
+
+              {/* 介護保険のご案内（図面フロー商品は全て手すり） */}
+              <KaigoNotice />
 
               {/* 仕上げのこだわり訴求（説明文の直下・初見の人の目に付く位置）。
                   仕上げ spec からウレタン塗装／蜜蝋仕上げを自動で出し分け。 */}
