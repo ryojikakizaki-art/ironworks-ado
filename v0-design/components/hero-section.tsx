@@ -28,6 +28,13 @@ const heroImages: HeroImage[] = [
 
 export function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0)
+  // 2 枚目以降のカルーセル画像は遅延マウント（初期ロード軽量化・2026-06-12 B群⑫）。
+  // 最初の切替（5 秒）までに読み込みが終わるよう 2.5 秒後にマウントする。
+  const [restMounted, setRestMounted] = useState(false)
+  useEffect(() => {
+    const t = setTimeout(() => setRestMounted(true), 2500)
+    return () => clearTimeout(t)
+  }, [])
 
   const nextSlide = useCallback(() => {
     setCurrentSlide((prev) => (prev + 1) % heroImages.length)
@@ -49,14 +56,16 @@ export function HeroSection() {
             style={{ opacity: idx === currentSlide ? 1 : 0 }}
             aria-hidden={idx !== currentSlide}
           >
-            <Image
-              src={media.src}
-              alt={media.alt}
-              fill
-              priority={idx === 0}
-              sizes="100vw"
-              className="object-cover"
-            />
+            {(idx === 0 || restMounted) && (
+              <Image
+                src={media.src}
+                alt={media.alt}
+                fill
+                priority={idx === 0}
+                sizes="100vw"
+                className="object-cover"
+              />
+            )}
           </div>
         ))}
         {/* 全体暗幕（テキスト可読性） */}

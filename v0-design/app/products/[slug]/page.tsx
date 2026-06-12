@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { useParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
@@ -22,6 +22,7 @@ import { EmbeddedCheckoutModal } from "@/components/checkout/embedded-checkout-m
 import { BankOrderModal } from "@/components/checkout/bank-order-modal"
 import { FinishCommitment } from "@/components/finish-commitment"
 import { KaigoNotice } from "@/components/kaigo-notice"
+import { ProductFaq } from "@/components/product-faq"
 import { calcShipping, type ProductType } from "@/lib/shipping/sagawa"
 import { getEarliestArrival } from "@/lib/business-days"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
@@ -156,6 +157,31 @@ export default function ProductDetailPage() {
   // 銀行振込での注文モーダル
   const [bankOrderOpen, setBankOrderOpen] = useState(false)
   const prefectureRef = useRef<HTMLDivElement | null>(null)
+  // モバイル スティッキー合計バー（2026-06-12 監査 B群⑪）:
+  // 計算機を過ぎたら表示し、合計・購入エリアが見えている間は隠す
+  const purchaseAreaRef = useRef<HTMLDivElement | null>(null)
+  const [stickyBarOn, setStickyBarOn] = useState(false)
+  const [purchaseInView, setPurchaseInView] = useState(false)
+  useEffect(() => {
+    const onScroll = () => setStickyBarOn(window.scrollY > 600)
+    window.addEventListener("scroll", onScroll, { passive: true })
+    onScroll()
+    const el = purchaseAreaRef.current
+    let io: IntersectionObserver | undefined
+    if (el && "IntersectionObserver" in window) {
+      io = new IntersectionObserver(
+        ([entry]) => setPurchaseInView(entry.isIntersecting),
+        { rootMargin: "0px 0px -10% 0px" },
+      )
+      io.observe(el)
+    }
+    return () => {
+      window.removeEventListener("scroll", onScroll)
+      io?.disconnect()
+    }
+  }, [])
+  const scrollToPurchase = () =>
+    purchaseAreaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
   // 座金ルール (商品固有。未指定は旧式=横型ルール)
   const zakinRule = product.drawing.zakinRule
   const minLength = zakinRule?.minLengthMm ?? 500
@@ -568,6 +594,15 @@ export default function ProductDetailPage() {
                 </h1>
                 <p className="text-[16px] text-muted-foreground leading-relaxed">
                   {product.shortDescription}
+                </p>
+                {/* 用途ライン — 広告検索語句の最多が「玄関/階段 手すり おしゃれ」のため
+                    on-page にも用途語彙を明示する（2026-06-12 監査 B群⑨） */}
+                <p className="mt-2 text-[13px] md:text-[14px] text-muted-foreground">
+                  {product.drawing.category === "horizontal"
+                    ? "階段・廊下・吹き抜けに。空間をおしゃれに引き締める壁付け手すりです。"
+                    : product.drawing.category === "vertical"
+                      ? "玄関・勝手口・室内の立ち上がりに。外観をおしゃれに整える縦手すりです。"
+                      : "玄関・トイレ・洗面に。一点ずつ火造りで仕上げる装飾縦手すりです。"}
                 </p>
               </div>
 
@@ -1252,7 +1287,7 @@ export default function ProductDetailPage() {
                     )}
 
                     {/* Total Price */}
-                    <div className="flex items-center gap-4 py-5">
+                    <div ref={purchaseAreaRef} className="flex items-center gap-4 py-5">
                       <div className="w-2 h-14 bg-gold rounded-full" />
                       <div>
                         <span className="text-[13px] tracking-[0.15em] uppercase text-muted-foreground block mb-1">合計（税込）</span>
@@ -1379,6 +1414,9 @@ export default function ProductDetailPage() {
               </section>
             )}
 
+            {/* よくあるご質問（購入判断 5 問・lib/faq-data 共用） */}
+            <ProductFaq slug={slug} />
+
             {/* Related Products */}
             {(() => {
               const related = getRelatedProducts(slug, 3)
@@ -1412,6 +1450,33 @@ export default function ProductDetailPage() {
       </main>
 
       <Footer />
+
+      {/* ── モバイル スティッキー合計バー（md 以上では出さない） ── */}
+      <AnimatePresence>
+        {stickyBarOn && !purchaseInView && !prices.shippingInquiry && (
+          <motion.div
+            initial={{ y: 88, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 88, opacity: 0 }}
+            transition={{ duration: 0.25 }}
+            className="fixed inset-x-0 bottom-0 z-40 md:hidden border-t border-border bg-white/95 backdrop-blur-sm shadow-[0_-4px_16px_rgba(0,0,0,0.08)] [padding-bottom:env(safe-area-inset-bottom)]"
+          >
+            <div className="flex items-center justify-between gap-3 px-4 py-2.5">
+              <div className="min-w-0">
+                <span className="block text-[12px] tracking-[0.15em] uppercase text-muted-foreground leading-tight">
+                  合計（税込{prices.shipping > 0 ? "・送料込" : ""}）
+                </span>
+                <span className="font-serif text-[22px] font-bold text-foreground leading-tight">
+                  ¥{prices.total.toLocaleString()}
+                </span>
+              </div>
+              <PrimaryCTA onClick={scrollToPurchase} variant="gold" size="md" withArrow>
+                ご購入へ
+              </PrimaryCTA>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <ReneDrawingModal
         open={isDrawingOpen}

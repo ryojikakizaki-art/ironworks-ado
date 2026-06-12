@@ -89,7 +89,6 @@ export function TestimonialsSection() {
                     fill
                     sizes="(max-width: 1200px) 100vw, 1200px"
                     className="object-contain"
-                    priority={i === 0}
                   />
                 </div>
               </div>

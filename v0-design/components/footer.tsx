@@ -76,9 +76,9 @@ export function Footer() {
               </div>
             </Link>
             <p className="text-white/60 text-sm leading-relaxed mb-6">
-              自社工房から、
+              鍛冶職人の工房から、直接。
               <br />
-              心を込めた手すりをお届けします。
+              一点ずつ心を込めて、お届けします。
             </p>
 
             {/* Social Links */}
