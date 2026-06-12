@@ -361,8 +361,9 @@ DRAWING_PRODUCTS.antoine = {
   material: "STKM 25.4φ",
   finish: "マットブラック",
   category: "vertical",
-  // 1500mm ¥45,000 → 2000mm ¥60,000 (緩やか) → 3000mm 約¥86,000 (長尺割増適用)
-  basePrice: 45000,
+  // 1500mm ¥56,000 → 2000mm ¥71,000 → 3000mm 約¥120,800 (長尺割増適用)
+  // カタログ・Merchant フィードの ¥56,000〜 と統一（2026-06-12 蠣﨑さん判断）
+  basePrice: 56000,
   stdLengthMm: 1500,
   maxMm: 3000,
   includedZakin: 4,
