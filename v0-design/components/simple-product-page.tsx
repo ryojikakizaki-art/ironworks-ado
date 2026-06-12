@@ -541,6 +541,13 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
             <p className="text-lg text-muted-foreground mb-1">{product.nameJa}</p>
             <p className="text-sm text-muted-foreground mb-6">{product.subtitle}</p>
 
+            {/* 用途ライン（手すりカテゴリのみ・広告検索語句に合わせた語彙） */}
+            {isHandrail && (
+              <p className="-mt-4 mb-6 text-[13px] md:text-[14px] text-muted-foreground">
+                玄関・階段・屋外アプローチを、おしゃれに。
+              </p>
+            )}
+
             {/* キャッチ */}
             <p className="text-base text-dark leading-relaxed mb-6">
               {product.shortDescription}

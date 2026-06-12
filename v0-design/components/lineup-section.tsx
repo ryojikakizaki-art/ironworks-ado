@@ -144,6 +144,16 @@ export function LineupSection() {
           >
             ラインナップ
           </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: -20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ duration: 0.5, delay: 0.15 }}
+            className="text-[13px] md:text-[15px] text-dark/80 mt-4 leading-relaxed"
+          >
+            玄関・階段・屋外アプローチを、鍛冶職人の手仕事でおしゃれに。
+            <br className="hidden md:block" />
+            一点ずつ、自社工房から直接お届けします。
+          </motion.p>
         </div>
 
         {/* Staggered Category Grid */}
