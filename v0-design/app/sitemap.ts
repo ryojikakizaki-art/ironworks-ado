@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { listProductSlugs } from '@/lib/products/display'
 import { SIMPLE_PRODUCT_SLUGS } from '@/lib/products/simple'
+import { COLUMN_ARTICLES } from '@/lib/column-data'
 
 const SITE_URL = 'https://ado.tantetuzest.com'
 
@@ -14,6 +15,8 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: 'daily' 
   { path: '/faq', priority: 0.6, changeFrequency: 'monthly' },
   { path: '/trade', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/kaigo', priority: 0.8, changeFrequency: 'monthly' },
+  { path: '/price', priority: 0.7, changeFrequency: 'monthly' },
+  { path: '/column', priority: 0.6, changeFrequency: 'weekly' },
   { path: '/shipping', priority: 0.4, changeFrequency: 'yearly' },
   { path: '/measurement', priority: 0.4, changeFrequency: 'yearly' },
   { path: '/categories/antique', priority: 0.9, changeFrequency: 'monthly' },
@@ -44,5 +47,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }))
 
-  return [...staticEntries, ...productEntries]
+  const columnEntries: MetadataRoute.Sitemap = COLUMN_ARTICLES.map((a) => ({
+    url: `${SITE_URL}/column/${a.slug}`,
+    lastModified: new Date(a.date),
+    changeFrequency: 'monthly',
+    priority: 0.6,
+  }))
+
+  return [...staticEntries, ...productEntries, ...columnEntries]
 }
