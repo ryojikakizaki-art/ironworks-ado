@@ -11,7 +11,8 @@ import { PrimaryCTA } from "@/components/ui/primary-cta"
 import type { SimpleProduct, TrustBadgeIcon } from "@/lib/products/simple"
 import { galleryUrl, type FeatureIconName } from "@/lib/products/display"
 import { getProductStructuredData } from "@/lib/products/structured-data"
-import { getRelatedProducts } from "@/lib/products/catalog"
+import { getRelatedProducts, CATALOG_PRODUCTS } from "@/lib/products/catalog"
+import { KaigoNotice } from "@/components/kaigo-notice"
 import { EmbeddedCheckoutModal } from "@/components/checkout/embedded-checkout-modal"
 import { FinishCommitment } from "@/components/finish-commitment"
 
@@ -351,6 +352,11 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
   // 画像 URL を構築：STORES CDN から id を解決
   const imageUrls = product.images.map((id) => galleryUrl(id))
 
+  // 介護保険ブロックの表示判定（カタログ上の手すりカテゴリのみ）
+  const isHandrail = CATALOG_PRODUCTS.some(
+    (p) => p.href === `/products/${product.slug}` && p.cat.startsWith("handrail"),
+  )
+
   const goNext = () => setSelectedImage((i) => (i + 1) % imageUrls.length)
   const goPrev = () => setSelectedImage((i) => (i - 1 + imageUrls.length) % imageUrls.length)
 
@@ -540,39 +546,15 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
               {product.shortDescription}
             </p>
 
-            {/* 詳細 */}
-            <p className="text-sm text-muted-foreground leading-loose mb-6 whitespace-pre-line">
-              {product.longDescription}
-            </p>
-
-            {/* 仕上げのこだわり訴求（説明文の直下・初見の人の目に付く位置）。
-                仕上げ spec からウレタン塗装／蜜蝋仕上げを自動で出し分け。 */}
-            <div className="mb-10">
-              <FinishCommitment specs={product.specs} />
-            </div>
-
-            {/* 価格表示（priceBuildup があれば単価+例示、無ければ basePrice 単独） */}
+            {/* 価格表示（priceBuildup があれば単価+例示、無ければ basePrice 単独）
+                ※ 価格・安心バッジ・CTA を長文説明より先に置く（2026-06-12 監査 A群③。
+                   図面フロー側の「価格の目安を先頭へ」と同じ並びに統一） */}
             {!isQuoteOnly && <PriceBlock product={product} />}
 
             {/* ── 安心バッジ（ATF）── */}
             {product.trustBadges && product.trustBadges.length > 0 && (
               <TrustBadges badges={product.trustBadges} />
             )}
-
-            {/* スペック表 */}
-            <div className="mb-10">
-              <h2 className="text-xs tracking-[0.3em] text-muted-foreground uppercase mb-4">
-                Specs
-              </h2>
-              <dl className="divide-y divide-border border-y border-border">
-                {product.specs.map((spec) => (
-                  <div key={spec.label} className="grid grid-cols-3 py-3">
-                    <dt className="text-sm text-muted-foreground col-span-1">{spec.label}</dt>
-                    <dd className="text-sm text-dark col-span-2">{spec.value}</dd>
-                  </div>
-                ))}
-              </dl>
-            </div>
 
             {/* CTA */}
             <motion.div
@@ -669,6 +651,34 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
               )}
 
             </motion.div>
+
+            {/* 介護保険のご案内（手すりカテゴリのみ） */}
+            {isHandrail && <KaigoNotice className="mt-8" />}
+
+            {/* 詳細 */}
+            <p className="text-sm text-muted-foreground leading-loose mt-10 mb-6 whitespace-pre-line">
+              {product.longDescription}
+            </p>
+
+            {/* 仕上げのこだわり訴求。仕上げ spec からウレタン塗装／蜜蝋仕上げを自動で出し分け。 */}
+            <div className="mb-10">
+              <FinishCommitment specs={product.specs} />
+            </div>
+
+            {/* スペック表 */}
+            <div className="mb-2">
+              <h2 className="text-xs tracking-[0.3em] text-muted-foreground uppercase mb-4">
+                Specs
+              </h2>
+              <dl className="divide-y divide-border border-y border-border">
+                {product.specs.map((spec) => (
+                  <div key={spec.label} className="grid grid-cols-3 py-3">
+                    <dt className="text-sm text-muted-foreground col-span-1">{spec.label}</dt>
+                    <dd className="text-sm text-dark col-span-2">{spec.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
           </div>
         </div>
 

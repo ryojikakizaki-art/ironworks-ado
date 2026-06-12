@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import Image from "next/image"
-import { Menu, X, ShoppingBag, ChevronDown } from "lucide-react"
+import { Menu, X, ChevronDown } from "lucide-react"
 
 type NavChild = { label: string; href: string; sub?: string }
 type NavItem =
@@ -162,20 +162,8 @@ export function Header() {
 
             {/* Right Actions */}
             <div className="flex items-center gap-3">
-              {/* Cart Icon */}
-              <button
-                className={`p-2 rounded-full transition-all duration-300 relative ${
-                  overHero
-                    ? "text-white hover:bg-white/10"
-                    : "text-dark hover:bg-muted"
-                }`}
-                aria-label="カート"
-              >
-                <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
-                <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-gold text-white text-[10px] rounded-full flex items-center justify-center font-medium">
-                  0
-                </span>
-              </button>
+              {/* カートアイコンは撤去（2026-06-12）。カート機能が無いのに常時
+                  「0」表示・クリック無反応で、壊れている印象を与えていたため。 */}
 
               {/* Hamburger Menu */}
               <button

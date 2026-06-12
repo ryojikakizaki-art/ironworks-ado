@@ -22,6 +22,8 @@ const footerLinks = {
     links: [
       { label: "ご注文について", href: "/about" },
       { label: "よくあるご質問", href: "/faq" },
+      { label: "送料・配送について", href: "/shipping" },
+      { label: "採寸費・取付費について", href: "/measurement" },
       { label: "お問い合わせ", href: "/contact" },
       { label: "業者様へ", href: "/trade" },
       { label: "塗装について", href: "/paint" },
