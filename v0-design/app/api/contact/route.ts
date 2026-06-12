@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { CATALOG_PRODUCTS } from '@/lib/products/catalog';
 
 function esc(str: string | undefined | null): string {
   return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -10,7 +11,16 @@ const categoryLabels: Record<string, string> = {
   custom: '特注・カスタムオーダー', order: 'ご注文・お届けについて', other: 'その他',
 };
 
+// カタログ全商品の slug → 表示名（フォーム側 PRODUCT_OPTIONS と同じ生成元）。
+// 手書きの 8 商品はより詳しい説明付きラベルで上書きする。
+const catalogProductLabels: Record<string, string> = Object.fromEntries(
+  CATALOG_PRODUCTS.filter((p) => p.href?.startsWith('/products/')).map((p) => [
+    p.href.split('/').pop() as string,
+    p.sub ? `${p.name}（${p.sub}）` : p.name,
+  ]),
+);
 const productLabels: Record<string, string> = {
+  ...catalogProductLabels,
   rene: 'René ルネ（横型 25φ 黒）', claire: 'Claire クレール（横型 25φ 白）',
   marcel: 'Marcel マルセル（横型 FB 黒）', emile: 'Émile エミール（横型 FB 鎚目）',
   claude: 'Claude クロード（縦型 25φ 黒）', catherine: 'Catherine カトリーヌ（縦型 25φ 白）',

@@ -22,6 +22,7 @@ import { EmbeddedCheckoutModal } from "@/components/checkout/embedded-checkout-m
 import { BankOrderModal } from "@/components/checkout/bank-order-modal"
 import { FinishCommitment } from "@/components/finish-commitment"
 import { calcShipping, type ProductType } from "@/lib/shipping/sagawa"
+import { getEarliestArrival } from "@/lib/business-days"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
 import { lookupPriceFromTable, type DrawingProductConfig } from "@/lib/drawing-modal/products"
 import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench, Camera } from "lucide-react"
@@ -396,11 +397,11 @@ export default function ProductDetailPage() {
   }
 
   // Delivery date calculation
+  // checkout / 受注確定メールと同じ営業日ベース（lib/business-days）で算出する。
+  // 旧実装は暦日加算で、実際のお届けより約4日早い日付を表示していた。
   const getDeliveryDate = () => {
-    const days = deliveryType === "express" ? 5 : 10
-    const date = new Date()
-    date.setDate(date.getDate() + days)
-    return date.toLocaleDateString("ja-JP", { month: "long", day: "numeric" })
+    const arrival = getEarliestArrival(new Date(), deliveryType === "express")
+    return arrival.toLocaleDateString("ja-JP", { month: "long", day: "numeric" })
   }
 
   const nextImage = () => {

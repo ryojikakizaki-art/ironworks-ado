@@ -9,6 +9,7 @@ import { TradeBanner } from "@/components/trade-banner"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
 import { LineIcon } from "@/components/ui/line-icon"
 import { Mail, FileText, Phone } from "lucide-react"
+import { CATALOG_PRODUCTS } from "@/lib/products/catalog"
 
 const CATEGORY_OPTIONS: { value: string; label: string }[] = [
   { value: "product", label: "製品について" },
@@ -18,16 +19,19 @@ const CATEGORY_OPTIONS: { value: string; label: string }[] = [
   { value: "other", label: "その他" },
 ]
 
+// カタログ全商品（内部ページを持つもの）から選択肢を自動生成。
+// 手動リスト時代は手すり8商品のみで、Élisabeth 等 simple 系19商品からの
+// 見積もり依頼が「その他・複数」に落ちて商品名が消えていた。
 const PRODUCT_OPTIONS: { value: string; label: string }[] = [
   { value: "", label: "- 選択してください -" },
-  { value: "rene", label: "René ルネ" },
-  { value: "claire", label: "Claire クレール" },
-  { value: "marcel", label: "Marcel マルセル" },
-  { value: "emile", label: "Émile エミール" },
-  { value: "claude", label: "Claude クロード" },
-  { value: "catherine", label: "Catherine カトリーヌ" },
-  { value: "alexandre", label: "Alexandre アレクサンドル" },
-  { value: "antoine", label: "Antoine アントワーヌ" },
+  ...Array.from(
+    new Map(
+      CATALOG_PRODUCTS.filter((p) => p.href?.startsWith("/products/")).map((p) => {
+        const slug = p.href.split("/").pop() as string
+        return [slug, { value: slug, label: p.name }]
+      }),
+    ).values(),
+  ),
   { value: "other", label: "その他・複数" },
 ]
 

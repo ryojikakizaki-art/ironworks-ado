@@ -14,6 +14,8 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: 'daily' 
   { path: '/faq', priority: 0.6, changeFrequency: 'monthly' },
   { path: '/trade', priority: 0.7, changeFrequency: 'monthly' },
   { path: '/kaigo', priority: 0.8, changeFrequency: 'monthly' },
+  { path: '/shipping', priority: 0.4, changeFrequency: 'yearly' },
+  { path: '/measurement', priority: 0.4, changeFrequency: 'yearly' },
   { path: '/categories/antique', priority: 0.9, changeFrequency: 'monthly' },
   { path: '/categories/simple', priority: 0.9, changeFrequency: 'monthly' },
   { path: '/paint', priority: 0.5, changeFrequency: 'yearly' },
