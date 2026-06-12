@@ -9,6 +9,7 @@ function esc(str: string | undefined | null): string {
 const categoryLabels: Record<string, string> = {
   product: '製品について', size: 'サイズ・採寸のご相談',
   custom: '特注・カスタムオーダー', order: 'ご注文・お届けについて', other: 'その他',
+  review: 'お客様の声・レビュー投稿',
 };
 
 // カタログ全商品の slug → 表示名（フォーム側 PRODUCT_OPTIONS と同じ生成元）。

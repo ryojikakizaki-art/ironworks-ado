@@ -3,6 +3,7 @@ import { Footer } from "@/components/footer"
 import Link from "next/link"
 import Image from "next/image"
 import { VOICE_SLIDES, TOTAL_VOICE_COUNT } from "@/lib/testimonials"
+import { ReviewForm } from "@/components/review-form"
 
 export const metadata = {
   title: "お客様の声｜アイアン手すり購入レビュー｜IRONWORKS ado",
@@ -55,6 +56,22 @@ export default function ReviewsPage() {
               ))}
             </div>
           )}
+
+          {/* レビュー投稿フォーム（2026-06-13 監査 C群⑱） */}
+          <section className="mt-20 pt-12 border-t border-border max-w-[760px] mx-auto">
+            <div className="text-center mb-8">
+              <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-3">Your Voice</p>
+              <h2 className="font-serif text-2xl lg:text-3xl text-foreground">
+                あなたの声をお聞かせください
+              </h2>
+              <p className="text-[13px] md:text-sm text-muted-foreground mt-3 leading-relaxed">
+                ご購入いただいた手すりの使い心地はいかがですか。
+                <br className="hidden md:block" />
+                お写真を添えたご感想は、これから選ぶ方の何よりの参考になります。
+              </p>
+            </div>
+            <ReviewForm />
+          </section>
 
           <div className="mt-12 text-center">
             <Link
