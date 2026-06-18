@@ -284,11 +284,28 @@ export function ZakinEditor({
 
 /** 実物写真に水平基準線・角度弧・注釈を重ねた、支柱接続角度の入力イメージ */
 function AngleHintDiagram() {
+  const [open, setOpen] = useState(false)
   return (
-    <img
-      src="/images/zakin-angle-diagram.jpg"
-      alt="階段に沿って手すりを斜めに付けるとき支柱の接続角度を変えるイメージ"
-      className="w-[84px] h-auto shrink-0 rounded"
-    />
+    <>
+      <img
+        src="/images/zakin-angle-diagram.jpg"
+        alt="階段に沿って手すりを斜めに付けるとき支柱の接続角度を変えるイメージ"
+        className="w-[84px] h-auto shrink-0 rounded cursor-zoom-in"
+        onClick={() => setOpen(true)}
+      />
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 cursor-zoom-out"
+          onClick={() => setOpen(false)}
+        >
+          <img
+            src="/images/zakin-angle-diagram.jpg"
+            alt="階段に沿って手すりを斜めに付けるとき支柱の接続角度を変えるイメージ"
+            className="max-w-[90vw] max-h-[90vh] object-contain rounded shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+    </>
   )
 }
