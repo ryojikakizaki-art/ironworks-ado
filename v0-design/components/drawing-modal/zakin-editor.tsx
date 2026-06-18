@@ -282,45 +282,13 @@ export function ZakinEditor({
   )
 }
 
-/** 階段に沿って手すりを斜めに付けるとき、手すりへの支柱の接続角度を変えることを示す側面イラスト */
+/** 実物写真に水平基準線・角度弧・注釈を重ねた、支柱接続角度の入力イメージ */
 function AngleHintDiagram() {
   return (
-    <svg
-      viewBox="0 0 124 86"
-      className="w-[84px] h-auto shrink-0"
-      role="img"
-      aria-label="階段に沿って手すりを斜めに付けるとき支柱の接続角度を変えるイメージ"
-    >
-      {/* 壁（取付面） */}
-      <rect x="0" y="70" width="124" height="16" fill="#e5e7eb" />
-      <line x1="0" y1="70" x2="124" y2="70" stroke="#9ca3af" strokeWidth="1.4" />
-      <g stroke="#cbd0d6" strokeWidth="1">
-        <line x1="6" y1="86" x2="18" y2="70" />
-        <line x1="30" y1="86" x2="42" y2="70" />
-        <line x1="54" y1="86" x2="66" y2="70" />
-        <line x1="78" y1="86" x2="90" y2="70" />
-        <line x1="102" y1="86" x2="114" y2="70" />
-      </g>
-
-      {/* 手すりバー（斜め） */}
-      <line x1="12" y1="54" x2="112" y2="16" stroke="#333" strokeWidth="5" strokeLinecap="round" />
-      <line x1="14" y1="52" x2="110" y2="15" stroke="#fff" strokeOpacity="0.18" strokeWidth="1.2" strokeLinecap="round" />
-
-      {/* 座金（壁付けプレート） */}
-      <rect x="34" y="66" width="16" height="6" rx="2.5" fill="#c8a96e" stroke="#b2925a" strokeWidth="0.7" />
-      <rect x="80" y="66" width="16" height="6" rx="2.5" fill="#c8a96e" stroke="#b2925a" strokeWidth="0.7" />
-
-      {/* 支柱（手すりへの接続角度を持つ） */}
-      <line x1="42" y1="66" x2="48" y2="40" stroke="#555" strokeWidth="2.6" />
-      <line x1="88" y1="66" x2="93" y2="23" stroke="#555" strokeWidth="2.6" />
-
-      {/* 角度弧（手すりと支柱の接続部） */}
-      <path d="M 57 37 A 11 11 0 0 0 47 41" fill="none" stroke="#b2925a" strokeWidth="1.4" />
-
-      {/* ラベル */}
-      <text x="92" y="12" fontSize="9.5" fill="#555" fontFamily="sans-serif" textAnchor="middle" fontWeight="600">手すり</text>
-      <text x="13" y="44" fontSize="9" fill="#555" fontFamily="sans-serif">支柱</text>
-      <text x="60" y="33" fontSize="9" fill="#b2925a" fontFamily="sans-serif" fontWeight="700">角度</text>
-    </svg>
+    <img
+      src="/images/zakin-angle-diagram.jpg"
+      alt="階段に沿って手すりを斜めに付けるとき支柱の接続角度を変えるイメージ"
+      className="w-[84px] h-auto shrink-0 rounded"
+    />
   )
 }
