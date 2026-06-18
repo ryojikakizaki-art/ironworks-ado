@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { ShieldCheck } from "lucide-react"
 
 interface ZakinGuideProps {
@@ -43,11 +44,28 @@ export function ZakinGuide({ category = "horizontal", className }: ZakinGuidePro
 
 /** 実物写真に引き出し線注釈を重ねた「手すり・支柱・座金」の取り付けイメージ */
 function ZakinDiagram() {
+  const [open, setOpen] = useState(false)
   return (
-    <img
-      src="/images/zakin-diagram.jpg"
-      alt="手すりを支柱と座金で壁に固定する側面イメージ"
-      className="w-[112px] h-auto shrink-0 rounded"
-    />
+    <>
+      <img
+        src="/images/zakin-diagram.jpg"
+        alt="手すりを支柱と座金で壁に固定する側面イメージ"
+        className="w-[112px] h-auto shrink-0 rounded cursor-zoom-in"
+        onClick={() => setOpen(true)}
+      />
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 cursor-zoom-out"
+          onClick={() => setOpen(false)}
+        >
+          <img
+            src="/images/zakin-diagram.jpg"
+            alt="手すりを支柱と座金で壁に固定する側面イメージ"
+            className="max-w-[90vw] max-h-[90vh] object-contain rounded shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
+    </>
   )
 }
