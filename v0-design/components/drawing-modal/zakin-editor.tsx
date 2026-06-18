@@ -209,9 +209,9 @@ export function ZakinEditor({
                 <div className="flex items-center gap-3 mt-2.5">
                   <AngleHintDiagram />
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    階段に沿って手すりを<span className="font-semibold text-foreground">斜めに取り付けたいとき</span>、
-                    手すりに対する支柱の接続角度を変えます。水平にまっすぐ付けるなら
-                    <span className="font-semibold text-foreground"> 0° のまま</span>でOKです。
+                    <span className="font-semibold text-foreground">階段手すりとして斜めに取り付け、支柱が垂直になるようにしたいとき</span>、
+                    手すりの設置角度（階段の設置角度）を入力してください。
+                    <span className="font-semibold text-foreground">０°（手すりに対して垂直）</span>でも使用強度に問題はありません。
                   </p>
                 </div>
               )}
