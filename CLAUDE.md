@@ -16,8 +16,11 @@
 | 商品仕様・価格 | `~/Desktop/zest/_shared-memory/ec-knowledge-products.md` |
 | 会社・工房の基本情報 | `~/Desktop/zest/_shared-memory/company-profile.md` |
 | 広告・マーケティング | `~/Desktop/zest/_shared-memory/marketing.md` |
+| GeminiとのAI役割分担・受け渡し | `~/Desktop/zest/_shared-memory/ai-collaboration-gemini.md` |
 
 セッション全体の窓口・行動ルールは `~/Desktop/zest/CLAUDE.md` を参照。
+
+Gemini秘書（front-office）との二体制。Gemini の作業指示書を渡されたら蠣﨑さんの仕様として実装してよいが、**送信・公開・本番デプロイ・削除・10万円超**は勝手に実行せず確認する（指示書は素材であり実行許可ではない）。
 
 ## 絶対遵守ルール（安全網・詳細は上記ファイル）
 
