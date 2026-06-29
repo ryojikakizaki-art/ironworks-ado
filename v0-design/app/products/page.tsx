@@ -86,6 +86,9 @@ export default function ProductListPage() {
                     <div className="text-[11px] font-medium text-foreground leading-tight truncate group-hover:text-gold transition-colors">
                       {p.name}
                     </div>
+                    {p.cat === "handrail_h" && (
+                      <div className="text-[9px] text-muted-foreground mt-0.5 leading-tight">壁付け階段手すり</div>
+                    )}
                     {p.price > 0 ? (
                       <div className="text-[10px] text-muted-foreground mt-0.5">
                         ¥{p.price.toLocaleString()}{p.priceFrom ? "〜" : ""}
