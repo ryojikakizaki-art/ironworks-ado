@@ -16,7 +16,10 @@ import { Instagram, ArrowUpRight } from "lucide-react"
 const INSTAGRAM_URL = "https://www.instagram.com/zest_eye/"
 
 const PHOTOS: { src: string; alt: string }[] = [
-  // 例: { src: "/images/instagram/ig-1.jpg", alt: "取り付け現場の様子" },
+  { src: "/images/instagram/ig-1.jpg", alt: "赤熱した鉄を打つ鍛造作業" },
+  { src: "/images/instagram/ig-2.jpg", alt: "白壁の窓辺に面格子を取り付ける現場" },
+  { src: "/images/instagram/ig-3.jpg", alt: "鉄のカエルのオブジェと草花" },
+  { src: "/images/instagram/ig-4.jpg", alt: "火花を散らす溶接作業" },
 ]
 
 export function InstagramCard() {
@@ -30,8 +33,9 @@ export function InstagramCard() {
       <div className="flex flex-col md:flex-row md:items-center gap-6 md:gap-10">
         {/* アイコン＋テキスト */}
         <div className="flex items-start gap-5 flex-1 min-w-0">
-          <span className="shrink-0 w-14 h-14 rounded-full bg-secondary flex items-center justify-center">
-            <Instagram className="w-6 h-6 text-gold" strokeWidth={1.5} />
+          {/* 実際のInstagramアプリアイコン風（角丸四角＋公式グラデーション＋白グリフ） */}
+          <span className="shrink-0 w-14 h-14 rounded-xl bg-[radial-gradient(circle_at_30%_107%,#fdf497_0%,#fdf497_5%,#fd5949_45%,#d6249f_60%,#285AEB_90%)] flex items-center justify-center shadow-sm">
+            <Instagram className="w-7 h-7 text-white" strokeWidth={2} />
           </span>
           <div className="min-w-0">
             <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-1.5">Instagram</p>
