@@ -233,9 +233,10 @@
 
 /* 印刷時: モーダル / 制作図ページ (/seizu) / 管理画面 (.admin-root) だけ表示。
    .admin-root を allowlist に加えないと、納品書 (/admin/delivery-note) が
-   body 直下の子として print 時に display:none で消え「真っ白」になる。 */
+   body 直下の子として print 時に display:none で消え「真っ白」になる。
+   .quote-pdf-root は商品ページの見積書PDF化（タスク1・2026-07-02）用に追加。 */
 @media print {
-  body > *:not(.dm-overlay):not(.seizu-root):not(.admin-root) { display: none !important; }
+  body > *:not(.dm-overlay):not(.seizu-root):not(.admin-root):not(.quote-pdf-root) { display: none !important; }
   .dm-overlay.open {
     position: static;
     background: #fff;
