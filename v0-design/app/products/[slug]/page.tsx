@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useCallback, useRef, useEffect } from "react"
-import { useParams } from "next/navigation"
+import { useState, useCallback, useRef, useEffect, useMemo } from "react"
+import { useParams, useSearchParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
@@ -27,10 +27,11 @@ import { calcShipping, type ProductType } from "@/lib/shipping/sagawa"
 import { getEarliestArrival } from "@/lib/business-days"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
 import { lookupPriceFromTable, type DrawingProductConfig } from "@/lib/drawing-modal/products"
-import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench, Camera } from "lucide-react"
+import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench, Camera, Copy, FileDown } from "lucide-react"
 import { fireGtagEvent } from "@/lib/gtag"
 import { TOTAL_VOICE_COUNT } from "@/lib/testimonials"
 import { ReviewVoiceIcon } from "@/components/ui/review-voice-icon"
+import { encodeQuoteState, decodeQuoteState, copyToClipboard } from "@/lib/products/quote-share"
 
 // productImages / specs は商品ごとに display.ts から取得
 
@@ -97,10 +98,22 @@ export default function ProductDetailPage() {
   // X/Y 両方記録して縦スクロールと区別する
   const touchStartXRef = useRef<number | null>(null)
   const touchStartYRef = useRef<number | null>(null)
+  // 見積もり共有 URL の復元（タスク1・2026-07-02）。クエリパラメータが無ければ
+  // restoredQuote の各値は undefined になり、既存のデフォルト初期化と完全に同じ挙動になる。
+  const searchParams = useSearchParams()
+  const restoredQuote = useMemo(() => decodeQuoteState(searchParams), [searchParams])
+  const restoreMinLength = product.drawing.zakinRule?.minLengthMm ?? 500
+  const restoreMaxLength = product.drawing.zakinRule?.maxLengthMm ?? product.drawing.maxMm
+  const clampRestoredLength = (n: number) =>
+    Math.min(restoreMaxLength, Math.max(restoreMinLength, Math.round(n)))
+  const initialLengths = restoredQuote.lengths?.length
+    ? restoredQuote.lengths.slice(0, 12).map(clampRestoredLength)
+    : [product.drawing.stdLengthMm]
+
   // 多本注文対応 (PR #2): 本数分の長さを個別配列で持つ。quantity = lengths.length。
   // 入力欄文字列も同じ index で配列保持し、Blur 時にのみクランプする。
-  const [lengths, setLengths] = useState<number[]>([product.drawing.stdLengthMm])
-  const [lengthInputs, setLengthInputs] = useState<string[]>([String(product.drawing.stdLengthMm)])
+  const [lengths, setLengths] = useState<number[]>(initialLengths)
+  const [lengthInputs, setLengthInputs] = useState<string[]>(initialLengths.map(String))
   const quantity = lengths.length
   // 数量変更: 増→末尾に最後の値をコピー、減→末尾切り捨て
   // 1-6 本: 通常 Stripe 決済 / 7-12 本: 請求書振込フロー (calcShipping が inquiry を返す)
@@ -144,15 +157,27 @@ export default function ProductDetailPage() {
   const isMultiOrder = lengths.length > 1
   // 特急配送は 3 本までのご注文のみ対象（4 本以上は工程上 通常配送のみ）
   const expressAllowed = lengths.length <= 3
-  const [prefecture, setPrefecture] = useState("")
-  const [deliveryType, setDeliveryType] = useState<"normal" | "express">("normal")
+  const [prefecture, setPrefecture] = useState(() =>
+    restoredQuote.prefecture && prefectures.includes(restoredQuote.prefecture)
+      ? restoredQuote.prefecture
+      : ""
+  )
+  const [deliveryType, setDeliveryType] = useState<"normal" | "express">(() =>
+    restoredQuote.deliveryType === "express" && initialLengths.length <= 3 ? "express" : "normal"
+  )
   const [isPrefectureOpen, setIsPrefectureOpen] = useState(false)
   const [isDrawingOpen, setIsDrawingOpen] = useState(false)
-  const [washerType, setWasherType] = useState<WasherTypeId>(product.drawing.washerSpec?.id ?? "A")
+  const [washerType, setWasherType] = useState<WasherTypeId>(
+    restoredQuote.washerType && product.drawing.washerSpec
+      ? restoredQuote.washerType
+      : (product.drawing.washerSpec?.id ?? "A")
+  )
   // Scroll 16/19/22 のみ向きの選択 (左右で価格変更なし)
   // トップ画像サムネイルが左向きのため、デフォルトは「左向き」に合わせる
   const hasOrientation = slug.startsWith("scroll")
-  const [orientation, setOrientation] = useState<"right" | "left">("left")
+  const [orientation, setOrientation] = useState<"right" | "left">(
+    hasOrientation && restoredQuote.orientation ? restoredQuote.orientation : "left"
+  )
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   // Embedded Checkout: clientSecret が入ったらモーダルが開く
@@ -191,14 +216,20 @@ export default function ProductDetailPage() {
   const maxLength = zakinRule?.maxLengthMm ?? product.drawing.maxMm
 
   // 簡易座金エディター state (既存 rene.html の zakinCustomList + zakinGlobalAngle 相当)
+  // 共有 URL からの復元は「本数」のみ。厳密なドラッグ位置は zakin-editor.tsx のマウント時
+  // effect が長さから常に再計算する既存仕様のため保持できないが、本数さえ合っていれば
+  // getZakinPositions() で同じ自動配置になり、価格・座金本数は完全に一致する。
   const [zakin, setZakin] = useState<ZakinState>(() => {
-    const L = product.drawing.stdLengthMm
-    const count = calcZakin(L, zakinRule)
+    const L = initialLengths[0] ?? product.drawing.stdLengthMm
+    const isSingle = initialLengths.length === 1
+    const autoCount = calcZakin(L, zakinRule)
+    const restoredCount = isSingle ? restoredQuote.zakinCount : undefined
+    const count = restoredCount && restoredCount > 0 ? restoredCount : autoCount
     return {
       positions: getZakinPositions(L, count, zakinRule),
-      angleDeg: 0,
-      angleDir: "left",
-      customMode: false,
+      angleDeg: isSingle ? (restoredQuote.angleDeg ?? 0) : 0,
+      angleDir: isSingle ? (restoredQuote.angleDir ?? "left") : "left",
+      customMode: !!restoredCount,
     }
   })
 
@@ -402,6 +433,32 @@ export default function ProductDetailPage() {
     totalLabel: "合計（税込）",
     totalAmount: prices.total,
   }
+
+  // 見積もり共有 URL（タスク1・2026-07-02）。既存の価格計算・座金自動配置には一切関与しない。
+  const [linkCopied, setLinkCopied] = useState(false)
+  const shareQuery = encodeQuoteState({
+    lengths,
+    zakinCount: !isMultiOrder && zakin.customMode ? zakin.positions.length : undefined,
+    angleDeg: !isMultiOrder ? zakin.angleDeg : undefined,
+    angleDir: !isMultiOrder ? zakin.angleDir : undefined,
+    prefecture,
+    deliveryType,
+    washerType: product.drawing.washerSpec ? washerType : undefined,
+    orientation: hasOrientation ? orientation : undefined,
+  })
+  const shareUrl = `https://ado.tantetuzest.com/products/${slug}${shareQuery ? `?${shareQuery}` : ""}`
+  const lineShareUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}`
+  const handleCopyShareLink = async () => {
+    const ok = await copyToClipboard(shareUrl)
+    if (ok) {
+      setLinkCopied(true)
+      setTimeout(() => setLinkCopied(false), 2200)
+    }
+  }
+  // 見積書 PDF 保存（タスク1第2段階・2026-07-02）。既存の納品書(/admin/delivery-note)・
+  // 制作図(/seizu)と同じ「A4 印刷用 CSS + window.print()」方式（ライブラリ不使用）。
+  const quoteIssueDate = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" })
+  const handlePrintQuote = () => window.print()
 
   // 銀行振込ボタン: 都道府県チェックのみ行い、注文フォームモーダルを開く
   const handleBankOrder = () => {
@@ -1322,6 +1379,43 @@ export default function ProductDetailPage() {
                       </button>
                     )}
 
+                    {/* 見積もりを保存・共有・PDF化（タスク1・2026-07-02）
+                        — 制作図プレビューの下にまとめて配置。合計・購入ボタン周りの混雑を避ける。 */}
+                    <div className="flex flex-wrap items-center justify-center gap-2 pt-1 pb-1">
+                      <PrimaryCTA
+                        type="button"
+                        onClick={handleCopyShareLink}
+                        variant="outline"
+                        size="sm"
+                        withArrow={false}
+                        icon={<Copy className="w-3.5 h-3.5" />}
+                        className="text-[13px] tracking-normal normal-case"
+                      >
+                        {linkCopied ? "コピーしました" : "この見積もりを共有"}
+                      </PrimaryCTA>
+                      <PrimaryCTA
+                        href={lineShareUrl}
+                        external
+                        variant="line"
+                        size="sm"
+                        withArrow={false}
+                        className="text-[13px] tracking-normal normal-case"
+                      >
+                        LINEで共有
+                      </PrimaryCTA>
+                      <PrimaryCTA
+                        type="button"
+                        onClick={handlePrintQuote}
+                        variant="outline"
+                        size="sm"
+                        withArrow={false}
+                        icon={<FileDown className="w-3.5 h-3.5" />}
+                        className="text-[13px] tracking-normal normal-case"
+                      >
+                        見積書をPDF保存
+                      </PrimaryCTA>
+                    </div>
+
                     {/* Total Price */}
                     <div ref={purchaseAreaRef} className="flex items-center gap-4 py-5">
                       <div className="w-2 h-14 bg-gold rounded-full" />
@@ -1552,6 +1646,160 @@ export default function ProductDetailPage() {
         orderPayload={orderPayload}
         summary={checkoutSummary}
       />
+
+      {/* 見積書 PDF 化（タスク1第2段階・2026-07-02）。画面には表示せず印刷/PDF保存時のみ表示。
+          既存の checkoutSummary / prices をそのまま流用し、価格計算ロジックの重複を避ける
+          （/admin/delivery-note・/seizu と同じ「A4 CSS + window.print()」方式）。
+          body 直下の兄弟要素として配置し、globals.css の print 非表示除外リストに
+          .quote-pdf-root を追加することで表示スコープを確保している。 */}
+      <div className="quote-pdf-root">
+        <style>{`
+          .quote-pdf-root { display: none; }
+          @media print {
+            .quote-pdf-root { display: block; }
+            @page { size: A4 portrait; margin: 0; }
+            html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
+            .quote-pdf-root .qp-paper * {
+              color-adjust: exact;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+          }
+          .quote-pdf-root .qp-paper {
+            width: 210mm;
+            min-height: 297mm;
+            margin: 0 auto;
+            padding: 15mm;
+            box-sizing: border-box;
+            background: #fff;
+            color: #111;
+            font-family: var(--font-rounded-body, "Zen Kaku Gothic New"), "Hiragino Sans", "Yu Gothic", sans-serif;
+            font-size: 11pt;
+            line-height: 1.6;
+          }
+        `}</style>
+        <div className="qp-paper">
+          <div className="flex items-start justify-between gap-6">
+            <div>
+              <h1 className="text-2xl font-bold tracking-[0.15em] text-gray-900">御 見 積 書</h1>
+              <p className="mt-1 text-xs text-gray-500">QUOTATION</p>
+            </div>
+            <div className="text-right text-xs leading-relaxed text-gray-700">
+              <div>発行日: <span className="font-medium text-gray-900">{quoteIssueDate}</span></div>
+              <div className="mt-0.5">有効期限: <span className="text-gray-900">発行日より30日間</span></div>
+            </div>
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-6">
+            <div className="border-b-2 border-gray-900 pb-3">
+              <div className="text-xl font-medium text-gray-900">
+                ＿＿＿＿＿＿＿＿＿＿＿＿ <span className="ml-1 text-base">様</span>
+              </div>
+              <p className="mt-2 text-xs text-gray-600">
+                下記の通りお見積り申し上げます。ご検討のほど、よろしくお願いいたします。
+              </p>
+            </div>
+            <div>
+              <div className="flex items-start justify-between gap-3">
+                <div className="text-[11px] leading-relaxed text-gray-800">
+                  <div className="font-medium text-gray-900">鍛鉄工房ZEST</div>
+                  <div>代表 蠣﨑 良治</div>
+                  <div className="mt-1">〒265-0052</div>
+                  <div>千葉県千葉市若葉区和泉町239-2</div>
+                  <div className="mt-0.5">TEL 070-3817-0659</div>
+                  <div>ado@tantetuzest.com</div>
+                  <div className="mt-1 text-[10px] text-gray-600">
+                    適格請求書発行事業者
+                    <br />
+                    登録番号 T7810771171765
+                  </div>
+                </div>
+                <Image
+                  src="/images/ado_logo_K.png"
+                  alt="IRONWORKS ado"
+                  width={72}
+                  height={48}
+                  className="h-auto w-[60px]"
+                  unoptimized
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-8">
+            <div className="text-[10px] tracking-[0.2em] text-gray-500">件名</div>
+            <div className="mt-1 border-b border-gray-200 pb-1 text-base font-medium text-gray-900">
+              {checkoutSummary.productName}
+            </div>
+            <div className="mt-1 text-sm text-gray-600">{checkoutSummary.productNote}</div>
+          </div>
+
+          <div className="mt-4 flex items-end justify-between gap-4 border-y-2 border-gray-900 bg-gray-50 px-4 py-3">
+            <div className="text-xs text-gray-700">お見積り合計金額（税込）</div>
+            <div className="font-mono text-2xl font-bold text-gray-900">
+              ¥{checkoutSummary.totalAmount.toLocaleString()}
+            </div>
+          </div>
+
+          <div className="mt-5">
+            <table className="w-full border-collapse text-[11px]">
+              <thead>
+                <tr className="bg-gray-100 text-left text-[10px] tracking-wider text-gray-700">
+                  <th className="border border-gray-300 px-2 py-1.5 font-medium">内容</th>
+                  <th className="border border-gray-300 px-2 py-1.5 text-right font-medium w-28">金額</th>
+                </tr>
+              </thead>
+              <tbody>
+                {checkoutSummary.lines.map((line, i) => (
+                  <tr key={i} className={line.emphasize ? "bg-gray-50" : undefined}>
+                    <td className="border border-gray-300 px-2 py-1.5 text-gray-900">
+                      {line.label}
+                      {line.note && (
+                        <span className="ml-1 text-[10px] text-gray-500">（{line.note}）</span>
+                      )}
+                    </td>
+                    <td className="border border-gray-300 px-2 py-1.5 text-right font-mono text-gray-900">
+                      ¥{line.amount.toLocaleString()}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td className="border border-gray-300 bg-gray-900 px-2 py-2 text-xs font-medium text-white">
+                    合計（税込）
+                  </td>
+                  <td className="border border-gray-300 bg-gray-900 px-2 py-2 text-right font-mono text-base font-bold text-white">
+                    ¥{checkoutSummary.totalAmount.toLocaleString()}
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <div className="mt-5">
+            <div className="text-[10px] tracking-[0.2em] text-gray-500">備考</div>
+            <div className="mt-1 min-h-[40px] border border-gray-200 px-3 py-2 text-[11px] leading-relaxed text-gray-800">
+              {prices.shippingInquiry && (
+                <>
+                  {prices.shippingInquiryReason} — 送料は別途お問い合わせにて確定いたします。
+                  <br />
+                </>
+              )}
+              {!prefecture && !prices.shippingInquiry && "送料は配送先ご住所により別途加算されます。"}
+              本お見積もりは概算です。仕様変更・部材価格変動により最終価格が変わる場合がございます。
+              <br />
+              こちらの見積もり内容は下記URLからいつでもご確認・再計算いただけます。
+              <br />
+              <span className="break-all text-[10px] text-gray-600">{shareUrl}</span>
+            </div>
+          </div>
+
+          <div className="mt-6 border-t border-gray-200 pt-2 text-center text-[10px] text-gray-500">
+            IRONWORKS ado — https://ado.tantetuzest.com
+          </div>
+        </div>
+      </div>
     </>
   )
 }
