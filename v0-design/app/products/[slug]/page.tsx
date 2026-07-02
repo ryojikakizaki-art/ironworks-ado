@@ -28,6 +28,7 @@ import { getEarliestArrival } from "@/lib/business-days"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
 import { lookupPriceFromTable, type DrawingProductConfig } from "@/lib/drawing-modal/products"
 import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench, Camera } from "lucide-react"
+import { fireGtagEvent } from "@/lib/gtag"
 
 // productImages / specs は商品ごとに display.ts から取得
 
@@ -198,6 +199,27 @@ export default function ProductDetailPage() {
       customMode: false,
     }
   })
+
+  // ファネル計測: 計算機の初回操作（長さ・本数・座金のいずれか）を 1 ページビューあたり 1 回だけ送る。
+  // 注意: ZakinEditor はマウント時と長さ変更時に onChange で zakin を「同値の新オブジェクト」に
+  // 書き直すため（zakin-editor.tsx の再配置 effect）、参照比較や「マウント skip」では誤発火する。
+  // JSON 値比較で「初回レンダー時と実際に値が変わった時」だけ送る（StrictMode 二重実行にも安全）。
+  const simInteractSentRef = useRef(false)
+  const simInitialRef = useRef<string | null>(null)
+  useEffect(() => {
+    if (simInteractSentRef.current) return
+    const snapshot = JSON.stringify({ lengths, zakin })
+    if (simInitialRef.current === null) {
+      simInitialRef.current = snapshot
+      return
+    }
+    if (snapshot === simInitialRef.current) return
+    simInteractSentRef.current = true
+    fireGtagEvent("sim_interact", {
+      event_category: "simulator",
+      item_id: slug,
+    })
+  }, [lengths, zakin, slug])
 
   // Price calculation — matches API route logic (checkout/route.ts)
   // 商品マスターから取得
@@ -389,6 +411,12 @@ export default function ProductDetailPage() {
       return
     }
     setCheckoutError(null)
+    fireGtagEvent("begin_checkout", {
+      currency: "JPY",
+      value: prices.total,
+      checkout_method: "bank",
+      items: [{ item_id: slug, item_name: product.nameEn, quantity }],
+    })
     setBankOrderOpen(true)
   }
 
@@ -403,6 +431,12 @@ export default function ProductDetailPage() {
     }
     setCheckoutError(null)
     setIsCheckingOut(true)
+    fireGtagEvent("begin_checkout", {
+      currency: "JPY",
+      value: prices.total,
+      checkout_method: "card",
+      items: [{ item_id: slug, item_name: product.nameEn, quantity }],
+    })
     try {
       const res = await fetch("/api/checkout", {
         method: "POST",
