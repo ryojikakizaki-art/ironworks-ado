@@ -10,6 +10,9 @@ import { Building2, ArrowRight } from "lucide-react"
  * - 上下入替: ado 工房の一貫体制ブロックを上に / For Builders 業者導線を下に
  * - 工房ブロック: 背景白・全部黒文字 (ゴールド除去) で本文を 2 行構成に
  * - 「手すり最短 5 日発送」の「5」は黒のままサイズ突出表示
+ *
+ * 2026-07-02 修正: 「最短5日発送」は実際の標準納期（10営業日）と矛盾していたため
+ * 「標準10営業日でお届け」に訂正。特急対応可能な旨を小さく添える。
  */
 export function TradeBanner() {
   return (
@@ -22,11 +25,14 @@ export function TradeBanner() {
             <span className="block">スピーディー、ハイクオリティ、リーズナブルにお届けします</span>
           </p>
           <p className="mt-3 font-serif text-[22px] md:text-[28px] font-bold tracking-wide flex items-baseline justify-center md:justify-start gap-1">
-            <span>手すり最短</span>
+            <span>手すり標準</span>
             <span className="text-[48px] md:text-[60px] leading-none font-bold tracking-tight">
-              5
+              10
             </span>
-            <span>日発送</span>
+            <span>営業日でお届け</span>
+          </p>
+          <p className="mt-1.5 text-[12px] md:text-[13px] text-foreground/60">
+            お急ぎの場合はご相談ください（特急対応可）
           </p>
         </div>
 
