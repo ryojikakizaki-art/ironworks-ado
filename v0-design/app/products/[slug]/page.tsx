@@ -29,6 +29,8 @@ import type { WasherTypeId } from "@/lib/drawing-modal/products"
 import { lookupPriceFromTable, type DrawingProductConfig } from "@/lib/drawing-modal/products"
 import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench, Camera } from "lucide-react"
 import { fireGtagEvent } from "@/lib/gtag"
+import { TOTAL_VOICE_COUNT } from "@/lib/testimonials"
+import { ReviewVoiceIcon } from "@/components/ui/review-voice-icon"
 
 // productImages / specs は商品ごとに display.ts から取得
 
@@ -1383,6 +1385,18 @@ export default function ProductDetailPage() {
                             </PrimaryCTA>
                           </div>
                         </div>
+                      )}
+
+                      {/* 社会的証明 — お客様の声リンク（アイコンは Gemini デザイン仕様・声ゼロ時は非表示） */}
+                      {TOTAL_VOICE_COUNT > 0 && (
+                        <Link
+                          href="/reviews"
+                          className="flex items-center justify-center gap-2.5 pt-2 text-[15px] md:text-[16px] font-medium text-foreground/80 hover:text-gold transition-colors"
+                        >
+                          <ReviewVoiceIcon className="w-7 h-7 text-gold shrink-0" />
+                          <span>全国のお客様の声を見る</span>
+                          <span aria-hidden>→</span>
+                        </Link>
                       )}
                     </div>
                   </div>
