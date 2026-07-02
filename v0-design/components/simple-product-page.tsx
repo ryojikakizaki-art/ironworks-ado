@@ -14,6 +14,7 @@ import { getProductStructuredData } from "@/lib/products/structured-data"
 import { getRelatedProducts, CATALOG_PRODUCTS } from "@/lib/products/catalog"
 import { KaigoNotice } from "@/components/kaigo-notice"
 import { EmbeddedCheckoutModal } from "@/components/checkout/embedded-checkout-modal"
+import { fireGtagEvent } from "@/lib/gtag"
 import { FinishCommitment } from "@/components/finish-commitment"
 
 const FEATURE_ICON_MAP: Record<FeatureIconName, typeof Hammer> = {
@@ -372,6 +373,12 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
   const handleDirectCheckout = async () => {
     setIsCheckingOut(true)
     setCheckoutError(null)
+    fireGtagEvent("begin_checkout", {
+      currency: "JPY",
+      value: product.basePrice * quantity,
+      checkout_method: "card",
+      items: [{ item_id: product.slug, item_name: product.nameEn, quantity }],
+    })
     try {
       const res = await fetch("/api/checkout/simple", {
         method: "POST",

@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { fireGtagEvent } from "@/lib/gtag"
 import { X, Check } from "lucide-react"
 import { BankTransferDetails } from "@/app/bank-transfer/bank-transfer-details"
 import type { OrderSummary } from "./embedded-checkout-modal"
@@ -78,6 +79,12 @@ export function BankOrderModal({ open, onClose, orderPayload, summary }: Props) 
         return
       }
       setSuccess({ orderRef: data.orderRef, totalYen: data.totalYen, emailSent: data.emailSent })
+      // ファネル計測: 銀行振込の注文確定（/thanks を経由しないため purchase とは別イベント名で GA4 のみに送る）
+      fireGtagEvent("bank_order_submit", {
+        currency: "JPY",
+        value: data.totalYen,
+        order_ref: data.orderRef,
+      })
       setSubmitting(false)
     } catch {
       setError("ネットワークエラーが発生しました。時間をおいて再度お試しください。")
