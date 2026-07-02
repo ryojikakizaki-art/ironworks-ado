@@ -4,6 +4,7 @@ import { motion, useInView, AnimatePresence } from "framer-motion"
 import { useRef, useState, useEffect } from "react"
 import Image from "next/image"
 import { ArrowRight, Play, X, Volume2, VolumeX } from "lucide-react"
+import { InstagramCard } from "@/components/instagram-card"
 
 const CDN = "https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7"
 
@@ -145,6 +146,15 @@ export function BlogSection() {
               </div>
             </div>
           </div>
+        </motion.div>
+
+        {/* Instagram（@zest_eye）— 工房と現場の日々（タスク5-6-3 の News 代替・2026-07-02） */}
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7, delay: 0.15 }}
+        >
+          <InstagramCard />
         </motion.div>
 
       </div>
