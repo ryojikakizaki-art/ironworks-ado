@@ -101,7 +101,7 @@ export function HeroSection() {
               <span className="block">手触りのいいものを</span>
             </h1>
             <p className="mt-3 md:mt-4 font-serif text-[9px] md:text-[10px] tracking-[0.25em] text-white/90 uppercase drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]">
-              Real Ironworks. Real Blacksmith.
+              Forged by hand in Chiba, Japan.
             </p>
           </div>
         </div>
