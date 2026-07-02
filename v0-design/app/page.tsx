@@ -7,6 +7,7 @@ import { StatsSection } from "@/components/stats-section"
 import { TradeBanner } from "@/components/trade-banner"
 import { LimitedServiceSection } from "@/components/limited-service-section"
 import { RankingSection } from "@/components/ranking-section"
+import { CaseGallery } from "@/components/case-gallery"
 import { ProductMarquee } from "@/components/product-marquee"
 import { TestimonialsSection } from "@/components/testimonials-section"
 import { CraftsmanshipStorySection } from "@/components/craftsmanship-story-section"
@@ -31,6 +32,10 @@ export default function HomePage() {
 
       <TradeBanner />
       <RankingSection />
+
+      {/* 施工事例ギャラリー — タスク5-5 */}
+      <CaseGallery />
+
       <TestimonialsSection />
       <StatsSection />
       <CraftsmanshipStorySection />
