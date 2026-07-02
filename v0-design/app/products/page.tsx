@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { motion } from "framer-motion"
@@ -15,6 +15,14 @@ type FilterKey = CategoryKey | "all"
 
 export default function ProductListPage() {
   const [filter, setFilter] = useState<FilterKey>("all")
+
+  // ?cat= で初期カテゴリを指定できるようにする（トップの3つの入口・カテゴリードックから使用）
+  useEffect(() => {
+    const cat = new URLSearchParams(window.location.search).get("cat")
+    if (cat && CATEGORIES.some((c) => c.key === cat)) {
+      setFilter(cat as FilterKey)
+    }
+  }, [])
 
   const products = useMemo(() => {
     if (filter === "all") return CATALOG_PRODUCTS
