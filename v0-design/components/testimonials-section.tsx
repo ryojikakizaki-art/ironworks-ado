@@ -1,48 +1,23 @@
 "use client"
 
 import { motion, useInView } from "framer-motion"
-import { useRef, useState, useEffect, useCallback } from "react"
+import { useRef } from "react"
 import Link from "next/link"
-import Image from "next/image"
-import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react"
-import { VOICE_SLIDES } from "@/lib/testimonials"
+import { ArrowRight } from "lucide-react"
+import { REVIEW_QUOTES } from "@/lib/testimonials"
+import { VoiceBubble } from "@/components/voice-bubble"
+
+const FEATURED = REVIEW_QUOTES.filter((q) => q.featured)
 
 export function TestimonialsSection() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-50px" })
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isAutoPlaying, setIsAutoPlaying] = useState(true)
-
-  const slideCount = VOICE_SLIDES.length
-
-  const goTo = useCallback((idx: number) => {
-    setCurrentIndex(((idx % slideCount) + slideCount) % slideCount)
-  }, [slideCount])
-
-  const next = useCallback(() => {
-    setCurrentIndex((i) => (i + 1) % slideCount)
-    setIsAutoPlaying(false)
-  }, [slideCount])
-
-  const prev = useCallback(() => {
-    setCurrentIndex((i) => (i - 1 + slideCount) % slideCount)
-    setIsAutoPlaying(false)
-  }, [slideCount])
-
-  // 6秒ごとに自動送り
-  useEffect(() => {
-    if (!isAutoPlaying) return
-    const t = setInterval(() => {
-      setCurrentIndex((i) => (i + 1) % slideCount)
-    }, 6000)
-    return () => clearInterval(t)
-  }, [isAutoPlaying, slideCount])
 
   return (
-    <section id="testimonials" ref={ref} className="py-20 md:py-28 bg-white overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6">
+    <section id="testimonials" ref={ref} className="py-20 md:py-28 bg-white">
+      <div className="max-w-6xl mx-auto px-6">
         {/* Section Header */}
-        <div className="text-center mb-10">
+        <div className="text-center mb-14">
           <motion.span
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -69,69 +44,27 @@ export function TestimonialsSection() {
           </motion.p>
         </div>
 
-        {/* Slide Viewer */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="relative max-w-[1200px] mx-auto"
-          onMouseEnter={() => setIsAutoPlaying(false)}
-          onMouseLeave={() => setIsAutoPlaying(true)}
-        >
-          {/* 画像エリア — 常に最新 1 枚のみ表示 */}
-          <div className="relative bg-white rounded-2xl shadow-sm overflow-hidden">
-            {VOICE_SLIDES.map((slide, i) => (
-              <div key={slide.id} className={i === currentIndex ? "block" : "hidden"}>
-                <div className="relative aspect-[1600/650] w-full">
-                  <Image
-                    src={slide.src}
-                    alt={slide.alt}
-                    fill
-                    sizes="(max-width: 1200px) 100vw, 1200px"
-                    className="object-contain"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* 左右ナビゲーションボタン */}
-          <button
-            onClick={prev}
-            aria-label="前のお客様の声"
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-2 md:-translate-x-5 z-10 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gold hover:text-white transition-colors duration-300"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <button
-            onClick={next}
-            aria-label="次のお客様の声"
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-2 md:translate-x-5 z-10 w-12 h-12 rounded-full bg-white shadow-lg flex items-center justify-center hover:bg-gold hover:text-white transition-colors duration-300"
-          >
-            <ChevronRight className="w-5 h-5" />
-          </button>
-
-          {/* インジケーター */}
-          <div className="flex justify-center gap-2 mt-6">
-            {VOICE_SLIDES.map((slide, i) => (
-              <button
-                key={slide.id}
-                onClick={() => { goTo(i); setIsAutoPlaying(false) }}
-                aria-label={`${i + 1} 枚目のお客様の声`}
-                className={`h-1.5 rounded-full transition-all duration-300 ${
-                  i === currentIndex ? "w-8 bg-gold" : "w-1.5 bg-border hover:bg-muted-foreground"
-                }`}
-              />
-            ))}
-          </div>
-        </motion.div>
+        {/* 吹き出しカード（マソンリー2列） */}
+        <div className="columns-1 md:columns-2 gap-6 md:gap-8 max-w-4xl mx-auto">
+          {FEATURED.map((q, i) => (
+            <motion.div
+              key={q.id}
+              className="break-inside-avoid"
+              initial={{ opacity: 0, y: 20 }}
+              animate={isInView ? { opacity: 1, y: 0 } : {}}
+              transition={{ duration: 0.5, delay: 0.1 * i }}
+            >
+              <VoiceBubble voice={q} seed={i} />
+            </motion.div>
+          ))}
+        </div>
 
         {/* View All Link */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="text-center mt-10"
+          transition={{ duration: 0.5, delay: 0.5 }}
+          className="text-center mt-12"
         >
           <Link
             href="/reviews"

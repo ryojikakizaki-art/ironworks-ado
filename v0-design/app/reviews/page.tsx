@@ -1,8 +1,8 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import Link from "next/link"
-import Image from "next/image"
-import { VOICE_SLIDES, TOTAL_VOICE_COUNT } from "@/lib/testimonials"
+import { REVIEW_QUOTES } from "@/lib/testimonials"
+import { VoiceBubble } from "@/components/voice-bubble"
 import { ReviewForm } from "@/components/review-form"
 
 export const metadata = {
@@ -24,35 +24,21 @@ export default function ReviewsPage() {
             </p>
             <h1 className="font-serif text-3xl lg:text-5xl text-foreground">お客様の声</h1>
             <p className="text-[13px] text-muted-foreground mt-3 max-w-[640px]">
-              全国 {TOTAL_VOICE_COUNT} 名以上のお客様から、IRONWORKS ado の手すりについて
+              IRONWORKS ado の手すりをお選びいただいた全国のお客様から、
               嬉しいお言葉を頂戴しております。その一部をご紹介いたします。
             </p>
           </div>
         </div>
 
         <div className="max-w-[1200px] mx-auto px-4 lg:px-8 py-12 lg:py-16">
-          {VOICE_SLIDES.length === 0 ? (
+          {REVIEW_QUOTES.length === 0 ? (
             <p className="text-[14px] text-muted-foreground text-center py-12">
               お客様の声はまだありません。
             </p>
           ) : (
-            <div className="space-y-8">
-              {VOICE_SLIDES.map((slide) => (
-                <figure
-                  key={slide.id}
-                  className="bg-white rounded-2xl shadow-sm overflow-hidden border border-border"
-                >
-                  <div className="relative aspect-[1600/650] w-full">
-                    <Image
-                      src={slide.src}
-                      alt={slide.alt}
-                      fill
-                      sizes="(max-width: 1200px) 100vw, 1200px"
-                      className="object-contain"
-                    />
-                  </div>
-                  <figcaption className="sr-only">{slide.alt}</figcaption>
-                </figure>
+            <div className="columns-1 md:columns-2 lg:columns-3 gap-6">
+              {REVIEW_QUOTES.map((q) => (
+                <VoiceBubble key={q.id} voice={q} />
               ))}
             </div>
           )}
