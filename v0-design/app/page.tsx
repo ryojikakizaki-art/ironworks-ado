@@ -2,6 +2,7 @@
 
 import { Header } from "@/components/header"
 import { HeroSection } from "@/components/hero-section"
+import { StatsSection } from "@/components/stats-section"
 import { TradeBanner } from "@/components/trade-banner"
 import { LimitedServiceSection } from "@/components/limited-service-section"
 import { RankingSection } from "@/components/ranking-section"
@@ -28,6 +29,7 @@ export default function HomePage() {
       <RankingSection />
       <LineupSection />
       <TestimonialsSection />
+      <StatsSection />
       <CraftsmanshipStorySection />
       <LimitedServiceSection />
       <NewsSection />
