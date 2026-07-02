@@ -23,11 +23,11 @@ import { BankOrderModal } from "@/components/checkout/bank-order-modal"
 import { FinishCommitment } from "@/components/finish-commitment"
 import { KaigoNotice } from "@/components/kaigo-notice"
 import { ProductFaq } from "@/components/product-faq"
-import { calcShipping, type ProductType } from "@/lib/shipping/sagawa"
+import { calcShipping, getShippingRange, type ProductType } from "@/lib/shipping/sagawa"
 import { getEarliestArrival } from "@/lib/business-days"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
 import { lookupPriceFromTable, type DrawingProductConfig } from "@/lib/drawing-modal/products"
-import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench, Camera, Copy, FileDown } from "lucide-react"
+import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench, Camera, Copy, FileDown, Truck } from "lucide-react"
 import { fireGtagEvent } from "@/lib/gtag"
 import { TOTAL_VOICE_COUNT } from "@/lib/testimonials"
 import { ReviewVoiceIcon } from "@/components/ui/review-voice-icon"
@@ -360,6 +360,18 @@ export default function ProductDetailPage() {
   }, [lengths, isMultiOrder, deliveryType, prefecture, zakin, productType, STD_LENGTH, PRICE_PER_MM, BASE_PRICE, INCLUDED_ZAKIN, zakinRule, PRICE_TABLE])
 
   const prices = calculatePrice()
+
+  // 配送先未選択時の「送料込み目安」（タスク3・2026-07-02）。既存の送料計算・レート表は
+  // 変更せず、全地域分を呼び出して集計するだけ。配送先を選択したら従来どおり確定額のみ表示。
+  const shippingRange = !prefecture && !prices.shippingInquiry
+    ? getShippingRange(lengths, productType)
+    : null
+  const rangeMinTotal = shippingRange
+    ? prices.subtotal + prices.expressAddon + Math.round(shippingRange.minShipping * 1.1)
+    : null
+  const rangeMaxTotal = shippingRange
+    ? prices.subtotal + prices.expressAddon + Math.round(shippingRange.maxShipping * 1.1)
+    : null
 
   // 各ステップの入力が満たされているか（番号サークルの進捗表示用）。
   // 以前は単調増加カウンタで、初期値のある長さ・配送のせいで未入力でも
@@ -1424,6 +1436,17 @@ export default function ProductDetailPage() {
                         <span className="font-serif text-4xl lg:text-5xl text-foreground">
                           ¥{prices.total.toLocaleString()}
                         </span>
+                        {/* 配送先未選択時の送料込み目安（タスク3・2026-07-02）。
+                            配送先を選択すると本要素は消え、従来どおり確定額のみになる。 */}
+                        {rangeMinTotal !== null && rangeMaxTotal !== null && (
+                          <p className="mt-1.5 flex items-start gap-1.5 text-[13px] text-muted-foreground">
+                            <Truck className="w-3.5 h-3.5 mt-0.5 shrink-0 text-gold" />
+                            <span>
+                              送料込み目安: ¥{rangeMinTotal.toLocaleString()}〜¥{rangeMaxTotal.toLocaleString()}
+                              <span className="block text-[11px] mt-0.5">（配送先を選択すると確定します）</span>
+                            </span>
+                          </p>
+                        )}
                       </div>
                     </div>
 

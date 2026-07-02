@@ -204,3 +204,34 @@ export function calcShipping(
     bundleDetails,
   }
 }
+
+// 全12地域を代表する都道府県（沖縄は要問合せ地域のため除く）。地域ごとに送料は
+// 都道府県によらず同一なので、代表1件ずつで全地域の最安・最高を把握できる。
+const REGION_SAMPLE_PREFECTURES = [
+  "北海道", "青森県", "宮城県", "東京都", "新潟県", "富山県",
+  "岐阜県", "大阪府", "鳥取県", "徳島県", "福岡県", "熊本県",
+]
+
+export interface ShippingRangeResult {
+  minShipping: number
+  maxShipping: number
+}
+
+/**
+ * 配送先未選択時の「送料込み目安」表示用（タスク3・2026-07-02）。
+ * 既存の calcShipping をそのまま全地域分呼び出して集計するだけで、
+ * 送料レート表・計算式は一切変更しない。
+ * 全地域が要問合せ（7本以上・3501mm以上等）の場合は null を返す。
+ */
+export function getShippingRange(lengths: number[], productType: ProductType): ShippingRangeResult | null {
+  let min = Infinity
+  let max = -Infinity
+  for (const pref of REGION_SAMPLE_PREFECTURES) {
+    const result = calcShipping(lengths, pref, productType)
+    if (result.inquiry) continue
+    min = Math.min(min, result.shipping)
+    max = Math.max(max, result.shipping)
+  }
+  if (min === Infinity) return null
+  return { minShipping: min, maxShipping: max }
+}
