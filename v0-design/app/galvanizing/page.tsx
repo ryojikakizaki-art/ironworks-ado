@@ -1007,7 +1007,7 @@ export default function GalvanizingPage() {
             <div className="lg:col-span-6 relative aspect-[3/2] lg:aspect-auto bg-secondary">
               <Image
                 src="/images/process/galvanizing-hero.jpg"
-                alt="450℃ の亜鉛浴に鉄製手すりを浸漬している様子"
+                alt="450℃ の亜鉛浴に鉄製フレームを浸漬している様子"
                 fill
                 sizes="(max-width: 1024px) 100vw, 60vw"
                 priority
