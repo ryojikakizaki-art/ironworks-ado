@@ -58,7 +58,7 @@ type CompRow = {
 
 const comparison: CompRow[] = [
   { label: "屋外耐久", a: "1〜3年", b: "5〜8年", c: "10年以上", aLevel: 1, bLevel: 4, cLevel: 5 },
-  { label: "塩害（沿岸部）", a: "急速に錆", b: "やや弱い", c: "問題なく使用可", aLevel: 1, bLevel: 3, cLevel: 5 },
+  { label: "塩害（沿岸部）", a: "急速に錆", b: "やや弱い", c: "強い（沿岸部での採用実績あり）", aLevel: 1, bLevel: 3, cLevel: 5 },
   { label: "紫外線", a: "急速に色褪せ", b: "数年で薄くなる", c: "下地メッキが残る", aLevel: 1, bLevel: 3, cLevel: 5 },
   { label: "傷からの保護", a: "即座に錆", b: "部分的に錆", c: "犠牲防食で守る", aLevel: 1, bLevel: 3, cLevel: 5 },
   { label: "メンテナンス", a: "毎年補修", b: "5〜7年で部分補修", c: "ほぼ不要", aLevel: 1, bLevel: 3, cLevel: 5 },

@@ -644,7 +644,7 @@ export default function PaintPage() {
               <div className="lg:sticky lg:top-24">
                 <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Section 03</p>
                 <h2 className="font-serif text-3xl lg:text-5xl text-foreground leading-none">Stories</h2>
-                <p className="text-[12px] text-muted-foreground mt-3">お客様の声と職人からの提案</p>
+                <p className="text-[12px] text-muted-foreground mt-3">よくあるお悩みと職人からの提案</p>
               </div>
             </aside>
             <div className="lg:col-span-9 scroll-mt-24 min-w-0 space-y-12">

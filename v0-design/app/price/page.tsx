@@ -1,11 +1,13 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import Image from "next/image"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { KaigoNotice } from "@/components/kaigo-notice"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
 import { getQuoteUnitPrice } from "@/lib/products/quote-pricing"
 import { CATALOG_PRODUCTS } from "@/lib/products/catalog"
+import { galleryUrl } from "@/lib/products/display"
 
 const SITE_URL = "https://ado.tantetuzest.com"
 
@@ -72,6 +74,26 @@ const thCls =
 const tdCls = "py-3.5 px-3 text-[14px] text-foreground whitespace-nowrap"
 const priceCls = "py-3.5 px-3 text-[15px] font-serif text-foreground whitespace-nowrap"
 
+// 価格表の商品セル用サムネイル。画像は必ず galleryUrl() 経由（LOCAL_IMAGE_OVERRIDES を効かせる）
+const imgIdOf = (slug: string) =>
+  CATALOG_PRODUCTS.find((p) => p.href === `/products/${slug}`)?.img
+
+function ProductThumb({ slug, name }: { slug: string; name: string }) {
+  const img = imgIdOf(slug)
+  if (!img) return null
+  return (
+    <span className="relative w-11 h-11 shrink-0 overflow-hidden rounded-md bg-secondary">
+      <Image
+        src={galleryUrl(`${img}.jpg`)}
+        alt={name}
+        fill
+        sizes="44px"
+        className="object-cover"
+      />
+    </span>
+  )
+}
+
 function SectionHeading({ title, sub }: { title: string; sub: string }) {
   return (
     <div className="mb-6">
@@ -129,7 +151,8 @@ export default function PricePage() {
                   {HORIZONTAL.map((p) => (
                     <tr key={p.slug} className="hover:bg-muted/40 transition-colors">
                       <td className={tdCls}>
-                        <Link href={`/products/${p.slug}`} className="text-gold hover:underline font-medium">
+                        <Link href={`/products/${p.slug}`} className="inline-flex items-center gap-3 text-gold hover:underline font-medium">
+                          <ProductThumb slug={p.slug} name={p.name} />
                           {p.name}
                         </Link>
                       </td>
@@ -166,7 +189,8 @@ export default function PricePage() {
                   {VERTICAL.map((p) => (
                     <tr key={p.slug} className="hover:bg-muted/40 transition-colors">
                       <td className={tdCls}>
-                        <Link href={`/products/${p.slug}`} className="text-gold hover:underline font-medium">
+                        <Link href={`/products/${p.slug}`} className="inline-flex items-center gap-3 text-gold hover:underline font-medium">
+                          <ProductThumb slug={p.slug} name={p.name} />
                           {p.name}
                         </Link>
                       </td>
@@ -208,7 +232,8 @@ export default function PricePage() {
                   {FIXED.map((p) => (
                     <tr key={p.slug} className="hover:bg-muted/40 transition-colors">
                       <td className={tdCls}>
-                        <Link href={`/products/${p.slug}`} className="text-gold hover:underline font-medium">
+                        <Link href={`/products/${p.slug}`} className="inline-flex items-center gap-3 text-gold hover:underline font-medium">
+                          <ProductThumb slug={p.slug} name={p.name} />
                           {p.name}
                         </Link>
                       </td>
@@ -230,9 +255,12 @@ export default function PricePage() {
             />
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="rounded-lg border border-border bg-white p-6">
-                <Link href="/products/elisabeth" className="font-serif text-[18px] text-gold hover:underline">
-                  Élisabeth エリザベート
-                </Link>
+                <div className="flex items-center gap-3">
+                  <ProductThumb slug="elisabeth" name="Élisabeth エリザベート" />
+                  <Link href="/products/elisabeth" className="font-serif text-[18px] text-gold hover:underline">
+                    Élisabeth エリザベート
+                  </Link>
+                </div>
                 <p className="mt-1 text-[13px] text-muted-foreground">アール・ヌーヴォー曲線・22φ 無垢鉄</p>
                 <p className="mt-3 font-serif text-2xl text-foreground">
                   ¥36,000<span className="text-[14px]">/m〜</span>
@@ -240,9 +268,12 @@ export default function PricePage() {
                 <p className="text-[12px] text-muted-foreground mt-1">例: 3m 手すり・両端唐草 ¥168,000（税込）</p>
               </div>
               <div className="rounded-lg border border-border bg-white p-6">
-                <Link href="/products/clemence" className="font-serif text-[18px] text-gold hover:underline">
-                  Clémence クレマンス
-                </Link>
+                <div className="flex items-center gap-3">
+                  <ProductThumb slug="clemence" name="Clémence クレマンス" />
+                  <Link href="/products/clemence" className="font-serif text-[18px] text-gold hover:underline">
+                    Clémence クレマンス
+                  </Link>
+                </div>
                 <p className="mt-1 text-[13px] text-muted-foreground">L型・22φ 無垢鉄</p>
                 <p className="mt-3 font-serif text-2xl text-foreground">
                   ¥88,000<span className="text-[14px]">〜</span>

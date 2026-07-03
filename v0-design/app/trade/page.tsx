@@ -3,6 +3,7 @@
 import { useState, FormEvent, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Hammer,
@@ -382,6 +383,24 @@ export default function TradePage() {
                   </div>
                 )
               })}
+            </div>
+            {/* 施工事例写真（トップの施工事例ギャラリーと共通素材・実写のみ） */}
+            <div className="mt-10 grid grid-cols-3 gap-3 lg:gap-4">
+              {[
+                { src: "/images/gallery/case-1.jpg", alt: "コンクリート壁の廻り階段に取り付けた白い壁付け手すりの施工事例" },
+                { src: "/images/gallery/case-5.jpg", alt: "白壁の階段に取り付けた曲線のロートアイアン手すりの施工事例" },
+                { src: "/images/gallery/case-2.jpg", alt: "コンクリート外階段と黒いアプローチ手すりのある住宅外観の施工事例" },
+              ].map((c) => (
+                <div key={c.src} className="relative aspect-[4/3] overflow-hidden rounded-lg bg-secondary">
+                  <Image
+                    src={c.src}
+                    alt={c.alt}
+                    fill
+                    sizes="(max-width: 768px) 33vw, 300px"
+                    className="object-cover"
+                  />
+                </div>
+              ))}
             </div>
             <p className="mt-8 text-center text-[13px] text-muted-foreground">
               表面処理の技術詳細は
