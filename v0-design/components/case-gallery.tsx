@@ -7,7 +7,7 @@ import { ArrowRight } from "lucide-react"
  * 空間全体が写った施工写真のマソンリーグリッド。文字は最小限。
  * 蠣﨑さん提供のチャット写真から撮影者の足・スリッパ等をクロップ除去して圧縮済み。
  * caption は「地域＋商品名」を蠣﨑さんに確認後に追記する（未確認のうちは書かない＝捏造禁止）。
- * リンク先の事例一覧ページはバックログのため、当面は /reviews へ。
+ * もっと見るは施工案内ページ（/construction）の事例セクションへ。
  */
 
 const CASES: { src: string; alt: string; w: number; h: number; caption?: string }[] = [
@@ -84,10 +84,10 @@ export function CaseGallery() {
         {/* もっと見る */}
         <div className="text-center mt-10">
           <Link
-            href="/reviews"
+            href="/construction"
             className="inline-flex items-center gap-2 text-[13px] text-muted-foreground hover:text-gold transition-colors group"
           >
-            <span>お客様の声・事例をもっと見る</span>
+            <span>施工の流れ・事例をもっと見る</span>
             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>

@@ -7,6 +7,7 @@ import { ArrowRight } from "lucide-react"
  * 全国EC（手すり／ロートアイアン・装飾）と千葉施工の二層戦略を
  * トップページ構造に反映する入口セクション。大きな写真＋短い見出しのみ。
  * 「千葉エリア」は提供エリアの事実情報（施工は千葉限定）であり修飾的な地域訴求ではない。
+ * 飛び先は商品一覧の単一カテゴリではなく、各案内ページへ（初訪問者が全体像を掴めるように）。
  */
 
 const ENTRANCES = [
@@ -16,7 +17,7 @@ const ENTRANCES = [
     description: "横型・縦型の壁付け手すり。ご注文からお届けまでオンラインで完結。",
     img: "/images/hero/dscf6699.jpg",
     alt: "鎚目仕上げのアイアン手すりを握る手元",
-    href: "/products?cat=handrail_h",
+    href: "/handrail",
   },
   {
     title: "ロートアイアン・装飾",
@@ -24,7 +25,7 @@ const ENTRANCES = [
     description: "鎚目・Scroll など、鍛冶職人が手打ちで仕上げる鍛鉄の世界。",
     img: "/images/hero/dscf1995.jpg",
     alt: "吹き抜けに施工した曲線縦桟のロートアイアン手すり",
-    href: "/products?cat=approach",
+    href: "/wrought-iron",
   },
   {
     title: "施工（千葉エリア）",
@@ -32,7 +33,7 @@ const ENTRANCES = [
     description: "階段・門扉・フェンスなど、製作から取付工事までお任せください。",
     img: "/images/hero/loft-staircase.jpg",
     alt: "スケルトン階段のあるリビング空間",
-    href: "/products?cat=stair",
+    href: "/construction",
   },
 ]
 
