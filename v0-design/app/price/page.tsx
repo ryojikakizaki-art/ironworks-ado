@@ -289,7 +289,7 @@ export default function PricePage() {
                 ["特急配送", "通常 10 営業日 → 5 営業日で発送。本体価格 +20%（3 本まで）。"],
                 ["ブラケット座金の追加", "1 個 ¥3,500（標準本数は商品・長さにより自動計算）。"],
                 ["角度加工（横型）", "座金 1 箇所あたり ¥2,000。"],
-                ["溶融亜鉛めっき（屋外推奨）", "2m まで本体価格 +¥22,000。めっき後に塗装仕上げする二重防錆です。"],
+                ["溶融亜鉛メッキ（屋外推奨）", "2m まで本体価格 +¥22,000。メッキ後に塗装仕上げする二重防錆です。"],
               ].map(([label, body]) => (
                 <div key={label} className="flex flex-col sm:flex-row gap-1 sm:gap-6 px-5 py-4">
                   <p className="sm:w-56 shrink-0 text-[14px] font-medium text-foreground">{label}</p>
@@ -297,6 +297,13 @@ export default function PricePage() {
                 </div>
               ))}
             </div>
+            <p className="mt-4 text-[13px] text-muted-foreground">
+              屋外で 10 年以上錆びさせない二重防錆のしくみは
+              <Link href="/galvanizing" className="text-gold hover:underline mx-1">
+                溶融亜鉛メッキについて
+              </Link>
+              で図解しています。
+            </p>
             <p className="mt-4 text-[12px] text-muted-foreground">
               価格はすべて税込です。仕様変更・原材料価格により改定する場合があります。業者様の継続お取引は
               <Link href="/trade" className="text-gold hover:underline mx-1">
