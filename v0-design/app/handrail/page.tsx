@@ -163,11 +163,11 @@ export default function HandrailGuidePage() {
               <div className="rounded-xl border border-border bg-white overflow-hidden">
                 <div className="relative aspect-[16/9] bg-secondary">
                   <Image
-                    src="/images/hero/dscf6234.jpg"
-                    alt="階段の壁に沿わせて取り付けた横型アイアン手すり"
+                    src="/images/gallery/case-1.jpg"
+                    alt="コンクリート壁の廻り階段に取り付けた白い壁付け横型手すり"
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-cover"
+                    className="object-cover object-[50%_30%]"
                   />
                 </div>
                 <div className="p-6 md:p-7">
