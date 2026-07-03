@@ -271,6 +271,7 @@ export function Header({ forceDark = false }: { forceDark?: boolean } = {}) {
                       { label: "業者様へ", href: "/trade" },
                       { label: "ご挨拶", href: "/greeting" },
                       { label: "塗装について", href: "/paint" },
+                      { label: "溶融亜鉛メッキについて", href: "/galvanizing" },
                     ].map((item, index) => (
                       <motion.div
                         key={item.href}

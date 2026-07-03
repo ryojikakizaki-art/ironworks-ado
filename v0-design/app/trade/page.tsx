@@ -3,6 +3,7 @@
 import { useState, FormEvent, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 import {
   Hammer,
@@ -97,7 +98,7 @@ const pillars = [
   {
     icon: Hammer,
     title: "他では断られる仕様も製作可能",
-    desc: "鍛冶による鎚目仕上げ・焼付塗装・レーザーカット・機械加工・溶融亜鉛めっきまで一貫対応。「これは無理」と言われた図面ほど、ぜひ一度ご相談ください。設計意図を汲んだ提案でお応えします。",
+    desc: "鍛冶による鎚目仕上げ・焼付塗装・レーザーカット・機械加工・溶融亜鉛メッキまで一貫対応。「これは無理」と言われた図面ほど、ぜひ一度ご相談ください。設計意図を汲んだ提案でお応えします。",
   },
   {
     icon: Award,
@@ -336,7 +337,7 @@ export default function TradePage() {
               お引き受けいたします。
             </h1>
             <p className="text-[14px] lg:text-[16px] leading-[1.95] text-white/80 max-w-2xl mb-6">
-              鍛鉄・焼付塗装・レーザーカット・機械加工・溶融亜鉛めっき。一般的な鉄工所では断られがちな仕様も、自社工房で職人本人が一貫して請け負います。卸価格・図面 / CAD 対応・特急納期にも対応。
+              鍛鉄・焼付塗装・レーザーカット・機械加工・溶融亜鉛メッキ。一般的な鉄工所では断られがちな仕様も、自社工房で職人本人が一貫して請け負います。卸価格・図面 / CAD 対応・特急納期にも対応。
             </p>
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gold/40 bg-gold/10 text-gold text-[12px] tracking-wide mb-8">
               <Banknote className="w-4 h-4" strokeWidth={1.5} />
@@ -383,6 +384,35 @@ export default function TradePage() {
                 )
               })}
             </div>
+            {/* 施工事例写真（トップの施工事例ギャラリーと共通素材・実写のみ） */}
+            <div className="mt-10 grid grid-cols-3 gap-3 lg:gap-4">
+              {[
+                { src: "/images/gallery/case-1.jpg", alt: "コンクリート壁の廻り階段に取り付けた白い壁付け手すりの施工事例" },
+                { src: "/images/gallery/case-5.jpg", alt: "白壁の階段に取り付けた曲線のロートアイアン手すりの施工事例" },
+                { src: "/images/gallery/case-2.jpg", alt: "コンクリート外階段と黒いアプローチ手すりのある住宅外観の施工事例" },
+              ].map((c) => (
+                <div key={c.src} className="relative aspect-[4/3] overflow-hidden rounded-lg bg-secondary">
+                  <Image
+                    src={c.src}
+                    alt={c.alt}
+                    fill
+                    sizes="(max-width: 768px) 33vw, 300px"
+                    className="object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+            <p className="mt-8 text-center text-[13px] text-muted-foreground">
+              表面処理の技術詳細は
+              <Link href="/galvanizing" className="text-gold hover:underline mx-1">
+                溶融亜鉛メッキ
+              </Link>
+              ・
+              <Link href="/paint" className="text-gold hover:underline mx-1">
+                2 液型ウレタン塗装
+              </Link>
+              のページで図解しています。
+            </p>
           </div>
         </section>
 

@@ -58,7 +58,7 @@ type CompRow = {
 
 const comparison: CompRow[] = [
   { label: "屋外耐久", a: "1〜3年", b: "5〜8年", c: "10年以上", aLevel: 1, bLevel: 4, cLevel: 5 },
-  { label: "塩害（沿岸部）", a: "急速に錆", b: "やや弱い", c: "問題なく使用可", aLevel: 1, bLevel: 3, cLevel: 5 },
+  { label: "塩害（沿岸部）", a: "急速に錆", b: "やや弱い", c: "強い（沿岸部での採用実績あり）", aLevel: 1, bLevel: 3, cLevel: 5 },
   { label: "紫外線", a: "急速に色褪せ", b: "数年で薄くなる", c: "下地メッキが残る", aLevel: 1, bLevel: 3, cLevel: 5 },
   { label: "傷からの保護", a: "即座に錆", b: "部分的に錆", c: "犠牲防食で守る", aLevel: 1, bLevel: 3, cLevel: 5 },
   { label: "メンテナンス", a: "毎年補修", b: "5〜7年で部分補修", c: "ほぼ不要", aLevel: 1, bLevel: 3, cLevel: 5 },
@@ -84,11 +84,21 @@ const faq = [
   },
   {
     q: "屋内用の手すりとは何が違うんですか？",
-    a: "屋内用は 2 液型ウレタン塗装で仕上げています。ado の塗装はもともと屋外耐久も視野に入れたプロ仕様（自動車塗装と同じ 2 液型ウレタン）なので、軒下・室内階段ならこれだけでも 5〜8 年は綺麗な状態を保てます。雨ざらしになる屋外用には、さらに亜鉛メッキ層を重ねて 10 年以上の耐久性を確保しています。",
+    a: "屋内用は 2 液型ウレタン塗装で仕上げています。ado の塗装はもともと屋外耐久も視野に入れたプロ仕様（自動車塗装と同じ 2 液型ウレタン）なので、軒下・室内階段ならこれだけでも 10 年以上綺麗な状態を保てます。雨ざらしになる屋外用には、さらに亜鉛メッキ層を重ねて 10 年以上の耐久性を確保しています。",
   },
   {
     q: "ホームセンターの塗料との違いは？",
-    a: "ホームセンターで売られているのは 1 液型（ラッカーや水性塗料）が中心で、屋外設置だと 1〜3 年ほどで錆や色褪せが目立ってきます。ado は自動車塗装と同じ 2 液型ウレタン塗料を主剤＋硬化剤の比率で正確に調合し、化学反応で硬化させているため、塗膜の強さがまったく違います。詳しくは塗装ページをご覧ください。",
+    a: (
+      <>
+        ホームセンターで売られているのは 1 液型（ラッカーや水性塗料）が中心で、屋外設置だと 1〜3
+        年ほどで錆や色褪せが目立ってきます。ado は自動車塗装と同じ 2
+        液型ウレタン塗料を主剤＋硬化剤の比率で正確に調合し、化学反応で硬化させているため、塗膜の強さがまったく違います。詳しくは
+        <Link href="/paint" className="text-gold underline underline-offset-2 hover:opacity-70">
+          塗装ページ
+        </Link>
+        をご覧ください。
+      </>
+    ),
   },
 ]
 
@@ -993,11 +1003,11 @@ export default function GalvanizingPage() {
                 10 年以上、屋外で錆びずに、暮らしを支え続けます。
               </p>
             </div>
-            {/* Right: Hero photo (placeholder until ChatGPT image arrives) */}
+            {/* Right: Hero photo */}
             <div className="lg:col-span-6 relative aspect-[3/2] lg:aspect-auto bg-secondary">
               <Image
                 src="/images/process/galvanizing-hero.jpg"
-                alt="450℃ の亜鉛浴に鉄製手すりを浸漬している様子"
+                alt="450℃ の亜鉛浴に鉄製フレームを浸漬している様子"
                 fill
                 sizes="(max-width: 1024px) 100vw, 60vw"
                 priority
@@ -1050,6 +1060,40 @@ export default function GalvanizingPage() {
               <span className="font-black text-gold text-5xl sm:text-6xl lg:text-7xl align-middle leading-none">10 年以上</span>
               <span className="ml-1.5">の安心を、お届け。</span>
             </p>
+          </div>
+        </section>
+
+        {/* ════════════ Story — メッキを内側から知る職人 ════════════ */}
+        <section id="craftsman" className="border-y border-border bg-background py-20 lg:py-28">
+          <div className="max-w-[1200px] mx-auto px-5 lg:px-8 grid lg:grid-cols-12 gap-8 lg:gap-12">
+            <aside className="lg:col-span-3">
+              <div className="lg:sticky lg:top-24">
+                <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Story</p>
+                <h2 className="font-serif text-3xl lg:text-5xl text-foreground leading-none">
+                  メッキを<br />内側から
+                </h2>
+                <p className="text-[12px] text-muted-foreground mt-3">なぜ鍛冶屋がメッキを語れるのか</p>
+              </div>
+            </aside>
+            <div className="lg:col-span-9 scroll-mt-24 min-w-0">
+              <h3 className="font-serif text-xl lg:text-3xl text-foreground mb-6 leading-snug">
+                メッキ工程を 10 年、現場監督として。
+              </h3>
+              <div className="space-y-5 mb-8 max-w-2xl">
+                <p className="text-[15px] leading-[1.95] text-foreground/80">
+                  表面処理の自動機械を手がける会社で十年、現場監督として、設計・製造から、実際にメッキが施される工程までを統括してきました。鉄を錆から守る「メッキ」を、装置の内側から知り尽くしています。
+                </p>
+                <p className="text-[15px] leading-[1.95] text-foreground/80">
+                  だから ado は、設置場所の環境から「何年先まで守るか」を逆算し、メッキと塗装の仕様を商品ごとに選び抜きます。作って終わりにしない。それが、防錆を知る鍛冶屋のものづくりです。
+                </p>
+              </div>
+              <Link
+                href="/paint"
+                className="inline-block text-[11px] tracking-[0.2em] uppercase text-gold border-b border-gold hover:opacity-70 transition-opacity"
+              >
+                塗装のこだわりについて →
+              </Link>
+            </div>
           </div>
         </section>
 
@@ -1230,7 +1274,7 @@ export default function GalvanizingPage() {
                       className="object-cover"
                     />
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-2 lg:p-3">
-                      <p className="text-[10px] lg:text-[11px] text-white/90 leading-tight">
+                      <p className="text-[12px] lg:text-[13px] text-white/90 leading-tight">
                         {still.caption}
                       </p>
                     </div>
@@ -1561,6 +1605,12 @@ export default function GalvanizingPage() {
                 >
                   2 液型ウレタン塗装について →
                 </Link>
+              </div>
+              {/* 全商品導線 */}
+              <div className="mt-8 text-center">
+                <PrimaryCTA href="/products" variant="outline" size="md">
+                  全商品を見る
+                </PrimaryCTA>
               </div>
             </div>
           </div>
