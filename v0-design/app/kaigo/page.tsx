@@ -169,29 +169,22 @@ export default function KaigoPage() {
     <>
       <Header forceDark />
       <main style={{ backgroundColor: C.bg, color: C.text, fontFamily: 'var(--font-rounded), "Yu Gothic UI", "Hiragino Sans", system-ui, sans-serif' }}>
-        {/* ════════════ HERO: 写真全面 + 白パネル（モバイルは写真の下に重ねる2段構成） ════════════ */}
+        {/* ════════════ HERO: 左テキストカラム + 右写真の分割レイアウト（モバイルは写真→テキストの縦積み） ════════════ */}
         <section className="relative overflow-hidden">
-          <div className="relative h-[46vh] min-h-[340px] md:h-[88vh] md:min-h-[600px] md:max-h-[820px] w-full">
-            <img
-              src={PHOTOS.hero.url}
-              alt={PHOTOS.hero.alt}
-              className="absolute inset-0 w-full h-full object-cover"
-              style={{ objectPosition: "60% 58%" }}
-            />
-            <span className="absolute bottom-3 right-4 text-[10px] tracking-wider" style={{ color: "rgba(42,42,38,0.45)" }}>{PHOTOS.hero.credit}</span>
-          </div>
-          <div className="relative max-w-[1200px] mx-auto px-4 lg:px-8 -mt-20 pb-6 md:mt-0 md:pb-0 md:absolute md:inset-0 md:flex md:items-center">
-              <div
-                className="max-w-[620px] rounded-2xl p-6 sm:p-8 lg:p-10"
-                style={{
-                  backgroundColor: "rgba(255,255,255,0.88)",
-                  backdropFilter: "blur(8px)",
-                  WebkitBackdropFilter: "blur(8px)",
-                  border: "1px solid rgba(255,255,255,0.65)",
-                  boxShadow: "0 8px 40px rgba(30,34,26,0.10)",
-                  color: C.text,
-                }}
-              >
+          <div className="flex flex-col md:grid md:grid-cols-[minmax(0,11fr)_minmax(0,9fr)] md:h-[88vh] md:min-h-[620px] md:max-h-[860px]">
+            {/* 右: 写真（モバイルでは先頭に表示） */}
+            <div className="relative h-[44vh] min-h-[320px] md:order-2 md:h-full">
+              <img
+                src={PHOTOS.hero.url}
+                alt={PHOTOS.hero.alt}
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{ objectPosition: "60% 55%" }}
+              />
+              <span className="absolute bottom-3 right-4 text-[10px] tracking-wider" style={{ color: "rgba(42,42,38,0.45)" }}>{PHOTOS.hero.credit}</span>
+            </div>
+            {/* 左: テキストカラム（上から下まで地色で使う） */}
+            <div className="md:order-1 flex items-center px-4 sm:px-8 lg:px-12 py-12 md:py-10" style={{ backgroundColor: C.bgSoft }}>
+              <div className="w-full max-w-[560px] mx-auto md:mr-0" style={{ color: C.text }}>
                 <p className="text-[11px] tracking-[0.4em] uppercase mb-5" style={{ color: C.accent }}>
                   Long-term Care Insurance
                 </p>
@@ -237,6 +230,7 @@ export default function KaigoPage() {
                   LINE なら個人情報の入力なしで、写真を送るだけでご相談いただけます。
                 </p>
               </div>
+            </div>
           </div>
         </section>
 
