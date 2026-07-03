@@ -9,16 +9,15 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 
 // ════════════════════════════════════════════════
-// Pexels free-license 写真（撮影者クレジット付き）
-// 全部 Pexels CC0 ライセンス、商用利用可・クレジット任意
+// ado 実施工事例写真（自社撮影）とイメージ素材写真の混在
+// イメージ素材（couple / emotion）は出典・ライセンス要確認のため credit は空欄
 // ════════════════════════════════════════════════
-// ado 実施工事例写真（自社撮影）と日本人シーン写真（Pexels）の混在
 const PHOTOS = {
-  // HERO: ado の Elisabeth が階段両側に流麗に設置された施工事例
-  // 「これがお客様の手に入れる未来」を示す主役画像
+  // HERO: ado 実施工の白い鍛鉄手すりを使って階段を上る場面（2026-07 タスク6-1で差し替え）
+  // 「商品の美しさ」でなく「安全に階段を上れる結果」を見せる使用シーン写真
   hero: {
-    url: "/images/products/elisabeth/01.jpg",
-    alt: "ado Elisabeth ロートアイアン手すりを階段の両側に施工した実例（白壁＋無垢材の階段）",
+    url: "/images/kaigo/hero-staircase.jpg",
+    alt: "ado が施工した白い鍛鉄手すりにつかまり、階段を上る男性（実際の施工事例）",
     credit: "Photo by ado",
   },
   // 比較セクションの ado 側ヒーロー（クローズアップ）
@@ -33,34 +32,36 @@ const PHOTOS = {
     alt: "螺旋階段に沿って流れる Elisabeth のロートアイアン手すり",
     credit: "Photo by ado",
   },
-  // ケアマネ向けセクション用：京都で寄り添う日本人ご夫婦
+  // ケアマネ向けセクション用：ご夫婦を象徴するミニチュア写真（出典・ライセンス要確認）
   careCouple: {
-    url: "https://images.pexels.com/photos/30953519/pexels-photo-30953519.jpeg?auto=compress&cs=tinysrgb&w=1200",
-    alt: "京都の街角でご夫婦が寄り添う姿",
-    credit: "Photo by Reinaldo / Pexels",
+    url: "/images/kaigo/caremanager-couple-figurine.jpg",
+    alt: "白背景に佇むミニチュアのご夫婦人形",
+    credit: "",
   },
-  // 中間のエモーショナルブレイク：歩行サポートが必要な日本のご高齢のシーン
+  // 中間のエモーショナルブレイク：ご夫婦とマイホームを象徴するミニチュア写真（出典・ライセンス要確認）
   emotion: {
-    url: "https://images.pexels.com/photos/31851431/pexels-photo-31851431.jpeg?auto=compress&cs=tinysrgb&w=1600",
-    alt: "京都の伝統的な路地を寄り添って歩むご夫婦",
-    credit: "Photo by Boris Dahm / Pexels",
+    url: "/images/kaigo/couple-house-figurine.jpg",
+    alt: "ミニチュアのご夫婦人形が、住まいの模型を見つめる後ろ姿",
+    credit: "",
   },
 }
 
 // ════════════════════════════════════════════════
-// やわらかい白基調＋オレンジ系アクセント（riperun 参考）
+// やわらかい白基調＋セージグリーン系アクセント（riperun 参考／2026-07 タスク6-2で刷新）
 // ════════════════════════════════════════════════
 const C = {
   bg: "#FFFFFF",
   bgSoft: "#FAF7F2",
-  text: "#1A1A1A",
+  text: "#2A2A26", // 真っ黒でなく温かみのある濃いグレー
   muted: "#6B6258",
-  accent: "#D9663A", // 介護系で温かい印象のテラコッタ
-  accentDeep: "#B04E26",
-  border: "#E8E2D6",
-  highlight: "#FDF4EC", // アクセント淡
-  sage: "#7C957A",
+  accent: "#5C7256", // 介護・ウェルネス感のセージグリーン
+  accentDeep: "#3F5039",
+  border: "#E4E4D6",
+  highlight: "#EEF2EA", // アクセント淡（セージ寄り）
 }
+
+// 見出し・小見出し専用：本文の丸ゴシック（--font-rounded）に対して、優しい印象の細めの角ゴシック
+const HEADING_FONT = 'var(--font-rounded-body), "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", sans-serif'
 
 const eligibleWorks = [
   { t: "手すりの取付", d: "屋内（廊下・階段・トイレ・浴室）／屋外（玄関・アプローチ）", main: true },
@@ -166,76 +167,95 @@ export default function KaigoPage() {
 
   return (
     <>
-      <Header />
+      <Header forceDark />
       <main style={{ backgroundColor: C.bg, color: C.text, fontFamily: 'var(--font-rounded), "Yu Gothic UI", "Hiragino Sans", system-ui, sans-serif' }}>
-        {/* ════════════ HERO: full-width photo + overlay ════════════ */}
+        {/* ════════════ HERO: 左テキストカラム + 右写真の分割レイアウト（モバイルは写真→テキストの縦積み） ════════════ */}
         <section className="relative overflow-hidden">
-          <div className="relative h-[88vh] min-h-[600px] max-h-[820px] w-full">
-            <img
-              src={PHOTOS.hero.url}
-              alt={PHOTOS.hero.alt}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(to right, rgba(20,15,10,0.78) 0%, rgba(20,15,10,0.48) 55%, rgba(20,15,10,0.15) 100%)" }} />
-            <div className="relative h-full max-w-[1200px] mx-auto px-4 lg:px-8 flex items-center">
-              <div className="max-w-[640px] text-white pt-16 lg:pt-24">
-                <p className="text-[11px] tracking-[0.4em] uppercase mb-6 opacity-90" style={{ color: "#F5D2B5" }}>
+          <div className="flex flex-col md:grid md:grid-cols-[minmax(0,11fr)_minmax(0,9fr)] md:h-[88vh] md:min-h-[620px] md:max-h-[860px]">
+            {/* 右: 写真（モバイルでは先頭に表示） */}
+            <div className="relative h-[44vh] min-h-[320px] md:order-2 md:h-full">
+              <img
+                src={PHOTOS.hero.url}
+                alt={PHOTOS.hero.alt}
+                className="absolute inset-0 w-full h-full object-cover"
+                style={{ objectPosition: "60% 55%" }}
+              />
+              <span className="absolute bottom-3 right-4 text-[10px] tracking-wider" style={{ color: "rgba(42,42,38,0.45)" }}>{PHOTOS.hero.credit}</span>
+            </div>
+            {/* 左: テキストカラム（上から下まで地色で使う） */}
+            <div className="md:order-1 flex items-center px-4 sm:px-8 lg:px-12 py-12 md:py-10" style={{ backgroundColor: C.bgSoft }}>
+              <div className="w-full max-w-[560px] mx-auto md:mr-0" style={{ color: C.text }}>
+                <p className="text-[11px] tracking-[0.4em] uppercase mb-5" style={{ color: C.accent }}>
                   Long-term Care Insurance
                 </p>
-                <h1 className="text-3xl md:text-4xl lg:text-[3.2rem] leading-[1.4] mb-7">
-                  介護保険<span style={{ color: "#F5A86B" }}>1 割負担</span>で、
+                <h1 className="text-[26px] md:text-4xl lg:text-[3rem] leading-[1.4] mb-6" style={{ fontFamily: HEADING_FONT, fontWeight: 500 }}>
+                  介護保険<span style={{ color: C.accentDeep, marginLeft: "0.2em" }}>1 割負担</span>で、
                   <br />
                   本物の鍛鉄手すりを。
                 </h1>
-                <p className="text-[14px] md:text-[16px] md:text-[17px] leading-[2] mb-9 opacity-95 max-w-[540px]">
-                  「玄関の段差がつらい」「親の家を介護仕様にしたくない」――白いプラ手すりではなく、住まいに馴染む鍛鉄を介護保険でつけられます。千葉市の住宅改修費 受領委任払取扱事業者として登録済み（2026 年 4 月）、立替え不要・自己負担 1 割のみで取付できます。
+                <p className="text-[16px] md:text-[17px] leading-[2] mb-4 max-w-[520px]" style={{ color: C.muted }}>
+                  「玄関の段差がつらい」「親の家を介護仕様にしたくない」──そんな声にお応えする、住まいに馴染む鍛鉄の手すりです。
+                </p>
+                <p className="text-[16px] md:text-[17px] leading-[2] mb-8 max-w-[520px]" style={{ color: C.muted }}>
+                  千葉市の住宅改修費 <strong style={{ color: C.text }}>受領委任払取扱事業者</strong>として登録済み（2026 年 4 月）。<strong style={{ color: C.text }}>立替え不要・自己負担 1 割のみ</strong>で取付できます。
                 </p>
                 <div className="flex flex-wrap gap-3">
                   <Link
                     href="#kaigo-form"
-                    className="inline-flex items-center justify-center px-7 py-3.5 text-[14px] font-medium rounded-md transition-all hover:translate-y-[-1px]"
+                    className="inline-flex items-center justify-center px-6 py-3.5 text-[16px] font-medium rounded-lg transition-all hover:translate-y-[-1px]"
                     style={{ backgroundColor: C.accent, color: "#FFF" }}
                   >
                     介護保険対応のご相談
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Link>
                   <a
+                    href="https://lin.ee/Tnjukrf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center justify-center px-6 py-3.5 text-[16px] font-medium rounded-lg transition-all hover:translate-y-[-1px]"
+                    style={{ backgroundColor: "#06C755", color: "#FFF" }}
+                  >
+                    LINE で相談する
+                  </a>
+                  <a
                     href="tel:070-3817-0659"
-                    className="inline-flex items-center justify-center px-7 py-3.5 text-[14px] font-medium rounded-md transition-colors"
-                    style={{ backgroundColor: "rgba(255,255,255,0.92)", color: C.text }}
+                    className="inline-flex items-center justify-center px-6 py-3.5 text-[16px] font-medium rounded-lg transition-colors"
+                    style={{ backgroundColor: "rgba(255,255,255,0.95)", color: C.text, border: `1px solid ${C.border}` }}
                   >
                     <Phone className="w-4 h-4 mr-2" style={{ color: C.accent }} />
                     070-3817-0659
                   </a>
                 </div>
+                <p className="text-[14px] leading-[1.8] mt-4" style={{ color: C.muted }}>
+                  LINE なら個人情報の入力なしで、写真を送るだけでご相談いただけます。
+                </p>
               </div>
             </div>
-            <span className="absolute bottom-3 right-4 text-[10px] text-white/60 tracking-wider">{PHOTOS.hero.credit}</span>
           </div>
         </section>
 
         {/* ════════════ INTRO: 共感→制度→記事の価値（riperun イントロ） ════════════ */}
         <section className="py-16 lg:py-24" style={{ backgroundColor: C.bg }}>
           <div className="max-w-[760px] mx-auto px-4 lg:px-8">
-            <p className="text-[20px] md:text-[23px] leading-[2.1] mb-6 font-medium" style={{ color: C.text }}>
+            <p className="text-[20px] md:text-[23px] leading-[2.1] mb-6 font-medium" style={{ color: C.text, fontFamily: HEADING_FONT }}>
               「玄関の段差がつらくなってきた」<br />
               「浴室での転倒が心配」<br />
               「親の家を介護仕様にしたくない」
             </p>
             <p className="text-[16px] md:text-[17px] leading-[2] mb-5" style={{ color: C.muted }}>
-              ご高齢のご家族が安心して暮らせるよう、住まいに手すりを付けたい。けれど、「白いプラスチック製は嫌」「全額立替えは大変」――そんな声を、職人として何度もお聞きしてきました。
+              ご高齢のご家族が安心して暮らせるよう、住まいに手すりを付けたい。けれど、「白いプラスチック製は嫌」「全額立替えは大変」──そんな声を、職人として何度もお聞きしてきました。
             </p>
             <p className="text-[16px] md:text-[17px] leading-[2] mb-9" style={{ color: C.muted }}>
               介護保険には住宅改修費の支給制度（上限 20 万円・1 割負担）があり、ado は 2026 年 4 月から
               <strong style={{ color: C.text }}>千葉市の住宅改修費 受領委任払取扱事業者</strong>
-              として登録されました。<strong style={{ color: C.text }}>立替え不要・1 割負担のみ</strong>で、鍛冶職人歴 15 年の手仕事による鍛鉄手すりをお取付できます。
+              として登録されました。<strong style={{ color: C.text }}>立替え不要・1 割負担のみ</strong>で、鉄職人歴 25 年の手仕事による鍛鉄手すりをお取付できます。
             </p>
 
-            <div className="rounded-md p-6 lg:p-7" style={{ backgroundColor: C.highlight, border: `1px solid ${C.border}` }}>
+            <div className="rounded-xl p-6 lg:p-8" style={{ backgroundColor: C.highlight, border: `1px solid ${C.border}` }}>
               <p className="text-[14px] mb-4 tracking-wider" style={{ color: C.accent }}>
                 ─ このページでわかること
               </p>
-              <ul className="space-y-2.5 text-[15px] md:text-[16px]" style={{ color: C.text }}>
+              <ul className="space-y-3 text-[16px] md:text-[17px]" style={{ color: C.text }}>
                 <li>• 受領委任払と通常払いの違い（自己負担額の差）</li>
                 <li>• 介護保険でカバーされる工事の種類</li>
                 <li>• ご相談から工事完了までの 5 ステップの流れ</li>
@@ -253,17 +273,17 @@ export default function KaigoPage() {
               <p className="text-[10px] tracking-[0.4em] uppercase mb-4" style={{ color: C.accent }}>
                 ado vs Generic
               </p>
-              <h2 className="text-3xl lg:text-[2rem] leading-[1.5] mb-4" style={{ color: C.text }}>
+              <h2 className="text-3xl lg:text-[2rem] leading-[1.5] mb-4" style={{ color: C.text, fontFamily: HEADING_FONT, fontWeight: 500 }}>
                 「介護用」に見えない手すり、という選択。
               </h2>
-              <p className="text-[15px] md:text-[16px] leading-[2] max-w-[680px]" style={{ color: C.muted }}>
-                ホームセンターで売られる白い樹脂のグラブバーは、安全には貢献しますが「介護仕様」が一目でわかってしまいます。ado の鍛鉄手すりは、お住まいの意匠と調和しながら同じ安全性を提供します。
+              <p className="text-[16px] md:text-[17px] leading-[2] max-w-[680px]" style={{ color: C.muted }}>
+                住宅に標準的に使われる既製の手すりは、扱いやすく実用的な道具です。そのうえで「家の雰囲気に合うものがいい」という方に、ado はもう一つの選択肢をご用意しています。鍛鉄手すりは、お住まいの意匠と調和しながら同じ安全性を提供します。
               </p>
             </div>
 
             <div className="grid md:grid-cols-2 gap-5 lg:gap-7">
               {/* ado 側 */}
-              <div className="rounded-lg overflow-hidden" style={{ backgroundColor: C.bg, border: `2px solid ${C.accent}` }}>
+              <div className="rounded-xl overflow-hidden" style={{ backgroundColor: C.bg, border: `2px solid ${C.accent}` }}>
                 <div className="relative aspect-[4/3] overflow-hidden">
                   <img src={PHOTOS.adoCloseup.url} alt={PHOTOS.adoCloseup.alt} className="absolute inset-0 w-full h-full object-cover" />
                   <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-medium" style={{ backgroundColor: C.accent, color: "#FFF" }}>
@@ -271,10 +291,10 @@ export default function KaigoPage() {
                   </div>
                 </div>
                 <div className="p-6 lg:p-7">
-                  <h3 className="text-lg lg:text-xl mb-4" style={{ color: C.text, fontWeight: 600 }}>
-                    鍛鉄手すり ・ 鍛冶職人手仕事
+                  <h3 className="text-lg lg:text-xl mb-4" style={{ color: C.text, fontWeight: 500, fontFamily: HEADING_FONT }}>
+                    鍛鉄手すり・鍛冶職人手仕事
                   </h3>
-                  <dl className="space-y-3 text-[14px] md:text-[15px]">
+                  <dl className="space-y-3 text-[16px] md:text-[17px]">
                     {[
                       { l: "素材", v: "鍛鉄（無垢の鉄を熱して打つ）" },
                       { l: "意匠性", v: "S字スクロール／鎚目／曲線──住まいに馴染む" },
@@ -292,27 +312,25 @@ export default function KaigoPage() {
                 </div>
               </div>
 
-              {/* 一般的な介護手すり 側（写真は蠣﨑さんが後日提供予定） */}
-              <div className="rounded-lg overflow-hidden" style={{ backgroundColor: "#F4F4F4", border: `1px solid ${C.border}` }}>
-                <div className="relative aspect-[4/3] flex items-center justify-center" style={{ backgroundColor: "#EFEAE2" }}>
-                  <p className="text-center px-6" style={{ color: "#9A8E7C", fontSize: "13px", lineHeight: 1.9 }}>
-                    （一般的な樹脂・スチール手すりの<br />参考写真は近日掲載予定）
-                  </p>
+              {/* 一般的な既製手すり 側 */}
+              <div className="rounded-xl overflow-hidden" style={{ backgroundColor: "#F4F4F4", border: `1px solid ${C.border}` }}>
+                <div className="relative aspect-[4/3] overflow-hidden">
+                  <img src="/images/kaigo/generic-handrail-comparison.jpg" alt="住宅でよく見られる既製の木製手すりの例" className="absolute inset-0 w-full h-full object-cover" />
                   <div className="absolute top-3 left-3 px-3 py-1 rounded-full text-[11px] font-medium" style={{ backgroundColor: "#999", color: "#FFF" }}>
-                    一般的な介護用品
+                    住宅の既製手すり
                   </div>
                 </div>
                 <div className="p-6 lg:p-7">
-                  <h3 className="text-lg lg:text-xl mb-4" style={{ color: "#555", fontWeight: 600 }}>
-                    樹脂・スチール手すり ・ 量産品
+                  <h3 className="text-lg lg:text-xl mb-4" style={{ color: "#555", fontWeight: 500, fontFamily: HEADING_FONT }}>
+                    既製サイズの手すり・量産品
                   </h3>
-                  <dl className="space-y-3 text-[14px] md:text-[15px]">
+                  <dl className="space-y-3 text-[16px] md:text-[17px]">
                     {[
-                      { l: "素材", v: "樹脂・抗菌コートしたスチール" },
-                      { l: "意匠性", v: "規格パイプ──「介護仕様」が一目で分かる" },
-                      { l: "触り心地", v: "樹脂のチープな質感・冷感" },
-                      { l: "耐久性", v: "5〜10 年で経年劣化・交換が必要" },
-                      { l: "取付方法", v: "規格サイズの中から選ぶ（現場合わせ不可）" },
+                      { l: "素材", v: "木材・樹脂・スチールなど既製品" },
+                      { l: "意匠性", v: "規格サイズ・シンプルな直線形状" },
+                      { l: "触り心地", v: "軽く扱いやすい・お手入れも簡単" },
+                      { l: "耐久性", v: "製品や使用環境による" },
+                      { l: "取付方法", v: "既製サイズから選ぶ（現場に合わせた調整は限定的）" },
                       { l: "価格目安", v: "¥3,000〜¥20,000（同制度で 1 割負担）" },
                     ].map((row) => (
                       <div key={row.l} className="grid grid-cols-[90px_1fr] gap-3" style={{ borderBottom: `1px dashed #DDD`, paddingBottom: "12px" }}>
@@ -325,7 +343,7 @@ export default function KaigoPage() {
               </div>
             </div>
 
-            <p className="text-[13px] leading-[1.9] mt-8 text-center" style={{ color: C.muted }}>
+            <p className="text-[14px] leading-[1.9] mt-8 text-center" style={{ color: C.muted }}>
               ※ 介護保険の支給対象は両者とも同じ。同じ「1 割負担」で、住まいに合った道具を選べます。
             </p>
           </div>
@@ -338,18 +356,18 @@ export default function KaigoPage() {
               <p className="text-[10px] tracking-[0.4em] uppercase mb-4" style={{ color: C.accent }}>
                 Two ways
               </p>
-              <h2 className="text-3xl lg:text-[2rem] leading-[1.5] mb-4" style={{ color: C.text }}>
-                通常 ・ 受領委任払――この差は大きい。
+              <h2 className="text-3xl lg:text-[2rem] leading-[1.5] mb-4" style={{ color: C.text, fontFamily: HEADING_FONT, fontWeight: 500 }}>
+                通常・受領委任払──この差は大きい。
               </h2>
-              <p className="text-[15px] md:text-[16px] leading-[2] max-w-[640px] mx-auto" style={{ color: C.muted }}>
+              <p className="text-[16px] md:text-[17px] leading-[2] max-w-[640px] mx-auto" style={{ color: C.muted }}>
                 介護保険住宅改修費の受け取り方には 2 通りあります。受領委任払事業者を選ぶと、お客様は窓口で 1 割分だけお支払いいただければ完了します。
               </p>
             </div>
 
-            <div className="rounded-lg overflow-hidden" style={{ backgroundColor: C.bg, border: `1px solid ${C.border}` }}>
-              <table className="w-full text-[14px] md:text-[15px]">
+            <div className="rounded-xl overflow-hidden" style={{ backgroundColor: C.bg, border: `1px solid ${C.border}` }}>
+              <table className="w-full text-[16px] md:text-[17px]">
                 <thead>
-                  <tr style={{ backgroundColor: "#F2EDE3" }}>
+                  <tr style={{ backgroundColor: "#EDEFE6" }}>
                     <th className="text-left px-5 py-4 font-medium" style={{ color: C.muted, width: "28%" }}>項目</th>
                     <th className="text-left px-5 py-4 font-medium" style={{ color: C.muted }}>通常払い</th>
                     <th className="text-left px-5 py-4 font-medium" style={{ color: C.accentDeep, backgroundColor: C.highlight }}>受領委任払（ado）</th>
@@ -373,7 +391,7 @@ export default function KaigoPage() {
               </table>
             </div>
 
-            <p className="text-[12px] leading-[1.9] mt-5 text-center" style={{ color: C.muted }}>
+            <p className="text-[14px] leading-[1.9] mt-5 text-center" style={{ color: C.muted }}>
               ※ 1 割負担の方の例です。所得により負担割合は 2〜3 割となる方もいらっしゃいます。
             </p>
           </div>
@@ -383,14 +401,16 @@ export default function KaigoPage() {
         <section className="relative">
           <div className="relative h-[420px] md:h-[520px] w-full overflow-hidden">
             <img src={PHOTOS.emotion.url} alt={PHOTOS.emotion.alt} className="absolute inset-0 w-full h-full object-cover" />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(20,15,10,0.55) 0%, rgba(20,15,10,0.15) 60%, rgba(20,15,10,0) 100%)" }} />
+            <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(30,34,26,0.60) 0%, rgba(30,34,26,0.18) 60%, rgba(30,34,26,0) 100%)" }} />
             <div className="absolute inset-x-0 bottom-0 max-w-[1100px] mx-auto px-4 lg:px-8 pb-10 lg:pb-14">
-              <p className="text-white text-xl md:text-2xl leading-[1.7] max-w-[600px]" style={{ fontWeight: 500 }}>
+              <p className="text-white text-xl md:text-2xl leading-[1.7] max-w-[600px]" style={{ fontWeight: 500, fontFamily: HEADING_FONT }}>
                 ご夫婦の毎日を、<br />
                 住まいに馴染む道具で支える。
               </p>
             </div>
-            <span className="absolute bottom-3 right-4 text-[10px] text-white/60 tracking-wider">{PHOTOS.emotion.credit}</span>
+            {PHOTOS.emotion.credit && (
+              <span className="absolute bottom-3 right-4 text-[10px] text-white/60 tracking-wider">{PHOTOS.emotion.credit}</span>
+            )}
           </div>
         </section>
 
@@ -401,18 +421,18 @@ export default function KaigoPage() {
               <p className="text-[10px] tracking-[0.4em] uppercase mb-4" style={{ color: C.accent }}>
                 Eligible Work
               </p>
-              <h2 className="text-3xl lg:text-[2rem] leading-[1.5] mb-4" style={{ color: C.text }}>
+              <h2 className="text-3xl lg:text-[2rem] leading-[1.5] mb-4" style={{ color: C.text, fontFamily: HEADING_FONT, fontWeight: 500 }}>
                 介護保険でカバーされる工事
               </h2>
-              <p className="text-[15px] md:text-[16px] leading-[2] max-w-2xl" style={{ color: C.muted }}>
+              <p className="text-[16px] md:text-[17px] leading-[2] max-w-2xl" style={{ color: C.muted }}>
                 住宅改修費の支給対象は法令で定められた 6 種類です。ado は手すり取付を主力に、玄関段差解消等も承ります。
               </p>
             </div>
 
-            <div className="rounded-lg overflow-hidden" style={{ backgroundColor: C.bg, border: `1px solid ${C.border}` }}>
-              <table className="w-full text-[14px] md:text-[15px]">
+            <div className="rounded-xl overflow-hidden" style={{ backgroundColor: C.bg, border: `1px solid ${C.border}` }}>
+              <table className="w-full text-[16px] md:text-[17px]">
                 <thead>
-                  <tr style={{ backgroundColor: "#F2EDE3" }}>
+                  <tr style={{ backgroundColor: "#EDEFE6" }}>
                     <th className="text-left px-5 py-4 font-medium" style={{ color: C.muted, width: "32%" }}>工事種別</th>
                     <th className="text-left px-5 py-4 font-medium" style={{ color: C.muted }}>具体例</th>
                     <th className="text-left px-5 py-4 font-medium hidden md:table-cell" style={{ color: C.muted, width: "14%" }}>ado 主力</th>
@@ -445,18 +465,18 @@ export default function KaigoPage() {
               <p className="text-[10px] tracking-[0.4em] uppercase mb-4" style={{ color: C.accent }}>
                 Cost Simulation
               </p>
-              <h2 className="text-3xl lg:text-[2rem] leading-[1.5] mb-4" style={{ color: C.text }}>
+              <h2 className="text-3xl lg:text-[2rem] leading-[1.5] mb-4" style={{ color: C.text, fontFamily: HEADING_FONT, fontWeight: 500 }}>
                 自己負担額の目安
               </h2>
-              <p className="text-[15px] md:text-[16px] leading-[2] max-w-[640px] mx-auto" style={{ color: C.muted }}>
+              <p className="text-[16px] md:text-[17px] leading-[2] max-w-[640px] mx-auto" style={{ color: C.muted }}>
                 ※ 介護保険住宅改修費の支給上限は 1 人につき生涯 20 万円。下記は 1 割負担の方の例です。
               </p>
             </div>
 
-            <div className="rounded-lg overflow-hidden" style={{ backgroundColor: C.bg, border: `1px solid ${C.border}` }}>
-              <table className="w-full text-[14px] md:text-[15px]">
+            <div className="rounded-xl overflow-hidden" style={{ backgroundColor: C.bg, border: `1px solid ${C.border}` }}>
+              <table className="w-full text-[16px] md:text-[17px]">
                 <thead>
-                  <tr style={{ backgroundColor: "#F2EDE3" }}>
+                  <tr style={{ backgroundColor: "#EDEFE6" }}>
                     <th className="text-left px-5 py-4 font-medium" style={{ color: C.muted, width: "30%" }}>工事内容</th>
                     <th className="text-right px-5 py-4 font-medium" style={{ color: C.muted }}>工事費 総額</th>
                     <th className="text-right px-5 py-4 font-medium" style={{ color: C.accentDeep, backgroundColor: C.highlight }}>お客様 負担</th>
@@ -471,8 +491,8 @@ export default function KaigoPage() {
                   ].map((sim, i) => (
                     <tr key={sim.c} style={{ borderTop: `1px solid ${C.border}` }}>
                       <td className="px-5 py-4 align-top">
-                        <div className="text-[14px] md:text-[15px] mb-1" style={{ color: C.text }}>{sim.c}</div>
-                        <div className="text-[12px]" style={{ color: C.muted }}>{sim.desc}</div>
+                        <div className="text-[16px] md:text-[17px] mb-1" style={{ color: C.text }}>{sim.c}</div>
+                        <div className="text-[14px]" style={{ color: C.muted }}>{sim.desc}</div>
                       </td>
                       <td className="px-5 py-4 align-top text-right font-mono" style={{ color: C.muted }}>{sim.total}</td>
                       <td className="px-5 py-4 align-top text-right" style={{ backgroundColor: i % 2 ? "#FFFCF6" : C.highlight }}>
@@ -485,7 +505,7 @@ export default function KaigoPage() {
               </table>
             </div>
 
-            <p className="text-[12px] leading-[1.9] mt-5" style={{ color: C.muted }}>
+            <p className="text-[14px] leading-[1.9] mt-5" style={{ color: C.muted }}>
               ※ 実際の金額は現場寸法・取付下地条件・仕様により変動します。正式なお見積もりは現地調査後にご提示します。
             </p>
           </div>
@@ -498,21 +518,21 @@ export default function KaigoPage() {
               <p className="text-[10px] tracking-[0.4em] uppercase mb-4" style={{ color: C.accent }}>
                 Real installations
               </p>
-              <h2 className="text-3xl lg:text-[2rem] leading-[1.5] mb-4" style={{ color: C.text }}>
+              <h2 className="text-3xl lg:text-[2rem] leading-[1.5] mb-4" style={{ color: C.text, fontFamily: HEADING_FONT, fontWeight: 500 }}>
                 ado の手すりが、ご自宅に流れる。
               </h2>
-              <p className="text-[15px] md:text-[16px] leading-[2] max-w-[680px]" style={{ color: C.muted }}>
-                白壁・無垢の階段・自然光――ご自宅の意匠に溶け込むように、鍛冶職人が一本ずつ現場寸法に合わせて手仕事で曲げ・溶接・塗装まで仕上げます。
+              <p className="text-[16px] md:text-[17px] leading-[2] max-w-[680px]" style={{ color: C.muted }}>
+                白壁・無垢の階段・自然光──ご自宅の意匠に溶け込むように、鍛冶職人が一本ずつ現場寸法に合わせて手仕事で曲げ・溶接・塗装まで仕上げます。
               </p>
             </div>
             <div className="grid md:grid-cols-3 gap-3 md:gap-4">
-              <div className="relative aspect-[3/4] rounded-md overflow-hidden">
+              <div className="relative aspect-[3/4] rounded-lg overflow-hidden">
                 <img src="/images/products/elisabeth/02.jpg" alt="螺旋階段に流れる Elisabeth の鍛鉄手すり" className="absolute inset-0 w-full h-full object-cover" />
               </div>
-              <div className="relative aspect-[3/4] rounded-md overflow-hidden">
+              <div className="relative aspect-[3/4] rounded-lg overflow-hidden">
                 <img src="/images/products/elisabeth/03.jpg" alt="Elisabeth の S 字スクロール意匠のクローズアップ" className="absolute inset-0 w-full h-full object-cover" />
               </div>
-              <div className="relative aspect-[3/4] rounded-md overflow-hidden">
+              <div className="relative aspect-[3/4] rounded-lg overflow-hidden">
                 <img src="/images/products/elisabeth/04.jpg" alt="Elisabeth の手仕事の鍛鉄手すり" className="absolute inset-0 w-full h-full object-cover" />
               </div>
             </div>
@@ -526,10 +546,10 @@ export default function KaigoPage() {
               <p className="text-[10px] tracking-[0.4em] uppercase mb-4" style={{ color: C.accent }}>
                 Flow
               </p>
-              <h2 className="text-3xl lg:text-[2rem] leading-[1.5] mb-4" style={{ color: C.text }}>
+              <h2 className="text-3xl lg:text-[2rem] leading-[1.5] mb-4" style={{ color: C.text, fontFamily: HEADING_FONT, fontWeight: 500 }}>
                 ご相談から工事完了まで、5 ステップ。
               </h2>
-              <p className="text-[15px] md:text-[16px] leading-[2] max-w-2xl" style={{ color: C.muted }}>
+              <p className="text-[16px] md:text-[17px] leading-[2] max-w-2xl" style={{ color: C.muted }}>
                 ご相談から工事完了まで通常 4〜6 週間が目安です。退院に合わせて急ぐ場合は、市役所と相談のうえ書類を急いで進めることも可能です。
               </p>
             </div>
@@ -541,10 +561,10 @@ export default function KaigoPage() {
                     <div className="text-4xl md:text-5xl leading-none" style={{ color: C.text, fontWeight: 300 }}>{s.num}</div>
                   </div>
                   <div>
-                    <h3 className="text-lg lg:text-xl mb-3" style={{ color: C.text }}>
+                    <h3 className="text-lg lg:text-xl mb-3" style={{ color: C.text, fontFamily: HEADING_FONT, fontWeight: 500 }}>
                       {s.title}
                     </h3>
-                    <p className="text-[15px] md:text-[16px] leading-[2]" style={{ color: C.muted }}>
+                    <p className="text-[16px] md:text-[17px] leading-[2]" style={{ color: C.muted }}>
                       {s.desc}
                     </p>
                   </div>
@@ -558,20 +578,25 @@ export default function KaigoPage() {
         <section className="py-20 lg:py-28" style={{ backgroundColor: C.bgSoft }}>
           <div className="max-w-[1100px] mx-auto px-4 lg:px-8">
             <div className="grid md:grid-cols-[1fr_1.2fr] gap-10 lg:gap-16 items-center">
-              <div className="relative h-[360px] md:h-[460px] rounded-lg overflow-hidden">
-                <img src={PHOTOS.careCouple.url} alt={PHOTOS.careCouple.alt} className="absolute inset-0 w-full h-full object-cover" />
+              <div className="relative h-[360px] md:h-[460px] rounded-xl overflow-hidden">
+                <img
+                  src={PHOTOS.careCouple.url}
+                  alt={PHOTOS.careCouple.alt}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  style={{ objectPosition: "15% 55%" }}
+                />
               </div>
               <div>
                 <p className="text-[10px] tracking-[0.4em] uppercase mb-4" style={{ color: C.accent }}>
                   For Care Professionals
                 </p>
-                <h2 className="text-2xl lg:text-3xl leading-[1.6] mb-5" style={{ color: C.text }}>
+                <h2 className="text-2xl lg:text-3xl leading-[1.6] mb-5" style={{ color: C.text, fontFamily: HEADING_FONT, fontWeight: 500 }}>
                   ケアマネ様・福祉用具事業者様へ
                 </h2>
-                <p className="text-[15px] md:text-[16px] leading-[2] mb-6" style={{ color: C.muted }}>
+                <p className="text-[16px] md:text-[17px] leading-[2] mb-6" style={{ color: C.muted }}>
                   「白いプラではなく意匠性のある手すりが欲しい」というご家族のニーズにお応えできる事業者として、千葉市内の地域包括支援センター・福祉用具事業者様からの紹介を承っております。
                 </p>
-                <ul className="space-y-3 text-[15px] md:text-[16px] mb-7" style={{ color: C.text }}>
+                <ul className="space-y-3 text-[16px] md:text-[17px] mb-7" style={{ color: C.text }}>
                   <li className="flex items-start gap-2.5">
                     <span style={{ color: C.accent }}>●</span>
                     <span>ケアマネ様の理由書作成サポート・現地下見の同行</span>
@@ -585,7 +610,7 @@ export default function KaigoPage() {
                     <span>担当者直通の連絡先と紹介手数料のご案内</span>
                   </li>
                 </ul>
-                <Link href="#kaigo-form" className="inline-flex items-center gap-2 text-[14px] font-medium hover:underline" style={{ color: C.accent }}>
+                <Link href="#kaigo-form" className="inline-flex items-center gap-2 text-[16px] font-medium hover:underline" style={{ color: C.accent }}>
                   フォームから「ケアマネ」を選択してご連絡
                   <ArrowRight className="w-4 h-4" />
                 </Link>
@@ -601,10 +626,10 @@ export default function KaigoPage() {
               <p className="text-[10px] tracking-[0.4em] uppercase mb-4" style={{ color: C.accent }}>
                 Area
               </p>
-              <h2 className="text-3xl lg:text-[2rem] leading-[1.5] mb-4" style={{ color: C.text }}>
+              <h2 className="text-3xl lg:text-[2rem] leading-[1.5] mb-4" style={{ color: C.text, fontFamily: HEADING_FONT, fontWeight: 500 }}>
                 対応エリア
               </h2>
-              <p className="text-[15px] md:text-[16px] leading-[2] max-w-2xl" style={{ color: C.muted }}>
+              <p className="text-[16px] md:text-[17px] leading-[2] max-w-2xl" style={{ color: C.muted }}>
                 受領委任払が使えるのは千葉市民のみです（市の制度のため）。千葉市以外の方は通常の還付制度をご利用いただきます（書類代行は同様に承ります）。
               </p>
             </div>
@@ -612,7 +637,7 @@ export default function KaigoPage() {
               {targetAreas.map((a) => (
                 <span
                   key={a.name}
-                  className="inline-flex items-center gap-1.5 px-4 py-2 text-[13px] rounded-md"
+                  className="inline-flex items-center gap-1.5 px-4 py-2.5 text-[14px] rounded-lg"
                   style={{
                     backgroundColor: a.primary ? C.highlight : C.bg,
                     border: `1px solid ${a.primary ? C.accent : C.border}`,
@@ -634,7 +659,7 @@ export default function KaigoPage() {
               <p className="text-[10px] tracking-[0.4em] uppercase mb-4" style={{ color: C.accent }}>
                 FAQ
               </p>
-              <h2 className="text-3xl lg:text-[2rem]" style={{ color: C.text }}>
+              <h2 className="text-3xl lg:text-[2rem]" style={{ color: C.text, fontFamily: HEADING_FONT, fontWeight: 500 }}>
                 よくいただくご質問
               </h2>
             </div>
@@ -644,7 +669,7 @@ export default function KaigoPage() {
                 return (
                   <div
                     key={index}
-                    className="rounded-md overflow-hidden"
+                    className="rounded-xl overflow-hidden"
                     style={{ backgroundColor: C.bg, border: `1px solid ${C.border}` }}
                   >
                     <button
@@ -652,7 +677,7 @@ export default function KaigoPage() {
                       className="w-full flex items-start justify-between gap-4 p-5 lg:p-6 text-left transition-colors hover:bg-[#FCFAF6]"
                       aria-expanded={isOpen}
                     >
-                      <span className="text-[16px] lg:text-[17px] font-medium leading-relaxed" style={{ color: C.text }}>
+                      <span className="text-[16px] lg:text-[17px] font-medium leading-relaxed" style={{ color: C.text, fontFamily: HEADING_FONT, fontWeight: 500 }}>
                         {faq.q}
                       </span>
                       <span
@@ -671,7 +696,7 @@ export default function KaigoPage() {
                           transition={{ duration: 0.25 }}
                           className="overflow-hidden"
                         >
-                          <p className="text-[15px] md:text-[16px] leading-[2] px-5 lg:px-6 pb-5 lg:pb-6 whitespace-pre-line" style={{ color: C.muted }}>
+                          <p className="text-[16px] md:text-[17px] leading-[2] px-5 lg:px-6 pb-5 lg:pb-6 whitespace-pre-line" style={{ color: C.muted }}>
                             {faq.a}
                           </p>
                         </motion.div>
@@ -691,18 +716,46 @@ export default function KaigoPage() {
               <p className="text-[10px] tracking-[0.4em] uppercase mb-4" style={{ color: C.accent }}>
                 Contact
               </p>
-              <h2 className="text-3xl lg:text-[2rem] mb-4" style={{ color: C.text }}>
+              <h2 className="text-3xl lg:text-[2rem] mb-4" style={{ color: C.text, fontFamily: HEADING_FONT, fontWeight: 500 }}>
                 介護保険対応のご相談
               </h2>
-              <p className="text-[15px] md:text-[16px] leading-[2] max-w-[640px] mx-auto" style={{ color: C.muted }}>
+              <p className="text-[16px] md:text-[17px] leading-[2] max-w-[640px] mx-auto" style={{ color: C.muted }}>
                 ご本人・ご家族・ケアマネージャー様・福祉用具事業者様、どなたからでもどうぞ。通常 1〜2 営業日以内に職人本人からご返答いたします。
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-5 rounded-lg p-6 lg:p-8" style={{ backgroundColor: C.bgSoft, border: `1px solid ${C.border}` }}>
+            {/* LINE 相談導線（フォームより気軽な選択肢を先に提示） */}
+            <div className="flex flex-col items-center gap-3 mb-12 rounded-xl p-6 lg:p-7" style={{ backgroundColor: C.highlight, border: `1px solid ${C.border}` }}>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <a
+                  href="https://lin.ee/Tnjukrf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center px-8 py-4 text-[16px] font-medium rounded-lg transition-all hover:translate-y-[-1px]"
+                  style={{ backgroundColor: "#06C755", color: "#FFF" }}
+                >
+                  LINE で相談する
+                </a>
+                <a
+                  href="tel:070-3817-0659"
+                  className="inline-flex items-center justify-center px-8 py-4 text-[16px] font-medium rounded-lg transition-colors"
+                  style={{ backgroundColor: C.bg, color: C.text, border: `1px solid ${C.border}` }}
+                >
+                  <Phone className="w-4 h-4 mr-2" style={{ color: C.accent }} />
+                  070-3817-0659
+                </a>
+              </div>
+              <p className="text-[15px] leading-[1.9] text-center" style={{ color: C.muted }}>
+                LINE なら個人情報の入力なしで、現場の写真を送るだけでご相談いただけます。
+                <br className="hidden sm:block" />
+                じっくり書きたい方は、下のフォームをご利用ください。
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-5 rounded-xl p-6 lg:p-8" style={{ backgroundColor: C.bgSoft, border: `1px solid ${C.border}` }}>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[12px] font-medium mb-2" style={{ color: C.text }}>
+                  <label className="block text-[15px] font-medium mb-2" style={{ color: C.text }}>
                     お名前 <span style={{ color: C.accent }}>*</span>
                   </label>
                   <input
@@ -711,12 +764,12 @@ export default function KaigoPage() {
                     onChange={(e) => setName(e.target.value)}
                     required
                     placeholder="山田 花子"
-                    className="w-full px-4 py-3 rounded-md text-[14px] focus:outline-none transition-colors"
+                    className="w-full px-4 py-3.5 rounded-lg text-[16px] focus:outline-none transition-colors"
                     style={{ border: `1px solid ${C.border}`, backgroundColor: C.bg }}
                   />
                 </div>
                 <div>
-                  <label className="block text-[12px] font-medium mb-2" style={{ color: C.text }}>
+                  <label className="block text-[15px] font-medium mb-2" style={{ color: C.text }}>
                     メールアドレス <span style={{ color: C.accent }}>*</span>
                   </label>
                   <input
@@ -725,7 +778,7 @@ export default function KaigoPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     placeholder="example@email.com"
-                    className="w-full px-4 py-3 rounded-md text-[14px] focus:outline-none transition-colors"
+                    className="w-full px-4 py-3.5 rounded-lg text-[16px] focus:outline-none transition-colors"
                     style={{ border: `1px solid ${C.border}`, backgroundColor: C.bg }}
                   />
                 </div>
@@ -733,7 +786,7 @@ export default function KaigoPage() {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[12px] font-medium mb-2" style={{ color: C.text }}>
+                  <label className="block text-[15px] font-medium mb-2" style={{ color: C.text }}>
                     お電話
                   </label>
                   <input
@@ -741,12 +794,12 @@ export default function KaigoPage() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="090-0000-0000"
-                    className="w-full px-4 py-3 rounded-md text-[14px] focus:outline-none transition-colors"
+                    className="w-full px-4 py-3.5 rounded-lg text-[16px] focus:outline-none transition-colors"
                     style={{ border: `1px solid ${C.border}`, backgroundColor: C.bg }}
                   />
                 </div>
                 <div>
-                  <label className="block text-[12px] font-medium mb-2" style={{ color: C.text }}>
+                  <label className="block text-[15px] font-medium mb-2" style={{ color: C.text }}>
                     お住まい（市区町村まででも可）
                   </label>
                   <input
@@ -754,14 +807,14 @@ export default function KaigoPage() {
                     value={address}
                     onChange={(e) => setAddress(e.target.value)}
                     placeholder="千葉市美浜区"
-                    className="w-full px-4 py-3 rounded-md text-[14px] focus:outline-none transition-colors"
+                    className="w-full px-4 py-3.5 rounded-lg text-[16px] focus:outline-none transition-colors"
                     style={{ border: `1px solid ${C.border}`, backgroundColor: C.bg }}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[12px] font-medium mb-2" style={{ color: C.text }}>
+                <label className="block text-[15px] font-medium mb-2" style={{ color: C.text }}>
                   介護認定の状況（わかる範囲で）
                 </label>
                 <input
@@ -769,13 +822,13 @@ export default function KaigoPage() {
                   value={careLevel}
                   onChange={(e) => setCareLevel(e.target.value)}
                   placeholder="例: 要支援 1 / 要介護 2 / これから申請予定 など"
-                  className="w-full px-4 py-3 rounded-md text-[14px] focus:outline-none transition-colors"
+                  className="w-full px-4 py-3.5 rounded-lg text-[16px] focus:outline-none transition-colors"
                   style={{ border: `1px solid ${C.border}`, backgroundColor: C.bg }}
                 />
               </div>
 
               <div>
-                <label className="block text-[12px] font-medium mb-3" style={{ color: C.text }}>
+                <label className="block text-[15px] font-medium mb-3" style={{ color: C.text }}>
                   ご相談区分（複数選択可）
                 </label>
                 <div className="grid sm:grid-cols-2 gap-2">
@@ -784,7 +837,7 @@ export default function KaigoPage() {
                     return (
                       <label
                         key={t.value}
-                        className="flex items-center gap-2 px-4 py-3 rounded-md cursor-pointer text-[13px] transition-colors"
+                        className="flex items-center gap-2 px-4 py-3 rounded-lg cursor-pointer text-[15px] transition-colors"
                         style={{
                           border: `1px solid ${checked ? C.accent : C.border}`,
                           backgroundColor: checked ? C.highlight : C.bg,
@@ -806,7 +859,7 @@ export default function KaigoPage() {
               </div>
 
               <div>
-                <label className="block text-[12px] font-medium mb-2" style={{ color: C.text }}>
+                <label className="block text-[15px] font-medium mb-2" style={{ color: C.text }}>
                   ご相談内容 <span style={{ color: C.accent }}>*</span>
                 </label>
                 <textarea
@@ -815,12 +868,12 @@ export default function KaigoPage() {
                   required
                   rows={6}
                   placeholder="例: 80 代の母が暮らす実家（千葉市美浜区）の玄関と階段に手すりをつけたいです。介護認定は要支援 2 が出ています。"
-                  className="w-full px-4 py-3 rounded-md text-[14px] leading-[1.85] focus:outline-none transition-colors resize-y"
+                  className="w-full px-4 py-3.5 rounded-lg text-[16px] leading-[1.85] focus:outline-none transition-colors resize-y"
                   style={{ border: `1px solid ${C.border}`, backgroundColor: C.bg }}
                 />
               </div>
 
-              <label className="flex items-start gap-3 text-[12px] leading-[1.85] cursor-pointer" style={{ color: C.muted }}>
+              <label className="flex items-start gap-3 text-[15px] leading-[1.85] cursor-pointer" style={{ color: C.muted }}>
                 <input
                   type="checkbox"
                   checked={agreed}
@@ -837,7 +890,7 @@ export default function KaigoPage() {
               </label>
 
               {submitError && (
-                <p className="text-[13px] rounded-md px-4 py-3" style={{ color: "#A33", backgroundColor: "#FCEAEA", border: "1px solid #F2C2C2" }}>
+                <p className="text-[15px] rounded-lg px-4 py-3" style={{ color: "#A33", backgroundColor: "#FCEAEA", border: "1px solid #F2C2C2" }}>
                   {submitError}
                 </p>
               )}
@@ -846,7 +899,7 @@ export default function KaigoPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-[14px] font-medium rounded-md transition-all hover:translate-y-[-1px] disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-[16px] font-medium rounded-lg transition-all hover:translate-y-[-1px] disabled:opacity-60 disabled:cursor-not-allowed"
                   style={{ backgroundColor: C.accent, color: "#FFF" }}
                 >
                   {submitting ? "送信中..." : "送信する"}
@@ -856,7 +909,7 @@ export default function KaigoPage() {
             </form>
 
             <p className="text-[11px] mt-8 text-center" style={{ color: C.muted }}>
-              ※ 当ページ写真は Pexels 提供のフリー素材を使用しています（hero / couple / man / handrail / woman: それぞれ Pexels の各撮影者）。実際の施工事例写真は撮影次第差し替えます。
+              ※ 一部の写真はイメージ素材を使用しています。実際の施工事例写真は撮影次第差し替えます。
             </p>
           </div>
         </section>
