@@ -10,7 +10,7 @@ import { Footer } from "@/components/footer"
 
 // ════════════════════════════════════════════════
 // ado 実施工事例写真（自社撮影）とイメージ素材写真の混在
-// イメージ素材（couple / emotion）は出典・ライセンス要確認のため credit は空欄
+// イメージ素材（couple / emotion / 比較写真）= photoAC（商用利用可・クレジット不要）のため credit は空欄
 // ════════════════════════════════════════════════
 const PHOTOS = {
   // HERO: ado 実施工の白い鍛鉄手すりを使って階段を上る場面（2026-07 タスク6-1で差し替え）
@@ -567,6 +567,27 @@ export default function KaigoPage() {
                     <p className="text-[16px] md:text-[17px] leading-[2]" style={{ color: C.muted }}>
                       {s.desc}
                     </p>
+                    {/* STEP 02 = 最強の差別化「職人本人が伺う」に顔を添える（タスク6-6） */}
+                    {s.num === "02" && (
+                      <div className="mt-6 flex items-center gap-4 sm:gap-5 rounded-xl p-4 sm:p-5" style={{ backgroundColor: C.highlight, border: `1px solid ${C.border}` }}>
+                        <img
+                          src="/images/kaigo/craftsman-portrait.jpg"
+                          alt="鍛冶職人・蠣﨑 良治のポートレートイラスト"
+                          className="w-28 sm:w-32 md:w-36 shrink-0 rounded-lg object-cover aspect-[4/5]"
+                          style={{ objectPosition: "50% 25%" }}
+                        />
+                        <div>
+                          <p className="text-[16px] md:text-[17px] leading-[1.9] font-medium" style={{ color: C.text, fontFamily: HEADING_FONT }}>
+                            現地調査から取付まで、
+                            <br className="hidden sm:block" />
+                            職人本人が伺います。
+                          </p>
+                          <p className="text-[14px] mt-2" style={{ color: C.muted }}>
+                            鍛冶職人・蠣﨑 良治
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
