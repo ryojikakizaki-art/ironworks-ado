@@ -177,7 +177,7 @@ export default function AboutPage() {
             <div className="max-w-[1100px] mx-auto flex flex-col lg:flex-row gap-4 lg:gap-12 items-start">
               <p className="text-[10px] tracking-[0.4em] uppercase text-gold lg:w-32 shrink-0">Caption</p>
               <p className="text-[13px] md:text-[14px] leading-[2] text-foreground/70 max-w-2xl">
-                鍛冶職人 ・ 蠣﨑 良治（かきざき りょうじ）。鉄を熱して叩き、人の手で形を起こす西洋鍛冶（フォージング）の作り手。
+                鍛冶職人・蠣﨑 良治（かきざき りょうじ）。鉄を熱して叩き、人の手で形を起こす西洋鍛冶（フォージング）の作り手。
               </p>
             </div>
           </div>
@@ -246,9 +246,9 @@ export default function AboutPage() {
                   鍛鉄工房ZEST
                 </h3>
                 <ul className="space-y-3 text-[13px] text-foreground/80 leading-[1.95]">
-                  <li>― 建築家・設計事務所・工務店との協業実績</li>
-                  <li>― 図面ご相談からの完全フルオーダー</li>
-                  <li>― 本格ロートアイアン・装飾門扉・大型階段</li>
+                  <li>─ 建築家・設計事務所・工務店との協業実績</li>
+                  <li>─ 図面ご相談からの完全フルオーダー</li>
+                  <li>─ 本格ロートアイアン・装飾門扉・大型階段</li>
                 </ul>
                 <p className="mt-10 text-[11px] tracking-[0.2em] uppercase text-foreground/45 group-hover:text-gold transition-colors inline-flex items-center gap-2">
                   tantetuzest.com <ArrowRight className="w-3.5 h-3.5 -rotate-45" />
@@ -263,9 +263,9 @@ export default function AboutPage() {
                   IRONWORKS ado
                 </h3>
                 <ul className="space-y-3 text-[13px] text-foreground/80 leading-[1.95]">
-                  <li>― 個人・法人どちらにもオンライン販売</li>
-                  <li>― 定形デザインを長さ・色・取付方法でセミオーダー</li>
-                  <li>― クレジット決済・銀行振込対応／全国配送</li>
+                  <li>─ 個人・法人どちらにもオンライン販売</li>
+                  <li>─ 定形デザインを長さ・色・取付方法でセミオーダー</li>
+                  <li>─ クレジット決済・銀行振込対応／全国配送</li>
                 </ul>
               </div>
             </div>
@@ -315,7 +315,7 @@ export default function AboutPage() {
                     )}
                   </div>
                   <div className="px-1">
-                    <p className="font-serif text-gold text-[14px] tracking-[0.3em] mb-3">{step.chapter} ・ {step.eyebrow}</p>
+                    <p className="font-serif text-gold text-[14px] tracking-[0.3em] mb-3">{step.chapter}・{step.eyebrow}</p>
                     <h3 className="font-serif text-[20px] md:text-[22px] text-foreground mb-4 leading-tight">{step.title}</h3>
                     <p className="text-[13px] leading-[2] text-foreground/75">{step.body}</p>
                   </div>
@@ -355,7 +355,7 @@ export default function AboutPage() {
             <div className="max-w-[1100px] mx-auto flex flex-col lg:flex-row gap-4 lg:gap-12 items-start">
               <p className="text-[10px] tracking-[0.4em] uppercase text-gold lg:w-32 shrink-0">Case</p>
               <p className="text-[13px] md:text-[14px] leading-[2] text-foreground/70 max-w-2xl">
-                Élisabeth エリザベート ― 階段の両側に施工した本格ロートアイアン手すり事例。階段の長さに合わせて、職人が一本ずつ熱し叩いて延ばし、現場で位置を合わせています。
+                Élisabeth エリザベート ─ 階段の両側に施工した本格ロートアイアン手すり事例。階段の長さに合わせて、職人が一本ずつ熱し叩いて延ばし、現場で位置を合わせています。
               </p>
             </div>
           </div>
@@ -469,7 +469,7 @@ export default function AboutPage() {
                     {v.quote}
                   </blockquote>
                   <figcaption className="mt-6 text-[11px] tracking-[0.2em] uppercase text-foreground/55">
-                    ― {v.region}
+                    ─ {v.region}
                   </figcaption>
                 </figure>
               ))}
@@ -486,7 +486,7 @@ export default function AboutPage() {
             </h2>
             <div className="inline-flex items-center gap-2 text-[14px] text-foreground/80 mb-6">
               <MapPin className="w-4 h-4 text-gold" />
-              <span>千葉県千葉市 ・ 鍛鉄工房ZEST 内</span>
+              <span>千葉県千葉市・鍛鉄工房ZEST 内</span>
             </div>
             <p className="text-[13px] text-foreground/70 leading-[2]">
               施工は <strong className="text-foreground font-medium">千葉県全域・神奈川/東京/埼玉（一部エリア）</strong> に対応しています。本体製作のみのご注文は <strong className="text-foreground font-medium">全国 47 都道府県</strong> へ配送いたします。

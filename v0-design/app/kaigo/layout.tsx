@@ -23,6 +23,14 @@ export const metadata: Metadata = {
     description:
       "千葉市の介護保険住宅改修費 受領委任払取扱事業者。立替え不要・自己負担1割のみで鍛鉄手すりを取付け。",
     locale: "ja_JP",
+    images: [
+      {
+        url: `${SITE_URL}/images/kaigo/hero-staircase.jpg`,
+        width: 1086,
+        height: 940,
+        alt: "ado が施工した白い鍛鉄手すりにつかまり、階段を上る男性",
+      },
+    ],
   },
 }
 

@@ -11,9 +11,11 @@ type NavItem =
   | { label: string; href: string; children?: undefined }
   | { label: string; href?: undefined; children: NavChild[] }
 
-export function Header() {
+export function Header({ forceDark = false }: { forceDark?: boolean } = {}) {
   // ヒーローエリア（高さ100vh）の上にいるかどうか。背景が暗いので文字色を白に。
-  const [overHero, setOverHero] = useState(true)
+  // forceDark: /kaigo のように明るいヒーローを持つページで白ロゴが埋没するのを防ぐ
+  const [overHeroRaw, setOverHero] = useState(true)
+  const overHero = forceDark ? false : overHeroRaw
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
 

@@ -92,7 +92,7 @@ const sections = [
       <>
         個人情報の取扱いに関するお問い合わせは、以下までお願いいたします。
         <br />
-        鍛鉄工房ZEST（屋号：IRONWORKS ado） ― 個人事業（代表 蠣﨑 良治）
+        鍛鉄工房ZEST（屋号：IRONWORKS ado） ─ 個人事業（代表 蠣﨑 良治）
         <br />
         Email: ado@tantetuzest.com
         <br />

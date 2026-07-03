@@ -29,7 +29,7 @@ export const CATEGORIES: CategoryDef[] = [
 
 export interface CatalogProduct {
   cat: CategoryKey
-  label: string // "壁付け手すり ・ 横型" など
+  label: string // "壁付け手すり・横型" など
   name: string // "René ルネ"
   sub: string // "25φ マットブラック"
   price: number // 0 = 要見積もり
@@ -42,29 +42,29 @@ export interface CatalogProduct {
 
 export const CATALOG_PRODUCTS: CatalogProduct[] = [
   // 横型手すり (4 商品 — 内部詳細ページあり)
-  { cat: "handrail_h", label: "壁付け手すり ・ 横型", name: "René ルネ", sub: "25φ マットブラック", price: 36500, priceFrom: true, badge: "Best Seller", img: "d0f5f0e83d40a4d29044", href: "/products/rene" },
-  { cat: "handrail_h", label: "壁付け手すり ・ 横型", name: "Claire クレール", sub: "25φ マットホワイト", price: 42000, priceFrom: true, img: "0a0c0c78f9f636cca733", href: "/products/claire" },
-  { cat: "handrail_h", label: "壁付け手すり ・ 横型", name: "Marcel マルセル", sub: "フラットバー マットブラック", price: 36000, priceFrom: true, img: "939d0690971c550c1dd9", href: "/products/marcel" },
-  { cat: "handrail_h", label: "壁付け手すり ・ 横型", name: "Émile エミール", sub: "フラットバー 鎚目 銀古美仕上げ", price: 45800, priceFrom: true, img: "fa95f550baa05216d291", href: "/products/emile" },
+  { cat: "handrail_h", label: "壁付け手すり・横型", name: "René ルネ", sub: "25φ マットブラック", price: 36500, priceFrom: true, badge: "Best Seller", img: "d0f5f0e83d40a4d29044", href: "/products/rene" },
+  { cat: "handrail_h", label: "壁付け手すり・横型", name: "Claire クレール", sub: "25φ マットホワイト", price: 42000, priceFrom: true, img: "0a0c0c78f9f636cca733", href: "/products/claire" },
+  { cat: "handrail_h", label: "壁付け手すり・横型", name: "Marcel マルセル", sub: "フラットバー マットブラック", price: 36000, priceFrom: true, img: "939d0690971c550c1dd9", href: "/products/marcel" },
+  { cat: "handrail_h", label: "壁付け手すり・横型", name: "Émile エミール", sub: "フラットバー 鎚目 銀古美仕上げ", price: 45800, priceFrom: true, img: "fa95f550baa05216d291", href: "/products/emile" },
 
   // 横型ロートアイアン (2 商品 — 外部)
   // Élisabeth は 1m から発注可能な価格レンジ商品。フィード価格と一覧カードは最小単価 ¥36,000 で揃え、
   // Merchant Center とサイトの価格整合性を担保する（ATF の「例 3m ¥168,000」は priceBuildup 側で表示）。
-  { cat: "handrail_h", label: "ロートアイアン ・ 横型", name: "Élisabeth エリザベート", sub: "鍛冶職人手打ち ロートアイアン 22φ", price: 36000, priceFrom: true, badge: "Artisan", img: "9a24b2c661dea08ef6f4", href: "/products/elisabeth" },
-  { cat: "handrail_h", label: "ロートアイアン ・ L型", name: "Clémence クレマンス", sub: "L型 22φ 無垢鉄", price: 88000, priceFrom: true, img: "9c1e7cf67204880a41e2", href: "/products/clemence" },
+  { cat: "handrail_h", label: "ロートアイアン・横型", name: "Élisabeth エリザベート", sub: "鍛冶職人手打ち ロートアイアン 22φ", price: 36000, priceFrom: true, badge: "Artisan", img: "9a24b2c661dea08ef6f4", href: "/products/elisabeth" },
+  { cat: "handrail_h", label: "ロートアイアン・L型", name: "Clémence クレマンス", sub: "L型 22φ 無垢鉄", price: 88000, priceFrom: true, img: "9c1e7cf67204880a41e2", href: "/products/clemence" },
 
   // 縦型手すり (4 商品 — 内部詳細ページあり)
-  { cat: "handrail_v", label: "壁付け手すり ・ 縦型", name: "Claude クロード", sub: "25φ マットブラック", price: 30000, priceFrom: true, img: "86278edb68c21957e339", href: "/products/claude" },
-  { cat: "handrail_v", label: "壁付け手すり ・ 縦型", name: "Catherine カトリーヌ", sub: "25φ マットホワイト", price: 34500, priceFrom: true, img: "8775cfcb40298257834a", href: "/products/catherine" },
-  { cat: "handrail_v", label: "壁付け手すり ・ 縦型", name: "Alexandre アレクサンドル", sub: "太 31.8φ マットブラック", price: 32000, priceFrom: true, img: "759848de1a99945b4d90", href: "/products/alexandre" },
-  { cat: "handrail_v", label: "壁付け手すり ・ 縦型", name: "Antoine アントワーヌ", sub: "ロング 25φ マットブラック", price: 56000, priceFrom: true, img: "2d1043dcd7658a96e5f3", href: "/products/antoine" },
+  { cat: "handrail_v", label: "壁付け手すり・縦型", name: "Claude クロード", sub: "25φ マットブラック", price: 30000, priceFrom: true, img: "86278edb68c21957e339", href: "/products/claude" },
+  { cat: "handrail_v", label: "壁付け手すり・縦型", name: "Catherine カトリーヌ", sub: "25φ マットホワイト", price: 34500, priceFrom: true, img: "8775cfcb40298257834a", href: "/products/catherine" },
+  { cat: "handrail_v", label: "壁付け手すり・縦型", name: "Alexandre アレクサンドル", sub: "太 31.8φ マットブラック", price: 32000, priceFrom: true, img: "759848de1a99945b4d90", href: "/products/alexandre" },
+  { cat: "handrail_v", label: "壁付け手すり・縦型", name: "Antoine アントワーヌ", sub: "ロング 25φ マットブラック", price: 56000, priceFrom: true, img: "2d1043dcd7658a96e5f3", href: "/products/antoine" },
 
   // 縦型ロートアイアン (5 商品 — 外部)
-  { cat: "handrail_v", label: "ロートアイアン ・ 縦型", name: "Scroll スクロール 16φ", sub: "70cm 無垢鉄 火造り鍛造", price: 18000, priceFrom: true, img: "2a64ecfb5e50e78cb374", href: "/products/scroll16" },
-  { cat: "handrail_v", label: "ロートアイアン ・ 縦型", name: "Scroll スクロール 19φ", sub: "70cm 無垢鉄 火造り鍛造", price: 32000, priceFrom: true, img: "25b6438ea6a9393aa027", href: "/products/scroll19" },
-  { cat: "handrail_v", label: "ロートアイアン ・ 縦型", name: "Scroll スクロール 22φ", sub: "80cm 無垢鉄 火造り鍛造", price: 60000, priceFrom: true, img: "d09c9426e8510d2ca152", href: "/products/scroll22" },
-  { cat: "handrail_v", label: "ロートアイアン ・ 縦型", name: "Fabrice ファブリス", sub: "80cm 無垢鉄 火造り鍛造", price: 100000, priceFrom: true, badge: "Artisan", img: "66a699b295bcdb8f3598", href: "/products/fabrice" },
-  { cat: "handrail_v", label: "ロートアイアン ・ 縦型", name: "鎚目 TSUCHIME", sub: "80cm 無垢鉄 火造り鍛造", price: 70000, priceFrom: true, badge: "Artisan", img: "569af3ee76a1999863e7", href: "/products/tsuchime" },
+  { cat: "handrail_v", label: "ロートアイアン・縦型", name: "Scroll スクロール 16φ", sub: "70cm 無垢鉄 火造り鍛造", price: 18000, priceFrom: true, img: "2a64ecfb5e50e78cb374", href: "/products/scroll16" },
+  { cat: "handrail_v", label: "ロートアイアン・縦型", name: "Scroll スクロール 19φ", sub: "70cm 無垢鉄 火造り鍛造", price: 32000, priceFrom: true, img: "25b6438ea6a9393aa027", href: "/products/scroll19" },
+  { cat: "handrail_v", label: "ロートアイアン・縦型", name: "Scroll スクロール 22φ", sub: "80cm 無垢鉄 火造り鍛造", price: 60000, priceFrom: true, img: "d09c9426e8510d2ca152", href: "/products/scroll22" },
+  { cat: "handrail_v", label: "ロートアイアン・縦型", name: "Fabrice ファブリス", sub: "80cm 無垢鉄 火造り鍛造", price: 100000, priceFrom: true, badge: "Artisan", img: "66a699b295bcdb8f3598", href: "/products/fabrice" },
+  { cat: "handrail_v", label: "ロートアイアン・縦型", name: "鎚目 TSUCHIME", sub: "80cm 無垢鉄 火造り鍛造", price: 70000, priceFrom: true, badge: "Artisan", img: "569af3ee76a1999863e7", href: "/products/tsuchime" },
 
   // アプローチ (3 商品)
   { cat: "approach", label: "アプローチ手すり", name: "Simple -black-", sub: "フラットバー マットブラック", price: 0, img: "579e79e794eed28d9ac7", href: "/products/simple-black" },
