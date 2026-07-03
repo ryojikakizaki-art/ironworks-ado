@@ -39,8 +39,8 @@ function resolveVariant(specs: FinishSpec[]): Variant {
       Icon: Paintbrush,
       title: "屋外を錆から守る、二段構えの仕上げ",
       body: "屋外でも安心してお使いいただけるよう、溶融亜鉛メッキで鉄を錆から守り、塗装で美しく仕上げています。表面処理を専門に学んだ職人が、一点ずつ丁寧に仕上げました。",
-      href: "/paint",
-      linkLabel: "塗装・表面処理のこだわりを見る →",
+      href: "/galvanizing",
+      linkLabel: "溶融亜鉛メッキのこだわりを見る →",
     }
   }
   // それ以外（室内・共通）— 塗装の技術と防錆の知識で仕上げる二本柱を訴求。

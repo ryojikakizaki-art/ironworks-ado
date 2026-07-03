@@ -5,6 +5,7 @@ import { HeroSection } from "@/components/hero-section"
 import { ThreeEntrances } from "@/components/three-entrances"
 import { StatsSection } from "@/components/stats-section"
 import { TradeBanner } from "@/components/trade-banner"
+import { FinishQualitySection } from "@/components/finish-quality-section"
 import { LimitedServiceSection } from "@/components/limited-service-section"
 import { RankingSection } from "@/components/ranking-section"
 import { CaseGallery } from "@/components/case-gallery"
@@ -32,6 +33,9 @@ export default function HomePage() {
 
       <TradeBanner />
       <RankingSection />
+
+      {/* 二重防錆（めっき×塗装）品質セクション — /galvanizing・/paint への導線 */}
+      <FinishQualitySection />
 
       {/* 施工事例ギャラリー — タスク5-5 */}
       <CaseGallery />

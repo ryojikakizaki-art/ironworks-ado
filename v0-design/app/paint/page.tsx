@@ -14,7 +14,7 @@ export const metadata = {
 
 const stats = [
   { value: "2", unit: "液型", label: "主剤＋硬化剤", desc: "化学反応で硬く強靭に" },
-  { value: "10", unit: "年+", label: "美観持続", desc: "1 液型のおおよそ 2〜3 倍" },
+  { value: "10", unit: "年+", label: "美観持続（屋内）", desc: "1 液型のおおよそ 2〜3 倍" },
   { value: "3〜5", unit: "倍", label: "材料費", desc: "1 液型対比 — それでも採用" },
   { value: "自動車", unit: "仕様", label: "プロ塗装グレード", desc: "工業製品と同じグレード" },
 ]
@@ -53,7 +53,7 @@ type CompRow = {
 
 const comparison: CompRow[] = [
   { label: "硬化方式", a: "溶剤の蒸発（自然乾燥）", b: "化学反応（架橋硬化）", c: "加熱硬化（150〜200℃）" },
-  { label: "耐久性", a: "1〜3 年で劣化", b: "10 年以上の美観", c: "10 年以上の美観", aLevel: 2, bLevel: 5, cLevel: 5 },
+  { label: "耐久性", a: "1〜3 年で劣化", b: "屋内 10 年以上・屋外 5〜8 年", c: "10 年以上の美観", aLevel: 2, bLevel: 5, cLevel: 5 },
   { label: "耐薬品性", a: "弱い", b: "強い", c: "極めて強い", aLevel: 2, bLevel: 4, cLevel: 5 },
   { label: "密着性", a: "中程度", b: "極めて高い", c: "極めて高い", aLevel: 3, bLevel: 5, cLevel: 5 },
   { label: "仕上がり", a: "薄く、ムラが出やすい", b: "厚く均一・美しい光沢", c: "均一で硬い塗膜", aLevel: 2, bLevel: 5, cLevel: 5 },
@@ -434,7 +434,7 @@ export default function PaintPage() {
                       <span className="text-[12px] text-gold/80">{s.unit}</span>
                     </div>
                     <p className="text-[12px] font-medium text-foreground mt-1">{s.label}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5 leading-relaxed">{s.desc}</p>
+                    <p className="text-[12px] text-muted-foreground mt-0.5 leading-relaxed">{s.desc}</p>
                   </div>
                 )
               })}
@@ -698,7 +698,7 @@ export default function PaintPage() {
             </aside>
             <div className="lg:col-span-9 scroll-mt-24 min-w-0">
               <h3 className="font-serif text-xl lg:text-3xl text-foreground mb-6 leading-snug">
-                色の薄い 1 液型は施工の手軽さ以外で<br className="hidden lg:block" />
+                塗膜の薄い 1 液型は施工の手軽さ以外で<br className="hidden lg:block" />
                 大きく劣ります。
               </h3>
               <p className="text-[15px] leading-[1.95] text-foreground/80 mb-10 max-w-2xl">
@@ -733,18 +733,9 @@ export default function PaintPage() {
                 </details>
               </div>
 
-              {/* Aging timeline */}
+              {/* Aging timeline — 写真は実施工物件の経年実写が揃うまで掲載せず図解のみ */}
               <div className="mb-12">
                 <p className="text-[10px] tracking-[0.3em] uppercase text-gold mb-2">経年変化イメージ</p>
-                <div className="relative w-full aspect-[3/1] overflow-hidden rounded-md border border-border mb-6">
-                  <Image
-                    src="/images/process/paint-aging-timeline.jpg"
-                    alt="新品 / 1 年 / 5 年 / 10 年経過した手すりの経年変化"
-                    fill
-                    sizes="(max-width: 1024px) 100vw, 880px"
-                    className="object-cover"
-                  />
-                </div>
                 <div className="border border-border bg-secondary/30 rounded-md p-6 lg:p-8">
                   <div className="overflow-x-auto">
                     <div className="min-w-[680px]">
@@ -964,6 +955,12 @@ export default function PaintPage() {
                 >
                   亜鉛メッキについて →
                 </Link>
+              </div>
+              {/* 全商品導線 */}
+              <div className="mt-8 text-center">
+                <PrimaryCTA href="/products" variant="outline" size="md">
+                  全商品を見る
+                </PrimaryCTA>
               </div>
             </div>
           </div>

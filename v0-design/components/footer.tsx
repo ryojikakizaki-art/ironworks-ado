@@ -29,7 +29,7 @@ const footerLinks = {
       { label: "お問い合わせ", href: "/contact" },
       { label: "業者様へ", href: "/trade" },
       { label: "塗装について", href: "/paint" },
-      { label: "溶融亜鉛めっき", href: "/galvanizing" },
+      { label: "溶融亜鉛メッキ", href: "/galvanizing" },
     ],
   },
   company: {
