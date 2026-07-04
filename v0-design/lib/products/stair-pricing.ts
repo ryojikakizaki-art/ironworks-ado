@@ -41,12 +41,15 @@ export const LAURENT = {
   // 手摺の斜め全長がこれを超えたら自動見積もりを止めて「要問合せ」に切り替える
   // （2026-07-04 蠣﨑さん確定: 指示書の 4m 基準を配送実態に合わせ 3.5m に前倒し）。
   maxShipMm: 3500,
-  defaults: { riserMm: 200, treadMm: 240, kekomiMm: 20, lastTreadMm: 240 },
+  // 手すり高さ＝段鼻から笠木上端まで。標準 800mm（2026-07-04 蠣﨑さん指示）。
+  // 価格には影響しない製作仕様として注文に記録する。
+  defaults: { riserMm: 200, treadMm: 240, kekomiMm: 20, lastTreadMm: 240, railHeightMm: 800 },
   limits: {
     riser: { min: 50, max: 500 }, // 蹴上げ (mm)
     tread: { min: 100, max: 500 }, // 踏み面 (mm)
     kekomi: { min: 0, max: 100 }, // 蹴込み (mm)
     lastTread: { min: 0, max: 1500 }, // 最終段の踏み面＝壁までの寸法 (mm)
+    railHeight: { min: 600, max: 1100 }, // 手すり高さ (mm)
   },
 } as const
 
@@ -74,6 +77,11 @@ export function clampLastTread(n: number): number {
   const raw = Number(n)
   const v = Number.isFinite(raw) ? Math.round(raw) : LAURENT.defaults.lastTreadMm
   return Math.max(LAURENT.limits.lastTread.min, Math.min(LAURENT.limits.lastTread.max, v))
+}
+
+export function clampRailHeight(n: number): number {
+  const v = Math.round(Number(n) || LAURENT.defaults.railHeightMm)
+  return Math.max(LAURENT.limits.railHeight.min, Math.min(LAURENT.limits.railHeight.max, v))
 }
 
 /** 柱の合計本数（1段目を1本目と換算し 5 段ごとに1本）。3〜5段=1本, 6〜10段=2本, ... */
@@ -169,6 +177,7 @@ export interface StairOrderParsed {
   treadMm: number
   kekomiMm: number
   lastTreadMm: number
+  railHeightMm: number
   crossbarCount: number
   crossbarMaterial: CrossbarMaterial
   color: StairColor
@@ -196,6 +205,7 @@ export function parseStairOrderBody(body: Record<string, unknown>): StairOrderPa
   const treadMm = clampTread(Number(body?.treadMm))
   const kekomiMm = clampKekomi(Number(body?.kekomiMm))
   const lastTreadMm = clampLastTread(Number(body?.lastTreadMm))
+  const railHeightMm = clampRailHeight(Number(body?.railHeightMm))
 
   // 段ごとの蹴上げ個別指定（省略時は一括値で埋める）
   const risersMm: number[] =
@@ -230,7 +240,7 @@ export function parseStairOrderBody(body: Record<string, unknown>): StairOrderPa
   const specParts = [
     `${steps}段・柱${price.postCount}本`,
     `${riserLabel} / 踏み面${treadMm}mm / 蹴込み${kekomiMm}mm / 最終段の踏み面${lastTreadMm}mm`,
-    `高さ${geometry.totalRiseMm}mm × 総幅${geometry.runMm}mm`,
+    `手すり高さ${railHeightMm}mm（段鼻から） / 高さ${geometry.totalRiseMm}mm × 総幅${geometry.runMm}mm`,
     crossbarLabel,
     colorLabel,
   ]
@@ -246,6 +256,7 @@ export function parseStairOrderBody(body: Record<string, unknown>): StairOrderPa
     tread_mm: String(treadMm),
     kekomi_mm: String(kekomiMm),
     last_tread_mm: String(lastTreadMm),
+    rail_height_mm: String(railHeightMm),
     crossbar_count: String(crossbarCount),
     ...(crossbarCount > 0 ? { crossbar_material: LAURENT.crossbar[crossbarMaterial].label } : {}),
     color: colorLabel,
@@ -265,6 +276,7 @@ export function parseStairOrderBody(body: Record<string, unknown>): StairOrderPa
       treadMm,
       kekomiMm,
       lastTreadMm,
+      railHeightMm,
       crossbarCount,
       crossbarMaterial,
       color,
