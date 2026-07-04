@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 import { listProductSlugs } from '@/lib/products/display'
 import { SIMPLE_PRODUCT_SLUGS } from '@/lib/products/simple'
+import { STAIR_PRODUCT_SLUGS } from '@/lib/products/stair-pricing'
 import { COLUMN_ARTICLES } from '@/lib/column-data'
 
 const SITE_URL = 'https://ado.tantetuzest.com'
@@ -41,7 +42,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority,
   }))
 
-  const productSlugs = Array.from(new Set([...listProductSlugs(), ...SIMPLE_PRODUCT_SLUGS]))
+  const productSlugs = Array.from(new Set([...listProductSlugs(), ...SIMPLE_PRODUCT_SLUGS, ...STAIR_PRODUCT_SLUGS]))
 
   const productEntries: MetadataRoute.Sitemap = productSlugs.map((slug) => ({
     url: `${SITE_URL}/products/${slug}`,

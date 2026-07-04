@@ -46,6 +46,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
   }
 
+  // 階段手摺 Laurent（専用テンプレート・段数ベース見積計算機）
+  if (slug === "laurent") {
+    const title = "【工房直販】Laurent ローラン｜階段手摺 フラットバー9×38 マットブラック｜段数から即見積もり｜IRONWORKS ado"
+    const description =
+      "鍛冶職人が一本ずつ手仕上げする直線階段用アイアン手摺。フラットバー9×38の重厚な直線美と剛性。段数を入力するだけで価格がその場で分かります。¥75,000〜・横桟オプション・白仕上げ対応・全国配送。"
+    const image = `${SITE_URL}/images/products/laurent/hero.jpg`
+    return {
+      title,
+      description,
+      alternates: { canonical },
+      openGraph: {
+        type: "website",
+        url: `${SITE_URL}${canonical}`,
+        siteName: "IRONWORKS ado",
+        title,
+        description,
+        locale: "ja_JP",
+        images: [{ url: image, width: 1200, height: 1200, alt: "Laurent ローラン 階段手摺" }],
+      },
+      twitter: { card: "summary_large_image", title, description, images: [image] },
+    }
+  }
+
   // Drawing 系商品（手すり）
   const product = getProductFull(slug)
   if (product) {

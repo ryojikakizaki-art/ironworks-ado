@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PRODUCTS, calcPrice, RUSH_RATE } from '@/lib/products/order-pricing';
+// 階段手摺 Laurent の価格・寸法計算の正本（商品ページ・カード決済と共有）。
+import { LAURENT, parseStairOrderBody } from '@/lib/products/stair-pricing';
 import { calcShipping, type ProductType } from '@/lib/shipping/sagawa';
 import { writeOrderRow } from '@/lib/order-ledger';
 import { BANK_ACCOUNT } from '@/lib/bank-account';
@@ -90,6 +92,31 @@ export async function POST(request: NextRequest) {
 
   // ── 商品・価格のサーバ再計算（/api/checkout と同一ロジック）──
   const productKey = String(body.product || 'rene').toLowerCase();
+
+  // 商品ラベル・仕様・合計は商品タイプごとの分岐で組み立てる（台帳・メールで共用）
+  let productLabel: string;
+  let specParts: string[];
+  let totalYen: number;
+
+  if (productKey === LAURENT.slug) {
+    // Laurent（階段手摺・段数ベース価格）: 正本 lib/products/stair-pricing.ts で再計算。
+    // 全長 3,500mm 超は parseStairOrderBody 側で inquiry エラーになる。
+    const parsed = parseStairOrderBody(body as Record<string, unknown>);
+    if (!parsed.ok) return NextResponse.json({ ok: false, error: parsed.error }, { status: 400 });
+    const stairOrder = parsed.order;
+    const stairShipping = calcShipping([stairOrder.geometry.diagonalMm], prefecture, 'yokogata');
+    if (stairShipping.inquiry) {
+      return NextResponse.json({
+        ok: false,
+        error: stairShipping.inquiryReason || '配送条件により別途お見積もりが必要です',
+      }, { status: 400 });
+    }
+    const stairShippingTax = Math.round(stairShipping.shipping * 0.1);
+    totalYen = stairOrder.price.total + stairShipping.shipping + stairShippingTax;
+    productLabel = stairOrder.productLabel;
+    specParts = [...stairOrder.specParts, `通常配送（${LAURENT.deliveryBusinessDays}営業日）`];
+  } else {
+  // ↓ 既存の壁付け手すりフロー（diff を最小にするためインデントは変えていない）
   const prod = PRODUCTS[productKey];
   if (!prod) return NextResponse.json({ ok: false, error: `不明な商品: ${productKey}` }, { status: 400 });
 
@@ -150,19 +177,20 @@ export async function POST(request: NextRequest) {
   }
   const shippingYen = shippingResult.shipping;
   const shippingTaxYen = Math.round(shippingYen * 0.1);
-  const totalYen = itemsSubtotal + rushSurcharge + shippingYen + shippingTaxYen;
+  totalYen = itemsSubtotal + rushSurcharge + shippingYen + shippingTaxYen;
 
   // ── 表示用ラベル ──
   const lengthsLabel = lengths.length > 1
     ? `${lengths.length}本（${lengths.join('/')}mm）`
     : `${L}mm`;
   const zakinTotal = perItem.reduce((s, it) => s + it.zakin, 0);
-  const productLabel = `${prod.name} 壁付け手すり ${lengthsLabel}${orientationLabel ? `（${orientationLabel}）` : ''}`;
-  const specParts = [
+  productLabel = `${prod.name} 壁付け手すり ${lengthsLabel}${orientationLabel ? `（${orientationLabel}）` : ''}`;
+  specParts = [
     `座金${zakinTotal}個${supportsWasher ? `（${washerType}タイプ）` : ''}`,
     rushDelivery ? '特急配送' : '通常配送',
     prod.finish,
   ];
+  } // ← 既存の壁付け手すりフローここまで
   const arrivalNote = body.preferredArrivalDate
     ? `到着希望 ${body.preferredArrivalDate} ${body.preferredTimeSlot || ''}`.trim()
     : '';

@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { getScheduleDates, formatDateISO } from '@/lib/business-days';
+import { getScheduleDates, formatDateISO, addBusinessDays } from '@/lib/business-days';
 import { calcShipping, type ProductType } from '@/lib/shipping/sagawa';
 import { getOrCreateConsumptionTaxRate } from '@/lib/stripe/tax-rate';
 // 価格・座金計算の正本は lib/products/order-pricing.ts（カード決済・銀行振込で共有）。
 import { PRODUCTS, calcPrice, RUSH_RATE } from '@/lib/products/order-pricing';
+// 階段手摺 Laurent の価格・寸法計算の正本（商品ページ・銀行振込と共有）。
+import { LAURENT, parseStairOrderBody } from '@/lib/products/stair-pricing';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -21,6 +23,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     const productKey = (body?.product || 'rene').toLowerCase();
+
+    // Laurent（階段手摺）は段数ベースの価格モデルで、長さベースの共通フローに乗らない
+    // ため専用処理へ。価格・寸法の正本は lib/products/stair-pricing.ts。
+    if (productKey === LAURENT.slug) {
+      return createStairCheckoutSession(request, body);
+    }
+
     const prod = PRODUCTS[productKey];
     if (!prod) {
       return NextResponse.json({ error: `不明な商品: ${productKey}` }, { status: 400 });
@@ -266,6 +275,152 @@ export async function POST(request: NextRequest) {
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('[checkout] Stripe error:', message);
+    return NextResponse.json(
+      { error: 'セッションの作成に失敗しました', detail: message },
+      { status: 500 }
+    );
+  }
+}
+
+/**
+ * Laurent（階段手摺・段数ベース価格）のチェックアウトセッション作成。
+ * 価格はクライアントの値を信用せず parseStairOrderBody でサーバ再計算する。
+ * 全長 3,500mm 超は parseStairOrderBody 側で inquiry エラーになる。
+ * 大型商品のため特急配送は提供しない（通常配送 10 営業日のみ）。
+ */
+async function createStairCheckoutSession(
+  request: NextRequest,
+  body: Record<string, unknown>,
+): Promise<NextResponse> {
+  try {
+    const parsed = parseStairOrderBody(body);
+    if (!parsed.ok) {
+      return NextResponse.json({ error: parsed.error, inquiry: parsed.inquiry === true }, { status: 400 });
+    }
+    const order = parsed.order;
+
+    const prefecture = String(body?.prefecture || '').trim();
+    if (!prefecture) {
+      return NextResponse.json({ error: '配送先都道府県を選択してください' }, { status: 400 });
+    }
+    // 送料は手摺（斜め材）1本の全長で発送サイズ区分を決定（柱・横桟は同梱扱い）
+    const shippingResult = calcShipping([order.geometry.diagonalMm], prefecture, 'yokogata');
+    if (shippingResult.inquiry) {
+      return NextResponse.json({
+        error: shippingResult.inquiryReason || '配送条件により別途お見積もりが必要です',
+        inquiry: true,
+      }, { status: 400 });
+    }
+    const shippingYen = shippingResult.shipping;
+    const shippingTaxYen = Math.round(shippingYen * 0.1);
+    const totalYen = order.price.total + shippingYen + shippingTaxYen;
+
+    // Laurent は大物のため 15 営業日（getScheduleDates は 10 営業日固定なので自前で計算）。
+    // 内訳は既存と同じ構造: 翌営業日に制作開始 → 制作 → 完了翌営業日に発送。
+    const now = new Date();
+    const productionStart = addBusinessDays(now, 1);
+    const productionComplete = addBusinessDays(productionStart, LAURENT.deliveryBusinessDays - 2);
+    const schedule = {
+      productionStart,
+      productionComplete,
+      shippingDate: addBusinessDays(productionComplete, 1),
+      arrivalDate: addBusinessDays(addBusinessDays(productionComplete, 1), 1),
+    };
+    const deliveryDesc = `2液型ウレタン塗装 / 通常配送 ${LAURENT.deliveryBusinessDays}営業日`;
+
+    const host = request.headers.get('host') || 'ironworks-ado.vercel.app';
+    const baseUrl = `https://${host}`;
+
+    const stripeClient = getStripe();
+    const taxInclusiveId = await getOrCreateConsumptionTaxRate(stripeClient, true);
+    const taxExclusiveId = await getOrCreateConsumptionTaxRate(stripeClient, false);
+    const inclusiveTaxRates = taxInclusiveId ? { tax_rates: [taxInclusiveId] } : {};
+    const exclusiveTaxRates = taxExclusiveId ? { tax_rates: [taxExclusiveId] } : {};
+
+    const session = await stripeClient.checkout.sessions.create({
+      ui_mode: 'embedded',
+      line_items: [
+        {
+          price_data: {
+            currency: 'jpy' as const,
+            product_data: {
+              name: order.productLabel,
+              description: `${order.specParts.join(' / ')} / ${deliveryDesc}`,
+            },
+            unit_amount: order.price.total,
+            tax_behavior: 'inclusive' as const,
+          },
+          quantity: 1,
+          ...inclusiveTaxRates,
+        },
+        {
+          price_data: {
+            currency: 'jpy' as const,
+            product_data: {
+              name: `送料（佐川急便・${prefecture}）`,
+              description: shippingResult.note,
+            },
+            unit_amount: shippingYen,
+            tax_behavior: 'exclusive' as const,
+          },
+          quantity: 1,
+          ...exclusiveTaxRates,
+        },
+      ],
+      mode: 'payment',
+      shipping_address_collection: { allowed_countries: ['JP'] },
+      phone_number_collection: { enabled: true },
+      return_url: `${baseUrl}/thanks?session_id={CHECKOUT_SESSION_ID}&product=${LAURENT.slug}&length=${order.geometry.diagonalMm}&rush=0`,
+      metadata: {
+        ...order.metadata,
+        is_multi_order: 'false',
+        base_total_yen: String(order.price.total),
+        rush_delivery: 'false',
+        rush_surcharge_yen: '0',
+        prefecture,
+        shipping_yen: String(shippingYen),
+        shipping_tax_yen: String(shippingTaxYen),
+        shipping_note: shippingResult.note,
+        shipping_bundles: String(shippingResult.bundles),
+        total_yen: String(totalYen),
+        preferred_arrival_date: String(body?.preferredArrivalDate || ''),
+        preferred_time_slot: String(body?.preferredTimeSlot || ''),
+        production_start: formatDateISO(schedule.productionStart),
+        production_complete: formatDateISO(schedule.productionComplete),
+        shipping_date: formatDateISO(schedule.shippingDate),
+        arrival_estimate: formatDateISO(schedule.arrivalDate),
+      },
+      locale: 'ja',
+      payment_intent_data: {
+        description: `IRONWORKS ado — ${order.productLabel}`,
+      },
+      invoice_creation: {
+        enabled: true,
+        invoice_data: {
+          description: `IRONWORKS ado — ${order.productLabel}`,
+          footer: [
+            '発行者: 鍛鉄工房ZEST（蠣﨑 良治） / IRONWORKS ado',
+            '適格請求書発行事業者登録番号: T7810771171765',
+            '〒265-0052 千葉県千葉市若葉区和泉町239-2',
+            'TEL: 070-3817-0659 / Email: ado@tantetuzest.com',
+          ].join('\n'),
+          rendering_options: {
+            amount_tax_display: 'include_inclusive_tax',
+          },
+          metadata: {
+            product: LAURENT.slug,
+            steps: String(order.steps),
+            diagonal_mm: String(order.geometry.diagonalMm),
+            rush_delivery: 'false',
+          },
+        },
+      },
+    });
+
+    return NextResponse.json({ clientSecret: session.client_secret });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    console.error('[checkout] Stripe error (laurent):', message);
     return NextResponse.json(
       { error: 'セッションの作成に失敗しました', detail: message },
       { status: 500 }
