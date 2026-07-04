@@ -68,15 +68,17 @@ const LONG_DESCRIPTION = `厚み9mm×幅38mmのフラットバー（平鋼）を
 const PRICE_GUIDE_STEPS = [3, 6, 10]
 
 /**
- * 入力寸法の位置を示す説明図（CAD 風・静的）。
- * - 笠木は段鼻から 800mm 相当の実際の手すり高さで描く（2026-07-04 蠣﨑さん指摘。
- *   縮尺: 蹴上げ200mm=40px → 手すり高さ800mm=160px）
- * - 蹴込みは楽天同種商品の寸法図にならい「拡大」インセットで説明する
+ * 寸法入力つき説明図の背景 SVG（CAD 風・静的）。
+ * - 各寸法のテキストラベルは持たない。矢印の近くに DiagramInput（HTML の入力
+ *   ボックス）を % 座標で重ねる — 図と入力欄が一体になり初見でも位置が分かる
+ *   （2026-07-05 蠣﨑さん指示・楽天同種商品の入力フォーム重ね方式を参考）
+ * - 笠木は段鼻から 800mm 相当の実際の手すり高さで描く（縮尺: 蹴上げ200mm=40px）
+ * - 蹴込みは「拡大」インセットで説明する
  */
 function StairDimensionDiagram() {
   return (
-    <svg viewBox="0 0 560 440" role="img" aria-label="蹴上げ・踏み面・蹴込み・最終段の踏み面・手すり高さの説明図" className="w-full h-auto">
-      <rect x="0" y="0" width="560" height="440" fill="#ffffff" />
+    <svg viewBox="0 0 560 470" role="img" aria-label="蹴上げ・踏み面・蹴込み・最終段の踏み面・手すり高さの説明図" className="w-full h-auto">
+      <rect x="0" y="0" width="560" height="470" fill="#ffffff" />
       {/* 床・壁 */}
       <line x1="15" y1="395" x2="545" y2="395" stroke="#9ca3af" strokeWidth="2" />
       <line x1="460" y1="40" x2="460" y2="395" stroke="#9ca3af" strokeWidth="2" />
@@ -104,29 +106,23 @@ function StairDimensionDiagram() {
       <line x1="240" y1="147" x2="240" y2="315" stroke="#b8860b" strokeWidth="1.5" />
       <path d="M 240 147 l -4 9 h 8 Z" fill="#b8860b" />
       <path d="M 240 315 l -4 -9 h 8 Z" fill="#b8860b" />
-      <text x="146" y="226" fontSize="14" fill="#92650a">手すり高さ</text>
-      <text x="100" y="244" fontSize="11" fill="#92650a">（段鼻から・標準800mm）</text>
       {/* B 踏み面: 段鼻の先端から次の蹴込み板（立ち上がり）まで */}
       <line x1="110" y1="345" x2="220" y2="345" stroke="#b8860b" strokeWidth="1.5" />
       <path d="M 110 345 l 8 -4 v 8 Z" fill="#b8860b" />
       <path d="M 220 345 l -8 -4 v 8 Z" fill="#b8860b" />
       <line x1="110" y1="341" x2="110" y2="355" stroke="#b8860b" strokeWidth="0.75" />
       <line x1="220" y1="341" x2="220" y2="355" stroke="#b8860b" strokeWidth="0.75" />
-      <text x="128" y="336" fontSize="14" fill="#92650a">B 踏み面</text>
       {/* C 蹴上げ（1段の高さ）: 段の上面から次の段の上面まで */}
       <line x1="300" y1="275" x2="300" y2="315" stroke="#b8860b" strokeWidth="1.5" />
       <path d="M 300 275 l -4 8 h 8 Z" fill="#b8860b" />
       <path d="M 300 315 l -4 -8 h 8 Z" fill="#b8860b" />
       <line x1="300" y1="275" x2="314" y2="275" stroke="#b8860b" strokeWidth="0.75" strokeDasharray="3 3" />
       <line x1="300" y1="315" x2="322" y2="315" stroke="#b8860b" strokeWidth="0.75" strokeDasharray="3 3" />
-      <text x="330" y="298" fontSize="14" fill="#92650a">C 蹴上げ</text>
-      <text x="330" y="314" fontSize="11" fill="#92650a">（1段の高さ）</text>
       {/* D 最終段の踏み面: 最上段の段鼻から壁まで */}
       <line x1="310" y1="263" x2="460" y2="263" stroke="#b8860b" strokeWidth="1.5" />
       <path d="M 310 263 l 8 -4 v 8 Z" fill="#b8860b" />
       <path d="M 460 263 l -8 -4 v 8 Z" fill="#b8860b" />
       <line x1="310" y1="259" x2="310" y2="277" stroke="#b8860b" strokeWidth="0.75" />
-      <text x="288" y="254" fontSize="13" fill="#92650a">D 最終段の踏み面（壁まで）</text>
       {/* 蹴込みの拡大インセット（段鼻の下のへこみ） */}
       <circle cx="215" cy="318" r="16" fill="none" stroke="#b8860b" strokeWidth="1.2" strokeDasharray="4 3" />
       <circle cx="100" cy="72" r="58" fill="none" stroke="#b8860b" strokeWidth="1.2" strokeDasharray="4 3" />
@@ -139,19 +135,56 @@ function StairDimensionDiagram() {
       <line x1="52" y1="90" x2="86" y2="90" stroke="#b8860b" strokeWidth="1.5" />
       <path d="M 52 90 l 7 -4 v 8 Z" fill="#b8860b" />
       <path d="M 86 90 l -7 -4 v 8 Z" fill="#b8860b" />
-      <text x="26" y="146" fontSize="12" fill="#92650a">蹴込み（段鼻の下のへこみ）</text>
       {/* 手摺全長（笠木に平行・上側）— ラベルは水平＋引出線 */}
       <line x1="85" y1="190" x2="450" y2="44" stroke="#b8860b" strokeWidth="1.5" strokeDasharray="6 4" />
       <text x="196" y="28" fontSize="14" fill="#92650a">手摺全長（自動計算）</text>
       <line x1="265" y1="34" x2="288" y2="104" stroke="#b8860b" strokeWidth="1" />
       {/* A 設置範囲の総幅 */}
-      <line x1="110" y1="416" x2="460" y2="416" stroke="#b8860b" strokeWidth="1.5" />
-      <path d="M 110 416 l 8 -4 v 8 Z" fill="#b8860b" />
-      <path d="M 460 416 l -8 -4 v 8 Z" fill="#b8860b" />
-      <line x1="110" y1="398" x2="110" y2="420" stroke="#b8860b" strokeWidth="0.75" />
-      <line x1="460" y1="398" x2="460" y2="420" stroke="#b8860b" strokeWidth="0.75" />
-      <text x="100" y="436" fontSize="12" fill="#92650a">A 設置範囲の総幅（自動計算）＝(B−蹴込み)×(段数−1)＋D</text>
+      <line x1="110" y1="446" x2="460" y2="446" stroke="#b8860b" strokeWidth="1.5" />
+      <path d="M 110 446 l 8 -4 v 8 Z" fill="#b8860b" />
+      <path d="M 460 446 l -8 -4 v 8 Z" fill="#b8860b" />
+      <line x1="110" y1="398" x2="110" y2="450" stroke="#b8860b" strokeWidth="0.75" />
+      <line x1="460" y1="398" x2="460" y2="450" stroke="#b8860b" strokeWidth="0.75" />
+      <text x="100" y="466" fontSize="12" fill="#92650a">A 設置範囲の総幅（自動計算）＝(B−蹴込み)×(段数−1)＋D</text>
     </svg>
+  )
+}
+
+/**
+ * 図中に浮かべる寸法入力ボックス。位置は図コンテナに対する % 指定 —
+ * SVG の viewBox と同じ比率でアンカーが動くため、どの画面幅でも
+ * 対応する寸法矢印の近くに表示される。
+ */
+function DiagramInput({
+  label,
+  left,
+  top,
+  value,
+  onChange,
+  onBlur,
+}: {
+  label: React.ReactNode
+  left: string
+  top: string
+  value: string
+  onChange: (v: string) => void
+  onBlur: () => void
+}) {
+  return (
+    <div
+      className="absolute z-10 flex items-center gap-1 rounded-md border border-gold/50 bg-white/95 px-1.5 py-1 shadow-sm"
+      style={{ left, top }}
+    >
+      <label className="whitespace-nowrap text-[13px] leading-tight text-muted-foreground">{label}</label>
+      <input
+        type="number"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
+        className="w-14 rounded border border-border bg-white px-1 py-0.5 text-[15px] text-right text-foreground focus:border-gold focus:outline-none"
+      />
+      <span className="text-[11px] text-muted-foreground">mm</span>
+    </div>
   )
 }
 
@@ -335,13 +368,7 @@ export function StairProductPage() {
                 ※画像は完成イメージです。実物の施工写真は準備中です。
               </p>
 
-              {/* 寸法の説明図 — 入力ミス防止のため名称と位置を図で示す */}
-              <div className="rounded-lg border border-border bg-white p-4 md:p-6">
-                <p className="mb-3 text-[12px] tracking-[0.2em] text-gold font-semibold">
-                  DIMENSIONS — 入力する寸法の位置
-                </p>
-                <StairDimensionDiagram />
-              </div>
+              {/* 寸法の説明図は右カラムの見積計算機（STEP01）に入力欄ごと統合した */}
             </div>
 
             {/* RIGHT COLUMN — 商品情報・計算機 */}
@@ -449,7 +476,7 @@ export function StairProductPage() {
                   <div className={stepCircle}>01</div>
                   <p className="mb-1 text-[15px] font-semibold text-foreground">階段の寸法を入力する</p>
                   <p className="mb-4 text-[13px] md:text-[14px] text-muted-foreground">
-                    寸法の位置は<span className="lg:hidden">上</span><span className="hidden lg:inline">左</span>の説明図をご覧ください。だいたいの値でも、高さ・全長の目安がその場で分かります。
+                    それぞれの寸法は下の図の中でそのまま入力できます。だいたいの値でも、高さ・全長の目安がその場で分かります。
                   </p>
 
                   <label className="mb-1 block text-[13px] text-muted-foreground">段数（{LAURENT.minSteps}〜{LAURENT.maxSteps}段）</label>
@@ -476,59 +503,58 @@ export function StairProductPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="mb-1 block text-[13px] text-muted-foreground">C 蹴上げ＝1段の高さ（mm）</label>
-                      <input
-                        type="number"
-                        value={riserInput}
-                        onChange={(e) => handleRiserAllChange(e.target.value)}
-                        onBlur={() => handleRiserAllChange(String(riserMm))}
-                        className={inputClass}
-                      />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-[13px] text-muted-foreground">B 踏み面（mm）</label>
-                      <input
-                        type="number"
-                        value={treadInput}
-                        onChange={(e) => setTreadInput(e.target.value)}
-                        onBlur={() => setTreadInput(String(treadMm))}
-                        className={inputClass}
-                      />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-[13px] text-muted-foreground">蹴込み（mm）</label>
-                      <input
-                        type="number"
+                  {/* 寸法は図の中で直接入力する（初見でも位置が直感的に分かるように・2026-07-05 蠣﨑さん指示）。
+                      モバイルはステップ番号のインデントを抜けて全幅で表示する（-ml-14） */}
+                  <div className="-ml-14 md:ml-0 rounded-lg border border-border bg-white p-2 md:p-3">
+                    <p className="mb-1 px-2 pt-1 text-[12px] tracking-[0.2em] text-gold font-semibold">
+                      DIMENSIONS — 図の位置にそのまま入力
+                    </p>
+                    <div className="relative">
+                      <StairDimensionDiagram />
+                      <DiagramInput
+                        label="蹴込み"
+                        left="6%"
+                        top="28%"
                         value={kekomiInput}
-                        onChange={(e) => setKekomiInput(e.target.value)}
+                        onChange={setKekomiInput}
                         onBlur={() => setKekomiInput(String(kekomiMm))}
-                        className={inputClass}
                       />
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-[13px] text-muted-foreground">D 最終段の踏み面（mm）</label>
-                      <input
-                        type="number"
-                        value={lastTreadInput}
-                        onChange={(e) => setLastTreadInput(e.target.value)}
-                        onBlur={() => setLastTreadInput(String(lastTreadMm))}
-                        className={inputClass}
-                      />
-                      <p className="mt-1 text-[12px] text-muted-foreground">最上段の段鼻から壁までの寸法</p>
-                    </div>
-                    <div>
-                      <label className="mb-1 block text-[13px] text-muted-foreground">手すり高さ（mm・標準800）</label>
-                      <input
-                        type="number"
+                      <DiagramInput
+                        label="手すり高さ"
+                        left="8%"
+                        top="47%"
                         value={railHeightInput}
-                        onChange={(e) => setRailHeightInput(e.target.value)}
+                        onChange={setRailHeightInput}
                         onBlur={() => setRailHeightInput(String(railHeightMm))}
-                        className={inputClass}
                       />
-                      <p className="mt-1 text-[12px] text-muted-foreground">段鼻から笠木の上端まで（価格は変わりません）</p>
+                      <DiagramInput
+                        label={<><span className="hidden md:inline">D 最終段の踏み面</span><span className="md:hidden">D 壁まで</span></>}
+                        left="48%"
+                        top="32%"
+                        value={lastTreadInput}
+                        onChange={setLastTreadInput}
+                        onBlur={() => setLastTreadInput(String(lastTreadMm))}
+                      />
+                      <DiagramInput
+                        label="C 蹴上げ"
+                        left="52%"
+                        top="68%"
+                        value={riserInput}
+                        onChange={handleRiserAllChange}
+                        onBlur={() => handleRiserAllChange(String(riserMm))}
+                      />
+                      <DiagramInput
+                        label="B 踏み面"
+                        left="6%"
+                        top="76%"
+                        value={treadInput}
+                        onChange={setTreadInput}
+                        onBlur={() => setTreadInput(String(treadMm))}
+                      />
                     </div>
+                    <p className="px-2 pb-1 text-[12px] md:text-[13px] text-muted-foreground leading-relaxed">
+                      C 蹴上げ＝1段の高さ・D＝最上段の段鼻から壁まで・手すり高さ＝段鼻から笠木上端まで（標準800mm・価格は変わりません）。
+                    </p>
                   </div>
 
                   {/* 自動計算の確認表示 */}
