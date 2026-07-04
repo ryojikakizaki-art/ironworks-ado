@@ -175,7 +175,8 @@ async function sendOrderConfirmationEmail(session: Stripe.Checkout.Session) {
   const name = session.customer_details?.name || 'お客様';
   // 多本長さ違い対応 (PR #3)
   const lengthsInfo = parseLengthsMeta(meta);
-  const productLabel = `${meta.product_name || meta.product} 壁付け手すり ${lengthsInfo.short}`;
+  // product_label があればそれを正とする（階段手摺 Laurent 等「壁付け手すり」以外の商品用）
+  const productLabel = meta.product_label || `${meta.product_name || meta.product} 壁付け手すり ${lengthsInfo.short}`;
   const isRush = meta.rush_delivery === 'true';
   const deliveryLabel = isRush ? '特急配送（5営業日）' : '通常配送（10営業日）';
   const baseYen = Number(meta.base_total_yen || 0);
@@ -551,7 +552,8 @@ async function createCalendarEvents(session: Stripe.Checkout.Session) {
 
   // 多本長さ違い対応 (PR #3)
   const lengthsInfo = parseLengthsMeta(meta);
-  const productLabel = `${meta.product_name || meta.product} ${lengthsInfo.short}`;
+  // product_label があればそれを正とする（階段手摺 Laurent 等の商品用）
+  const productLabel = meta.product_label || `${meta.product_name || meta.product} ${lengthsInfo.short}`;
   const rushLabel = meta.rush_delivery === 'true' ? '【特急】' : '';
   const arrivalPref = meta.preferred_arrival_date
     ? `\n到着希望日: ${meta.preferred_arrival_date} ${meta.preferred_time_slot || '指定なし'}`
@@ -667,11 +669,14 @@ async function prependOrderToLedger(session: Stripe.Checkout.Session) {
 
   const orderDate = new Date((session.created ?? Math.floor(Date.now() / 1000)) * 1000)
     .toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' });
-  const productName = String(meta.product_name || meta.product || 'ご注文商品');
-  const spec = isSimple
-    ? `数量 ${meta.quantity || 1}`
-    : [lengthsInfo.full, meta.zakin_count ? `座金${meta.zakin_count}個` : '', meta.washer_type ? `座金${meta.washer_type}タイプ` : '', meta.rush_delivery === 'true' ? '特急' : '']
-        .filter(Boolean).join(' / ');
+  const productName = String(meta.product_label || meta.product_name || meta.product || 'ご注文商品');
+  // spec_text があればそれを正とする（階段手摺 Laurent 等、座金・長さ以外の仕様を持つ商品用）
+  const spec = meta.spec_text
+    ? meta.spec_text
+    : isSimple
+      ? `数量 ${meta.quantity || 1}`
+      : [lengthsInfo.full, meta.zakin_count ? `座金${meta.zakin_count}個` : '', meta.washer_type ? `座金${meta.washer_type}タイプ` : '', meta.rush_delivery === 'true' ? '特急' : '']
+          .filter(Boolean).join(' / ');
 
   const row = [
     orderDate,                                                        // 受注日

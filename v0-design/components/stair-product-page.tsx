@@ -1,0 +1,781 @@
+"use client"
+
+// Laurent（階段手摺・段数ベース見積計算機）専用ページ。
+// 既存の壁付け手すりページ (app/products/[slug]/page.tsx) は長さベースの価格モデル
+// 前提で作られているため、段数・階段寸法から計算する Laurent は専用コンポーネント
+// にしている。価格・寸法計算の正本は lib/products/stair-pricing.ts（決済APIと共用）。
+
+import { useMemo, useState } from "react"
+import Image from "next/image"
+import Link from "next/link"
+import { Camera } from "lucide-react"
+import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
+import { KaigoNotice } from "@/components/kaigo-notice"
+import { FinishCommitment } from "@/components/finish-commitment"
+import { PrimaryCTA } from "@/components/ui/primary-cta"
+import { EmbeddedCheckoutModal, type OrderSummary } from "@/components/checkout/embedded-checkout-modal"
+import { BankOrderModal } from "@/components/checkout/bank-order-modal"
+import {
+  LAURENT,
+  calcStairPrice,
+  calcStairGeometry,
+  clampSteps,
+  clampRiser,
+  clampTread,
+  clampKekomi,
+  type CrossbarMaterial,
+  type StairColor,
+} from "@/lib/products/stair-pricing"
+import { calcShipping, getShippingRange } from "@/lib/shipping/sagawa"
+
+const prefectures = [
+  "北海道", "青森県", "岩手県", "宮城県", "秋田県", "山形県", "福島県",
+  "茨城県", "栃木県", "群馬県", "埼玉県", "千葉県", "東京都", "神奈川県",
+  "新潟県", "富山県", "石川県", "福井県", "山梨県", "長野県", "岐阜県",
+  "静岡県", "愛知県", "三重県", "滋賀県", "京都府", "大阪府", "兵庫県",
+  "奈良県", "和歌山県", "鳥取県", "島根県", "岡山県", "広島県", "山口県",
+  "徳島県", "香川県", "愛媛県", "高知県", "福岡県", "佐賀県", "長崎県",
+  "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県",
+]
+
+const HERO_IMAGE = "/images/products/laurent/hero.jpg"
+
+const SPECS = [
+  { label: "タイプ", value: "階段手摺（直線階段専用）" },
+  { label: "素材", value: "鉄 フラットバー 9×38" },
+  { label: "仕上げ", value: "錆止め吹付塗装 + 2液型ウレタン塗装" },
+  { label: "カラー", value: "マットブラック（標準）／マットホワイト（+15%）" },
+  { label: "取付方式", value: "柱＝床固定・端部＝壁付け" },
+  { label: "横桟オプション", value: "0〜3本（6×25 フラットバー／13φ 丸鋼）" },
+  { label: "対応段数", value: `${LAURENT.minSteps}〜${LAURENT.maxSteps}段（全長3.5mまで。超える場合は要問合せ）` },
+]
+
+const LONG_DESCRIPTION = `厚み9mm×幅38mmのフラットバー（平鋼）を主材にした、直線階段用のアイアン手摺です。無垢の鉄ならではの重厚な直線が階段まわりを美しく引き締め、握った瞬間にわかる剛性が毎日の上り下りを支えます。
+
+柱は床固定、端部は壁付けで確実に固定する構造です。段数と階段の寸法を入力するだけで、その場で価格と手摺全長の目安がわかります。
+
+足元には横桟（6×25 フラットバー または 13φ 丸鋼）を最大3本まで追加できます。小さなお子様やペットのいるご家庭の落下対策にもどうぞ。
+
+色は標準のマットブラックのほか、マットホワイト（合計金額+15%）にも対応。仕上がりの美しさにこだわり、目立たない細部まで手を抜かず、長く愛用していただけるよう丁寧に制作しています。
+
+※本商品は直線階段専用です。コーナー（曲がり）のある階段は別途お見積もりで対応しますので、お問い合わせください。`
+
+// 段数ごとの価格目安（価格の目安カード用）
+const PRICE_GUIDE_STEPS = [3, 6, 10]
+
+/** 蹴上げ・踏み面・蹴込みの位置を示す寸法説明図（CAD 風・静的） */
+function StairDimensionDiagram() {
+  return (
+    <svg viewBox="0 0 560 330" role="img" aria-label="蹴上げ・踏み面・蹴込みの説明図" className="w-full h-auto">
+      <rect x="0" y="0" width="560" height="330" fill="#ffffff" />
+      {/* 床・壁 */}
+      <line x1="20" y1="290" x2="540" y2="290" stroke="#9ca3af" strokeWidth="2" />
+      <line x1="460" y1="0" x2="460" y2="290" stroke="#9ca3af" strokeWidth="2" />
+      <text x="472" y="120" fontSize="13" fill="#6b7280">壁</text>
+      {/* 階段（3段・蹴込み付き） */}
+      <path
+        d="M 80 290 L 80 230 L 90 230 L 90 232 L 200 232 L 200 170 L 210 170 L 210 172 L 320 172 L 320 110 L 330 110 L 330 112 L 460 112 L 460 290 Z"
+        fill="#f3f4f6"
+        stroke="#374151"
+        strokeWidth="2"
+        strokeLinejoin="round"
+      />
+      {/* 手摺（斜めレール・上端は壁に到達）と柱 */}
+      <line x1="60" y1="205" x2="456" y2="10" stroke="#1f2937" strokeWidth="6" strokeLinecap="round" />
+      <line x1="70" y1="202" x2="70" y2="290" stroke="#1f2937" strokeWidth="5" />
+      <rect x="60" y="286" width="20" height="6" fill="#1f2937" />
+      <text x="84" y="275" fontSize="13" fill="#374151">柱（床固定）</text>
+      <text x="310" y="30" fontSize="13" fill="#374151">端部は壁付け</text>
+      {/* 蹴上げ（1段の高さ） */}
+      <line x1="52" y1="230" x2="52" y2="290" stroke="#b8860b" strokeWidth="1.5" />
+      <path d="M 52 230 l -4 8 h 8 Z" fill="#b8860b" />
+      <path d="M 52 290 l -4 -8 h 8 Z" fill="#b8860b" />
+      <text x="10" y="252" fontSize="14" fill="#92650a">蹴上げ</text>
+      <text x="4" y="268" fontSize="11" fill="#92650a">（1段の高さ）</text>
+      {/* 踏み面（1段の奥行き） */}
+      <line x1="210" y1="158" x2="320" y2="158" stroke="#b8860b" strokeWidth="1.5" />
+      <path d="M 210 158 l 8 -4 v 8 Z" fill="#b8860b" />
+      <path d="M 320 158 l -8 -4 v 8 Z" fill="#b8860b" />
+      <text x="234" y="148" fontSize="14" fill="#92650a">踏み面</text>
+      {/* 蹴込み（段鼻の引っ込み） */}
+      <line x1="200" y1="248" x2="210" y2="248" stroke="#b8860b" strokeWidth="1.5" />
+      <path d="M 200 248 l 6 -3 v 6 Z" fill="#b8860b" />
+      <path d="M 210 248 l -6 -3 v 6 Z" fill="#b8860b" />
+      <line x1="205" y1="252" x2="230" y2="302" stroke="#b8860b" strokeWidth="1" />
+      <text x="212" y="318" fontSize="14" fill="#92650a">蹴込み（段鼻の引っ込み）</text>
+      {/* 手摺全長 */}
+      <line x1="105" y1="215" x2="440" y2="50" stroke="#b8860b" strokeWidth="1.5" strokeDasharray="6 4" />
+      <text x="200" y="150" fontSize="14" fill="#92650a" transform="rotate(-26.5 200 150)">手摺全長（自動計算）</text>
+    </svg>
+  )
+}
+
+export function StairProductPage() {
+  // ── 階段の寸法 ──
+  const [steps, setSteps] = useState(4)
+  const [riserInput, setRiserInput] = useState(String(LAURENT.defaults.riserMm))
+  const [treadInput, setTreadInput] = useState(String(LAURENT.defaults.treadMm))
+  const [kekomiInput, setKekomiInput] = useState(String(LAURENT.defaults.kekomiMm))
+  // 段ごとの蹴上げ（個別調整用）。一括値の変更・段数変更で作り直す。
+  const [riserInputs, setRiserInputs] = useState<string[]>(Array(4).fill(String(LAURENT.defaults.riserMm)))
+
+  // ── オプション ──
+  const [crossbarCount, setCrossbarCount] = useState(0)
+  const [crossbarMaterial, setCrossbarMaterial] = useState<CrossbarMaterial>("round")
+  const [color, setColor] = useState<StairColor>("black")
+  const [prefecture, setPrefecture] = useState("")
+
+  // ── 決済 ──
+  const [isCheckingOut, setIsCheckingOut] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
+  const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
+  const [bankOrderOpen, setBankOrderOpen] = useState(false)
+
+  const riserMm = clampRiser(Number(riserInput))
+  const treadMm = clampTread(Number(treadInput))
+  const kekomiMm = clampKekomi(Number(kekomiInput))
+  const risersMm = riserInputs.map((s) => clampRiser(Number(s)))
+
+  const handleStepsChange = (raw: number) => {
+    const n = clampSteps(raw)
+    setSteps(n)
+    setRiserInputs((prev) => {
+      const next = prev.slice(0, n)
+      while (next.length < n) next.push(riserInput)
+      return next
+    })
+  }
+
+  const handleRiserAllChange = (value: string) => {
+    setRiserInput(value)
+    setRiserInputs(Array(steps).fill(value))
+  }
+
+  const price = useMemo(
+    () => calcStairPrice({ steps, crossbarCount, crossbarMaterial, color }),
+    [steps, crossbarCount, crossbarMaterial, color],
+  )
+  const geometry = useMemo(
+    () => calcStairGeometry(risersMm, treadMm, kekomiMm),
+    [risersMm, treadMm, kekomiMm],
+  )
+
+  const shippingResult = useMemo(
+    () => (prefecture && !geometry.inquiry ? calcShipping([geometry.diagonalMm], prefecture, "yokogata") : null),
+    [prefecture, geometry.inquiry, geometry.diagonalMm],
+  )
+  const shipping = shippingResult && !shippingResult.inquiry ? shippingResult.shipping : 0
+  const shippingTax = Math.round(shipping * 0.1)
+  const total = price.total + shipping + shippingTax
+
+  // 配送先未選択時の「送料込み目安」（既存商品ページと同じ方式）
+  const shippingRange = useMemo(
+    () => (!prefecture && !geometry.inquiry ? getShippingRange([geometry.diagonalMm], "yokogata") : null),
+    [prefecture, geometry.inquiry, geometry.diagonalMm],
+  )
+
+  const colorLabel = color === "white" ? "マットホワイト" : "マットブラック"
+  const crossbarLabel =
+    crossbarCount > 0 ? `横桟${crossbarCount}本（${LAURENT.crossbar[crossbarMaterial].label}）` : "横桟なし"
+
+  // カード決済・銀行振込で共有する注文ペイロード（サーバ側で再計算される）
+  const orderPayload = {
+    product: LAURENT.slug,
+    steps,
+    riserMm,
+    risersMm,
+    treadMm,
+    kekomiMm,
+    crossbarCount,
+    crossbarMaterial,
+    color,
+    prefecture,
+  }
+
+  const checkoutSummary: OrderSummary = {
+    productName: `Laurent ローラン 階段手摺 ${steps}段（全長約${geometry.diagonalMm.toLocaleString()}mm）`,
+    productNote: `${crossbarLabel} / ${colorLabel} / 通常配送 10営業日`,
+    lines: [
+      { label: `本体価格（${steps}段 × ¥${LAURENT.pricePerStep.toLocaleString()}）`, amount: price.body },
+      ...(price.postAddon > 0
+        ? [{ label: `追加柱（${price.addPostCount}本 × ¥${LAURENT.postUnitPrice.toLocaleString()}）`, amount: price.postAddon }]
+        : []),
+      ...(price.crossbarAddon > 0
+        ? [{
+            label: `横桟（${crossbarCount}本 × ¥${LAURENT.crossbar[crossbarMaterial].unitPrice.toLocaleString()}）`,
+            note: LAURENT.crossbar[crossbarMaterial].label,
+            amount: price.crossbarAddon,
+          }]
+        : []),
+      ...(price.whiteSurcharge > 0 ? [{ label: "白仕上げ（合計 +15%）", amount: price.whiteSurcharge }] : []),
+      ...(shipping > 0 ? [{ label: `送料（佐川急便・${prefecture}・税抜）`, amount: shipping }] : []),
+      ...(shippingTax > 0 ? [{ label: "送料消費税（10%）", amount: shippingTax }] : []),
+    ],
+    totalLabel: "合計（税込）",
+    totalAmount: total,
+  }
+
+  const canPurchase = !geometry.inquiry && !!prefecture && !(shippingResult?.inquiry)
+
+  const handleCheckout = async () => {
+    if (!canPurchase || isCheckingOut) return
+    setIsCheckingOut(true)
+    setCheckoutError(null)
+    try {
+      const res = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(orderPayload),
+      })
+      const data = await res.json()
+      if (!res.ok || !data?.clientSecret) {
+        setCheckoutError(data?.error ?? "購入手続きを開始できませんでした")
+        return
+      }
+      setCheckoutClientSecret(data.clientSecret)
+    } catch {
+      setCheckoutError("通信エラーが発生しました。時間をおいてお試しください")
+    } finally {
+      setIsCheckingOut(false)
+    }
+  }
+
+  // 要問合せ時にフォームへ引き継ぐクエリ
+  const contactHref =
+    `/contact?type=stair&steps=${steps}&length=${geometry.diagonalMm}` +
+    `&crossbar=${encodeURIComponent(crossbarLabel)}&color=${encodeURIComponent(colorLabel)}`
+
+  const inputClass =
+    "w-full rounded-md border border-border bg-white px-3 py-2.5 text-[15px] text-foreground focus:border-gold focus:outline-none"
+  const stepCircle =
+    "absolute left-0 top-0 w-11 h-11 flex items-center justify-center rounded-full border-2 border-gold/60 bg-white font-serif text-[17px] text-gold"
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Header />
+
+      <main className="pt-20 lg:pt-24 pb-20 bg-background">
+        {/* Breadcrumb */}
+        <div className="max-w-[1400px] mx-auto px-4 lg:px-8 py-4">
+          <nav className="flex items-center gap-2 text-[11px] font-mono tracking-wide text-muted-foreground">
+            <Link href="/" className="hover:text-foreground transition-colors">Home</Link>
+            <span>/</span>
+            <Link href="/products" className="hover:text-foreground transition-colors">階段手摺</Link>
+            <span>/</span>
+            <span className="text-foreground">Laurent ローラン</span>
+          </nav>
+        </div>
+
+        <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-16">
+            {/* LEFT COLUMN — 画像・説明図 */}
+            <div className="space-y-4">
+              <div className="relative aspect-square bg-secondary rounded-lg overflow-hidden">
+                <Image
+                  src={HERO_IMAGE}
+                  alt="Laurent ローラン 階段手摺"
+                  fill
+                  className="object-cover"
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                />
+              </div>
+              <p className="text-[12px] md:text-[13px] text-muted-foreground">
+                ※画像は完成イメージです。実物の施工写真は準備中です。
+              </p>
+
+              {/* 寸法の説明図 — 入力ミス防止のため名称と位置を図で示す */}
+              <div className="rounded-lg border border-border bg-white p-4 md:p-6">
+                <p className="mb-3 text-[12px] tracking-[0.2em] text-gold font-semibold">
+                  DIMENSIONS — 入力する寸法の位置
+                </p>
+                <StairDimensionDiagram />
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN — 商品情報・計算機 */}
+            <div className="space-y-7">
+              <div className="flex items-center gap-3">
+                <div className="w-1 h-7 bg-gold rounded-full" />
+                <span className="text-[14px] tracking-wide text-muted-foreground">
+                  階段手摺・フラットバー 9×38
+                </span>
+              </div>
+
+              <div>
+                <h1 className="font-serif text-4xl lg:text-5xl text-foreground mb-3 leading-tight">
+                  Laurent ローラン
+                </h1>
+                <p className="text-[16px] text-muted-foreground leading-relaxed">
+                  鍛冶職人制作 階段手摺 フラットバー 9×38 マットブラック
+                </p>
+                <p className="mt-2 text-[13px] md:text-[14px] text-muted-foreground">
+                  箱階段・オープン側の階段に。無垢鉄の直線が空間を引き締める、床固定式の階段手摺です。
+                </p>
+              </div>
+
+              {/* 価格の目安 */}
+              <div className="rounded-lg border border-gold/20 bg-card p-6">
+                <p className="mb-2 text-[12px] tracking-[0.2em] text-gold font-semibold">価格の目安</p>
+                <div className="flex items-baseline gap-2 flex-wrap">
+                  <span className="font-serif text-3xl lg:text-4xl text-foreground">
+                    ¥{(LAURENT.minSteps * LAURENT.pricePerStep).toLocaleString()}
+                    <span className="text-2xl lg:text-3xl">〜</span>
+                  </span>
+                  <span className="text-[13px] text-muted-foreground">本体価格・税込（{LAURENT.minSteps}段）</span>
+                </div>
+                <p className="mt-2 text-[13px] md:text-[14px] text-muted-foreground leading-relaxed">
+                  1段 ¥{LAURENT.pricePerStep.toLocaleString()} × 段数で計算します（5段ごとに柱1本・追加柱は1本 ¥{LAURENT.postUnitPrice.toLocaleString()}）。
+                </p>
+                <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-3">
+                  {PRICE_GUIDE_STEPS.map((n) => (
+                    <div key={n} className="flex items-baseline gap-1.5">
+                      <span className="text-[13px] text-muted-foreground">{n}段</span>
+                      <span className="font-serif text-[17px] md:text-[19px] text-foreground">
+                        ¥{calcStairPrice({ steps: n, crossbarCount: 0, crossbarMaterial: "round", color: "black" }).total.toLocaleString()}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-3 text-[13px] md:text-[14px] text-muted-foreground leading-relaxed">
+                  別途送料がかかります。下の計算機で配送先を選ぶと
+                  <span className="text-foreground font-medium">送料込みの総額がその場で</span>分かります。
+                </p>
+              </div>
+
+              <KaigoNotice />
+
+              <FinishCommitment specs={SPECS} />
+
+              <div>
+                <p className="text-[15px] leading-relaxed text-foreground whitespace-pre-line">{LONG_DESCRIPTION}</p>
+              </div>
+
+              {/* 相談誘導 CTA */}
+              <div className="rounded-lg border-2 border-gold/50 bg-gold/[0.05] p-6 shadow-sm">
+                <p className="mb-1 flex items-center gap-2 text-[12px] tracking-[0.2em] uppercase text-gold font-semibold">
+                  <Camera className="w-4 h-4 shrink-0" />
+                  Before you order
+                </p>
+                <p className="mb-3 font-serif text-[18px] font-bold text-foreground">
+                  うちの階段に合うか、まず確認してみませんか？
+                </p>
+                <p className="mb-5 text-[14px] leading-relaxed text-muted-foreground">
+                  「寸法の測り方がわからない」「コーナーのある階段だけど大丈夫？」──
+                  そんな疑問でも大歓迎です。階段の写真 1 枚送るだけで職人が直接確認します。
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <a
+                    href="https://lin.ee/Tnjukrf"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 rounded-md border-2 border-[#06C755] bg-white px-5 py-3 text-[14px] font-semibold text-[#06C755] transition hover:bg-[#06C755]/5"
+                  >
+                    LINE で写真を送る
+                  </a>
+                  <Link
+                    href="/contact"
+                    className="flex items-center justify-center gap-2 rounded-md border-2 border-gold/40 bg-white px-5 py-3 text-[14px] font-semibold text-foreground transition hover:border-gold hover:text-gold"
+                  >
+                    フォームで相談する
+                  </Link>
+                </div>
+              </div>
+
+              <div className="border-t-2 border-gold/30 pt-6" />
+
+              {/* ===== 見積計算機 ===== */}
+              <div className="space-y-7">
+                <div className="flex items-center gap-3">
+                  <span className="text-[13px] tracking-[0.2em] uppercase text-gold font-semibold">
+                    PRICE CALCULATOR
+                  </span>
+                  <div className="flex-1 h-px bg-gold/30" />
+                </div>
+
+                {/* STEP 01 — 階段の寸法 */}
+                <div className="relative pl-14">
+                  <div className={stepCircle}>01</div>
+                  <p className="mb-1 text-[15px] font-semibold text-foreground">階段の寸法を入力する</p>
+                  <p className="mb-4 text-[13px] md:text-[14px] text-muted-foreground">
+                    寸法の位置は<span className="lg:hidden">上</span><span className="hidden lg:inline">左</span>の説明図をご覧ください。だいたいの値でも、高さ・全長の目安がその場で分かります。
+                  </p>
+
+                  <label className="mb-1 block text-[13px] text-muted-foreground">段数（{LAURENT.minSteps}〜{LAURENT.maxSteps}段）</label>
+                  <div className="mb-4 flex items-center gap-4">
+                    <input
+                      type="range"
+                      min={LAURENT.minSteps}
+                      max={LAURENT.maxSteps}
+                      value={steps}
+                      onChange={(e) => handleStepsChange(Number(e.target.value))}
+                      className="flex-1 accent-[#b8860b]"
+                      aria-label="段数"
+                    />
+                    <div className="flex items-baseline gap-1">
+                      <input
+                        type="number"
+                        min={LAURENT.minSteps}
+                        max={LAURENT.maxSteps}
+                        value={steps}
+                        onChange={(e) => handleStepsChange(Number(e.target.value))}
+                        className="w-20 rounded-md border border-border bg-white px-3 py-2.5 text-[16px] text-foreground text-right focus:border-gold focus:outline-none"
+                      />
+                      <span className="text-[14px] text-muted-foreground">段</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="mb-1 block text-[13px] text-muted-foreground">蹴上げ（mm）</label>
+                      <input
+                        type="number"
+                        value={riserInput}
+                        onChange={(e) => handleRiserAllChange(e.target.value)}
+                        onBlur={() => handleRiserAllChange(String(riserMm))}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-[13px] text-muted-foreground">踏み面（mm）</label>
+                      <input
+                        type="number"
+                        value={treadInput}
+                        onChange={(e) => setTreadInput(e.target.value)}
+                        onBlur={() => setTreadInput(String(treadMm))}
+                        className={inputClass}
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-[13px] text-muted-foreground">蹴込み（mm）</label>
+                      <input
+                        type="number"
+                        value={kekomiInput}
+                        onChange={(e) => setKekomiInput(e.target.value)}
+                        onBlur={() => setKekomiInput(String(kekomiMm))}
+                        className={inputClass}
+                      />
+                    </div>
+                  </div>
+
+                  {/* 自動計算の確認表示 */}
+                  <div className="mt-4 rounded-md border border-gold/30 bg-gold/[0.04] p-4">
+                    <p className="mb-2 text-[12px] tracking-[0.15em] text-gold font-semibold">入力内容の確認（自動計算）</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                      <div>
+                        <p className="text-[12px] text-muted-foreground">床から最上段までの高さ</p>
+                        <p className="font-serif text-[19px] text-foreground">{geometry.totalRiseMm.toLocaleString()}<span className="text-[13px] ml-0.5">mm</span></p>
+                      </div>
+                      <div>
+                        <p className="text-[12px] text-muted-foreground">階段の水平距離</p>
+                        <p className="font-serif text-[19px] text-foreground">{geometry.runMm.toLocaleString()}<span className="text-[13px] ml-0.5">mm</span></p>
+                      </div>
+                      <div>
+                        <p className="text-[12px] text-muted-foreground">手摺の全長（斜め）</p>
+                        <p className={`font-serif text-[19px] ${geometry.inquiry ? "text-red-600" : "text-foreground"}`}>
+                          約{geometry.diagonalMm.toLocaleString()}<span className="text-[13px] ml-0.5">mm</span>
+                        </p>
+                      </div>
+                    </div>
+                    <p className="mt-2 text-[12px] md:text-[13px] text-muted-foreground leading-relaxed">
+                      実際の階段と大きくズレる場合は、下の「段ごとの蹴上げを調整する」で1段ずつ直せます。
+                    </p>
+                  </div>
+
+                  {/* 段ごとの蹴上げ個別調整 */}
+                  <details className="group mt-3 rounded-md border border-border bg-white">
+                    <summary className="cursor-pointer select-none px-4 py-3 text-[14px] font-medium text-foreground">
+                      段ごとの蹴上げを調整する（1段目だけ高さが違う場合など）
+                    </summary>
+                    <div className="border-t border-border px-4 py-4">
+                      <p className="mb-3 text-[13px] text-muted-foreground leading-relaxed">
+                        各段の高さ（蹴上げ）を個別に入力できます。上の「蹴上げ」を変更すると全段がその値に戻ります。
+                      </p>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        {riserInputs.map((v, i) => (
+                          <div key={i} className="flex items-center gap-2">
+                            <span className="w-12 shrink-0 text-[13px] text-muted-foreground">{i + 1}段目</span>
+                            <input
+                              type="number"
+                              value={v}
+                              onChange={(e) =>
+                                setRiserInputs((prev) => prev.map((p, j) => (j === i ? e.target.value : p)))
+                              }
+                              onBlur={() =>
+                                setRiserInputs((prev) => prev.map((p, j) => (j === i ? String(clampRiser(Number(p))) : p)))
+                              }
+                              className="w-full rounded-md border border-border bg-white px-2 py-2 text-[14px] text-foreground text-right focus:border-gold focus:outline-none"
+                              aria-label={`${i + 1}段目の蹴上げ`}
+                            />
+                            <span className="text-[12px] text-muted-foreground">mm</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </details>
+                </div>
+
+                {/* STEP 02 — 横桟 */}
+                <div className="relative pl-14">
+                  <div className={stepCircle}>02</div>
+                  <p className="mb-1 text-[15px] font-semibold text-foreground">横桟（足元の桟）を選ぶ</p>
+                  <p className="mb-4 text-[13px] md:text-[14px] text-muted-foreground">
+                    手摺の下に通す桟です。お子様・ペットの落下対策に。なしでもご注文いただけます。
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {[0, 1, 2, 3].map((n) => (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setCrossbarCount(n)}
+                        className={`rounded-md border-2 px-5 py-2.5 text-[14px] font-medium transition ${
+                          crossbarCount === n
+                            ? "border-gold bg-gold/10 text-foreground"
+                            : "border-border bg-white text-muted-foreground hover:border-gold/50"
+                        }`}
+                      >
+                        {n === 0 ? "なし" : `${n}本`}
+                      </button>
+                    ))}
+                  </div>
+                  {crossbarCount > 0 && (
+                    <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setCrossbarMaterial("round")}
+                        className={`rounded-md border-2 px-4 py-3 text-left transition ${
+                          crossbarMaterial === "round"
+                            ? "border-gold bg-gold/10"
+                            : "border-border bg-white hover:border-gold/50"
+                        }`}
+                      >
+                        <span className="block text-[14px] font-medium text-foreground">
+                          13φ 丸鋼
+                          <span className="ml-2 rounded bg-gold/15 px-1.5 py-0.5 text-[11px] text-gold font-semibold">お求めやすい</span>
+                        </span>
+                        <span className="block text-[13px] text-muted-foreground">1本 ¥{LAURENT.crossbar.round.unitPrice.toLocaleString()}</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCrossbarMaterial("flat")}
+                        className={`rounded-md border-2 px-4 py-3 text-left transition ${
+                          crossbarMaterial === "flat"
+                            ? "border-gold bg-gold/10"
+                            : "border-border bg-white hover:border-gold/50"
+                        }`}
+                      >
+                        <span className="block text-[14px] font-medium text-foreground">6×25 フラットバー</span>
+                        <span className="block text-[13px] text-muted-foreground">1本 ¥{LAURENT.crossbar.flat.unitPrice.toLocaleString()}・本体と揃う平鋼</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* STEP 03 — 色 */}
+                <div className="relative pl-14">
+                  <div className={stepCircle}>03</div>
+                  <p className="mb-4 text-[15px] font-semibold text-foreground">色を選ぶ</p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setColor("black")}
+                      className={`rounded-md border-2 px-4 py-3 text-left transition ${
+                        color === "black" ? "border-gold bg-gold/10" : "border-border bg-white hover:border-gold/50"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2 text-[14px] font-medium text-foreground">
+                        <span className="inline-block h-4 w-4 rounded-full bg-[#1f1f1f] border border-border" />
+                        マットブラック（標準）
+                      </span>
+                      <span className="block text-[13px] text-muted-foreground mt-0.5">追加料金なし</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setColor("white")}
+                      className={`rounded-md border-2 px-4 py-3 text-left transition ${
+                        color === "white" ? "border-gold bg-gold/10" : "border-border bg-white hover:border-gold/50"
+                      }`}
+                    >
+                      <span className="flex items-center gap-2 text-[14px] font-medium text-foreground">
+                        <span className="inline-block h-4 w-4 rounded-full bg-white border border-border" />
+                        マットホワイト
+                      </span>
+                      <span className="block text-[13px] text-muted-foreground mt-0.5">合計金額 +15%</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* STEP 04 — 配送先 */}
+                <div className="relative pl-14">
+                  <div className={stepCircle}>04</div>
+                  <p className="mb-4 text-[15px] font-semibold text-foreground">配送先の都道府県を選ぶ</p>
+                  <select
+                    value={prefecture}
+                    onChange={(e) => setPrefecture(e.target.value)}
+                    className={inputClass}
+                    aria-label="配送先都道府県"
+                  >
+                    <option value="">選択してください</option>
+                    {prefectures.map((p) => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
+                  </select>
+                  {shippingResult?.inquiry && (
+                    <p className="mt-2 text-[13px] text-red-600">{shippingResult.inquiryReason}</p>
+                  )}
+                </div>
+
+                {/* ===== 価格表示 or 要問合せ ===== */}
+                {geometry.inquiry ? (
+                  <div className="rounded-lg border-2 border-gold/50 bg-gold/[0.05] p-6">
+                    <p className="mb-2 text-[12px] tracking-[0.2em] text-gold font-semibold">お問い合わせください</p>
+                    <p className="mb-3 font-serif text-[20px] text-foreground">
+                      この寸法は要問合せです（全長 約{geometry.diagonalMm.toLocaleString()}mm）
+                    </p>
+                    <p className="mb-5 text-[14px] leading-relaxed text-muted-foreground">
+                      全長3.5mを超える製品は通常の宅配便で発送できません。配送先の営業所止め、
+                      または4トントラックで搬入可能かの確認が必要なため、お問い合わせください。
+                      入力いただいた段数・寸法はお問い合わせフォームに引き継がれます。
+                    </p>
+                    <PrimaryCTA variant="gold" href={contactHref} withArrow>
+                      この内容で問い合わせる
+                    </PrimaryCTA>
+                  </div>
+                ) : (
+                  <>
+                    {/* 内訳と合計 */}
+                    <div className="rounded-lg border border-border bg-card p-6">
+                      <p className="mb-3 text-[12px] tracking-[0.2em] text-gold font-semibold">お見積もり内訳</p>
+                      <div className="space-y-2">
+                        <div className="flex items-baseline justify-between gap-3">
+                          <span className="text-[14px] text-muted-foreground">本体価格（{steps}段 × ¥{LAURENT.pricePerStep.toLocaleString()}）</span>
+                          <span className="text-[15px] text-foreground">¥{price.body.toLocaleString()}</span>
+                        </div>
+                        {price.postAddon > 0 && (
+                          <div className="flex items-baseline justify-between gap-3">
+                            <span className="text-[14px] text-muted-foreground">追加柱（{price.addPostCount}本 × ¥{LAURENT.postUnitPrice.toLocaleString()}）</span>
+                            <span className="text-[15px] text-foreground">¥{price.postAddon.toLocaleString()}</span>
+                          </div>
+                        )}
+                        {price.crossbarAddon > 0 && (
+                          <div className="flex items-baseline justify-between gap-3">
+                            <span className="text-[14px] text-muted-foreground">{crossbarLabel}</span>
+                            <span className="text-[15px] text-foreground">¥{price.crossbarAddon.toLocaleString()}</span>
+                          </div>
+                        )}
+                        {price.whiteSurcharge > 0 && (
+                          <div className="flex items-baseline justify-between gap-3">
+                            <span className="text-[14px] text-muted-foreground">白仕上げ（合計 +15%）</span>
+                            <span className="text-[15px] text-foreground">¥{price.whiteSurcharge.toLocaleString()}</span>
+                          </div>
+                        )}
+                        {prefecture && shipping > 0 && (
+                          <>
+                            <div className="flex items-baseline justify-between gap-3">
+                              <span className="text-[14px] text-muted-foreground">送料（佐川急便・{prefecture}・税抜）</span>
+                              <span className="text-[15px] text-foreground">¥{shipping.toLocaleString()}</span>
+                            </div>
+                            <div className="flex items-baseline justify-between gap-3">
+                              <span className="text-[14px] text-muted-foreground">送料消費税（10%）</span>
+                              <span className="text-[15px] text-foreground">¥{shippingTax.toLocaleString()}</span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                      <div className="mt-4 flex items-baseline justify-between gap-3 border-t-2 border-gold/40 pt-3">
+                        <span className="text-[15px] font-semibold text-foreground">
+                          {prefecture ? "合計（税込・送料込）" : "本体合計（税込）"}
+                        </span>
+                        <span className="font-serif text-3xl text-foreground">
+                          ¥{(prefecture ? total : price.total).toLocaleString()}
+                        </span>
+                      </div>
+                      {!prefecture && shippingRange && (
+                        <p className="mt-2 text-[13px] text-muted-foreground">
+                          送料込み目安: ¥{(price.total + Math.round(shippingRange.minShipping * 1.1)).toLocaleString()}
+                          〜¥{(price.total + Math.round(shippingRange.maxShipping * 1.1)).toLocaleString()}
+                          （配送先を選ぶと確定します）
+                        </p>
+                      )}
+                    </div>
+
+                    {/* STEP 05 — 購入 */}
+                    <div className="relative pl-14">
+                      <div className={stepCircle}>05</div>
+                      <p className="mb-1 text-[15px] font-semibold text-foreground">ご購入手続き</p>
+                      <p className="mb-4 text-[13px] md:text-[14px] text-muted-foreground">
+                        通常配送（10営業日）でお届けします。カード決済・銀行振込のどちらでもご注文いただけます。
+                      </p>
+                      {checkoutError && (
+                        <p className="mb-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-700">
+                          {checkoutError}
+                        </p>
+                      )}
+                      <div className="flex flex-col gap-3">
+                        <PrimaryCTA
+                          variant="purchase"
+                          onClick={handleCheckout}
+                          disabled={!canPurchase || isCheckingOut}
+                        >
+                          {isCheckingOut ? "手続きを準備中…" : "お支払い手続きへ進む"}
+                        </PrimaryCTA>
+                        <PrimaryCTA
+                          variant="purchase-steel"
+                          onClick={() => canPurchase && setBankOrderOpen(true)}
+                          disabled={!canPurchase}
+                        >
+                          銀行振込でご注文する
+                        </PrimaryCTA>
+                        {!prefecture && (
+                          <p className="text-[13px] text-muted-foreground">配送先の都道府県を選ぶとご購入いただけます。</p>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* ===== SPECIFICATIONS ===== */}
+          <div className="mt-16 max-w-3xl">
+            <div className="mb-5 flex items-center gap-3">
+              <span className="text-[13px] tracking-[0.2em] uppercase text-gold font-semibold">Specifications</span>
+              <div className="flex-1 h-px bg-gold/30" />
+            </div>
+            <dl className="divide-y divide-border rounded-lg border border-border bg-white">
+              {SPECS.map((s) => (
+                <div key={s.label} className="grid grid-cols-[110px_1fr] md:grid-cols-[160px_1fr] gap-3 px-4 py-3">
+                  <dt className="text-[13px] md:text-[14px] text-muted-foreground">{s.label}</dt>
+                  <dd className="text-[14px] md:text-[15px] text-foreground">{s.value}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-3 text-[13px] md:text-[14px] text-muted-foreground leading-relaxed">
+              コーナー（曲がり）のある階段、全長3.5mを超える階段は
+              <Link href="/contact" className="text-gold underline underline-offset-2">お問い合わせ</Link>
+              から別途お見積もりで対応します。
+            </p>
+          </div>
+        </div>
+      </main>
+
+      <Footer />
+
+      <EmbeddedCheckoutModal
+        open={!!checkoutClientSecret}
+        clientSecret={checkoutClientSecret}
+        onClose={() => setCheckoutClientSecret(null)}
+        summary={checkoutSummary}
+      />
+
+      <BankOrderModal
+        open={bankOrderOpen}
+        onClose={() => setBankOrderOpen(false)}
+        orderPayload={orderPayload}
+        summary={checkoutSummary}
+      />
+    </div>
+  )
+}

@@ -80,7 +80,11 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
   { cat: "door", label: "アイアンドア", name: "Barn Door バーンドア", sub: "室内スライドドア マットブラック", price: 275000, img: "ef8821265072eeb099dc", href: "/products/barn-door" },
   { cat: "door", label: "ロートアイアンドア", name: "Arabesque Gate", sub: "室内扉 マットブラック", price: 253000, badge: "Artisan", img: "b8269f71f7c7462e47a1", href: "/products/arabesque" },
 
-  // 階段 (3 商品)
+  // 階段 (4 商品)
+  // Laurent: 段数ベース見積計算機つきの専用ページ（lib/products/stair-pricing.ts）。
+  // img はローカルパス（拡張子なし・galleryUrl が "/" 始まりをそのまま返す仕組みを利用）。
+  // 実物写真が撮れるまでの仮サムネ＝生成画像（2026-07-04 蠣﨑さん承認の個別例外）。
+  { cat: "stair", label: "階段手摺", name: "Laurent ローラン", sub: "フラットバー 9×38 マットブラック", price: 75000, priceFrom: true, img: "/images/products/laurent/hero", href: "/products/laurent" },
   { cat: "stair", label: "スケルトン階段", name: "スケルトン階段 -直線-", sub: "オーダーメイド", price: 0, img: "7a3358b5d7a86318eda1", href: "/products/stair-straight" },
   { cat: "stair", label: "スケルトン階段", name: "スケルトン階段 -廻り階段-", sub: "力桁1本型 オーダーメイド", price: 1400000, img: "853fb7dae26475eee4a0", href: "/products/stair-spiral" },
   { cat: "stair", label: "鉄骨外階段", name: "鉄骨外階段 -かね折れ-", sub: "外階段 オーダーメイド", price: 0, img: "6957d69de71788107932", href: "/products/stair-outdoor" },

@@ -95,6 +95,11 @@ function buildItem(item: FeedItem): string {
   ].join("\n")
 }
 
+// フィード除外 slug。
+// laurent: サムネが実物写真でなく生成画像のため、実写に差し替えるまで
+// Google ショッピングには出さない（誤認・ポリシーリスク回避）。
+const FEED_EXCLUDED_SLUGS = new Set(["laurent"])
+
 export async function GET() {
   const collected: FeedItem[] = []
   const seen = new Set<string>()
@@ -103,6 +108,7 @@ export async function GET() {
     if (p.price <= 0) continue
     if (!p.href.startsWith("/products/")) continue
     const slug = p.href.replace("/products/", "")
+    if (FEED_EXCLUDED_SLUGS.has(slug)) continue
     seen.add(slug)
     collected.push({
       slug,
