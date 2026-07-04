@@ -178,7 +178,8 @@ async function sendOrderConfirmationEmail(session: Stripe.Checkout.Session) {
   // product_label があればそれを正とする（階段手摺 Laurent 等「壁付け手すり」以外の商品用）
   const productLabel = meta.product_label || `${meta.product_name || meta.product} 壁付け手すり ${lengthsInfo.short}`;
   const isRush = meta.rush_delivery === 'true';
-  const deliveryLabel = isRush ? '特急配送（5営業日）' : '通常配送（10営業日）';
+  // delivery_label があればそれを正とする（Laurent は 15 営業日など商品ごとに納期が違うため）
+  const deliveryLabel = meta.delivery_label || (isRush ? '特急配送（5営業日）' : '通常配送（10営業日）');
   const baseYen = Number(meta.base_total_yen || 0);
   const rushYen = Number(meta.rush_surcharge_yen || 0);
   const totalYen = Number(meta.total_yen || session.amount_total || 0);

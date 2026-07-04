@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     const stairShippingTax = Math.round(stairShipping.shipping * 0.1);
     totalYen = stairOrder.price.total + stairShipping.shipping + stairShippingTax;
     productLabel = stairOrder.productLabel;
-    specParts = [...stairOrder.specParts, '通常配送'];
+    specParts = [...stairOrder.specParts, `通常配送（${LAURENT.deliveryBusinessDays}営業日）`];
   } else {
   // ↓ 既存の壁付け手すりフロー（diff を最小にするためインデントは変えていない）
   const prod = PRODUCTS[productKey];

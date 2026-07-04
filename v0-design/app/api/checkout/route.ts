@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { getScheduleDates, formatDateISO } from '@/lib/business-days';
+import { getScheduleDates, formatDateISO, addBusinessDays } from '@/lib/business-days';
 import { calcShipping, type ProductType } from '@/lib/shipping/sagawa';
 import { getOrCreateConsumptionTaxRate } from '@/lib/stripe/tax-rate';
 // 価格・座金計算の正本は lib/products/order-pricing.ts（カード決済・銀行振込で共有）。
@@ -315,9 +315,18 @@ async function createStairCheckoutSession(
     const shippingTaxYen = Math.round(shippingYen * 0.1);
     const totalYen = order.price.total + shippingYen + shippingTaxYen;
 
+    // Laurent は大物のため 15 営業日（getScheduleDates は 10 営業日固定なので自前で計算）。
+    // 内訳は既存と同じ構造: 翌営業日に制作開始 → 制作 → 完了翌営業日に発送。
     const now = new Date();
-    const schedule = getScheduleDates(now, false);
-    const deliveryDesc = '2液型ウレタン塗装 / 通常配送 10営業日';
+    const productionStart = addBusinessDays(now, 1);
+    const productionComplete = addBusinessDays(productionStart, LAURENT.deliveryBusinessDays - 2);
+    const schedule = {
+      productionStart,
+      productionComplete,
+      shippingDate: addBusinessDays(productionComplete, 1),
+      arrivalDate: addBusinessDays(addBusinessDays(productionComplete, 1), 1),
+    };
+    const deliveryDesc = `2液型ウレタン塗装 / 通常配送 ${LAURENT.deliveryBusinessDays}営業日`;
 
     const host = request.headers.get('host') || 'ironworks-ado.vercel.app';
     const baseUrl = `https://${host}`;

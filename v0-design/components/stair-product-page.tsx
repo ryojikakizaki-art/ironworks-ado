@@ -24,6 +24,7 @@ import {
   clampRiser,
   clampTread,
   clampKekomi,
+  clampLastTread,
   type CrossbarMaterial,
   type StairColor,
 } from "@/lib/products/stair-pricing"
@@ -64,49 +65,72 @@ const LONG_DESCRIPTION = `厚み9mm×幅38mmのフラットバー（平鋼）を
 // 段数ごとの価格目安（価格の目安カード用）
 const PRICE_GUIDE_STEPS = [3, 6, 10]
 
-/** 蹴上げ・踏み面・蹴込みの位置を示す寸法説明図（CAD 風・静的） */
+/**
+ * 入力寸法の位置を示す説明図（CAD 風・静的）。
+ * 段鼻（ノーズ）のオーバーハングを実際の階段どおりに描き、
+ * B踏み面=段鼻先端から次の蹴込み板まで / 蹴込み=段鼻下のへこみ を正しく示す
+ * （2026-07-04 蠣﨑さん指摘・楽天同種商品の寸法図を参考）。
+ */
 function StairDimensionDiagram() {
   return (
-    <svg viewBox="0 0 560 330" role="img" aria-label="蹴上げ・踏み面・蹴込みの説明図" className="w-full h-auto">
-      <rect x="0" y="0" width="560" height="330" fill="#ffffff" />
+    <svg viewBox="0 0 560 335" role="img" aria-label="蹴上げ・踏み面・蹴込み・最終段の踏み面の説明図" className="w-full h-auto">
+      <rect x="0" y="0" width="560" height="335" fill="#ffffff" />
       {/* 床・壁 */}
       <line x1="20" y1="290" x2="540" y2="290" stroke="#9ca3af" strokeWidth="2" />
-      <line x1="460" y1="0" x2="460" y2="290" stroke="#9ca3af" strokeWidth="2" />
-      <text x="472" y="120" fontSize="13" fill="#6b7280">壁</text>
-      {/* 階段（3段・蹴込み付き） */}
+      <line x1="470" y1="8" x2="470" y2="290" stroke="#9ca3af" strokeWidth="2" />
+      <text x="480" y="110" fontSize="13" fill="#6b7280">壁</text>
+      {/* 階段（3段＋最上段の踏み面）— 段鼻が蹴込み分オーバーハングする実形状 */}
       <path
-        d="M 80 290 L 80 230 L 90 230 L 90 232 L 200 232 L 200 170 L 210 170 L 210 172 L 320 172 L 320 110 L 330 110 L 330 112 L 460 112 L 460 290 Z"
+        d="M 112 290 V 240 H 100 V 234 H 227 V 201 H 215 V 195 H 342 V 156 H 330 V 150 H 470 V 290 Z"
         fill="#f3f4f6"
         stroke="#374151"
         strokeWidth="2"
         strokeLinejoin="round"
       />
-      {/* 手摺（斜めレール・上端は壁に到達）と柱 */}
-      <line x1="60" y1="205" x2="456" y2="10" stroke="#1f2937" strokeWidth="6" strokeLinecap="round" />
-      <line x1="70" y1="202" x2="70" y2="290" stroke="#1f2937" strokeWidth="5" />
-      <rect x="60" y="286" width="20" height="6" fill="#1f2937" />
-      <text x="84" y="275" fontSize="13" fill="#374151">柱（床固定）</text>
-      <text x="310" y="30" fontSize="13" fill="#374151">端部は壁付け</text>
-      {/* 蹴上げ（1段の高さ） */}
-      <line x1="52" y1="230" x2="52" y2="290" stroke="#b8860b" strokeWidth="1.5" />
-      <path d="M 52 230 l -4 8 h 8 Z" fill="#b8860b" />
-      <path d="M 52 290 l -4 -8 h 8 Z" fill="#b8860b" />
-      <text x="10" y="252" fontSize="14" fill="#92650a">蹴上げ</text>
-      <text x="4" y="268" fontSize="11" fill="#92650a">（1段の高さ）</text>
-      {/* 踏み面（1段の奥行き） */}
-      <line x1="210" y1="158" x2="320" y2="158" stroke="#b8860b" strokeWidth="1.5" />
-      <path d="M 210 158 l 8 -4 v 8 Z" fill="#b8860b" />
-      <path d="M 320 158 l -8 -4 v 8 Z" fill="#b8860b" />
-      <text x="234" y="148" fontSize="14" fill="#92650a">踏み面</text>
-      {/* 蹴込み（段鼻の引っ込み） */}
-      <line x1="200" y1="248" x2="210" y2="248" stroke="#b8860b" strokeWidth="1.5" />
-      <path d="M 200 248 l 6 -3 v 6 Z" fill="#b8860b" />
-      <path d="M 210 248 l -6 -3 v 6 Z" fill="#b8860b" />
-      <line x1="205" y1="252" x2="230" y2="302" stroke="#b8860b" strokeWidth="1" />
-      <text x="212" y="318" fontSize="14" fill="#92650a">蹴込み（段鼻の引っ込み）</text>
+      {/* 手摺（斜めレール・上端は壁付け）と柱（床固定） */}
+      <line x1="80" y1="168" x2="466" y2="18" stroke="#1f2937" strokeWidth="6" strokeLinecap="round" />
+      <line x1="95" y1="164" x2="95" y2="290" stroke="#1f2937" strokeWidth="5" />
+      <rect x="85" y="286" width="20" height="6" fill="#1f2937" />
+      <text x="14" y="196" fontSize="13" fill="#374151">柱</text>
+      <text x="14" y="212" fontSize="11" fill="#374151">（床固定）</text>
+      <text x="292" y="36" fontSize="13" fill="#374151">端部は壁付け</text>
+      {/* C 蹴上げ（1段の高さ）: 段の上面から次の段の上面まで */}
+      <line x1="196" y1="195" x2="196" y2="234" stroke="#b8860b" strokeWidth="1.5" />
+      <path d="M 196 195 l -4 8 h 8 Z" fill="#b8860b" />
+      <path d="M 196 234 l -4 -8 h 8 Z" fill="#b8860b" />
+      <line x1="150" y1="195" x2="215" y2="195" stroke="#b8860b" strokeWidth="0.75" strokeDasharray="3 3" />
+      <line x1="150" y1="234" x2="227" y2="234" stroke="#b8860b" strokeWidth="0.75" strokeDasharray="3 3" />
+      <text x="118" y="212" fontSize="14" fill="#92650a">C 蹴上げ</text>
+      <text x="112" y="228" fontSize="11" fill="#92650a">（1段の高さ）</text>
+      {/* B 踏み面: 段鼻の先端から次の蹴込み板（立ち上がり）まで */}
+      <line x1="215" y1="186" x2="342" y2="186" stroke="#b8860b" strokeWidth="1.5" />
+      <path d="M 215 186 l 8 -4 v 8 Z" fill="#b8860b" />
+      <path d="M 342 186 l -8 -4 v 8 Z" fill="#b8860b" />
+      <line x1="215" y1="181" x2="215" y2="195" stroke="#b8860b" strokeWidth="0.75" />
+      <line x1="342" y1="181" x2="342" y2="195" stroke="#b8860b" strokeWidth="0.75" />
+      <text x="248" y="179" fontSize="14" fill="#92650a">B 踏み面</text>
+      {/* 蹴込み: 段鼻の下のへこんでいる部分（段鼻先端 → 蹴込み板） */}
+      <line x1="215" y1="212" x2="227" y2="212" stroke="#b8860b" strokeWidth="1.5" />
+      <path d="M 215 212 l 5 -3 v 6 Z" fill="#b8860b" />
+      <path d="M 227 212 l -5 -3 v 6 Z" fill="#b8860b" />
+      <line x1="221" y1="215" x2="180" y2="262" stroke="#b8860b" strokeWidth="1" />
+      <text x="40" y="278" fontSize="14" fill="#92650a">蹴込み（段鼻の下のへこみ）</text>
+      {/* D 最終段の踏み面: 最上段の段鼻から壁まで */}
+      <line x1="330" y1="140" x2="470" y2="140" stroke="#b8860b" strokeWidth="1.5" />
+      <path d="M 330 140 l 8 -4 v 8 Z" fill="#b8860b" />
+      <path d="M 470 140 l -8 -4 v 8 Z" fill="#b8860b" />
+      <line x1="330" y1="136" x2="330" y2="150" stroke="#b8860b" strokeWidth="0.75" />
+      <text x="336" y="132" fontSize="14" fill="#92650a">D 最終段の踏み面（壁まで）</text>
+      {/* A 設置範囲の総幅 */}
+      <line x1="100" y1="308" x2="470" y2="308" stroke="#b8860b" strokeWidth="1.5" />
+      <path d="M 100 308 l 8 -4 v 8 Z" fill="#b8860b" />
+      <path d="M 470 308 l -8 -4 v 8 Z" fill="#b8860b" />
+      <line x1="100" y1="292" x2="100" y2="312" stroke="#b8860b" strokeWidth="0.75" />
+      <line x1="470" y1="292" x2="470" y2="312" stroke="#b8860b" strokeWidth="0.75" />
+      <text x="150" y="328" fontSize="13" fill="#92650a">A 設置範囲の総幅 ＝ (B−蹴込み)×(段数−1)＋D（自動計算）</text>
       {/* 手摺全長 */}
-      <line x1="105" y1="215" x2="440" y2="50" stroke="#b8860b" strokeWidth="1.5" strokeDasharray="6 4" />
-      <text x="200" y="150" fontSize="14" fill="#92650a" transform="rotate(-26.5 200 150)">手摺全長（自動計算）</text>
+      <line x1="120" y1="180" x2="455" y2="50" stroke="#b8860b" strokeWidth="1.5" strokeDasharray="6 4" />
+      <text x="205" y="136" fontSize="14" fill="#92650a" transform="rotate(-21 205 136)">手摺全長（自動計算）</text>
     </svg>
   )
 }
@@ -117,6 +141,7 @@ export function StairProductPage() {
   const [riserInput, setRiserInput] = useState(String(LAURENT.defaults.riserMm))
   const [treadInput, setTreadInput] = useState(String(LAURENT.defaults.treadMm))
   const [kekomiInput, setKekomiInput] = useState(String(LAURENT.defaults.kekomiMm))
+  const [lastTreadInput, setLastTreadInput] = useState(String(LAURENT.defaults.lastTreadMm))
   // 段ごとの蹴上げ（個別調整用）。一括値の変更・段数変更で作り直す。
   const [riserInputs, setRiserInputs] = useState<string[]>(Array(4).fill(String(LAURENT.defaults.riserMm)))
 
@@ -135,6 +160,7 @@ export function StairProductPage() {
   const riserMm = clampRiser(Number(riserInput))
   const treadMm = clampTread(Number(treadInput))
   const kekomiMm = clampKekomi(Number(kekomiInput))
+  const lastTreadMm = clampLastTread(Number(lastTreadInput))
   const risersMm = riserInputs.map((s) => clampRiser(Number(s)))
 
   const handleStepsChange = (raw: number) => {
@@ -157,8 +183,8 @@ export function StairProductPage() {
     [steps, crossbarCount, crossbarMaterial, color],
   )
   const geometry = useMemo(
-    () => calcStairGeometry(risersMm, treadMm, kekomiMm),
-    [risersMm, treadMm, kekomiMm],
+    () => calcStairGeometry(risersMm, treadMm, kekomiMm, lastTreadMm),
+    [risersMm, treadMm, kekomiMm, lastTreadMm],
   )
 
   const shippingResult = useMemo(
@@ -187,6 +213,7 @@ export function StairProductPage() {
     risersMm,
     treadMm,
     kekomiMm,
+    lastTreadMm,
     crossbarCount,
     crossbarMaterial,
     color,
@@ -195,7 +222,7 @@ export function StairProductPage() {
 
   const checkoutSummary: OrderSummary = {
     productName: `Laurent ローラン 階段手摺 ${steps}段（全長約${geometry.diagonalMm.toLocaleString()}mm）`,
-    productNote: `${crossbarLabel} / ${colorLabel} / 通常配送 10営業日`,
+    productNote: `${crossbarLabel} / ${colorLabel} / 通常配送 ${LAURENT.deliveryBusinessDays}営業日`,
     lines: [
       { label: `本体価格（${steps}段 × ¥${LAURENT.pricePerStep.toLocaleString()}）`, amount: price.body },
       ...(price.postAddon > 0
@@ -426,9 +453,9 @@ export function StairProductPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="mb-1 block text-[13px] text-muted-foreground">蹴上げ（mm）</label>
+                      <label className="mb-1 block text-[13px] text-muted-foreground">C 蹴上げ＝1段の高さ（mm）</label>
                       <input
                         type="number"
                         value={riserInput}
@@ -438,7 +465,7 @@ export function StairProductPage() {
                       />
                     </div>
                     <div>
-                      <label className="mb-1 block text-[13px] text-muted-foreground">踏み面（mm）</label>
+                      <label className="mb-1 block text-[13px] text-muted-foreground">B 踏み面（mm）</label>
                       <input
                         type="number"
                         value={treadInput}
@@ -457,6 +484,17 @@ export function StairProductPage() {
                         className={inputClass}
                       />
                     </div>
+                    <div>
+                      <label className="mb-1 block text-[13px] text-muted-foreground">D 最終段の踏み面（mm）</label>
+                      <input
+                        type="number"
+                        value={lastTreadInput}
+                        onChange={(e) => setLastTreadInput(e.target.value)}
+                        onBlur={() => setLastTreadInput(String(lastTreadMm))}
+                        className={inputClass}
+                      />
+                      <p className="mt-1 text-[12px] text-muted-foreground">最上段の段鼻から壁までの寸法</p>
+                    </div>
                   </div>
 
                   {/* 自動計算の確認表示 */}
@@ -468,7 +506,7 @@ export function StairProductPage() {
                         <p className="font-serif text-[19px] text-foreground">{geometry.totalRiseMm.toLocaleString()}<span className="text-[13px] ml-0.5">mm</span></p>
                       </div>
                       <div>
-                        <p className="text-[12px] text-muted-foreground">階段の水平距離</p>
+                        <p className="text-[12px] text-muted-foreground">A 設置範囲の総幅</p>
                         <p className="font-serif text-[19px] text-foreground">{geometry.runMm.toLocaleString()}<span className="text-[13px] ml-0.5">mm</span></p>
                       </div>
                       <div>
@@ -479,7 +517,7 @@ export function StairProductPage() {
                       </div>
                     </div>
                     <p className="mt-2 text-[12px] md:text-[13px] text-muted-foreground leading-relaxed">
-                      実際の階段と大きくズレる場合は、下の「段ごとの蹴上げを調整する」で1段ずつ直せます。
+                      A＝(B−蹴込み)×(段数−1)＋D で計算しています。実際の階段と大きくズレる場合は、下の「段ごとの蹴上げを調整する」で1段ずつ直せます。
                     </p>
                   </div>
 
@@ -705,7 +743,7 @@ export function StairProductPage() {
                       <div className={stepCircle}>05</div>
                       <p className="mb-1 text-[15px] font-semibold text-foreground">ご購入手続き</p>
                       <p className="mb-4 text-[13px] md:text-[14px] text-muted-foreground">
-                        通常配送（10営業日）でお届けします。カード決済・銀行振込のどちらでもご注文いただけます。
+                        通常配送（{LAURENT.deliveryBusinessDays}営業日）でお届けします。カード決済・銀行振込のどちらでもご注文いただけます。
                       </p>
                       {checkoutError && (
                         <p className="mb-3 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-700">
