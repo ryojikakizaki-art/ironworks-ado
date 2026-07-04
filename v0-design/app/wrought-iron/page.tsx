@@ -68,8 +68,8 @@ export default function WroughtIronPage() {
         {/* HERO — スクロール意匠のクローズアップを主役に */}
         <section className="relative h-[72vh] min-h-[520px] w-full overflow-hidden">
           <Image
-            src="/images/products/elisabeth/03.jpg"
-            alt="ロートアイアン手すりのスクロール意匠クローズアップ"
+            src="/images/wrought-iron-hero-forging.jpg"
+            alt="炉で熱した鉄をハンマーで打つ鍛冶職人。奥にはスクロール意匠の装飾ゲート"
             fill
             priority
             sizes="100vw"
