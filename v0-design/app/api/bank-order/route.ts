@@ -104,7 +104,8 @@ export async function POST(request: NextRequest) {
     const parsed = parseStairOrderBody(body as Record<string, unknown>);
     if (!parsed.ok) return NextResponse.json({ ok: false, error: parsed.error }, { status: 400 });
     const stairOrder = parsed.order;
-    const stairShipping = calcShipping([stairOrder.geometry.diagonalMm], prefecture, 'yokogata');
+    // 送料は実寸によらず常に最大サイズで計算（2026-07-05 蠣﨑さん指示・柱/横桟込みで大型のため）
+    const stairShipping = calcShipping([LAURENT.shippingLengthMm], prefecture, 'yokogata');
     if (stairShipping.inquiry) {
       return NextResponse.json({
         ok: false,

@@ -303,8 +303,8 @@ async function createStairCheckoutSession(
     if (!prefecture) {
       return NextResponse.json({ error: '配送先都道府県を選択してください' }, { status: 400 });
     }
-    // 送料は手摺（斜め材）1本の全長で発送サイズ区分を決定（柱・横桟は同梱扱い）
-    const shippingResult = calcShipping([order.geometry.diagonalMm], prefecture, 'yokogata');
+    // 送料は実寸によらず常に最大サイズで計算（2026-07-05 蠣﨑さん指示・柱/横桟込みで大型のため）
+    const shippingResult = calcShipping([LAURENT.shippingLengthMm], prefecture, 'yokogata');
     if (shippingResult.inquiry) {
       return NextResponse.json({
         error: shippingResult.inquiryReason || '配送条件により別途お見積もりが必要です',
