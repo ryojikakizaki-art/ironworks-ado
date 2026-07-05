@@ -43,7 +43,11 @@ const prefectures = [
   "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県",
 ]
 
-const HERO_IMAGE = "/images/products/laurent/hero.jpg"
+// 商品画像ギャラリー（横桟なし／横桟あり）。実物施工写真が撮れるまでの仮イメージ。
+const GALLERY = [
+  { src: "/images/products/laurent/hero.jpg", label: "横桟なし" },
+  { src: "/images/products/laurent/hero-crossbar.jpg", label: "横桟あり" },
+]
 
 const SPECS = [
   { label: "タイプ", value: "階段手摺（直線階段専用）" },
@@ -225,6 +229,8 @@ export function StairProductPage() {
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
   const [bankOrderOpen, setBankOrderOpen] = useState(false)
   const [drawingOpen, setDrawingOpen] = useState(false)
+  // 手動で選んだ画像 index（null のときは横桟選択に自動連動）
+  const [pickedImage, setPickedImage] = useState<number | null>(null)
 
   const riserMm = clampRiser(Number(riserInput))
   const treadMm = clampTread(Number(treadInput))
@@ -275,6 +281,9 @@ export function StairProductPage() {
   const colorLabel = color === "white" ? "マットホワイト" : "マットブラック"
   const crossbarLabel =
     crossbarCount > 0 ? `横桟${crossbarCount}本（${LAURENT.crossbar[crossbarMaterial].label}）` : "横桟なし"
+
+  // メイン画像: 手動選択があればそれを、なければ横桟の有無に連動（0本=なし / 1本以上=あり）
+  const shownImage = pickedImage ?? (crossbarCount > 0 ? 1 : 0)
 
   // 設計図（PDF）用の入力データ。実寸を反映した側面図をモーダルで描画する。
   const drawingOpts = useMemo(
@@ -392,16 +401,35 @@ export function StairProductPage() {
             <div className="space-y-4">
               <div className="relative aspect-square bg-secondary rounded-lg overflow-hidden">
                 <Image
-                  src={HERO_IMAGE}
-                  alt="Laurent ローラン 階段手摺"
+                  src={GALLERY[shownImage].src}
+                  alt={`Laurent ローラン 階段手摺（${GALLERY[shownImage].label}）`}
                   fill
                   className="object-cover"
                   priority
                   sizes="(max-width: 1024px) 100vw, 50vw"
                 />
               </div>
+              {/* サムネイル（横桟なし／あり）— タップでメイン画像を切替 */}
+              <div className="grid grid-cols-4 gap-2">
+                {GALLERY.map((g, i) => (
+                  <button
+                    key={g.src}
+                    type="button"
+                    onClick={() => setPickedImage(i)}
+                    aria-label={`${g.label}の画像を表示`}
+                    className={`relative aspect-square overflow-hidden rounded-md transition-all ${
+                      shownImage === i ? "ring-2 ring-gold ring-offset-2" : "opacity-70 hover:opacity-100"
+                    }`}
+                  >
+                    <Image src={g.src} alt={g.label} fill className="object-cover" sizes="120px" />
+                    <span className="absolute inset-x-0 bottom-0 bg-dark/60 py-0.5 text-center text-[10px] text-white">
+                      {g.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
               <p className="text-[12px] md:text-[13px] text-muted-foreground">
-                ※画像は完成イメージです。実物の施工写真は準備中です。
+                ※画像は完成イメージです。実物の施工写真は準備中です。横桟の有無で見え方が変わります。
               </p>
 
               {/* 寸法の説明図は右カラムの見積計算機（STEP01）に入力欄ごと統合した */}
