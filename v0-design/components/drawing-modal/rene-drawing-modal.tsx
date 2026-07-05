@@ -22,6 +22,8 @@ interface DrawingModalProps {
   zakinRule?: ZakinRule
   /** 座金タイプ (A=55×35 / B=60×25)。縦型CAD精密図のみ有効 */
   washerType?: WasherTypeId
+  /** 色 (black/white)。colorOptions を持つ商品（Alexandre等）のみ CAD タイトルブロックに反映 */
+  color?: "black" | "white"
   /**
    * 多本長さ違い対応 (PR #2): 各本の長さ配列。
    * 渡された場合、タブで本ごとに図面を切替可能。
@@ -40,6 +42,7 @@ export function ReneDrawingModal({
   angleDir = "left",
   zakinRule,
   washerType = "A",
+  color = "black",
   lengths,
 }: DrawingModalProps) {
   const svgRef = useRef<SVGSVGElement>(null)
@@ -75,10 +78,14 @@ export function ReneDrawingModal({
     if (product.category === "vertical") {
       // washerSpec + titleBlock がある商品 (Claude) はCAD精密図、それ以外は旧シンプル schematic
       if (product.washerSpec && product.titleBlock) {
+        // 白仕上げ選択商品 (Alexandre等) はタイトルブロックの色表記を選択に合わせて上書き。
+        const productForDrawing = product.colorOptions
+          ? { ...product, titleBlock: { ...product.titleBlock, color: color === "white" ? "マットホワイト" : "マットブラック" } }
+          : product
         buildVerticalCadDrawingSvg(svgRef.current, {
           L_mm: currentLength,
           positions,
-          product,
+          product: productForDrawing,
           washerType,
         })
       } else {
@@ -100,7 +107,7 @@ export function ReneDrawingModal({
         product,
       })
     }
-  }, [open, currentLength, isMulti, product, positionsProp, angleDeg, angleDir, effectiveRule, washerType])
+  }, [open, currentLength, isMulti, product, positionsProp, angleDeg, angleDir, effectiveRule, washerType, color])
 
   if (!open) return null
 

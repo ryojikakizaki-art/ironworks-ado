@@ -14,6 +14,7 @@ const KEYS = {
   deliveryType: "dt",
   washerType: "wt",
   orientation: "or",
+  color: "c",
 } as const
 
 export interface QuoteShareInput {
@@ -26,6 +27,8 @@ export interface QuoteShareInput {
   deliveryType: "normal" | "express"
   washerType?: "A" | "B"
   orientation?: "left" | "right"
+  /** 白仕上げ選択商品（Alexandre等）のみ。黒は既定値のため省略。 */
+  color?: "black" | "white"
 }
 
 export function encodeQuoteState(input: QuoteShareInput): string {
@@ -42,6 +45,7 @@ export function encodeQuoteState(input: QuoteShareInput): string {
   if (input.deliveryType === "express") params.set(KEYS.deliveryType, "e")
   if (input.washerType === "B") params.set(KEYS.washerType, "B")
   if (input.orientation === "right") params.set(KEYS.orientation, "r")
+  if (input.color === "white") params.set(KEYS.color, "w")
   return params.toString()
 }
 
@@ -54,6 +58,7 @@ export interface DecodedQuoteState {
   deliveryType?: "normal" | "express"
   washerType?: "A" | "B"
   orientation?: "left" | "right"
+  color?: "black" | "white"
 }
 
 /** 不正・改変された URL でも安全にフォールバックできるよう、値を軽く検証してから返す。 */
@@ -88,6 +93,8 @@ export function decodeQuoteState(searchParams: URLSearchParams): DecodedQuoteSta
   if (searchParams.get(KEYS.washerType) === "B") result.washerType = "B"
 
   if (searchParams.get(KEYS.orientation) === "r") result.orientation = "right"
+
+  if (searchParams.get(KEYS.color) === "w") result.color = "white"
 
   return result
 }

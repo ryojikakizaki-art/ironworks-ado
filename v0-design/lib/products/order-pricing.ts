@@ -39,7 +39,14 @@ export interface Product {
   zakinRule?: ZakinRule;
   pricePerMm?: number; // 商品別オーバーライド (未指定なら全商品共通 25)
   priceTable?: PricePoint[]; // 長さ別固定価格テーブル (横型 4 商品)
+  // 白仕上げの選択を許可する商品のみ true（2026-07-05 Alexandre 追加。合計 +15%）。
+  // René/Claire・Claude/Catherine のような黒白別商品ではなく、1 ページ内トグルで色を選ぶ方式。
+  colorOptions?: boolean;
 }
+
+// 白仕上げの割増率。0.1 が二進で正確に表せず 392,000×1.15 = 450,799.99… になる
+// 浮動小数点の罠があるため、Laurent（stair-pricing.ts）と同じく百分率の整数で持つ。
+export const WHITE_RATE_PERCENT = 115;
 
 const VERTICAL_STANDARD_RULE: ZakinRule = {
   defaultCount: 2, endMinMm: 50, maxSpanMm: 900, minLengthMm: 500,
@@ -60,7 +67,7 @@ export const PRODUCTS: Record<string, Product> = {
   claire:     { name: 'Claire クレール',          type: '横型', basePrice: 42000, stdLengthMm: 1500, maxMm: 5000, finish: 'マットホワイト', includedZakin: 3, priceTable: CLAIRE_PRICE_TABLE },
   emile:      { name: 'Émile エミール',           type: '横型', basePrice: 45800, stdLengthMm: 1500, maxMm: 5000, finish: '鎚目仕上げ 銀古美', includedZakin: 3, priceTable: EMILE_PRICE_TABLE },
   marcel:     { name: 'Marcel マルセル',          type: '横型', basePrice: 36000, stdLengthMm: 1500, maxMm: 5000, finish: 'マットブラック', includedZakin: 3, priceTable: MARCEL_PRICE_TABLE },
-  alexandre:  { name: 'Alexandre アレクサンドル', type: '縦型', basePrice: 32000, stdLengthMm: 1000, maxMm: 3000, finish: 'マットブラック', includedZakin: 3, zakinRule: ALEXANDRE_RULE, pricePerMm: 30 },
+  alexandre:  { name: 'Alexandre アレクサンドル', type: '縦型', basePrice: 32000, stdLengthMm: 1000, maxMm: 3000, finish: 'マットブラック', includedZakin: 3, zakinRule: ALEXANDRE_RULE, pricePerMm: 30, colorOptions: true },
   catherine:  { name: 'Catherine カトリーヌ',     type: '縦型', basePrice: 34500, stdLengthMm: 1000, maxMm: 1500, finish: 'マットホワイト', includedZakin: 3, zakinRule: VERTICAL_STANDARD_RULE },
   claude:     { name: 'Claude クロード',          type: '縦型', basePrice: 30000, stdLengthMm: 1000, maxMm: 1500, finish: 'マットブラック', includedZakin: 3, zakinRule: VERTICAL_STANDARD_RULE },
   antoine:    { name: 'Antoine アントワーヌ',      type: '縦型ロング', basePrice: 56000, stdLengthMm: 1500, maxMm: 3000, finish: 'マットブラック', includedZakin: 4, zakinRule: ANTOINE_RULE, pricePerMm: 30 },
@@ -100,7 +107,7 @@ export function calcZakin(L_mm: number, rule?: ZakinRule): number {
 export function calcPrice(
   L_mm: number,
   prod: Product,
-  opts?: { zakinCount?: number; angleDeg?: number }
+  opts?: { zakinCount?: number; angleDeg?: number; color?: 'black' | 'white' }
 ) {
   // 価格テーブル指定商品 (René/Claire/Marcel/Émile) はテーブル参照、それ以外は式計算。
   let addon: number;
@@ -127,6 +134,11 @@ export function calcPrice(
     : Math.max(0, zakin - prod.includedZakin) * ZAKIN_PRICE;
   // 角度加工料金: 座金1箇所あたり ANGLE_PRICE (単品・横型のみ。商品ページ準拠)。
   const angleCost = opts?.angleDeg && opts.angleDeg > 0 ? zakin * ANGLE_PRICE : 0;
-  const total    = prod.basePrice + addon + addZakin + surcharge + angleCost;
-  return { addon, surcharge, addZakin, angleCost, zakin, total };
+  const blackTotal = prod.basePrice + addon + addZakin + surcharge + angleCost;
+  // 白仕上げ (colorOptions を持つ商品のみ・2026-07-05 Alexandre 追加): 合計 +15%。
+  const total = prod.colorOptions && opts?.color === 'white'
+    ? Math.floor((blackTotal * WHITE_RATE_PERCENT) / 100)
+    : blackTotal;
+  const colorSurcharge = total - blackTotal;
+  return { addon, surcharge, addZakin, angleCost, colorSurcharge, zakin, total };
 }

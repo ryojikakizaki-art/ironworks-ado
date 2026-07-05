@@ -676,7 +676,7 @@ async function prependOrderToLedger(session: Stripe.Checkout.Session) {
     ? meta.spec_text
     : isSimple
       ? `数量 ${meta.quantity || 1}`
-      : [lengthsInfo.full, meta.zakin_count ? `座金${meta.zakin_count}個` : '', meta.washer_type ? `座金${meta.washer_type}タイプ` : '', meta.rush_delivery === 'true' ? '特急' : '']
+      : [lengthsInfo.full, meta.zakin_count ? `座金${meta.zakin_count}個` : '', meta.washer_type ? `座金${meta.washer_type}タイプ` : '', meta.color || '', meta.rush_delivery === 'true' ? '特急' : '']
           .filter(Boolean).join(' / ');
 
   const row = [

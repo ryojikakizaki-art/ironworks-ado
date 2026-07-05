@@ -50,6 +50,12 @@ export async function POST(request: NextRequest) {
     const washerType: 'A' | 'B' =
       String(body?.washerType || 'A').toUpperCase() === 'B' ? 'B' : 'A';
 
+    // 白仕上げ選択 — colorOptions を持つ商品のみ（2026-07-05 Alexandre 追加。合計 +15%）
+    const supportsColor = !!prod.colorOptions;
+    const color: 'black' | 'white' =
+      supportsColor && String(body?.color || 'black').toLowerCase() === 'white' ? 'white' : 'black';
+    const finishLabel = supportsColor ? (color === 'white' ? 'マットホワイト' : 'マットブラック') : prod.finish;
+
     const minL = prod.zakinRule?.minLengthMm ?? 500;
 
     // 多本長さ違い対応 (PR #2): lengths[] が来たらそれを正、無ければ lengthMm + quantity から導出。
@@ -97,6 +103,7 @@ export async function POST(request: NextRequest) {
     const priceOpts = {
       zakinCount: zakinCustom && customPositions.length > 0 ? customPositions.length : undefined,
       angleDeg: drawAngleDeg,
+      color,
     };
     const p = calcPrice(L, prod, priceOpts);
     // per-item 計算 (line items 構築・metadata 用)
@@ -141,8 +148,8 @@ export async function POST(request: NextRequest) {
     const deliveryDays = rushDelivery ? 5 : 10;
 
     const deliveryDesc = rushDelivery
-      ? `${prod.finish} / 特急配送 ${deliveryDays}営業日`
-      : `${prod.finish} / 通常配送 ${deliveryDays}営業日`;
+      ? `${finishLabel} / 特急配送 ${deliveryDays}営業日`
+      : `${finishLabel} / 通常配送 ${deliveryDays}営業日`;
 
     const host    = request.headers.get('host') || 'ironworks-ado.vercel.app';
     const baseUrl = `https://${host}`;
@@ -222,6 +229,7 @@ export async function POST(request: NextRequest) {
         quantity:               String(qty),
         zakin_count:            String(p.zakin),
         ...(supportsWasher ? { washer_type: washerType } : {}),
+        ...(supportsColor ? { color: finishLabel } : {}),
         // 制作図再現用 (価格に影響しない). 単品注文時のみ。
         ...(customPositions.length ? { positions_mm: customPositions.join(',') } : {}),
         ...(drawAngleDeg > 0 ? { angle_deg: String(drawAngleDeg), angle_dir: drawAngleDir } : {}),
