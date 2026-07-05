@@ -1097,43 +1097,44 @@ export default function ProductDetailPage() {
                             </div>
                           </div>
                         )}
-                        {/* 色選択 (colorOptions を持つ商品のみ・2026-07-05 Alexandre 追加) */}
+                        {/* 色選択 (colorOptions を持つ商品のみ・2026-07-05 Alexandre 追加)。
+                            誤解防止のため「マットブラック/マットホワイト」の正式名称で表示する。
+                            長いラベルがモバイル幅で1本の座金タイプボタンと同居すると折り返しが崩れるため、
+                            モバイルは縦積み(grid-cols-1)・sm以上で横並び(grid-cols-2)にする。 */}
                         {supportsColor && (
                           <div className="mt-3 border border-gold/20 bg-card p-4">
-                            <div className="flex items-center gap-3 mb-3">
-                              <span className="font-serif text-[15px] font-medium text-foreground min-w-[80px]">色</span>
-                              <div className="flex flex-1 gap-2">
-                                <button
-                                  type="button"
-                                  onClick={() => setColor("black")}
-                                  className={`flex-1 py-2.5 px-3 rounded-md border-2 transition-all text-left ${
-                                    color === "black"
-                                      ? "border-gold bg-gold/5"
-                                      : "border-gold/20 hover:border-gold/50"
-                                  }`}
-                                >
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="inline-block h-3.5 w-3.5 shrink-0 rounded-full bg-[#1f1f1f] border border-border" />
-                                    <span className="font-serif text-[14px] font-medium whitespace-nowrap">ブラック（標準）</span>
-                                  </div>
-                                  <div className="text-[11px] text-muted-foreground mt-0.5">追加料金なし</div>
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() => setColor("white")}
-                                  className={`flex-1 py-2.5 px-3 rounded-md border-2 transition-all text-left ${
-                                    color === "white"
-                                      ? "border-gold bg-gold/5"
-                                      : "border-gold/20 hover:border-gold/50"
-                                  }`}
-                                >
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="inline-block h-3.5 w-3.5 shrink-0 rounded-full bg-white border border-border" />
-                                    <span className="font-serif text-[14px] font-medium whitespace-nowrap">ホワイト</span>
-                                  </div>
-                                  <div className="text-[11px] text-muted-foreground mt-0.5">合計金額 +15%</div>
-                                </button>
-                              </div>
+                            <div className="mb-3 font-serif text-[15px] font-medium text-foreground">色</div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                              <button
+                                type="button"
+                                onClick={() => setColor("black")}
+                                className={`py-2.5 px-3 rounded-md border-2 transition-all text-left ${
+                                  color === "black"
+                                    ? "border-gold bg-gold/5"
+                                    : "border-gold/20 hover:border-gold/50"
+                                }`}
+                              >
+                                <div className="flex items-center gap-1.5">
+                                  <span className="inline-block h-3.5 w-3.5 shrink-0 rounded-full bg-[#1f1f1f] border border-border" />
+                                  <span className="font-serif text-[14px] font-medium">マットブラック（標準）</span>
+                                </div>
+                                <div className="text-[11px] text-muted-foreground mt-0.5">追加料金なし</div>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setColor("white")}
+                                className={`py-2.5 px-3 rounded-md border-2 transition-all text-left ${
+                                  color === "white"
+                                    ? "border-gold bg-gold/5"
+                                    : "border-gold/20 hover:border-gold/50"
+                                }`}
+                              >
+                                <div className="flex items-center gap-1.5">
+                                  <span className="inline-block h-3.5 w-3.5 shrink-0 rounded-full bg-white border border-border" />
+                                  <span className="font-serif text-[14px] font-medium">マットホワイト</span>
+                                </div>
+                                <div className="text-[11px] text-muted-foreground mt-0.5">合計金額 +15%</div>
+                              </button>
                             </div>
                           </div>
                         )}
