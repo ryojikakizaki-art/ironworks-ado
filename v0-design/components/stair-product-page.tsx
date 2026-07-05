@@ -16,10 +16,12 @@ import { FinishCommitment } from "@/components/finish-commitment"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
 import { EmbeddedCheckoutModal, type OrderSummary } from "@/components/checkout/embedded-checkout-modal"
 import { BankOrderModal } from "@/components/checkout/bank-order-modal"
+import { StairDrawingModal } from "@/components/drawing-modal/stair-drawing-modal"
 import {
   LAURENT,
   calcStairPrice,
   calcStairGeometry,
+  calcPostCount,
   clampSteps,
   clampRiser,
   clampTread,
@@ -41,14 +43,18 @@ const prefectures = [
   "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県",
 ]
 
-const HERO_IMAGE = "/images/products/laurent/hero.jpg"
+// 商品画像ギャラリー（横桟なし／横桟あり）。実物施工写真が撮れるまでの仮イメージ。
+const GALLERY = [
+  { src: "/images/products/laurent/hero.jpg", label: "横桟なし" },
+  { src: "/images/products/laurent/hero-crossbar.jpg", label: "横桟あり" },
+]
 
 const SPECS = [
   { label: "タイプ", value: "階段手摺（直線階段専用）" },
   { label: "素材", value: "鉄 フラットバー 9×38" },
   { label: "仕上げ", value: "錆止め吹付塗装 + 2液型ウレタン塗装" },
   { label: "カラー", value: "マットブラック（標準）／マットホワイト（+15%）" },
-  { label: "取付方式", value: "柱＝床固定・端部＝壁付け" },
+  { label: "取付方式", value: "1本目の柱＝1段目の踏み板中央に固定・端部＝壁付け（5段ごとに柱を追加）" },
   { label: "手すり高さ", value: "標準800mm（段鼻から笠木上端まで・600〜1,100mmで変更可）" },
   { label: "横桟オプション", value: "0〜3本（6×25 フラットバー／13φ 丸鋼）" },
   { label: "対応段数", value: `${LAURENT.minSteps}〜${LAURENT.maxSteps}段（全長3.5mまで。超える場合は要問合せ）` },
@@ -75,9 +81,18 @@ const PRICE_GUIDE_STEPS = [3, 6, 10]
  * - 笠木は段鼻から 800mm 相当の実際の手すり高さで描く（縮尺: 蹴上げ200mm=40px）
  * - 蹴込みは「拡大」インセットで説明する
  */
-function StairDimensionDiagram() {
+function StairDimensionDiagram({ crossbarCount = 0 }: { crossbarCount?: number }) {
+  // 笠木（rail）と段鼻ライン（nose）の直線式（y 下向き）。段鼻ラインを 140px 上へ平行移動。
+  const railY = (x: number) => 259 - 0.4 * x
+  // 横桟: 手すり〜踏み板の間を本数で等分した高さに平行に走る（1本=中央 / 2・3本=等間隔）
+  const crossbars = Array.from({ length: crossbarCount }, (_, i) => {
+    const f = (i + 1) / (crossbarCount + 1) // 手すりからの下げ割合
+    const y1 = railY(175) + f * 140
+    const y2 = railY(445) + f * 140
+    return { y1, y2 }
+  })
   return (
-    <svg viewBox="0 0 560 470" role="img" aria-label="蹴上げ・踏み面・蹴込み・最終段の踏み面・手すり高さの説明図" className="w-full h-auto">
+    <svg viewBox="0 0 560 470" role="img" aria-label="蹴上げ・踏み面・蹴込み・最終段の踏み面・手すり高さ・横桟の説明図" className="w-full h-auto">
       <rect x="0" y="0" width="560" height="470" fill="#ffffff" />
       {/* 床・壁 */}
       <line x1="15" y1="395" x2="545" y2="395" stroke="#9ca3af" strokeWidth="2" />
@@ -91,21 +106,24 @@ function StairDimensionDiagram() {
         strokeWidth="2"
         strokeLinejoin="round"
       />
-      {/* 笠木（段鼻から手すり高さ分上を段鼻ラインに平行に走り、上端は壁付け） */}
-      <line x1="60" y1="215" x2="455" y2="57" stroke="#1f2937" strokeWidth="7" strokeLinecap="round" />
-      {/* 柱（床固定）と中間柱（段板固定） */}
-      <line x1="75" y1="209" x2="75" y2="395" stroke="#1f2937" strokeWidth="5" />
-      <rect x="65" y="391" width="20" height="7" fill="#1f2937" />
-      <line x1="275" y1="131" x2="275" y2="315" stroke="#1f2937" strokeWidth="5" />
-      <rect x="265" y="311" width="20" height="6" fill="#1f2937" />
-      <text x="40" y="300" fontSize="13" fill="#374151">柱</text>
-      <text x="14" y="318" fontSize="11" fill="#374151">（床固定）</text>
-      <text x="468" y="64" fontSize="13" fill="#374151">端部は壁付け</text>
+      {/* 横桟（手すりと踏み板の間・本数で等分） */}
+      {crossbars.map((c, i) => (
+        <line key={i} x1="175" y1={c.y1} x2="445" y2={c.y2} stroke="#1f2937" strokeWidth="2.5" strokeLinecap="round" opacity="0.85" />
+      ))}
+      {/* 笠木（段鼻ラインに平行・上端は壁付け）。下端は 1 段目踏板中央で折り曲げて固定 */}
+      <line x1="165" y1="193" x2="460" y2="75" stroke="#1f2937" strokeWidth="7" strokeLinecap="round" />
+      {/* 1本目の柱＝折り曲げた下端（1段目踏み板の中央に立つ） */}
+      <line x1="165" y1="193" x2="165" y2="355" stroke="#1f2937" strokeWidth="5" />
+      <rect x="156" y="352" width="18" height="6" fill="#1f2937" />
+      {/* 中間柱（最上段の段板中央） */}
+      <line x1="390" y1="107" x2="390" y2="275" stroke="#1f2937" strokeWidth="5" />
+      <rect x="381" y="272" width="18" height="6" fill="#1f2937" />
+      <text x="468" y="64" fontSize="13" fill="#374151" textAnchor="end">端部は壁付け</text>
       {/* 手すり高さ: 段鼻から笠木上端まで（標準800mm） */}
-      <line x1="210" y1="315" x2="252" y2="315" stroke="#b8860b" strokeWidth="0.75" strokeDasharray="3 3" />
-      <line x1="240" y1="147" x2="240" y2="315" stroke="#b8860b" strokeWidth="1.5" />
-      <path d="M 240 147 l -4 9 h 8 Z" fill="#b8860b" />
-      <path d="M 240 315 l -4 -9 h 8 Z" fill="#b8860b" />
+      <line x1="212" y1="303" x2="252" y2="303" stroke="#b8860b" strokeWidth="0.75" strokeDasharray="3 3" />
+      <line x1="240" y1="163" x2="240" y2="303" stroke="#b8860b" strokeWidth="1.5" />
+      <path d="M 240 163 l -4 9 h 8 Z" fill="#b8860b" />
+      <path d="M 240 303 l -4 -9 h 8 Z" fill="#b8860b" />
       {/* B 踏み面: 段鼻の先端から次の蹴込み板（立ち上がり）まで */}
       <line x1="110" y1="345" x2="220" y2="345" stroke="#b8860b" strokeWidth="1.5" />
       <path d="M 110 345 l 8 -4 v 8 Z" fill="#b8860b" />
@@ -136,9 +154,9 @@ function StairDimensionDiagram() {
       <path d="M 52 90 l 7 -4 v 8 Z" fill="#b8860b" />
       <path d="M 86 90 l -7 -4 v 8 Z" fill="#b8860b" />
       {/* 手摺全長（笠木に平行・上側）— ラベルは水平＋引出線 */}
-      <line x1="85" y1="190" x2="450" y2="44" stroke="#b8860b" strokeWidth="1.5" strokeDasharray="6 4" />
+      <line x1="170" y1="178" x2="455" y2="63" stroke="#b8860b" strokeWidth="1.5" strokeDasharray="6 4" />
       <text x="196" y="28" fontSize="14" fill="#92650a">手摺全長（自動計算）</text>
-      <line x1="265" y1="34" x2="288" y2="104" stroke="#b8860b" strokeWidth="1" />
+      <line x1="262" y1="34" x2="300" y2="120" stroke="#b8860b" strokeWidth="1" />
       {/* A 設置範囲の総幅 */}
       <line x1="110" y1="446" x2="460" y2="446" stroke="#b8860b" strokeWidth="1.5" />
       <path d="M 110 446 l 8 -4 v 8 Z" fill="#b8860b" />
@@ -210,6 +228,9 @@ export function StairProductPage() {
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
   const [bankOrderOpen, setBankOrderOpen] = useState(false)
+  const [drawingOpen, setDrawingOpen] = useState(false)
+  // 手動で選んだ画像 index（null のときは横桟選択に自動連動）
+  const [pickedImage, setPickedImage] = useState<number | null>(null)
 
   const riserMm = clampRiser(Number(riserInput))
   const treadMm = clampTread(Number(treadInput))
@@ -242,23 +263,47 @@ export function StairProductPage() {
     [risersMm, treadMm, kekomiMm, lastTreadMm],
   )
 
+  // 送料は実寸によらず常に最大サイズで計算（2026-07-05 蠣﨑さん指示・柱/横桟込みで大型のため）
   const shippingResult = useMemo(
-    () => (prefecture && !geometry.inquiry ? calcShipping([geometry.diagonalMm], prefecture, "yokogata") : null),
-    [prefecture, geometry.inquiry, geometry.diagonalMm],
+    () => (prefecture && !geometry.inquiry ? calcShipping([LAURENT.shippingLengthMm], prefecture, "yokogata") : null),
+    [prefecture, geometry.inquiry],
   )
   const shipping = shippingResult && !shippingResult.inquiry ? shippingResult.shipping : 0
   const shippingTax = Math.round(shipping * 0.1)
   const total = price.total + shipping + shippingTax
 
-  // 配送先未選択時の「送料込み目安」（既存商品ページと同じ方式）
+  // 配送先未選択時の「送料込み目安」（既存商品ページと同じ方式・こちらも最大サイズ）
   const shippingRange = useMemo(
-    () => (!prefecture && !geometry.inquiry ? getShippingRange([geometry.diagonalMm], "yokogata") : null),
-    [prefecture, geometry.inquiry, geometry.diagonalMm],
+    () => (!prefecture && !geometry.inquiry ? getShippingRange([LAURENT.shippingLengthMm], "yokogata") : null),
+    [prefecture, geometry.inquiry],
   )
 
   const colorLabel = color === "white" ? "マットホワイト" : "マットブラック"
   const crossbarLabel =
     crossbarCount > 0 ? `横桟${crossbarCount}本（${LAURENT.crossbar[crossbarMaterial].label}）` : "横桟なし"
+
+  // メイン画像: 手動選択があればそれを、なければ横桟の有無に連動（0本=なし / 1本以上=あり）
+  const shownImage = pickedImage ?? (crossbarCount > 0 ? 1 : 0)
+
+  // 設計図（PDF）用の入力データ。実寸を反映した側面図をモーダルで描画する。
+  const drawingOpts = useMemo(
+    () => ({
+      steps,
+      risersMm,
+      treadMm,
+      kekomiMm,
+      lastTreadMm,
+      railHeightMm,
+      crossbarCount,
+      crossbarMaterial,
+      color,
+      postCount: calcPostCount(steps),
+      totalRiseMm: geometry.totalRiseMm,
+      runMm: geometry.runMm,
+      diagonalMm: geometry.diagonalMm,
+    }),
+    [steps, risersMm, treadMm, kekomiMm, lastTreadMm, railHeightMm, crossbarCount, crossbarMaterial, color, geometry],
+  )
 
   // カード決済・銀行振込で共有する注文ペイロード（サーバ側で再計算される）
   const orderPayload = {
@@ -356,16 +401,35 @@ export function StairProductPage() {
             <div className="space-y-4">
               <div className="relative aspect-square bg-secondary rounded-lg overflow-hidden">
                 <Image
-                  src={HERO_IMAGE}
-                  alt="Laurent ローラン 階段手摺"
+                  src={GALLERY[shownImage].src}
+                  alt={`Laurent ローラン 階段手摺（${GALLERY[shownImage].label}）`}
                   fill
                   className="object-cover"
                   priority
                   sizes="(max-width: 1024px) 100vw, 50vw"
                 />
               </div>
+              {/* サムネイル（横桟なし／あり）— タップでメイン画像を切替 */}
+              <div className="grid grid-cols-4 gap-2">
+                {GALLERY.map((g, i) => (
+                  <button
+                    key={g.src}
+                    type="button"
+                    onClick={() => setPickedImage(i)}
+                    aria-label={`${g.label}の画像を表示`}
+                    className={`relative aspect-square overflow-hidden rounded-md transition-all ${
+                      shownImage === i ? "ring-2 ring-gold ring-offset-2" : "opacity-70 hover:opacity-100"
+                    }`}
+                  >
+                    <Image src={g.src} alt={g.label} fill className="object-cover" sizes="120px" />
+                    <span className="absolute inset-x-0 bottom-0 bg-dark/60 py-0.5 text-center text-[10px] text-white">
+                      {g.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
               <p className="text-[12px] md:text-[13px] text-muted-foreground">
-                ※画像は完成イメージです。実物の施工写真は準備中です。
+                ※画像は完成イメージです。実物の施工写真は準備中です。横桟の有無で見え方が変わります。
               </p>
 
               {/* 寸法の説明図は右カラムの見積計算機（STEP01）に入力欄ごと統合した */}
@@ -510,7 +574,7 @@ export function StairProductPage() {
                       DIMENSIONS — 図の位置にそのまま入力
                     </p>
                     <div className="relative">
-                      <StairDimensionDiagram />
+                      <StairDimensionDiagram crossbarCount={crossbarCount} />
                       <DiagramInput
                         label="蹴込み"
                         left="6%"
@@ -796,6 +860,17 @@ export function StairProductPage() {
                           （配送先を選ぶと確定します）
                         </p>
                       )}
+                      {/* 入力寸法から設計図（PDF）を生成 */}
+                      <button
+                        type="button"
+                        onClick={() => setDrawingOpen(true)}
+                        className="mt-4 flex w-full items-center justify-center gap-2 rounded-md border-2 border-gold/50 bg-white px-4 py-3 text-[14px] font-semibold text-foreground transition hover:border-gold hover:text-gold"
+                      >
+                        入力内容の設計図（PDF）を見る
+                      </button>
+                      <p className="mt-1.5 text-center text-[12px] text-muted-foreground">
+                        段数・寸法・横桟・柱の位置を反映した図面をその場で確認・印刷できます。
+                      </p>
                     </div>
 
                     {/* STEP 05 — 購入 */}
@@ -874,6 +949,8 @@ export function StairProductPage() {
         orderPayload={orderPayload}
         summary={checkoutSummary}
       />
+
+      <StairDrawingModal open={drawingOpen} onClose={() => setDrawingOpen(false)} drawing={drawingOpts} />
     </div>
   )
 }
