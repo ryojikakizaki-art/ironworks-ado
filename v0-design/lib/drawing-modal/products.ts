@@ -104,6 +104,8 @@ export interface DrawingProductConfig {
   titleBlock?: TitleBlockSpec
   // 長さ別固定価格テーブル。指定すると addon/surcharge の式計算をスキップしテーブル参照に。
   priceTable?: PricePoint[]
+  // 白仕上げの選択を許可する商品のみ true（2026-07-05 Alexandre 追加。合計 +15%）。
+  colorOptions?: boolean
 }
 
 // 長さ L_mm に対する本体価格をテーブルから線形補間で取得。
@@ -347,6 +349,7 @@ DRAWING_PRODUCTS.alexandre = {
   pricePerMm: 30, // 31.8φ 太径は Antoine(t3.2) と同率
   zakinRule: ALEXANDRE_RULE,
   washerSpec: WASHER_SPEC_B, // 太径用に幅広薄型 60×25mm
+  colorOptions: true, // 白仕上げ選択可（2026-07-05 追加・合計+15%）
   titleBlock: {
     productName: "Alexandre",
     color: "マットブラック",

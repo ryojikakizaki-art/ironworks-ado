@@ -178,6 +178,11 @@ export default function ProductDetailPage() {
       ? restoredQuote.washerType
       : (product.drawing.washerSpec?.id ?? "A")
   )
+  // 白仕上げ選択 — colorOptions を持つ商品のみ（2026-07-05 Alexandre 追加。合計 +15%）
+  const supportsColor = !!product.drawing.colorOptions
+  const [color, setColor] = useState<"black" | "white">(
+    supportsColor && restoredQuote.color === "white" ? "white" : "black"
+  )
   // Scroll 16/19/22 のみ向きの選択 (左右で価格変更なし)
   // トップ画像サムネイルが左向きのため、デフォルトは「左向き」に合わせる
   const hasOrientation = slug.startsWith("scroll")
@@ -323,13 +328,20 @@ export default function ProductDetailPage() {
         ? Math.max(0, zakinCount - autoZakinCount) * ZAKIN_PRICE
         : Math.max(0, zakinCount - INCLUDED_ZAKIN) * ZAKIN_PRICE
       const angleCost = (!isMultiOrder && zakin.angleDeg > 0) ? zakinCount * ANGLE_PRICE : 0
-      const unitPrice = BASE_PRICE + addon + addZakin + surcharge + angleCost
+      const blackUnitPrice = BASE_PRICE + addon + addZakin + surcharge + angleCost
+      // 白仕上げ (colorOptions を持つ商品のみ・2026-07-05 Alexandre 追加): 合計 +15%。
+      // 0.1 が二進で正確に表せない浮動小数点の罠を避けるため百分率の整数で計算 (Laurent と同じ手法)。
+      const unitPrice = supportsColor && color === "white"
+        ? Math.floor((blackUnitPrice * 115) / 100)
+        : blackUnitPrice
+      const colorSurcharge = unitPrice - blackUnitPrice
       return {
         length: L,
         addon: Math.round(addon),
         addZakin,
         surcharge: Math.round(surcharge),
         angleCost,
+        colorSurcharge,
         unitPrice: Math.round(unitPrice),
         zakinCount,
       }
@@ -350,6 +362,7 @@ export default function ProductDetailPage() {
       addZakin: first?.addZakin ?? 0,
       surcharge: first?.surcharge ?? 0,
       angleCost: first?.angleCost ?? 0,
+      colorSurcharge: first?.colorSurcharge ?? 0,
       unitPrice: first?.unitPrice ?? 0,
       subtotal,
       expressAddon,
@@ -363,7 +376,7 @@ export default function ProductDetailPage() {
       total,
       zakinCount: first?.zakinCount ?? 0,
     }
-  }, [lengths, isMultiOrder, deliveryType, prefecture, zakin, productType, STD_LENGTH, PRICE_PER_MM, BASE_PRICE, INCLUDED_ZAKIN, zakinRule, PRICE_TABLE])
+  }, [lengths, isMultiOrder, deliveryType, prefecture, zakin, productType, STD_LENGTH, PRICE_PER_MM, BASE_PRICE, INCLUDED_ZAKIN, zakinRule, PRICE_TABLE, supportsColor, color])
 
   const prices = calculatePrice()
 
@@ -404,6 +417,7 @@ export default function ProductDetailPage() {
     rushDelivery: deliveryType === "express",
     prefecture,
     washerType,
+    ...(supportsColor ? { color } : {}),
     // 単品注文のみ お客様が指定した座金位置・カスタム有無・角度を同送する。
     // positions/angle は制作図の再現に、zakinCustom/angleDeg は座金本数・角度料金の課金に使う。
     // 多本注文は本ごとに長さが異なり座金は自動配置のため送らない。
@@ -443,6 +457,7 @@ export default function ProductDetailPage() {
           ...(prices.addZakin > 0 ? [{ label: "追加座金料金", note: `${prices.zakinCount - INCLUDED_ZAKIN}個 × ¥${ZAKIN_PRICE.toLocaleString()}`, amount: prices.addZakin }] : []),
           ...(prices.surcharge > 0 ? [{ label: "長尺割増", note: `${length}mm`, amount: prices.surcharge }] : []),
           ...(prices.angleCost > 0 ? [{ label: "角度加工料金", note: `${prices.zakinCount}個 × ¥${ANGLE_PRICE.toLocaleString()}`, amount: prices.angleCost }] : []),
+          ...(prices.colorSurcharge > 0 ? [{ label: "白仕上げ（+15%）", amount: prices.colorSurcharge }] : []),
           ...(quantity > 1 ? [{ label: `数量 × ${quantity}`, amount: prices.subtotal, emphasize: true }] : []),
           ...(prices.expressAddon > 0 ? [{ label: "特急割増（+20%）", amount: prices.expressAddon }] : []),
           ...(prices.shipping > 0 ? [{ label: `送料（佐川急便・${prefecture}・税抜）`, amount: prices.shipping }] : []),
@@ -463,6 +478,7 @@ export default function ProductDetailPage() {
     deliveryType,
     washerType: product.drawing.washerSpec ? washerType : undefined,
     orientation: hasOrientation ? orientation : undefined,
+    color: supportsColor ? color : undefined,
   })
   const shareUrl = `https://ado.tantetuzest.com/products/${slug}${shareQuery ? `?${shareQuery}` : ""}`
   const lineShareUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}`
@@ -1081,6 +1097,46 @@ export default function ProductDetailPage() {
                             </div>
                           </div>
                         )}
+                        {/* 色選択 (colorOptions を持つ商品のみ・2026-07-05 Alexandre 追加) */}
+                        {supportsColor && (
+                          <div className="mt-3 border border-gold/20 bg-card p-4">
+                            <div className="flex items-center gap-3 mb-3">
+                              <span className="font-serif text-[15px] font-medium text-foreground min-w-[80px]">色</span>
+                              <div className="flex flex-1 gap-2">
+                                <button
+                                  type="button"
+                                  onClick={() => setColor("black")}
+                                  className={`flex-1 py-2.5 px-3 rounded-md border-2 transition-all text-left ${
+                                    color === "black"
+                                      ? "border-gold bg-gold/5"
+                                      : "border-gold/20 hover:border-gold/50"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="inline-block h-3.5 w-3.5 shrink-0 rounded-full bg-[#1f1f1f] border border-border" />
+                                    <span className="font-serif text-[14px] font-medium whitespace-nowrap">ブラック（標準）</span>
+                                  </div>
+                                  <div className="text-[11px] text-muted-foreground mt-0.5">追加料金なし</div>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => setColor("white")}
+                                  className={`flex-1 py-2.5 px-3 rounded-md border-2 transition-all text-left ${
+                                    color === "white"
+                                      ? "border-gold bg-gold/5"
+                                      : "border-gold/20 hover:border-gold/50"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="inline-block h-3.5 w-3.5 shrink-0 rounded-full bg-white border border-border" />
+                                    <span className="font-serif text-[14px] font-medium whitespace-nowrap">ホワイト</span>
+                                  </div>
+                                  <div className="text-[11px] text-muted-foreground mt-0.5">合計金額 +15%</div>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
                         {/* 座金の位置調整（シミュレーター＋エディタ）は任意操作のため、
                             初見の情報量を抑える目的で details に格納し初期は畳む。
                             制作図プレビューは Step4（確認して購入）へ移動。
@@ -1309,6 +1365,12 @@ export default function ProductDetailPage() {
                                 角度加工料金（{prices.zakinCount}個 × ¥{ANGLE_PRICE.toLocaleString()}、{zakin.angleDir === "left" ? "左" : "右"}{zakin.angleDeg}°）
                               </span>
                               <span className="font-mono">+¥{prices.angleCost.toLocaleString()}</span>
+                            </div>
+                          )}
+                          {prices.colorSurcharge > 0 && (
+                            <div className="flex justify-between text-[15px]">
+                              <span className="text-muted-foreground">白仕上げ（+15%）</span>
+                              <span className="font-mono">+¥{prices.colorSurcharge.toLocaleString()}</span>
                             </div>
                           )}
                         </>
@@ -1659,6 +1721,7 @@ export default function ProductDetailPage() {
         angleDir={zakin.angleDir}
         zakinRule={zakinRule}
         washerType={washerType}
+        color={color}
         lengths={isMultiOrder ? lengths : undefined}
       />
 

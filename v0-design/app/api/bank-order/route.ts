@@ -32,6 +32,7 @@ type Body = {
   rushDelivery?: boolean;
   prefecture?: string;
   washerType?: string;
+  color?: string;
   orientation?: string;
   positions?: unknown[];
   zakinCustom?: boolean;
@@ -123,6 +124,11 @@ export async function POST(request: NextRequest) {
 
   const supportsWasher = !!prod.zakinRule;
   const washerType: 'A' | 'B' = String(body.washerType || 'A').toUpperCase() === 'B' ? 'B' : 'A';
+  // 白仕上げ選択 — colorOptions を持つ商品のみ（2026-07-05 Alexandre 追加。合計 +15%）
+  const supportsColor = !!prod.colorOptions;
+  const color: 'black' | 'white' =
+    supportsColor && String(body.color || 'black').toLowerCase() === 'white' ? 'white' : 'black';
+  const finishLabel = supportsColor ? (color === 'white' ? 'マットホワイト' : 'マットブラック') : prod.finish;
   const hasOrientation = productKey.startsWith('scroll');
   const orientation: 'right' | 'left' = String(body.orientation || 'left').toLowerCase() === 'right' ? 'right' : 'left';
   const orientationLabel = hasOrientation ? (orientation === 'left' ? '左向き' : '右向き') : '';
@@ -159,6 +165,7 @@ export async function POST(request: NextRequest) {
   const priceOpts = {
     zakinCount: zakinCustom && customPositions.length > 0 ? customPositions.length : undefined,
     angleDeg: drawAngleDeg,
+    color,
   };
 
   const perItem = lengths.map((itemL) => ({ L: itemL, ...calcPrice(itemL, prod, priceOpts) }));
@@ -189,7 +196,7 @@ export async function POST(request: NextRequest) {
   specParts = [
     `座金${zakinTotal}個${supportsWasher ? `（${washerType}タイプ）` : ''}`,
     rushDelivery ? '特急配送' : '通常配送',
-    prod.finish,
+    finishLabel,
   ];
   } // ← 既存の壁付け手すりフローここまで
   const arrivalNote = body.preferredArrivalDate
