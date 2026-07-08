@@ -45,15 +45,17 @@ export function StairDrawingModal({ open, onClose, drawing }: StairDrawingModalP
           ×
         </button>
         <div className="dm-title">設計図プレビュー ── Laurent ローラン 階段手摺</div>
+        {/* A4 横・余白 8.5mm で印刷すると図面シート(280×193mm)が実寸で出力され、表題欄の尺度が実際に合う */}
+        <style>{`@page { size: A4 landscape; margin: 8.5mm; }`}</style>
         <div className="dm-svg-wrap">
-          <svg ref={svgRef} id="stairDrawingSvg" viewBox="0 0 1000 720" />
+          <svg ref={svgRef} id="stairDrawingSvg" className="cad-sheet" viewBox="0 0 1120 772" />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 12, flexWrap: "wrap" }}>
           <button className="dm-print-btn" onClick={() => window.print()}>
             PDF保存 / 印刷
           </button>
           <span className="dm-note" style={{ margin: 0 }}>
-            ※ 入力寸法から自動生成した目安の設計図です。製作時に現場状況へ合わせて微調整します。
+            ※ 入力寸法から自動生成した目安の設計図です。A4横・倍率100%で印刷すると表題欄の尺度どおりに出力されます。
           </span>
         </div>
       </div>

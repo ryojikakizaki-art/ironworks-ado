@@ -256,6 +256,12 @@
     width: 100%;
     height: auto;
   }
+  /* CAD 図面シート（viewBox=紙mm×4 で設計）は実寸で出力する。
+     @page A4 landscape margin 8.5mm はモーダル側の <style> で指定。 */
+  .dm-overlay.open .dm-svg-wrap svg.cad-sheet {
+    width: 280mm;
+    height: 193mm;
+  }
   .dm-close,
   .dm-title,
   .dm-print-btn,
