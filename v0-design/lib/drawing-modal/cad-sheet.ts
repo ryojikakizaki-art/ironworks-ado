@@ -57,9 +57,10 @@ export function line(x1: number, y1: number, x2: number, y2: number, w = THIN_W,
   return `<line x1="${mm(x1).toFixed(1)}" y1="${mm(y1).toFixed(1)}" x2="${mm(x2).toFixed(1)}" y2="${mm(y2).toFixed(1)}" stroke="${INK}" stroke-width="${w}"${d} />`
 }
 
-/** 長方形（座標は紙 mm） */
-export function rect(x: number, y: number, w: number, h: number, strokeW = THICK_W, fill = "none"): string {
-  return `<rect x="${mm(x).toFixed(1)}" y="${mm(y).toFixed(1)}" width="${mm(w).toFixed(1)}" height="${mm(h).toFixed(1)}" fill="${fill}" stroke="${INK}" stroke-width="${strokeW}" />`
+/** 長方形（座標は紙 mm・rx は角丸半径 mm） */
+export function rect(x: number, y: number, w: number, h: number, strokeW = THICK_W, fill = "none", rx?: number): string {
+  const r = rx ? ` rx="${mm(rx).toFixed(1)}"` : ""
+  return `<rect x="${mm(x).toFixed(1)}" y="${mm(y).toFixed(1)}" width="${mm(w).toFixed(1)}" height="${mm(h).toFixed(1)}"${r} fill="${fill}" stroke="${INK}" stroke-width="${strokeW}" />`
 }
 
 /** 円（座標は紙 mm） */
