@@ -391,6 +391,7 @@ DRAWING_PRODUCTS.antoine = {
   },
   // Claude 同様の CAD 精密図を有効化 (座金A 標準)
   washerSpec: WASHER_SPEC_A,
+  colorOptions: true, // 白仕上げ選択可（2026-07-08 追加・合計+15%）
   titleBlock: {
     productName: "Antoine",
     color: "マットブラック",
