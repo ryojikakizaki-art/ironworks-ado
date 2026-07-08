@@ -281,8 +281,28 @@ export function buildStairDrawingSvg(svg: SVGSVGElement, opts: StairDrawingOpts)
   const tV = FB.t / Math.cos(slopeRad) // 笠木 9mm 厚の鉛直換算
   const railEndX = wallX - WALL_PLATE.t // 壁付け座金の面で止まる
   const railTopWallY = railAt(railEndX)
-  const halfPost = FB.w / 2 // 柱 FB38 の半幅（実寸）
+  // 柱も笠木と同じ FB の 9mm 面が側面に見える向き＝図では同じ太さ（2026-07-09 指摘反映）
+  const halfPost = FB.t / 2
   const P = (xMm: number, yMm: number) => `${mm(X(xMm)).toFixed(1)},${mm(Y(yMm)).toFixed(1)}`
+
+  // ── 柱の位置一覧 ──
+  // 1本目＝1段目踏板中央、以降5段ごと。横桟ありの場合は最終段中央にも柱を追加する
+  // （横桟は壁に固定しないため、受け側の柱が必要）。
+  const postXs: number[] = [firstPostX]
+  const postYs: number[] = [noseY[0]]
+  for (let p = 1; p < postCount; p++) {
+    const idx = Math.min(steps - 1, p * LAURENT.stepsPerPost)
+    const px = idx < steps - 1 ? noseX[idx] + going / 2 : noseX[idx] + lastTreadMm / 2
+    postXs.push(px)
+    postYs.push(noseY[idx])
+  }
+  const lastTreadCenter = noseX[steps - 1] + lastTreadMm / 2
+  const hasCrossbarPost = crossbarCount > 0 && !postXs.some((x) => Math.abs(x - lastTreadCenter) < 1)
+  if (hasCrossbarPost) {
+    postXs.push(lastTreadCenter)
+    postYs.push(noseY[steps - 1])
+  }
+  const drawnPostCount = postXs.length
 
   // 1 本目の柱＋笠木＝ひとつの折り曲げ形状（塗り）
   const bendPoly = [
@@ -297,15 +317,10 @@ export function buildStairDrawingSvg(svg: SVGSVGElement, opts: StairDrawingOpts)
     `<polygon points="${bendPoly.join(" ")}" fill="${INK}" stroke="${INK}" stroke-width="${THIN_W}" stroke-linejoin="round" />`,
   )
 
-  // 追加柱（5段ごと・段板中央）: 上端は笠木下面に沿って斜めに納まる
-  const postXs: number[] = [firstPostX]
-  const postYs: number[] = [noseY[0]]
-  for (let p = 1; p < postCount; p++) {
-    const idx = Math.min(steps - 1, p * LAURENT.stepsPerPost)
-    const px = idx < steps - 1 ? noseX[idx] + going / 2 : noseX[idx] + lastTreadMm / 2
-    postXs.push(px)
-    postYs.push(noseY[idx])
-    const topPlate = noseY[idx] + BASE_PLATE.t
+  // 2 本目以降の柱: 上端は笠木下面に沿って斜めに納まる
+  postXs.forEach((px, i) => {
+    if (i === 0) return
+    const topPlate = postYs[i] + BASE_PLATE.t
     const poly = [
       P(px - halfPost, topPlate),
       P(px - halfPost, railAt(px - halfPost) - tV),
@@ -313,7 +328,7 @@ export function buildStairDrawingSvg(svg: SVGSVGElement, opts: StairDrawingOpts)
       P(px + halfPost, topPlate),
     ]
     parts.push(`<polygon points="${poly.join(" ")}" fill="${INK}" stroke="${INK}" stroke-width="${THIN_W}" />`)
-  }
+  })
   // 柱脚座金（60 幅 × t6 実寸）
   postXs.forEach((px, i) => {
     const pw = BASE_PLATE.w / S
@@ -328,17 +343,28 @@ export function buildStairDrawingSvg(svg: SVGSVGElement, opts: StairDrawingOpts)
     parts.push(rect(X(wallX) - pt6, Y(cyMm) - ph25 / 2, pt6, ph25, THIN_W, INK))
   }
 
-  // ── 横桟（実寸厚: 6×25 FB=25 / 13φ 丸鋼=13） ──
+  // ── 横桟（実寸厚: 6×25 FB=25 / 13φ 丸鋼=13。壁に固定せず最終段中央の柱で受ける） ──
   if (crossbarCount > 0) {
+    const cbEndX = lastTreadCenter
     const cbW = Math.max(1.2, mm((crossbarMaterial === "flat" ? 25 : 13) / S))
     for (let k = 1; k <= crossbarCount; k++) {
       const f = k / (crossbarCount + 1)
       const yA = railAt(firstPostX) - f * railHeightMm
-      const yB = railAt(railEndX) - f * railHeightMm
+      const yB = railAt(cbEndX) - f * railHeightMm
       parts.push(
-        `<line x1="${mm(X(firstPostX)).toFixed(1)}" y1="${mm(Y(yA)).toFixed(1)}" x2="${mm(X(railEndX)).toFixed(1)}" y2="${mm(Y(yB)).toFixed(1)}" stroke="${INK}" stroke-width="${cbW}" stroke-linecap="butt" opacity="0.85" />`,
+        `<line x1="${mm(X(firstPostX)).toFixed(1)}" y1="${mm(Y(yA)).toFixed(1)}" x2="${mm(X(cbEndX)).toFixed(1)}" y2="${mm(Y(yB)).toFixed(1)}" stroke="${INK}" stroke-width="${cbW}" stroke-linecap="butt" opacity="0.85" />`,
       )
     }
+    // 横桟の種類を図中に明記（最下段の横桟の中央に引出し表示）
+    const f = crossbarCount / (crossbarCount + 1)
+    const midX = (firstPostX + cbEndX) / 2
+    const midY = railAt(midX) - f * railHeightMm
+    parts.push(line(X(midX), Y(midY), X(midX) + 8, Y(midY) + 7, THIN_W))
+    parts.push(
+      text(X(midX) + 8.8, Y(midY) + 8, `横桟 ${LAURENT.crossbar[crossbarMaterial].label} ×${crossbarCount}`, {
+        size: 2.8,
+      }),
+    )
   }
 
   // ── 詳細参照（風船 A / B） ──
@@ -404,13 +430,15 @@ export function buildStairDrawingSvg(svg: SVGSVGElement, opts: StairDrawingOpts)
 
   // ── 注記 ──
   const crossbarText =
-    crossbarCount > 0 ? `横桟 ${crossbarCount}本（${LAURENT.crossbar[crossbarMaterial].label}）` : "横桟なし"
+    crossbarCount > 0
+      ? `横桟 ${crossbarCount}本（${LAURENT.crossbar[crossbarMaterial].label}・壁に固定せず最終段中央の柱で受ける）`
+      : "横桟なし"
   const riserText = risersMm.every((r) => r === risersMm[0])
     ? `${risersMm[0]}mm（全段一律）`
     : `${risersMm.join("/")}mm（段別）`
   parts.push(
     noteBlock(10, 152, [
-      `段数 ${steps}段・柱 ${postCount}本（1本目＝1段目踏板中央・以降${LAURENT.stepsPerPost}段ごと・上端は壁付け）`,
+      `段数 ${steps}段・柱 ${drawnPostCount}本（1本目＝1段目踏板中央・以降${LAURENT.stepsPerPost}段ごと${hasCrossbarPost ? "・横桟用に最終段中央へ1本" : ""}）・笠木上端は壁付け`,
       `蹴上げ ${riserText}／踏み面 ${treadMm}mm／蹴込み ${kekomiMm}mm／最終段の踏み面 D＝${lastTreadMm}mm`,
       `手すり高さは段鼻から笠木上端まで ${railHeightMm}mm。勾配 約${slopeDeg.toFixed(1)}°。${crossbarText}。`,
       `本図は入力寸法から自動生成した参考図です。製作時に現場状況へ合わせて微調整します。`,
@@ -424,7 +452,7 @@ export function buildStairDrawingSvg(svg: SVGSVGElement, opts: StairDrawingOpts)
   parts.push(detailB(190, 78, DETAIL_SCALE))
 
   const colorText = color === "white" ? "マットホワイト" : "マットブラック"
-  const totalScrews = postCount * BASE_PLATE.screws + WALL_PLATE.screws
+  const totalScrews = drawnPostCount * BASE_PLATE.screws + WALL_PLATE.screws
   parts.push(
     titleBlock(SHEET_W_MM - FRAME_MM - 2, SHEET_H_MM - FRAME_MM - 2, {
       productName: "Laurent ローラン 階段手摺",
