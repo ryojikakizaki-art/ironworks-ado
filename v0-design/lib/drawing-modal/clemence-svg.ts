@@ -33,6 +33,7 @@ import {
   mm,
   text,
   line,
+  rect,
   circle,
   ellipse,
   sheetFrame,
@@ -72,13 +73,15 @@ const SCREW_LABEL = "タッピングねじ M4×40"
 const PLATE_A = { d: 45, pcd: 27, screws: 3, postD: 9 }
 // 座金B（①・楕円・手すり上端の壁フランジ）
 const PLATE_B = { w: 25, h: 47, holePitch: 34, screws: 2 }
-// バー下面〜座金A上端の見え掛かり支柱の長さ（実寸mm）。バーの太さぶんの
-// クリアランス無しに座金円を描くとバー線と重なって見えるため、これを挟む。
-export const ROUND_POST_GAP_MM = 8
+// バー下面〜座金A上端の見え掛かり支柱の長さ（実寸mm）。
+// 座金はバーに接触する程度まで近づける（2026-07-09 蠣﨑さん指示）。支柱は
+// 座金の中心からバーへ垂直に伸びる形で描き、座金の丸に隠れる部分はそのまま隠す。
+export const ROUND_POST_GAP_MM = 3
 
 /** バー中心線から座金A（丸型）の円中心までの実寸オフセット（下方向・mm）。図面・ミニ図解共通。 */
 export const ROUND_DISC_OFFSET_MM = BAR_D / 2 + ROUND_POST_GAP_MM + PLATE_A.d / 2
 export const PLATE_A_D = PLATE_A.d
+export const PLATE_A_POST_D = PLATE_A.postD
 export const PLATE_B_W = PLATE_B.w
 export const PLATE_B_H = PLATE_B.h
 
@@ -232,14 +235,18 @@ export function buildClemenceDrawingSvg(svg: SVGSVGElement, opts: ClemenceDrawin
   parts.push(sheetFrame())
   parts.push(viewTitle(10, 12, "正面図", `S=${scaleLabel(S)}`))
 
-  // ── 座金A（②③・丸型・バー下面に接続）: バーの下に支柱ぶん離して描く（バー線との重なり防止） ──
+  // ── 座金A（②③・丸型・バー下面に接続）: バーに接触する程度まで近づけ、支柱は座金の中心から出す ──
   const discOffset = roundDiscCenterOffset(S)
   ;[x2, x3].forEach((bx) => {
     const by = clemencePathY(wMm, hMm, bx, extensionMm)
     const barBottomY = Y(by) + BAR_D / 2 / S
     const discCy = Y(by) + discOffset
-    parts.push(circle(X(bx), discCy, PLATE_A.d / 2 / S, MID_W, "#e5e7eb"))
-    parts.push(line(X(bx), barBottomY, X(bx), discCy - PLATE_A.d / 2 / S, THIN_W))
+    const roundRad = PLATE_A.d / 2 / S
+    // 支柱（φ9）は座金の中心からバー下面まで描く。座金の丸に隠れる部分（中心〜円周）は
+    // 後で描く座金円（塗りつぶし）に隠れるので、結果として「座金から支柱が出ている」見た目になる
+    const postW = Math.max(1.6, PLATE_A.postD / S)
+    parts.push(rect(X(bx) - postW / 2, barBottomY, postW, discCy - barBottomY, THIN_W, "#ffffff"))
+    parts.push(circle(X(bx), discCy, roundRad, MID_W, "#e5e7eb"))
   })
 
   // ── 手すり本体（丸棒 22φ・S字＋延長） ──
@@ -287,14 +294,30 @@ export function buildClemenceDrawingSvg(svg: SVGSVGElement, opts: ClemenceDrawin
     parts.push(text(lx + 6.6, Y(C) - 8.8, `丸棒 ${BAR_D}φ`, { size: 2.8 }))
   }
   // ブラケット番号ラベル
-  const discBottom2 = Y(clemencePathY(wMm, hMm, x2, extensionMm)) + discOffset + PLATE_A.d / 2 / S
-  const discBottom3 = Y(C) + discOffset + PLATE_A.d / 2 / S
+  const roundRad = PLATE_A.d / 2 / S
+  const discCy2 = Y(clemencePathY(wMm, hMm, x2, extensionMm)) + discOffset
+  const discCy3 = Y(C) + discOffset
+  const discBottom2 = discCy2 + roundRad
+  const discBottom3 = discCy3 + roundRad
   parts.push(text(X(0) + PLATE_B.w / 2 / S + 8, Y(clemencePathY(wMm, hMm, 0, extensionMm)) - 6, "①", { size: 3.15 }))
-  parts.push(text(X(x2) - PLATE_A.d / 2 / S - 2, discBottom2, "②", { size: 3.15, anchor: "end" }))
+  parts.push(text(X(x2) - roundRad - 2, discBottom2, "②", { size: 3.15, anchor: "end" }))
   parts.push(text(X(x3), discBottom3 + 6, "③", { size: 3.15, anchor: "middle" }))
-  // 詳細 A/B 参照
-  parts.push(detailBalloon(X(x2), discBottom2 - 2, X(x2) + 14, discBottom2 + 8, "A"))
-  parts.push(detailBalloon(X(0), Y(clemencePathY(wMm, hMm, 0, extensionMm)), X(0) - 13, Y(clemencePathY(wMm, hMm, 0, extensionMm)) - 11, "B"))
+  // 詳細 A/B 参照（引出しの起点は座金の縁に置く。中心に置くと座金の丸と二重に重なって見えるため）
+  parts.push(
+    detailBalloon(
+      X(x2) + roundRad * 0.7,
+      discCy2 - roundRad * 0.7,
+      X(x2) + 14,
+      discBottom2 + 8,
+      "A",
+    ),
+  )
+  {
+    const y0Screen = Y(clemencePathY(wMm, hMm, 0, extensionMm))
+    const rxMm = PLATE_B.w / 2 / S
+    const ryMm = PLATE_B.h / 2 / S
+    parts.push(detailBalloon(X(0) - rxMm * 0.7, y0Screen - ryMm * 0.7, X(0) - 13, y0Screen - 11, "B"))
+  }
 
   // ── 注記 ──
   const extText = extensionMm > 0 ? `③側を+${fmt(extensionMm)}mm延長（最大200mm・+¥3,000）。` : "延長オプションなし。"
