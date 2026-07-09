@@ -69,6 +69,20 @@ export function circle(cx: number, cy: number, r: number, strokeW = MID_W, fill 
   return `<circle cx="${mm(cx).toFixed(1)}" cy="${mm(cy).toFixed(1)}" r="${mm(r).toFixed(1)}" fill="${fill}" stroke="${INK}" stroke-width="${strokeW}"${d} />`
 }
 
+/** 楕円（座標は紙 mm。rotateDeg 指定で cx,cy を中心に回転） */
+export function ellipse(
+  cx: number,
+  cy: number,
+  rx: number,
+  ry: number,
+  strokeW = MID_W,
+  fill = "none",
+  rotateDeg?: number,
+): string {
+  const tf = rotateDeg ? ` transform="rotate(${rotateDeg} ${mm(cx).toFixed(1)} ${mm(cy).toFixed(1)})"` : ""
+  return `<ellipse cx="${mm(cx).toFixed(1)}" cy="${mm(cy).toFixed(1)}" rx="${mm(rx).toFixed(1)}" ry="${mm(ry).toFixed(1)}" fill="${fill}" stroke="${INK}" stroke-width="${strokeW}"${tf} />`
+}
+
 /** 用紙背景＋図枠 */
 export function sheetFrame(): string {
   return (

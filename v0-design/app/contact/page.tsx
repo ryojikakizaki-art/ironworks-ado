@@ -188,7 +188,15 @@ export default function ContactPage() {
       : type === "stair" && stairSteps
         ? `【階段手摺 Laurent お見積もり相談（全長3.5m超）】\n\n段数: ${stairSteps}段\n手摺全長の目安: 約${params.get("length") || "—"}mm\n横桟: ${params.get("crossbar") || "なし"}\n色: ${params.get("color") || "マットブラック"}\n\n全長が3.5mを超えるため、配送方法（営業所止め・トラック搬入の可否）を含めたお見積もりを希望します。\n\n配送先住所:\n（ご住所をご記入ください）\n\n※階段の写真を添付いただけると確認がスムーズです。\n\nその他ご要望:\n`
         : type === "clemence" && clemenceW
-          ? `【Clémence クレマンス トイレ手すり ご注文】\n\nサイズ: 横 ${clemenceW}mm × 縦 ${params.get("h") || "—"}mm\nブラケット位置（座金φ45・3点・①はバー上端）:\n① バー上端\n② ①から右へ ${params.get("x2") || "—"}mm\n③ ①から右へ ${params.get("x3") || "—"}mm\n\n上記内容でのご注文を希望します。お見積もり（送料込）のご案内をお願いいたします。\n\n※ブラケット位置は壁下地に合わせて微調整できます。下地位置が分かる写真などがあれば添付ください。\n\n配送先住所:\n（ご住所をご記入ください）\n\nその他ご要望:\n`
+          ? (() => {
+              const ext = Number(params.get("ext") || "0")
+              const total = params.get("total")
+              const extLine = ext > 0
+                ? `延長: ③側+${ext}mm（+¥3,000）\n`
+                : "延長: なし\n"
+              const totalLine = total ? `概算合計（税込・送料別）: ¥${Number(total).toLocaleString()}\n\n` : "\n"
+              return `【Clémence クレマンス トイレ手すり ご注文】\n\nサイズ: 横 ${clemenceW}mm × 縦 ${params.get("h") || "—"}mm\n${extLine}ブラケット位置（座金B=①バー上端／座金A=②③バー下面）:\n① バー上端\n② ①から右へ ${params.get("x2") || "—"}mm\n③ ①から右へ ${params.get("x3") || "—"}mm\n${totalLine}上記内容でのご注文を希望します。お見積もり（送料込）のご案内をお願いいたします。\n\n※ブラケット位置は壁下地に合わせて微調整できます。下地位置が分かる写真などがあれば添付ください。\n\n配送先住所:\n（ご住所をご記入ください）\n\nその他ご要望:\n`
+            })()
           : ""
     setForm((prev) => ({
       ...prev,
