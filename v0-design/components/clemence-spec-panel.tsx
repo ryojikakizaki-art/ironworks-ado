@@ -20,6 +20,8 @@ import {
   EXTENSION_MAX_MM,
   EXTENSION_PRICE,
   W_STANDARD_MIN,
+  BAR_D,
+  ROUND_POST_GAP_MM,
 } from "@/lib/drawing-modal/clemence-svg"
 
 const W_MAX = 1000
@@ -72,6 +74,9 @@ export function ClemenceSpecPanel({ onQueryChange }: ClemenceSpecPanelProps) {
   const roundR = Math.max(9, 22.5 * scale)
   const ovalRx = Math.max(6, 12.5 * scale)
   const ovalRy = Math.max(11, 23.5 * scale)
+  // バー中心線 → 座金A（丸型）円中心までのオフセット（バー半径＋支柱ぶんの隙間＋座金半径）。
+  // バー線と座金円が重ならないよう、必ずバーの半太さ+隙間ぶん離す。
+  const discOffset = (BAR_D / 2 + ROUND_POST_GAP_MM) * scale + roundR
 
   const inputCls =
     "w-full border border-border rounded-md px-3 py-2 text-[15px] bg-white focus:outline-none focus:border-gold"
@@ -89,12 +94,12 @@ export function ClemenceSpecPanel({ onQueryChange }: ClemenceSpecPanelProps) {
 
       {/* ミニ図解 */}
       <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="w-full h-auto bg-white rounded-md border border-border mb-4">
-        {/* 座金A（②③・丸型・バー下に配置） */}
+        {/* 座金A（②③・丸型・バー下に支柱ぶん離して配置） */}
         {[eff.X2, eff.X3].map((bx, i) => (
           <circle
             key={i}
             cx={X(bx)}
-            cy={Y(clemencePathY(eff.W, eff.H, bx, eff.EXT)) + roundR}
+            cy={Y(clemencePathY(eff.W, eff.H, bx, eff.EXT)) + discOffset}
             r={roundR}
             fill="#e5e7eb"
             stroke="#9ca3af"
@@ -109,10 +114,10 @@ export function ClemenceSpecPanel({ onQueryChange }: ClemenceSpecPanelProps) {
           strokeWidth={barW}
           strokeLinecap="round"
         />
-        {/* 座金B（①・楕円・バー上端） */}
+        {/* 座金B（①・楕円・バー上端。中心をバー中心線に揃える） */}
         <ellipse
           cx={X(0)}
-          cy={Y(clemencePathY(eff.W, eff.H, 0, eff.EXT)) - ovalRy + (11 * scale)}
+          cy={Y(clemencePathY(eff.W, eff.H, 0, eff.EXT))}
           rx={ovalRx}
           ry={ovalRy}
           fill="#e5e7eb"
@@ -121,8 +126,8 @@ export function ClemenceSpecPanel({ onQueryChange }: ClemenceSpecPanelProps) {
         />
         {/* ブラケット番号 */}
         <text x={X(0) + ovalRx + 10} y={Y(clemencePathY(eff.W, eff.H, 0, eff.EXT))} fontSize="13" fill="#92650a" fontWeight="600">①</text>
-        <text x={X(eff.X2)} y={Y(clemencePathY(eff.W, eff.H, eff.X2, eff.EXT)) + roundR * 2 + 13} fontSize="13" fill="#92650a" textAnchor="middle" fontWeight="600">②</text>
-        <text x={X(eff.X3)} y={Y(clemencePathY(eff.W, eff.H, eff.X3, eff.EXT)) + roundR * 2 + 13} fontSize="13" fill="#92650a" textAnchor="middle" fontWeight="600">③</text>
+        <text x={X(eff.X2)} y={Y(clemencePathY(eff.W, eff.H, eff.X2, eff.EXT)) + discOffset + roundR + 13} fontSize="13" fill="#92650a" textAnchor="middle" fontWeight="600">②</text>
+        <text x={X(eff.X3)} y={Y(clemencePathY(eff.W, eff.H, eff.X3, eff.EXT)) + discOffset + roundR + 13} fontSize="13" fill="#92650a" textAnchor="middle" fontWeight="600">③</text>
         {/* 寸法ラベル */}
         <text x={X(eff.W / 2)} y={oy + 40} fontSize="12" fill="#6b7280" textAnchor="middle">
           横 W = {eff.W.toLocaleString()}mm{eff.EXT > 0 ? ` (+${eff.EXT}mm延長)` : ""}

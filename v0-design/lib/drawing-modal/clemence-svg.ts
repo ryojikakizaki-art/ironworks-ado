@@ -61,7 +61,7 @@ export const EXTENSION_MAX_MM = 200
 export const EXTENSION_PRICE = 3000
 export const W_STANDARD_MIN = 950 // これ未満は要問合せ（形状の都合上）
 
-const BAR_D = 22 // 丸棒 22φ
+export const BAR_D = 22 // 丸棒 22φ
 const C = BAR_D / 2 // 中心線オフセット
 const HOLE_INNER = 4.5
 const HOLE_OUTER = 7
@@ -72,6 +72,20 @@ const SCREW_LABEL = "タッピングねじ M4×40"
 const PLATE_A = { d: 45, pcd: 27, screws: 3, postD: 9 }
 // 座金B（①・楕円・手すり上端の壁フランジ）
 const PLATE_B = { w: 25, h: 47, holePitch: 34, screws: 2 }
+// バー下面〜座金A上端の見え掛かり支柱の長さ（実寸mm）。バーの太さぶんの
+// クリアランス無しに座金円を描くとバー線と重なって見えるため、これを挟む。
+export const ROUND_POST_GAP_MM = 8
+
+/** バー中心線から座金A（丸型）の円中心までの実寸オフセット（下方向・mm）。図面・ミニ図解共通。 */
+export const ROUND_DISC_OFFSET_MM = BAR_D / 2 + ROUND_POST_GAP_MM + PLATE_A.d / 2
+export const PLATE_A_D = PLATE_A.d
+export const PLATE_B_W = PLATE_B.w
+export const PLATE_B_H = PLATE_B.h
+
+/** バー中心線 Y(by) から座金A（丸型）の円中心までの画面オフセット（下方向・正の値。S=mm/画面単位） */
+export function roundDiscCenterOffset(S: number): number {
+  return ROUND_DISC_OFFSET_MM / S
+}
 
 const WALL_TO_FACE = 62 // 壁面〜手すり外面 D（注記に参考表記のみ・専用図は省略）
 
@@ -218,11 +232,14 @@ export function buildClemenceDrawingSvg(svg: SVGSVGElement, opts: ClemenceDrawin
   parts.push(sheetFrame())
   parts.push(viewTitle(10, 12, "正面図", `S=${scaleLabel(S)}`))
 
-  // ── 座金A（②③・丸型・バー下面に接続）: バーの下に描く ──
+  // ── 座金A（②③・丸型・バー下面に接続）: バーの下に支柱ぶん離して描く（バー線との重なり防止） ──
+  const discOffset = roundDiscCenterOffset(S)
   ;[x2, x3].forEach((bx) => {
     const by = clemencePathY(wMm, hMm, bx, extensionMm)
-    parts.push(circle(X(bx), Y(by) + PLATE_A.d / 2 / S, PLATE_A.d / 2 / S, MID_W, "#e5e7eb"))
-    parts.push(line(X(bx), Y(by), X(bx), Y(by) + PLATE_A.d / S, THIN_W))
+    const barBottomY = Y(by) + BAR_D / 2 / S
+    const discCy = Y(by) + discOffset
+    parts.push(circle(X(bx), discCy, PLATE_A.d / 2 / S, MID_W, "#e5e7eb"))
+    parts.push(line(X(bx), barBottomY, X(bx), discCy - PLATE_A.d / 2 / S, THIN_W))
   })
 
   // ── 手すり本体（丸棒 22φ・S字＋延長） ──
@@ -230,20 +247,20 @@ export function buildClemenceDrawingSvg(svg: SVGSVGElement, opts: ClemenceDrawin
   const dPath = clemencePathD(wMm, hMm, (v) => mm(X(v)), (v) => mm(Y(v)), extensionMm)
   parts.push(`<path d="${dPath}" fill="none" stroke="${INK}" stroke-width="${barW}" stroke-linecap="round" />`)
 
-  // ── 座金B（①・楕円・上端に直付け） ──
+  // ── 座金B（①・楕円・上端に直付け）: 楕円の中心＝手すり中心線に揃える ──
   {
     const y0 = clemencePathY(wMm, hMm, 0, extensionMm)
     const rxMm = PLATE_B.w / 2 / S
     const ryMm = PLATE_B.h / 2 / S
-    parts.push(ellipse(X(0), Y(y0) - ryMm + C / S, rxMm, ryMm, THIN_W, "#e5e7eb"))
+    parts.push(ellipse(X(0), Y(y0), rxMm, ryMm, THIN_W, "#e5e7eb"))
   }
 
   // ── 寸法線 ──
   // ブラケット位置チェーン（下段・①基準の水平距離）
   const cy1 = Y(0) + 8
   parts.push(extLine(X(0), Y(clemencePathY(wMm, hMm, 0, extensionMm)), X(0), cy1 + 1.5))
-  parts.push(extLine(X(x2), Y(clemencePathY(wMm, hMm, x2, extensionMm)) + PLATE_A.d / S, X(x2), cy1 + 1.5))
-  parts.push(extLine(X(x3), Y(C) + PLATE_A.d / S, X(x3), cy1 + 1.5))
+  parts.push(extLine(X(x2), Y(clemencePathY(wMm, hMm, x2, extensionMm)) + discOffset + PLATE_A.d / 2 / S, X(x2), cy1 + 1.5))
+  parts.push(extLine(X(x3), Y(C) + discOffset + PLATE_A.d / 2 / S, X(x3), cy1 + 1.5))
   parts.push(extLine(X(wMm), Y(C), X(wMm), cy1 + 1.5))
   parts.push(dimH(X(0), X(x2), cy1, fmt(x2), { size: 2.8 }))
   parts.push(dimH(X(x2), X(x3), cy1, fmt(x3 - x2), { size: 2.8 }))
@@ -270,11 +287,13 @@ export function buildClemenceDrawingSvg(svg: SVGSVGElement, opts: ClemenceDrawin
     parts.push(text(lx + 6.6, Y(C) - 8.8, `丸棒 ${BAR_D}φ`, { size: 2.8 }))
   }
   // ブラケット番号ラベル
+  const discBottom2 = Y(clemencePathY(wMm, hMm, x2, extensionMm)) + discOffset + PLATE_A.d / 2 / S
+  const discBottom3 = Y(C) + discOffset + PLATE_A.d / 2 / S
   parts.push(text(X(0) + PLATE_B.w / 2 / S + 8, Y(clemencePathY(wMm, hMm, 0, extensionMm)) - 6, "①", { size: 3.15 }))
-  parts.push(text(X(x2) - PLATE_A.d / 2 / S - 2, Y(clemencePathY(wMm, hMm, x2, extensionMm)) + PLATE_A.d / S, "②", { size: 3.15, anchor: "end" }))
-  parts.push(text(X(x3), Y(C) + PLATE_A.d / S + 6, "③", { size: 3.15, anchor: "middle" }))
+  parts.push(text(X(x2) - PLATE_A.d / 2 / S - 2, discBottom2, "②", { size: 3.15, anchor: "end" }))
+  parts.push(text(X(x3), discBottom3 + 6, "③", { size: 3.15, anchor: "middle" }))
   // 詳細 A/B 参照
-  parts.push(detailBalloon(X(x2), Y(clemencePathY(wMm, hMm, x2, extensionMm)) + PLATE_A.d / S, X(x2) + 14, Y(clemencePathY(wMm, hMm, x2, extensionMm)) + PLATE_A.d / S + 10, "A"))
+  parts.push(detailBalloon(X(x2), discBottom2 - 2, X(x2) + 14, discBottom2 + 8, "A"))
   parts.push(detailBalloon(X(0), Y(clemencePathY(wMm, hMm, 0, extensionMm)), X(0) - 13, Y(clemencePathY(wMm, hMm, 0, extensionMm)) - 11, "B"))
 
   // ── 注記 ──
