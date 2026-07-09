@@ -82,7 +82,9 @@ const fmt = (n: number) => Math.round(n).toLocaleString()
 // 参考図（トイレ手すり）準拠: P0=(0, y0) の①座金Bから水平に出て、
 // 均等な S 字で下り、x=xm で水平（y=C）へ滑らかに合流する（両端とも接線は水平）。
 // その後水平直線が続き、x=curlStart から先で下向きに軽く曲げ下げて終端する
-// （③側・延長分はここが伸びる）。参考図では H=500 に対し下り区間の水平スパン≈400。
+// （③側・延長分はここが伸びる）。
+// 参考図では H=500 に対し下り区間の水平スパン≈600（ブラケットA=400mm 地点は
+// まだ斜面の途中＝②座金は下りの途中に付く）。末端は水平から下向きに約25mm下がる。
 
 export interface ClemenceShape {
   xm: number // 曲線が水平に合流する x（W 基準・延長の影響を受けない）
@@ -93,11 +95,11 @@ export interface ClemenceShape {
 
 export function clemenceShape(wMm: number, hMm: number, extensionMm = 0): ClemenceShape {
   const y0 = hMm - C
-  // S字下り区間の水平スパン。参考図の比率＝高低差×約0.8（H500 → 約400）。
-  // W が小さいときは 0.55W まで圧縮してでも収める。
-  const xm = Math.min(Math.max((y0 - C) * 0.8, 110), wMm * 0.55)
+  // S字下り区間の水平スパン。参考図の比率＝高低差×約1.2（H500 → 約590）。
+  // 標準位置②=455 が斜面の途中に乗る。W が小さいときは 0.62W まで圧縮してでも収める。
+  const xm = Math.min(Math.max((y0 - C) * 1.2, 120), wMm * 0.62)
   const totalW = wMm + Math.max(0, extensionMm)
-  const curlStart = totalW - 50
+  const curlStart = totalW - 60
   return { xm, curlStart, totalW, y0 }
 }
 
@@ -138,7 +140,8 @@ export function clemencePathD(
     `M ${f(X(0))} ${f(Y(y0))} ` +
     `C ${f(X(0.45 * xm))} ${f(Y(y0))} ${f(X(0.55 * xm))} ${f(Y(C))} ${f(X(xm))} ${f(Y(C))} ` +
     `L ${f(X(Math.max(xm, curlStart)))} ${f(Y(C))} ` +
-    `Q ${f(X(totalW - 5))} ${f(Y(C))} ${f(X(totalW - 1))} ${f(Y(C + 30))}`
+    // 末端は下向きに曲げ下げる（y は上向き正なので C-25 ＝ 水平線から 25mm 下）
+    `Q ${f(X(totalW - 8))} ${f(Y(C))} ${f(X(totalW))} ${f(Y(C - 25))}`
   )
 }
 
