@@ -1,18 +1,17 @@
-// Clémence（L型トイレ手すり）の設計図 SVG ビルダー（JIS 製図風・cad-sheet.ts ベース）
+// Clémence（トイレ手すり・緩やか曲線タイプ）の設計図 SVG ビルダー（JIS 製図風・cad-sheet.ts ベース）
 //
-// お客様が入力した寸法（横W×縦H）とブラケット3点の位置から、A4 横の図面シートを組み立てる。
+// お客様が入力した寸法（横W×縦H）とブラケット位置から、A4 横の図面シートを組み立てる。
 // A4 横・倍率 100% で印刷すると表題欄の尺度どおりの実寸図になる。
 //
-// 構成:
-//   左     — 正面図（標準縮尺を自動選択）＋寸法線＋注記
-//   右上   — 詳細 A: ブラケット座金 φ45・ビス穴×3・タッピング M4×40 ×3（S=1:1）
-//   右中   — 側面図（参考）: 壁〜手すり外面 D=62mm・丸棒 22φ（S=1:2）
-//   右下   — 表題欄
+// 形状（2026-07-09 蠣﨑さん指示・商品サムネイル準拠）:
+// - 直角の L 型ではなく、上端の座金から緩やかに 45° 方向へ曲がって下り、
+//   水平部へつながる曲線。水平部の先端は軽く上へ反って終わる
+// - ブラケット3点: ①バー上端（座金にバー端が付く）／②③は壁下地に合わせ
+//   ①から右へ水平距離で指定（基本 455 / 910 ＝ 下地の尺モジュールピッチ）
 //
 // ブラケットの実物仕様（2026-07-09 蠣﨑さん回答）:
 // - 座金 φ45mm・ビス穴×3・タッピングビス M4×40 ×3本／箇所
-// - 標準位置: 横部2点が 910 間隔（壁下地の尺モジュール）＋縦部上部に1点
-// - 位置は壁下地（柱・間柱 455/910 ピッチ）に合わせてお客様指定可（補強板不要）
+// - 座金間は基本 455（横方向・壁下地ピッチ）。位置はお客様指定可（補強板不要）
 
 import {
   SHEET_VB_W,
@@ -43,11 +42,10 @@ import {
 } from "./cad-sheet"
 
 export interface ClemenceDrawingOpts {
-  wMm: number // 横部の長さ（縦部外面〜開放端）
-  hMm: number // 縦部の高さ（横部下面〜上端）
-  b1Mm: number // ブラケット1: 横部・開放端からの距離
-  b2Mm: number // ブラケット2: 横部・開放端からの距離（b1 より奥）
-  b3Mm: number // ブラケット3: 縦部・上端からの距離
+  wMm: number // 横部の長さ（上端の座金〜開放端の水平距離）
+  hMm: number // 縦の高さ（水平部の下面〜バー上端）
+  x2Mm: number // ブラケット②: ①（上端座金）から右への水平距離
+  x3Mm: number // ブラケット③: ①（上端座金）から右への水平距離
 }
 
 const BAR_D = 22 // 丸棒 22φ
@@ -55,9 +53,68 @@ const BRACKET_D = 45 // 座金 φ45
 const BRACKET_SCREWS = 3
 const SCREW_LABEL = "タッピングねじ M4×40"
 const WALL_TO_FACE = 62 // 壁面〜手すり外面 D
-const CORNER_R = 60 // コーナー曲げ半径（中心線・作画用）
+const C = BAR_D / 2 // 中心線オフセット
 
 const fmt = (n: number) => Math.round(n).toLocaleString()
+
+// ── 手すり中心線の形状（実寸 mm・y 上向き・原点＝①座金の x / 水平部バー下面の y） ──
+//
+// 上端 P0=(0, H-11) から右へ出て、S 字（3次ベジェ）で 45° 方向に緩やかに下り、
+// x=xm で水平（y=11）に合流 → 水平直線 → 先端は軽く上へ反る。
+
+export interface ClemenceShape {
+  xm: number // 曲線が水平に合流する x
+  curlStart: number // 先端の反り上がり開始 x
+  y0: number // 上端中心線の y (= H - 11)
+}
+
+export function clemenceShape(wMm: number, hMm: number): ClemenceShape {
+  const y0 = hMm - C
+  // 下りカーブの水平スパン: 高低差の約1.2倍で「45°の緩やかな曲がり」に見せる。
+  // 横幅が小さいときは 6 割まで圧縮してでも収める。
+  const xm = Math.min(Math.max((y0 - C) * 1.2, 120), wMm * 0.62)
+  const curlStart = wMm - 60
+  return { xm, curlStart, y0 }
+}
+
+/** 中心線の y(x)（実寸）。ベジェ部は t を二分法で解く */
+export function clemencePathY(wMm: number, hMm: number, x: number): number {
+  const { xm, y0 } = clemenceShape(wMm, hMm)
+  if (x <= 0) return y0
+  if (x >= xm) return C
+  // C(P0,(0.45xm,y0),(0.55xm,C),(xm,C)) の x(t) は単調増加
+  const bez = (t: number, a: number, b: number, c2: number, d: number) =>
+    (1 - t) ** 3 * a + 3 * (1 - t) ** 2 * t * b + 3 * (1 - t) * t ** 2 * c2 + t ** 3 * d
+  let lo = 0
+  let hi = 1
+  for (let i = 0; i < 40; i++) {
+    const mid = (lo + hi) / 2
+    if (bez(mid, 0, 0.45 * xm, 0.55 * xm, xm) < x) lo = mid
+    else hi = mid
+  }
+  const t = (lo + hi) / 2
+  return bez(t, y0, y0, C, C)
+}
+
+/**
+ * 中心線のパス d 文字列。X/Y は実寸→描画座標への変換関数。
+ * 図面ビルダーと商品ページのミニ図解の両方で使う（形状の二重管理を防ぐ）。
+ */
+export function clemencePathD(
+  wMm: number,
+  hMm: number,
+  X: (v: number) => number,
+  Y: (v: number) => number,
+): string {
+  const { xm, curlStart, y0 } = clemenceShape(wMm, hMm)
+  const f = (v: number) => v.toFixed(1)
+  return (
+    `M ${f(X(0))} ${f(Y(y0))} ` +
+    `C ${f(X(0.45 * xm))} ${f(Y(y0))} ${f(X(0.55 * xm))} ${f(Y(C))} ${f(X(xm))} ${f(Y(C))} ` +
+    `L ${f(X(Math.max(xm, curlStart)))} ${f(Y(C))} ` +
+    `Q ${f(X(wMm - 6))} ${f(Y(C))} ${f(X(wMm - 2))} ${f(Y(C + 34))}`
+  )
+}
 
 // ── 詳細 A: ブラケット座金 φ45（S=1:1） ──────────────────
 function detailA(x: number, y: number): string {
@@ -120,9 +177,8 @@ function sideView(x: number, y: number): string {
 export function buildClemenceDrawingSvg(svg: SVGSVGElement, opts: ClemenceDrawingOpts): void {
   const { wMm, hMm } = opts
   // ブラケット位置（安全のため作画側でもクランプ）
-  const b1 = Math.min(Math.max(opts.b1Mm, 30), wMm - 30)
-  const b2 = Math.min(Math.max(opts.b2Mm, b1 + 60), wMm - 30)
-  const b3 = Math.min(Math.max(opts.b3Mm, 30), hMm - 60)
+  const x2 = Math.min(Math.max(opts.x2Mm, 120), wMm - 170)
+  const x3 = Math.min(Math.max(opts.x3Mm, x2 + 100), wMm - 70)
 
   svg.setAttribute("viewBox", `0 0 ${SHEET_VB_W} ${SHEET_VB_H}`)
   svg.classList.add("cad-sheet")
@@ -131,14 +187,14 @@ export function buildClemenceDrawingSvg(svg: SVGSVGElement, opts: ClemenceDrawin
   const mainLeft = 24
   const mainRight = 172
   const mainTop = 30
-  const mainBottom = 128
+  const mainBottom = 122
   const availW = mainRight - mainLeft
   const availH = mainBottom - mainTop
 
   const S = pickScale(wMm, hMm, availW, availH)
   const originX = mainLeft + (availW - wMm / S) / 2
-  const originY = mainTop + (availH - hMm / S) / 2 + hMm / S // 図の下端（横部下面）
-  // 実寸 mm → 紙 mm。x: 縦部外面=0 → 右へ / y: 横部下面=0 → 上へ
+  const originY = mainTop + (availH - hMm / S) / 2 + hMm / S // 図の下端（水平部バー下面）
+  // 実寸 mm → 紙 mm。x: ①座金=0 → 右へ / y: 水平部バー下面=0 → 上へ
   const X = (v: number) => originX + v / S
   const Y = (v: number) => originY - v / S
 
@@ -146,66 +202,59 @@ export function buildClemenceDrawingSvg(svg: SVGSVGElement, opts: ClemenceDrawin
   parts.push(sheetFrame())
   parts.push(viewTitle(10, 12, "正面図", `S=${scaleLabel(S)}`))
 
-  // ── 手すり本体（丸棒 22φ・L 型・コーナー R） ──
-  const c = BAR_D / 2 // 中心線オフセット
-  const barW = Math.max(1.6, mm(BAR_D / S))
-  const rC = CORNER_R
-  const path =
-    `M ${mm(X(c)).toFixed(1)} ${mm(Y(hMm)).toFixed(1)} ` +
-    `L ${mm(X(c)).toFixed(1)} ${mm(Y(c + rC)).toFixed(1)} ` +
-    `A ${mm(rC / S).toFixed(1)} ${mm(rC / S).toFixed(1)} 0 0 0 ${mm(X(c + rC)).toFixed(1)} ${mm(Y(c)).toFixed(1)} ` +
-    `L ${mm(X(wMm)).toFixed(1)} ${mm(Y(c)).toFixed(1)}`
-  // 座金 φ45（バーの下に描く → バー本体で中央が隠れる描き順）
+  // ── ブラケット座金 φ45（バーの下に描く → バー本体で中央が隠れる描き順） ──
   const brackets: Array<[number, number]> = [
-    [wMm - b1, c], // 横部・開放端から b1
-    [wMm - b2, c], // 横部・開放端から b2
-    [c, hMm - b3], // 縦部・上端から b3
+    [0, clemencePathY(wMm, hMm, 0)], // ① バー上端
+    [x2, clemencePathY(wMm, hMm, x2)],
+    [x3, clemencePathY(wMm, hMm, x3)],
   ]
   brackets.forEach(([bx, by]) => {
     parts.push(circle(X(bx), Y(by), BRACKET_D / 2 / S, MID_W, "#e5e7eb"))
   })
-  parts.push(`<path d="${path}" fill="none" stroke="${INK}" stroke-width="${barW}" stroke-linecap="butt" />`)
-  // 中心線（細・一点鎖線風）
-  parts.push(line(X(c), Y(hMm) + 1.5, X(c), Y(c) - 1.5, THIN_W, "6 2 1.5 2"))
-  parts.push(line(X(c) - 1.5, Y(c), X(wMm) + 1.5, Y(c), THIN_W, "6 2 1.5 2"))
+
+  // ── 手すり本体（丸棒 22φ・緩やか曲線） ──
+  const barW = Math.max(1.6, mm(BAR_D / S))
+  const dPath = clemencePathD(wMm, hMm, (v) => mm(X(v)), (v) => mm(Y(v)))
+  parts.push(`<path d="${dPath}" fill="none" stroke="${INK}" stroke-width="${barW}" stroke-linecap="round" />`)
 
   // ── 寸法線 ──
-  // W（下）: 縦部外面 → 開放端
-  const wy = Y(0) + 10
-  parts.push(extLine(X(0), Y(0), X(0), wy + 1.5), extLine(X(wMm), Y(c) + BAR_D / 2 / S, X(wMm), wy + 1.5))
+  // ブラケット位置チェーン（下段・①基準の水平距離）
+  const cy1 = Y(0) + 8
+  parts.push(extLine(X(0), Y(clemencePathY(wMm, hMm, 0)) + BRACKET_D / 2 / S, X(0), cy1 + 1.5))
+  parts.push(extLine(X(x2), Y(clemencePathY(wMm, hMm, x2)) + BRACKET_D / 2 / S, X(x2), cy1 + 1.5))
+  parts.push(extLine(X(x3), Y(C), X(x3), cy1 + 1.5))
+  parts.push(extLine(X(wMm), Y(C + 20), X(wMm), cy1 + 1.5))
+  parts.push(dimH(X(0), X(x2), cy1, fmt(x2), { size: 2.8 }))
+  parts.push(dimH(X(x2), X(x3), cy1, fmt(x3 - x2), { size: 2.8 }))
+  parts.push(dimH(X(x3), X(wMm), cy1, fmt(wMm - x3), { size: 2.8 }))
+  // W 総幅（さらに下段）
+  const wy = cy1 + 9
+  parts.push(extLine(X(0), cy1 + 1.5, X(0), wy + 1.5), extLine(X(wMm), cy1 + 1.5, X(wMm), wy + 1.5))
   parts.push(dimH(X(0), X(wMm), wy, `横 W=${fmt(wMm)}`))
-  // H（左）: 横部下面 → 縦部上端
-  const hx = X(0) - 9
-  parts.push(extLine(X(0), Y(0), hx - 1.5, Y(0)), extLine(X(c) - BAR_D / 2 / S, Y(hMm), hx - 1.5, Y(hMm)))
+  // H（左）: 水平部下面 → バー上端
+  const hx = X(0) - 11
+  parts.push(extLine(X(0) - BRACKET_D / 2 / S, Y(0), hx - 1.5, Y(0)))
+  parts.push(extLine(X(0), Y(hMm), hx - 1.5, Y(hMm)))
   parts.push(dimV(hx, Y(hMm), Y(0), `縦 H=${fmt(hMm)}`))
-  // ブラケット位置（横部・開放端から）: b1 / b2 を上側にチェーン寸法
-  const by = Y(c) - BAR_D / 2 / S - 7
-  parts.push(extLine(X(wMm), Y(c) - BAR_D / 2 / S, X(wMm), by - 1.5))
-  parts.push(extLine(X(wMm - b1), Y(c) - BRACKET_D / 2 / S, X(wMm - b1), by - 1.5))
-  parts.push(extLine(X(wMm - b2), Y(c) - BRACKET_D / 2 / S, X(wMm - b2), by - 1.5))
-  parts.push(dimH(X(wMm - b1), X(wMm), by, fmt(b1), { size: 2.8 }))
-  parts.push(dimH(X(wMm - b2), X(wMm - b1), by, fmt(b2 - b1), { size: 2.8 }))
-  // ブラケット位置（縦部・上端から）
-  const bx2 = X(c) + BRACKET_D / 2 / S + 7
-  parts.push(extLine(X(c), Y(hMm), bx2 + 1.5, Y(hMm)))
-  parts.push(extLine(X(c) + BRACKET_D / 2 / S, Y(hMm - b3), bx2 + 1.5, Y(hMm - b3)))
-  parts.push(dimV(bx2, Y(hMm), Y(hMm - b3), fmt(b3), { size: 2.8 }))
-  parts.push(text(bx2 + 2, Y(hMm - b3) + 5, "（上端から）", { size: 2.5, fill: "#6b7280" }))
 
-  // 22φ 引出し（縦部から L の内側へ・下の W 寸法と重ならない位置）
+  // 22φ 引出し（水平部の中ほどから右下へ）
   {
-    const ly = Y(hMm * 0.55)
-    parts.push(line(X(c) + BAR_D / 2 / S, ly, X(c) + 12, ly - 6, THIN_W))
-    parts.push(text(X(c) + 12.6, ly - 6.8, `丸棒 ${BAR_D}φ`, { size: 2.8 }))
+    const lx = X((x2 + x3) / 2 + (x3 - x2) * 0.2)
+    parts.push(line(lx, Y(C), lx + 6, Y(C) - 8, THIN_W))
+    parts.push(text(lx + 6.6, Y(C) - 8.8, `丸棒 ${BAR_D}φ`, { size: 2.8 }))
   }
-  // 詳細 A 参照（縦部のブラケット）
-  parts.push(detailBalloon(X(c), Y(hMm - b3), X(c) - 12, Y(hMm - b3) - 9, "A"))
+  // ブラケット番号ラベル（座金の近く。①は詳細A風船・手すり線と重ならない右横に離して置く）
+  parts.push(text(X(0) + BRACKET_D / 2 / S + 8, Y(clemencePathY(wMm, hMm, 0)) - 6, "①", { size: 3.15 }))
+  parts.push(text(X(x2) - BRACKET_D / 2 / S - 2, Y(clemencePathY(wMm, hMm, x2)) - 3, "②", { size: 3.15, anchor: "end" }))
+  parts.push(text(X(x3), Y(C) - BRACKET_D / 2 / S - 2.5, "③", { size: 3.15, anchor: "middle" }))
+  // 詳細 A 参照（①の座金）
+  parts.push(detailBalloon(X(0), Y(clemencePathY(wMm, hMm, 0)), X(0) - 13, Y(clemencePathY(wMm, hMm, 0)) - 11, "A"))
 
   // ── 注記 ──
   parts.push(
     noteBlock(10, 146, [
-      `サイズ 横 W=${fmt(wMm)} × 縦 H=${fmt(hMm)}mm（500×1,000mm まで一律料金）。`,
-      `ブラケット 3 点・座金 φ${BRACKET_D}。位置は壁下地（柱・間柱 455/910 ピッチ）に合わせて指定できます（補強板不要）。`,
+      `サイズ 横 W=${fmt(wMm)} × 縦 H=${fmt(hMm)}mm（500×1,000mm まで一律料金）。曲線形状は参考（鍛造の手仕事による）。`,
+      `ブラケット 3 点・座金 φ${BRACKET_D}。①＝バー上端。②③は①からの水平距離で、壁下地（柱・間柱 455/910 ピッチ）に合わせて指定できます（補強板不要）。`,
       `固定は ${SCREW_LABEL} ×${BRACKET_SCREWS}本／箇所（計 ${BRACKET_SCREWS * 3}本・付属）。`,
       `本図は入力寸法から自動生成した参考図です。ハンドメイドのため製作時に多少の誤差があります。`,
       `A4 横・倍率100%（拡大縮小なし）で印刷すると尺度どおりに出力されます。`,
@@ -218,7 +267,7 @@ export function buildClemenceDrawingSvg(svg: SVGSVGElement, opts: ClemenceDrawin
 
   parts.push(
     titleBlock(SHEET_W_MM - FRAME_MM - 2, SHEET_H_MM - FRAME_MM - 2, {
-      productName: "Clémence クレマンス L型手すり",
+      productName: "Clémence クレマンス トイレ手すり",
       drawingNo: `IW-CLE-${todayText().replace(/-/g, "")}`,
       scaleText: `${scaleLabel(S)}（詳細図 1:1・側面図 1:2）`,
       material: `丸棒 ${BAR_D}φ（無垢鉄・鍛造）`,
