@@ -4,21 +4,19 @@
 // A4 横・倍率 100% で印刷すると表題欄の尺度どおりの実寸図になる。
 //
 // 形状（2026-07-09 蠣﨑さん指示・添付参考図準拠）:
-// - 上端の座金B（楕円）からほぼ垂直に近い角度で下り始め、S字を描いて滑らかに水平部へ合流する。
-//   水平部の先端（③側）は延長分だけ伸ばせ、末端は下向きに軽く曲げ下げる
-// - 座金A（②③・丸型）は手すりの下面に φ9 の支柱で接続（横型手すり René と同一部材）
-// - 座金B（①・楕円）は手すり上端に直接付く壁フランジ
+// - 上端の座金B（楕円）から水平に出て、均等な S 字で下り水平部へ滑らかに合流する曲線。
+//   末端（③側）は下向きに軽く曲げ下げる。③側は延長分だけ水平区間が伸びる
 //
-// 座金の実物仕様（2026-07-09 蠣﨑さん回答・既存 specs 欄「座金A×3本／座金B×2本」の内訳確定）:
-// - 座金A（②③・丸型）: φ45・段付き穴×3（PCD27・4.5φ-7φ）・支柱φ9で手すり下面に接続。
-//   横型手すり René 等と共通部材（lib/drawing-modal/rene-svg.ts の座金描画と同一寸法）
-// - 座金B（①・楕円）: 47(縦・長径)×25(横・短径)・段付き穴×2（ピッチ34・4.5φ-7φ）・手すり上端に直付け
-// - 固定は 4.5φ-7φ段付き穴 共通 → タッピングねじ M4×40（座金A 3本／座金B 2本＝1台あたり計8本）
+// 座金の実物仕様（2026-07-09 蠣﨑さん・CAD 図面で確定）:
+// - 座金A（②③・丸型）: 丸プレート φ45・t4.5・穴 4.5φ×3（2 上・1 下）・支柱 13mm でバー下面に接続。
+//   側面は L 型グースネック（出寸法 51mm・全幅 62=22+40mm・プレート 45mm 高）
+// - 座金B（①・楕円）: 楕円プレート 25×60mm・t4.5・穴 4.5φ×3・バーが中心を貫通（玉継手）。
+//   側面は玉継手＋ストレートアーム（全幅 62=22+40mm・プレート 60mm 高）
+// - 穴は 4.5φ 通し穴。ビスはタッピング M4×40、各座金 3 本／箇所（3 点で計 9 本・付属）
 //
-// サイズ・延長オプション（2026-07-09 蠣﨑さん回答）:
-// - 標準は横 W 950〜1,000mm（950mm未満は形状の都合上お問い合わせ）
-// - ③側は最大 +200mm まで延長可（+¥3,000）。延長分は③から先の水平区間が伸びるだけで、
-//   ①②③のブラケット位置（W基準）は変わらない
+// サイズ・延長（2026-07-09 蠣﨑さん回答）:
+// - 標準は横 W 950〜1,000mm（950mm 未満はお問い合わせ）
+// - ③側は最大 +200mm まで延長可。追加金額は従量（+200mm で上限 +¥3,000）
 
 import {
   SHEET_VB_W,
@@ -59,24 +57,45 @@ export interface ClemenceDrawingOpts {
 
 export const BASE_PRICE = 88000
 export const EXTENSION_MAX_MM = 200
-export const EXTENSION_PRICE = 3000
+export const EXTENSION_PRICE_MAX = 3000 // +200mm 時の上限追加額
 export const W_STANDARD_MIN = 950 // これ未満は要問合せ（形状の都合上）
+
+/** ③側延長の追加額（従量・¥100 単位に切り上げ・上限 EXTENSION_PRICE_MAX）。
+ *  +200mm で +¥3,000 になる比率（¥15/mm）。0mm なら 0 円。 */
+export function calcExtensionPrice(extMm: number): number {
+  const e = Math.max(0, Math.min(EXTENSION_MAX_MM, Math.round(extMm)))
+  if (e === 0) return 0
+  const raw = (e / EXTENSION_MAX_MM) * EXTENSION_PRICE_MAX
+  return Math.min(EXTENSION_PRICE_MAX, Math.ceil(raw / 100) * 100)
+}
 
 export const BAR_D = 22 // 丸棒 22φ
 const C = BAR_D / 2 // 中心線オフセット
-const HOLE_INNER = 4.5
-const HOLE_OUTER = 7
-const HOLE_LABEL = `${HOLE_INNER}φ-${HOLE_OUTER}φ段付き穴`
+const HOLE_D = 4.5 // 通し穴 4.5φ
 const SCREW_LABEL = "タッピングねじ M4×40"
 
 // 座金A（②③・丸型・René 等横型手すりと共通部材）
-const PLATE_A = { d: 45, pcd: 27, screws: 3, postD: 9 }
-// 座金B（①・楕円・手すり上端の壁フランジ）
-const PLATE_B = { w: 25, h: 47, holePitch: 34, screws: 2 }
-// バー下面〜座金A上端の見え掛かり支柱の長さ（実寸mm）。
-// 座金はバーに接触する程度まで近づける（2026-07-09 蠣﨑さん指示）。支柱は
-// 座金の中心からバーへ垂直に伸びる形で描き、座金の丸に隠れる部分はそのまま隠す。
-export const ROUND_POST_GAP_MM = 3
+const PLATE_A = {
+  d: 45, // プレート外径 φ45
+  t: 4.5, // プレート厚
+  postD: 13, // 支柱幅 13
+  screws: 3, // 穴 4.5φ×3
+  holePcd: 32, // 穴 PCD（作画上の想定）
+  projection: 51, // 壁面〜バー中心の出寸法
+  sideW: 62, // 側面全幅（バー中心22 + バー中心〜壁40）
+}
+// 座金B（①・楕円・手すり上端の壁フランジ・バー貫通/玉継手）
+const PLATE_B = {
+  w: 25, // 楕円 短径（横）
+  h: 60, // 楕円 長径（縦）
+  t: 4.5, // プレート厚
+  screws: 3, // 穴 4.5φ×3
+  ballD: 13, // 玉継手径
+  sideW: 62, // 側面全幅
+}
+
+// バー下面〜座金A円までの見え掛かり支柱の長さ（実寸mm）。支柱が図で見えるだけの長さを確保。
+export const ROUND_POST_GAP_MM = 12
 
 /** バー中心線から座金A（丸型）の円中心までの実寸オフセット（下方向・mm）。図面・ミニ図解共通。 */
 export const ROUND_DISC_OFFSET_MM = BAR_D / 2 + ROUND_POST_GAP_MM + PLATE_A.d / 2
@@ -90,7 +109,7 @@ export function roundDiscCenterOffset(S: number): number {
   return ROUND_DISC_OFFSET_MM / S
 }
 
-const WALL_TO_FACE = 62 // 壁面〜手すり外面 D（注記に参考表記のみ・専用図は省略）
+const WALL_TO_FACE = 62 // 壁面〜手すり外面 D（注記に参考表記のみ）
 
 const fmt = (n: number) => Math.round(n).toLocaleString()
 
@@ -98,10 +117,8 @@ const fmt = (n: number) => Math.round(n).toLocaleString()
 //
 // 参考図（トイレ手すり）準拠: P0=(0, y0) の①座金Bから水平に出て、
 // 均等な S 字で下り、x=xm で水平（y=C）へ滑らかに合流する（両端とも接線は水平）。
-// その後水平直線が続き、x=curlStart から先で下向きに軽く曲げ下げて終端する
-// （③側・延長分はここが伸びる）。
-// 参考図では H=500 に対し下り区間の水平スパン≈600（ブラケットA=400mm 地点は
-// まだ斜面の途中＝②座金は下りの途中に付く）。末端は水平から下向きに約25mm下がる。
+// その後水平直線が続き、x=curlStart から先で下向きに軽く曲げ下げて終端する。
+// 参考図では H=500 に対し下り区間の水平スパン≈600（②座金は下りの途中に付く）。
 
 export interface ClemenceShape {
   xm: number // 曲線が水平に合流する x（W 基準・延長の影響を受けない）
@@ -113,7 +130,6 @@ export interface ClemenceShape {
 export function clemenceShape(wMm: number, hMm: number, extensionMm = 0): ClemenceShape {
   const y0 = hMm - C
   // S字下り区間の水平スパン。参考図の比率＝高低差×約1.2（H500 → 約590）。
-  // 標準位置②=455 が斜面の途中に乗る。W が小さいときは 0.62W まで圧縮してでも収める。
   const xm = Math.min(Math.max((y0 - C) * 1.2, 120), wMm * 0.62)
   const totalW = wMm + Math.max(0, extensionMm)
   const curlStart = totalW - 60
@@ -125,7 +141,6 @@ export function clemencePathY(wMm: number, hMm: number, x: number, extensionMm =
   const { xm, y0 } = clemenceShape(wMm, hMm, extensionMm)
   if (x <= 0) return y0
   if (x >= xm) return C
-  // P0=(0,y0) P1=(0.45xm,y0) P2=(0.55xm,C) P3=(xm,C) — 両端の接線が水平な均等S字
   const bez = (t: number, a: number, b: number, c2: number, d: number) =>
     (1 - t) ** 3 * a + 3 * (1 - t) ** 2 * t * b + 3 * (1 - t) * t ** 2 * c2 + t ** 3 * d
   const bezX = (t: number) => bez(t, 0, 0.45 * xm, 0.55 * xm, xm)
@@ -140,10 +155,7 @@ export function clemencePathY(wMm: number, hMm: number, x: number, extensionMm =
   return bez(t, y0, y0, C, C)
 }
 
-/**
- * 中心線のパス d 文字列。X/Y は実寸→描画座標への変換関数。
- * 図面ビルダーと商品ページのミニ図解の両方で使う（形状の二重管理を防ぐ）。
- */
+/** 中心線のパス d 文字列。図面ビルダーとミニ図解の両方で使う（形状の二重管理を防ぐ）。 */
 export function clemencePathD(
   wMm: number,
   hMm: number,
@@ -162,49 +174,199 @@ export function clemencePathD(
   )
 }
 
-// ── 詳細 A: 座金A（丸型・φ45・PCD27・支柱φ9でバー下面に接続。S=1:1） ──────
-function detailA(x: number, y: number): string {
+// ── 4.5φ 穴（座付きリング＋中心の塗り＝CAD 図のビス頭表現） ──
+function screwHole(cx: number, cy: number, s: number): string {
+  return (
+    circle(cx, cy, 4.5 / s, THIN_W, "#ffffff") +
+    circle(cx, cy, HOLE_D / 2 / s, THIN_W, "#111827")
+  )
+}
+
+// ── バーの破断線（端部の小さな波線） ──
+function breakMark(cx: number, cy: number, hHalf: number): string {
+  return (
+    `<path d="M ${mm(cx).toFixed(1)} ${mm(cy - hHalf - 1).toFixed(1)} ` +
+    `q ${mm(-2).toFixed(1)} ${mm(hHalf * 0.7).toFixed(1)} 0 ${mm(hHalf + 1).toFixed(1)} ` +
+    `q ${mm(2).toFixed(1)} ${mm(hHalf * 0.7).toFixed(1)} 0 ${mm(hHalf + 1).toFixed(1)}" ` +
+    `fill="none" stroke="${INK}" stroke-width="${THIN_W}" />`
+  )
+}
+
+// ── 詳細 A: 座金A（丸型・②③）。CAD 図準拠＝側面図（左）＋正面図（右）。 ──
+//
+// 側面図: 玉22φ → 21 下がって 13 厚の L 型アームが壁へ → プレート 45×t4.5（全幅62=22+40・出51）
+// 正面図: バーが上を横断・支柱13がプレート円内へ入り U 字で終わる・穴は上2＋下1
+function detailA(x: number, y: number, s: number): string {
   const p: string[] = []
-  const r = PLATE_A.d / 2 // 22.5（S=1:1）
-  const cx = x + r
-  const cy = y + r
-  p.push(viewTitle(x, y - 5, "詳細 A ── 座金A（丸型）", "S=1:1"))
-  p.push(circle(cx, cy, r, THICK_W, "#ffffff"))
-  // 段付き穴 ×3（PCD27・90/210/330°。René と同一配置）
-  const holeR = PLATE_A.pcd / 2
-  ;[90, 210, 330].forEach((deg) => {
+  p.push(viewTitle(x, y - 4, "詳細 A ── 座金A（②③）", `S=${scaleLabel(s)}`))
+
+  // ══ 側面図（左） ══
+  const ballR = 11 / s
+  const armT = 13 / s
+  const ballCx = x + 4 + ballR
+  const ballCy = y + 6 + ballR
+  const ballLeft = ballCx - ballR
+  const wallX = ballLeft + PLATE_A.sideW / s // 62 = 22 + 40
+  const plateT = PLATE_A.t / s
+  const armTop = ballCy + ballR + 21 / s
+  const armBot = armTop + armT
+  const armCy = (armTop + armBot) / 2
+  const plateH = PLATE_A.d / s
+  const plateTop = armCy - plateH / 2
+  const neckHalf = armT / 2
+  // L 型ネック（玉の下→内側 R で曲がって→壁まで水平）白塗り一体形状
+  const rIn = 8 / s
+  p.push(
+    `<path d="M ${mm(ballCx - neckHalf).toFixed(1)} ${mm(ballCy).toFixed(1)} ` +
+      `L ${mm(ballCx - neckHalf).toFixed(1)} ${mm(armBot).toFixed(1)} ` +
+      `L ${mm(wallX).toFixed(1)} ${mm(armBot).toFixed(1)} ` +
+      `L ${mm(wallX).toFixed(1)} ${mm(armTop).toFixed(1)} ` +
+      `L ${mm(ballCx + neckHalf + rIn).toFixed(1)} ${mm(armTop).toFixed(1)} ` +
+      `Q ${mm(ballCx + neckHalf).toFixed(1)} ${mm(armTop).toFixed(1)} ${mm(ballCx + neckHalf).toFixed(1)} ${mm(armTop - rIn).toFixed(1)} ` +
+      `L ${mm(ballCx + neckHalf).toFixed(1)} ${mm(ballCy).toFixed(1)} Z" ` +
+      `fill="#ffffff" stroke="${INK}" stroke-width="${MID_W}" />`,
+  )
+  // 玉（バー受け 22φ）
+  p.push(circle(ballCx, ballCy, ballR, THICK_W, "#ffffff"))
+  // 壁プレート 45×t4.5 ＋ 壁ハッチ
+  p.push(rect(wallX, plateTop, plateT, plateH, THICK_W, "#ffffff"))
+  for (let yy = plateTop - 2; yy < plateTop + plateH + 2; yy += 3) {
+    p.push(line(wallX + plateT, yy, wallX + plateT + 2.2, yy - 2.2, THIN_W))
+  }
+  p.push(line(wallX + plateT, plateTop - 3, wallX + plateT, plateTop + plateH + 3, MID_W))
+  // 寸法: 62（上）・45（右）・51（下）・t4.5・22φ
+  const dTop = ballCy - ballR - 3
+  p.push(extLine(ballLeft, ballCy - ballR, ballLeft, dTop - 1.5))
+  p.push(extLine(wallX, plateTop, wallX, dTop - 1.5))
+  p.push(dimH(ballLeft, wallX, dTop, `${PLATE_A.sideW}`, { size: 2.6 }))
+  p.push(extLine(wallX + plateT, plateTop, wallX + plateT + 4.5, plateTop))
+  p.push(extLine(wallX + plateT, plateTop + plateH, wallX + plateT + 4.5, plateTop + plateH))
+  p.push(dimV(wallX + plateT + 3.5, plateTop, plateTop + plateH, `${PLATE_A.d}`, { size: 2.6 }))
+  const dBot = armBot + 5
+  p.push(extLine(ballCx, armBot, ballCx, dBot + 1.5))
+  p.push(extLine(wallX, armBot, wallX, dBot + 1.5))
+  p.push(dimH(ballCx, wallX, dBot, "51", { size: 2.6 }))
+  p.push(text(wallX + plateT + 1, plateTop + plateH + 5, `t${PLATE_A.t}`, { size: 2.4 }))
+  p.push(text(ballCx - ballR - 1, ballCy - ballR - 0.5, `${BAR_D}φ`, { size: 2.4, anchor: "end" }))
+
+  // ══ 正面図（右） ══
+  const r = PLATE_A.d / 2 / s
+  const fCx = wallX + plateT + 12 + r
+  const fBarCy = ballCy // バー中心＝側面図の玉中心と同じ高さ
+  const barHalf = BAR_D / 2 / s
+  // プレート中心＝側面図のアーム中心と同じ高さ関係（バー中心から 21+13/2+11 ≒ 38.5mm 下）
+  const plateCy = fBarCy + 38.5 / s
+  const barL = fCx - r - 6 / s
+  const barR2 = fCx + r + 6 / s
+  // プレート円（先に描く）
+  p.push(circle(fCx, plateCy, r, THICK_W, "#ffffff"))
+  // 穴 4.5φ×3（上2＝±50°・下1＝真下。PCD は作画上 φ30）
+  const pcd = 15 / s
+  ;[230, 310, 90].forEach((deg) => {
     const rad = (deg * Math.PI) / 180
-    const hx = cx + holeR * Math.cos(rad)
-    const hy = cy + holeR * Math.sin(rad)
-    p.push(circle(hx, hy, HOLE_OUTER / 2, THIN_W))
-    p.push(circle(hx, hy, HOLE_INNER / 2, THIN_W))
+    p.push(screwHole(fCx + pcd * Math.cos(rad), plateCy + pcd * Math.sin(rad), s))
   })
-  // φ45 寸法（右下へ斜め引出し）
-  p.push(line(cx + r * 0.71, cy + r * 0.71, cx + r + 6, cy + r + 3, THIN_W))
-  p.push(text(cx + r + 6.5, cy + r + 4, `φ${PLATE_A.d}`, { size: 3.15 }))
-  // 注記（1 行にまとめて縦スペースを節約。支柱φ9でバー下面に接続する模式は側面図省略・注記のみ）
-  p.push(text(x, y + PLATE_A.d + 7, `PCD${PLATE_A.pcd}・${HOLE_LABEL}×${PLATE_A.screws}・M4×40×${PLATE_A.screws}・支柱${PLATE_A.postD}φ`, { size: 2.6, fill: "#374151" }))
+  // 支柱 13（バー下面からプレート内へ・下端は U 字＝半円）
+  const postHalf = PLATE_A.postD / 2 / s
+  const postBot = plateCy + 2 / s
+  p.push(
+    `<path d="M ${mm(fCx - postHalf).toFixed(1)} ${mm(fBarCy + barHalf).toFixed(1)} ` +
+      `L ${mm(fCx - postHalf).toFixed(1)} ${mm(postBot - postHalf).toFixed(1)} ` +
+      `A ${mm(postHalf).toFixed(1)} ${mm(postHalf).toFixed(1)} 0 0 0 ${mm(fCx + postHalf).toFixed(1)} ${mm(postBot - postHalf).toFixed(1)} ` +
+      `L ${mm(fCx + postHalf).toFixed(1)} ${mm(fBarCy + barHalf).toFixed(1)}" ` +
+      `fill="#ffffff" stroke="${INK}" stroke-width="${MID_W}" />`,
+  )
+  // バー（横断・破断線つき）
+  p.push(rect(barL, fBarCy - barHalf, barR2 - barL, barHalf * 2, MID_W, "#ffffff"))
+  p.push(breakMark(barL, fBarCy, barHalf), breakMark(barR2, fBarCy, barHalf))
+  // 寸法: 13（上・支柱幅）・45（下）・4.5φ×3
+  const dTop2 = fBarCy - barHalf - 3
+  p.push(extLine(fCx - postHalf, fBarCy - barHalf, fCx - postHalf, dTop2 - 1.5))
+  p.push(extLine(fCx + postHalf, fBarCy - barHalf, fCx + postHalf, dTop2 - 1.5))
+  p.push(dimH(fCx - postHalf, fCx + postHalf, dTop2, `${PLATE_A.postD}`, { size: 2.6 }))
+  p.push(extLine(fCx - r, plateCy + r, fCx - r, plateCy + r + 4.5))
+  p.push(extLine(fCx + r, plateCy + r, fCx + r, plateCy + r + 4.5))
+  p.push(dimH(fCx - r, fCx + r, plateCy + r + 3.5, `${PLATE_A.d}`, { size: 2.6 }))
+  // 4.5φ×3 は下の穴から下へ引き出してプレート下・45寸法のさらに下に置く（右隣の詳細Bと重ねない）
+  const hBotY = plateCy + pcd
+  p.push(line(fCx, hBotY + HOLE_D / 2 / s, fCx + 3, plateCy + r + 6.5, THIN_W))
+  p.push(text(fCx + 3.5, plateCy + r + 7.3, `4.5φ×${PLATE_A.screws}`, { size: 2.4 }))
   return p.join("")
 }
 
-// ── 詳細 B: 座金B（楕円・47×25・穴ピッチ34。S=1:1） ──────────────────
-function detailB(x: number, y: number): string {
+// ── 詳細 B: 座金B（楕円・①）。CAD 図準拠＝側面図（左）＋正面図（右）。 ──
+//
+// 側面図: バーが左から来て玉継手 → 13 のストレートアーム → プレート 60×t4.5（全幅62=22+40）
+// 正面図: 楕円 25×60・バーが中央を貫通（玉は破線円）・穴は上1＋下1（ピッチ34）
+function detailB(x: number, y: number, s: number): string {
   const p: string[] = []
-  const rx = PLATE_B.w / 2 // 12.5
-  const ry = PLATE_B.h / 2 // 23.5
-  const cx = x + rx
-  const cy = y + ry
-  p.push(viewTitle(x, y - 5, "詳細 B ── 座金B（楕円）", "S=1:1"))
-  p.push(ellipse(cx, cy, rx, ry, THICK_W, "#ffffff"))
-  // 段付き穴 ×2（縦ピッチ34・中心対称）
-  const hy1 = cy - PLATE_B.holePitch / 2
-  const hy2 = cy + PLATE_B.holePitch / 2
-  p.push(circle(cx, hy1, HOLE_OUTER / 2, THIN_W), circle(cx, hy1, HOLE_INNER / 2, THIN_W))
-  p.push(circle(cx, hy2, HOLE_OUTER / 2, THIN_W), circle(cx, hy2, HOLE_INNER / 2, THIN_W))
-  p.push(extLine(cx, hy1, cx + rx + 6, hy1), extLine(cx, hy2, cx + rx + 6, hy2))
-  p.push(dimV(cx + rx + 5, hy1, hy2, `${PLATE_B.holePitch}`, { size: 2.8 }))
-  // 注記（1 行にまとめて縦スペースを節約。47×25 は寸法線でなく注記で表記）
-  p.push(text(x, cy + ry + 7, `外形${PLATE_B.w}×${PLATE_B.h}・${HOLE_LABEL}×${PLATE_B.screws}・M4×40×${PLATE_B.screws}`, { size: 2.6, fill: "#374151" }))
+  p.push(viewTitle(x, y - 4, "詳細 B ── 座金B（①）", `S=${scaleLabel(s)}`))
+
+  // ══ 側面図（左） ══
+  const ballR = 11 / s
+  const barHalf = BAR_D / 2 / s
+  const cy = y + 6 + 30 / s // プレート 60 の半分ぶん下げて中心線を決める
+  const barLen = 14 / s
+  const barLeft = x + 4
+  const ballCx = barLeft + barLen + ballR
+  const wallX = ballCx - ballR + PLATE_B.sideW / s // 62 = 22 + 40
+  const plateT = PLATE_B.t / s
+  const plateH = PLATE_B.h / s
+  const armT = 13 / s
+  // ストレートアーム（玉→壁）
+  p.push(rect(ballCx, cy - armT / 2, wallX - ballCx, armT, MID_W, "#ffffff"))
+  // バー（左から）＋破断線
+  p.push(rect(barLeft, cy - barHalf, barLen + ballR, barHalf * 2, MID_W, "#ffffff"))
+  p.push(breakMark(barLeft, cy, barHalf))
+  // 玉継手 22φ
+  p.push(circle(ballCx, cy, ballR, THICK_W, "#ffffff"))
+  // 壁プレート 60×t4.5 ＋ 壁ハッチ
+  p.push(rect(wallX, cy - plateH / 2, plateT, plateH, THICK_W, "#ffffff"))
+  for (let yy = cy - plateH / 2 - 2; yy < cy + plateH / 2 + 2; yy += 3) {
+    p.push(line(wallX + plateT, yy, wallX + plateT + 2.2, yy - 2.2, THIN_W))
+  }
+  p.push(line(wallX + plateT, cy - plateH / 2 - 3, wallX + plateT, cy + plateH / 2 + 3, MID_W))
+  // 寸法: 62（上）・60（右）・22（左）・t4.5
+  const dTop = cy - plateH / 2 - 3
+  p.push(extLine(ballCx - ballR, cy - ballR, ballCx - ballR, dTop - 1.5))
+  p.push(extLine(wallX, cy - plateH / 2, wallX, dTop - 1.5))
+  p.push(dimH(ballCx - ballR, wallX, dTop, `${PLATE_B.sideW}`, { size: 2.6 }))
+  p.push(extLine(wallX + plateT, cy - plateH / 2, wallX + plateT + 4.5, cy - plateH / 2))
+  p.push(extLine(wallX + plateT, cy + plateH / 2, wallX + plateT + 4.5, cy + plateH / 2))
+  p.push(dimV(wallX + plateT + 3.5, cy - plateH / 2, cy + plateH / 2, `${PLATE_B.h}`, { size: 2.6 }))
+  p.push(extLine(barLeft, cy - barHalf, barLeft - 4.5, cy - barHalf))
+  p.push(extLine(barLeft, cy + barHalf, barLeft - 4.5, cy + barHalf))
+  p.push(dimV(barLeft - 3.5, cy - barHalf, cy + barHalf, `${BAR_D}`, { size: 2.6 }))
+  p.push(text(wallX + plateT + 1, cy + plateH / 2 + 5, `t${PLATE_B.t}`, { size: 2.4 }))
+
+  // ══ 正面図（右） ══
+  const rx = PLATE_B.w / 2 / s
+  const ry = PLATE_B.h / 2 / s
+  const fCx = wallX + plateT + 14 + rx
+  const fCy = cy
+  // 楕円プレート
+  p.push(ellipse(fCx, fCy, rx, ry, THICK_W, "#ffffff"))
+  // 穴 4.5φ×2（上・下＝縦並び・ピッチ34）
+  const pitchHalf = 34 / 2 / s
+  p.push(screwHole(fCx, fCy - pitchHalf, s))
+  p.push(screwHole(fCx, fCy + pitchHalf, s))
+  // バー貫通（横・中央・破断線つき）
+  const fBarL = fCx - rx - 6 / s
+  const fBarR = fCx + rx + 6 / s
+  p.push(rect(fBarL, fCy - barHalf, fBarR - fBarL, barHalf * 2, MID_W, "#ffffff"))
+  p.push(breakMark(fBarL, fCy, barHalf), breakMark(fBarR, fCy, barHalf))
+  // 玉（プレート裏・破線円）
+  p.push(circle(fCx, fCy, ballR, THIN_W, "none", "2.5 1.8"))
+  // 寸法: 25（下）・34（右・穴ピッチ）・4.5φ×3
+  p.push(extLine(fCx - rx, fCy + ry, fCx - rx, fCy + ry + 4.5))
+  p.push(extLine(fCx + rx, fCy + ry, fCx + rx, fCy + ry + 4.5))
+  p.push(dimH(fCx - rx, fCx + rx, fCy + ry + 3.5, `${PLATE_B.w}`, { size: 2.6 }))
+  p.push(extLine(fCx, fCy - pitchHalf, fCx + rx + 4.5, fCy - pitchHalf))
+  p.push(extLine(fCx, fCy + pitchHalf, fCx + rx + 4.5, fCy + pitchHalf))
+  p.push(dimV(fCx + rx + 3.5, fCy - pitchHalf, fCy + pitchHalf, "34", { size: 2.6 }))
+  // 4.5φ×3 は下の穴から下へ引き出して 25 寸法のさらに下に置く（左隣の側面図と重ねない）
+  p.push(line(fCx, fCy + pitchHalf + HOLE_D / 2 / s, fCx + 3, fCy + ry + 6.5, THIN_W))
+  p.push(text(fCx + 3.5, fCy + ry + 7.3, `4.5φ×${PLATE_B.screws}`, { size: 2.4 }))
   return p.join("")
 }
 
@@ -217,11 +379,11 @@ export function buildClemenceDrawingSvg(svg: SVGSVGElement, opts: ClemenceDrawin
   svg.setAttribute("viewBox", `0 0 ${SHEET_VB_W} ${SHEET_VB_H}`)
   svg.classList.add("cad-sheet")
 
-  // ── シートレイアウト（紙 mm） ──
-  const mainLeft = 24
-  const mainRight = 172
-  const mainTop = 30
-  const mainBottom = 122
+  // ── シートレイアウト（紙 mm）: 上＝正面図（全幅）／下＝注記・詳細A・詳細B・表題欄 ──
+  const mainLeft = 22
+  const mainRight = 262
+  const mainTop = 24
+  const mainBottom = 96
   const availW = mainRight - mainLeft
   const availH = mainBottom - mainTop
 
@@ -235,17 +397,18 @@ export function buildClemenceDrawingSvg(svg: SVGSVGElement, opts: ClemenceDrawin
   parts.push(sheetFrame())
   parts.push(viewTitle(10, 12, "正面図", `S=${scaleLabel(S)}`))
 
-  // ── 座金A（②③・丸型・バー下面に接続）: バーに接触する程度まで近づけ、支柱は座金の中心から出す ──
+  // ── 座金A（②③・丸型）: バー下面から支柱を出し、その先に丸プレートを描く（支柱が見える） ──
   const discOffset = roundDiscCenterOffset(S)
+  const roundRad = PLATE_A.d / 2 / S
   ;[x2, x3].forEach((bx) => {
     const by = clemencePathY(wMm, hMm, bx, extensionMm)
     const barBottomY = Y(by) + BAR_D / 2 / S
     const discCy = Y(by) + discOffset
-    const roundRad = PLATE_A.d / 2 / S
-    // 支柱（φ9）は座金の中心からバー下面まで描く。座金の丸に隠れる部分（中心〜円周）は
-    // 後で描く座金円（塗りつぶし）に隠れるので、結果として「座金から支柱が出ている」見た目になる
+    const discTop = discCy - roundRad
     const postW = Math.max(1.6, PLATE_A.postD / S)
-    parts.push(rect(X(bx) - postW / 2, barBottomY, postW, discCy - barBottomY, THIN_W, "#ffffff"))
+    // 支柱（バー下面→プレート上端まで・白塗りで下地を隠す＝見え掛かり支柱）
+    parts.push(rect(X(bx) - postW / 2, barBottomY, postW, discTop - barBottomY, THIN_W, "#ffffff"))
+    // 丸プレート
     parts.push(circle(X(bx), discCy, roundRad, MID_W, "#e5e7eb"))
   })
 
@@ -263,55 +426,40 @@ export function buildClemenceDrawingSvg(svg: SVGSVGElement, opts: ClemenceDrawin
   }
 
   // ── 寸法線 ──
-  // ブラケット位置チェーン（下段・①基準の水平距離）
   const cy1 = Y(0) + 8
   parts.push(extLine(X(0), Y(clemencePathY(wMm, hMm, 0, extensionMm)), X(0), cy1 + 1.5))
-  parts.push(extLine(X(x2), Y(clemencePathY(wMm, hMm, x2, extensionMm)) + discOffset + PLATE_A.d / 2 / S, X(x2), cy1 + 1.5))
-  parts.push(extLine(X(x3), Y(C) + discOffset + PLATE_A.d / 2 / S, X(x3), cy1 + 1.5))
+  parts.push(extLine(X(x2), Y(clemencePathY(wMm, hMm, x2, extensionMm)) + discOffset + roundRad, X(x2), cy1 + 1.5))
+  parts.push(extLine(X(x3), Y(C) + discOffset + roundRad, X(x3), cy1 + 1.5))
   parts.push(extLine(X(wMm), Y(C), X(wMm), cy1 + 1.5))
   parts.push(dimH(X(0), X(x2), cy1, fmt(x2), { size: 2.8 }))
   parts.push(dimH(X(x2), X(x3), cy1, fmt(x3 - x2), { size: 2.8 }))
   parts.push(dimH(X(x3), X(wMm), cy1, fmt(wMm - x3), { size: 2.8 }))
-  // W 総幅（基準・延長は含まない）
   const wy = cy1 + 9
   parts.push(extLine(X(0), cy1 + 1.5, X(0), wy + 1.5), extLine(X(wMm), cy1 + 1.5, X(wMm), wy + 1.5))
   parts.push(dimH(X(0), X(wMm), wy, `横 W=${fmt(wMm)}`))
-  // 延長寸法（wMm 〜 totalW）
   if (extensionMm > 0) {
     parts.push(extLine(X(wMm), cy1 + 1.5, X(wMm), wy + 1.5), extLine(X(totalW), Y(C) + 2, X(totalW), wy + 1.5))
     parts.push(dimH(X(wMm), X(totalW), wy, `延長 +${fmt(extensionMm)}`, { size: 2.8 }))
   }
-  // H（左）: 水平部下面 → ①上端
   const hx = X(0) - 11
   parts.push(extLine(X(0) - PLATE_B.w / 2 / S, Y(0), hx - 1.5, Y(0)))
   parts.push(extLine(X(0), Y(hMm), hx - 1.5, Y(hMm)))
   parts.push(dimV(hx, Y(hMm), Y(0), `縦 H=${fmt(hMm)}`))
 
-  // 22φ 引出し（水平部の中ほどから右下へ）
+  // 22φ 引出し
   {
     const lx = X((x2 + x3) / 2 + (x3 - x2) * 0.2)
     parts.push(line(lx, Y(C), lx + 6, Y(C) - 8, THIN_W))
     parts.push(text(lx + 6.6, Y(C) - 8.8, `丸棒 ${BAR_D}φ`, { size: 2.8 }))
   }
   // ブラケット番号ラベル
-  const roundRad = PLATE_A.d / 2 / S
   const discCy2 = Y(clemencePathY(wMm, hMm, x2, extensionMm)) + discOffset
   const discCy3 = Y(C) + discOffset
-  const discBottom2 = discCy2 + roundRad
-  const discBottom3 = discCy3 + roundRad
   parts.push(text(X(0) + PLATE_B.w / 2 / S + 8, Y(clemencePathY(wMm, hMm, 0, extensionMm)) - 6, "①", { size: 3.15 }))
-  parts.push(text(X(x2) - roundRad - 2, discBottom2, "②", { size: 3.15, anchor: "end" }))
-  parts.push(text(X(x3), discBottom3 + 6, "③", { size: 3.15, anchor: "middle" }))
-  // 詳細 A/B 参照（引出しの起点は座金の縁に置く。中心に置くと座金の丸と二重に重なって見えるため）
-  parts.push(
-    detailBalloon(
-      X(x2) + roundRad * 0.7,
-      discCy2 - roundRad * 0.7,
-      X(x2) + 14,
-      discBottom2 + 8,
-      "A",
-    ),
-  )
+  parts.push(text(X(x2) - roundRad - 2, discCy2 + roundRad + 5, "②", { size: 3.15, anchor: "end" }))
+  parts.push(text(X(x3), discCy3 + roundRad + 5, "③", { size: 3.15, anchor: "middle" }))
+  // 詳細 A/B 参照（座金の縁から引き出す）
+  parts.push(detailBalloon(X(x2) + roundRad * 0.7, discCy2 - roundRad * 0.7, X(x2) + 14, discCy2 + roundRad + 8, "A"))
   {
     const y0Screen = Y(clemencePathY(wMm, hMm, 0, extensionMm))
     const rxMm = PLATE_B.w / 2 / S
@@ -319,31 +467,33 @@ export function buildClemenceDrawingSvg(svg: SVGSVGElement, opts: ClemenceDrawin
     parts.push(detailBalloon(X(0) - rxMm * 0.7, y0Screen - ryMm * 0.7, X(0) - 13, y0Screen - 11, "B"))
   }
 
-  // ── 注記 ──
-  const extText = extensionMm > 0 ? `③側を+${fmt(extensionMm)}mm延長（最大200mm・+¥3,000）。` : "延長オプションなし。"
+  // ── 注記（正面図の下・全幅の帯） ──
+  const extText =
+    extensionMm > 0
+      ? `③側を+${fmt(extensionMm)}mm延長（最大200mm・追加+¥${calcExtensionPrice(extensionMm).toLocaleString()}）。`
+      : "延長オプションなし（③側は最大+200mmまで延長可・従量+¥3,000上限）。"
   parts.push(
-    noteBlock(10, 146, [
+    noteBlock(10, 108, [
       `サイズ 横 W=${fmt(wMm)} × 縦 H=${fmt(hMm)}mm（標準950〜1,000mm・一律料金）。${extText}`,
-      `座金A（②③・丸型φ45・PCD27・段付き穴×3・支柱φ9でバー下面に接続）／座金B（①・楕円47×25・段付き穴×2・ピッチ34・バー上端に直付け）。`,
-      `②③は①からの水平距離で、壁下地（柱・間柱 455/910 ピッチ）に合わせて指定できます（補強板不要）。`,
-      `固定は ${SCREW_LABEL}。座金A 3本／箇所・座金B 2本（計 ${PLATE_A.screws * 2 + PLATE_B.screws}本・付属）。壁面〜手すり外面の目安 D≈${WALL_TO_FACE}mm。`,
-      `本図は入力寸法から自動生成した参考図です。ハンドメイドのため製作時に多少の誤差があります。W950mm未満はお問い合わせください。`,
-      `A4 横・倍率100%（拡大縮小なし）で印刷すると尺度どおりに出力されます。`,
+      `座金A（②③・丸型φ45・t4.5・穴4.5φ×3・支柱${PLATE_A.postD}でバー下面に接続）／座金B（①・楕円${PLATE_B.w}×${PLATE_B.h}・t4.5・穴4.5φ×3・バー貫通）。`,
+      `②③は①からの水平距離で、壁下地（柱・間柱 455/910 ピッチ）に合わせて指定できます（補強板不要）。固定は ${SCREW_LABEL}・各座金3本／計${PLATE_A.screws * 2 + PLATE_B.screws}本（付属）。`,
+      `本図は入力寸法から自動生成した参考図です。ハンドメイドのため多少の誤差があります。W950mm未満はお問い合わせください。A4横・倍率100%で尺度どおり出力。`,
     ]),
   )
 
-  // ── 詳細図・表題欄（右列） ──
-  parts.push(detailA(196, 10))
-  parts.push(detailB(196, 74))
+  // ── 詳細図（下段・全幅）・表題欄（右下） ──
+  const DETAIL_S = 2
+  parts.push(detailA(14, 138, DETAIL_S))
+  parts.push(detailB(102, 138, DETAIL_S))
 
   parts.push(
     titleBlock(SHEET_W_MM - FRAME_MM - 2, SHEET_H_MM - FRAME_MM - 2, {
       productName: "Clémence クレマンス トイレ手すり",
       drawingNo: `IW-CLE-${todayText().replace(/-/g, "")}`,
-      scaleText: `${scaleLabel(S)}（詳細図 A・B 1:1）`,
+      scaleText: `${scaleLabel(S)}（詳細図 A・B ${scaleLabel(DETAIL_S)}）`,
       material: `丸棒 ${BAR_D}φ（無垢鉄・鍛造）`,
       finish: "2液型ウレタン艶消し黒 古美仕上げ",
-      accessories: `M4×40 ×${PLATE_A.screws * 2 + PLATE_B.screws}本（座金A3・座金B2）`,
+      accessories: `M4×40 ×${PLATE_A.screws * 2 + PLATE_B.screws}本（各座金3本）`,
       dateText: todayText(),
     }),
   )

@@ -190,9 +190,10 @@ export default function ContactPage() {
         : type === "clemence" && clemenceW
           ? (() => {
               const ext = Number(params.get("ext") || "0")
+              const extPrice = Number(params.get("extprice") || "0")
               const total = params.get("total")
               const extLine = ext > 0
-                ? `延長: ③側+${ext}mm（+¥3,000）\n`
+                ? `延長: ③側+${ext}mm（追加+¥${extPrice.toLocaleString()}）\n`
                 : "延長: なし\n"
               const totalLine = total ? `概算合計（税込・送料別）: ¥${Number(total).toLocaleString()}\n\n` : "\n"
               return `【Clémence クレマンス トイレ手すり ご注文】\n\nサイズ: 横 ${clemenceW}mm × 縦 ${params.get("h") || "—"}mm\n${extLine}ブラケット位置（座金B=①バー上端／座金A=②③バー下面）:\n① バー上端\n② ①から右へ ${params.get("x2") || "—"}mm\n③ ①から右へ ${params.get("x3") || "—"}mm\n${totalLine}上記内容でのご注文を希望します。お見積もり（送料込）のご案内をお願いいたします。\n\n※ブラケット位置は壁下地に合わせて微調整できます。下地位置が分かる写真などがあれば添付ください。\n\n配送先住所:\n（ご住所をご記入ください）\n\nその他ご要望:\n`

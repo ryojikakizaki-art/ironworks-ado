@@ -18,11 +18,15 @@ import {
   clemencePathY,
   BASE_PRICE,
   EXTENSION_MAX_MM,
-  EXTENSION_PRICE,
+  EXTENSION_PRICE_MAX,
+  calcExtensionPrice,
   W_STANDARD_MIN,
   BAR_D,
   ROUND_POST_GAP_MM,
   PLATE_A_POST_D,
+  PLATE_A_D,
+  PLATE_B_W,
+  PLATE_B_H,
 } from "@/lib/drawing-modal/clemence-svg"
 
 const W_MAX = 1000
@@ -53,13 +57,14 @@ export function ClemenceSpecPanel({ onQueryChange }: ClemenceSpecPanelProps) {
     return { W, H, X2, X3, EXT }
   }, [w, h, x2, x3, extension])
 
-  const totalPrice = BASE_PRICE + (eff.EXT > 0 ? EXTENSION_PRICE : 0)
+  const extensionPrice = calcExtensionPrice(eff.EXT)
+  const totalPrice = BASE_PRICE + extensionPrice
 
   useEffect(() => {
     onQueryChange?.(
-      `&type=clemence&w=${eff.W}&h=${eff.H}&x2=${eff.X2}&x3=${eff.X3}&ext=${eff.EXT}&total=${totalPrice}`,
+      `&type=clemence&w=${eff.W}&h=${eff.H}&x2=${eff.X2}&x3=${eff.X3}&ext=${eff.EXT}&extprice=${extensionPrice}&total=${totalPrice}`,
     )
-  }, [eff, totalPrice, onQueryChange])
+  }, [eff, extensionPrice, totalPrice, onQueryChange])
 
   // ── ミニ図解（正面図・入力に連動・図面と同じ形状関数を使用） ──
   const VB_W = 340
@@ -71,14 +76,12 @@ export function ClemenceSpecPanel({ onQueryChange }: ClemenceSpecPanelProps) {
   const oy = VB_H - pad
   const X = (v: number) => ox + v * scale
   const Y = (v: number) => oy - v * scale
-  // 実寸 mm × scale をそのまま使う（最小値は視認性確保のための下限のみで、
-  // 以前の大きすぎる下限=座金が実際よりだいぶ大きく見える原因だった）
-  const barW = Math.max(3, 22 * scale)
-  const roundR = Math.max(4, 22.5 * scale)
-  const ovalRx = Math.max(3, 12.5 * scale)
-  const ovalRy = Math.max(5, 23.5 * scale)
+  // 実寸 mm × scale をそのまま使う（最小値は視認性確保のための下限のみ）
+  const barW = Math.max(3, BAR_D * scale)
+  const roundR = Math.max(4, (PLATE_A_D / 2) * scale)
+  const ovalRx = Math.max(3, (PLATE_B_W / 2) * scale)
+  const ovalRy = Math.max(5, (PLATE_B_H / 2) * scale)
   // バー中心線 → 座金A（丸型）円中心までのオフセット（バー半径＋支柱ぶんの隙間＋座金半径）。
-  // バー線と座金円が重ならないよう、必ずバーの半太さ+隙間ぶん離す。
   const discOffset = (BAR_D / 2 + ROUND_POST_GAP_MM) * scale + roundR
 
   const inputCls =
@@ -97,11 +100,11 @@ export function ClemenceSpecPanel({ onQueryChange }: ClemenceSpecPanelProps) {
 
       {/* ミニ図解 */}
       <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="w-full h-auto bg-white rounded-md border border-border mb-4">
-        {/* 座金A（②③・丸型）: バーに接触する程度まで近づけ、支柱は座金の中心からバーへ伸ばす
-            （中心〜円周の部分は下で描く座金円に隠れ、結果として座金から支柱が出て見える） */}
+        {/* 座金A（②③・丸型）: バー下面から支柱(13φ)を出し、その先に座金円。支柱が見える */}
         {[eff.X2, eff.X3].map((bx, i) => {
           const barBottomY = Y(clemencePathY(eff.W, eff.H, bx, eff.EXT)) + (BAR_D / 2) * scale
           const discCy = Y(clemencePathY(eff.W, eff.H, bx, eff.EXT)) + discOffset
+          const discTop = discCy - roundR
           const postW = Math.max(2, PLATE_A_POST_D * scale)
           return (
             <g key={i}>
@@ -109,7 +112,7 @@ export function ClemenceSpecPanel({ onQueryChange }: ClemenceSpecPanelProps) {
                 x={X(bx) - postW / 2}
                 y={barBottomY}
                 width={postW}
-                height={Math.max(0, discCy - barBottomY)}
+                height={Math.max(0, discTop - barBottomY)}
                 fill="#ffffff"
                 stroke="#9ca3af"
                 strokeWidth="1"
@@ -187,34 +190,40 @@ export function ClemenceSpecPanel({ onQueryChange }: ClemenceSpecPanelProps) {
         500×1000mmの標準サイズより小さいご希望（横950mm未満）は、このツールでは指定できません。お問い合わせにてご相談ください。
       </p>
 
-      {/* ③側延長オプション */}
+      {/* ③側延長オプション（長さ指定・従量課金） */}
       <div className="border border-border rounded-md p-4 mb-4 bg-white">
         <label className="flex items-center gap-2 mb-2 cursor-pointer">
           <input
             type="checkbox"
             checked={eff.EXT > 0}
-            onChange={(e) => setExtension(e.target.checked ? EXTENSION_MAX_MM : 0)}
+            onChange={(e) => setExtension(e.target.checked ? 100 : 0)}
             className="w-4 h-4 accent-[color:var(--gold,#b8860b)]"
           />
           <span className="text-[14px] font-medium text-foreground">
-            ③側を延長する（最大{EXTENSION_MAX_MM}mm・+¥{EXTENSION_PRICE.toLocaleString()}）
+            ③側を延長する（最大{EXTENSION_MAX_MM}mm・+¥{EXTENSION_PRICE_MAX.toLocaleString()}まで）
           </span>
         </label>
         {eff.EXT > 0 && (
-          <label className="block pl-6">
-            <span className="text-[13px] text-muted-foreground">延長量（0〜{EXTENSION_MAX_MM}mm）</span>
-            <input
-              type="number"
-              inputMode="numeric"
-              min={0}
-              max={EXTENSION_MAX_MM}
-              step={5}
-              value={extension}
-              onChange={(e) => setExtension(Number(e.target.value))}
-              onBlur={() => setExtension(eff.EXT)}
-              className={`${inputCls} max-w-[160px]`}
-            />
-          </label>
+          <div className="pl-6 flex flex-wrap items-end gap-4">
+            <label className="block">
+              <span className="text-[13px] text-muted-foreground">延長量（0〜{EXTENSION_MAX_MM}mm）</span>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={EXTENSION_MAX_MM}
+                step={5}
+                value={extension}
+                onChange={(e) => setExtension(Number(e.target.value))}
+                onBlur={() => setExtension(eff.EXT)}
+                className={`${inputCls} max-w-[140px]`}
+              />
+            </label>
+            <span className="text-[13px] text-muted-foreground pb-2">
+              追加 <span className="font-medium text-foreground">+¥{extensionPrice.toLocaleString()}</span>
+              （¥15/mm・{EXTENSION_MAX_MM}mm で ¥{EXTENSION_PRICE_MAX.toLocaleString()}）
+            </span>
+          </div>
         )}
       </div>
 
