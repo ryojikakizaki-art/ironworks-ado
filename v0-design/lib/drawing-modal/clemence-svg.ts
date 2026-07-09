@@ -79,9 +79,10 @@ const fmt = (n: number) => Math.round(n).toLocaleString()
 
 // ── 手すり中心線の形状 ──────────────────────────────────
 //
-// P0=(0, y0) から始まり、①ではほぼ垂直に近い角度で下り出し（制御点P1をP0の真下に取る）、
-// S字を描いて水平（y=C）へ滑らかに合流。その後 x=xm から水平直線が続き、
-// x=curlStart から先で下向きに軽く曲げ下げて終端する（③側・延長分はここが伸びる）。
+// 参考図（トイレ手すり）準拠: P0=(0, y0) の①座金Bから水平に出て、
+// 均等な S 字で下り、x=xm で水平（y=C）へ滑らかに合流する（両端とも接線は水平）。
+// その後水平直線が続き、x=curlStart から先で下向きに軽く曲げ下げて終端する
+// （③側・延長分はここが伸びる）。参考図では H=500 に対し下り区間の水平スパン≈400。
 
 export interface ClemenceShape {
   xm: number // 曲線が水平に合流する x（W 基準・延長の影響を受けない）
@@ -92,23 +93,23 @@ export interface ClemenceShape {
 
 export function clemenceShape(wMm: number, hMm: number, extensionMm = 0): ClemenceShape {
   const y0 = hMm - C
-  // ①からほぼ垂直に下り、S字で水平へ合流する区間の水平スパン。高低差の 0.9〜1.1 倍程度で
-  // 「上部は急・下部はなだらか」に見せる。W が小さいときは 0.55W まで圧縮してでも収める。
-  const xm = Math.min(Math.max((y0 - C) * 0.95, 110), wMm * 0.55)
+  // S字下り区間の水平スパン。参考図の比率＝高低差×約0.8（H500 → 約400）。
+  // W が小さいときは 0.55W まで圧縮してでも収める。
+  const xm = Math.min(Math.max((y0 - C) * 0.8, 110), wMm * 0.55)
   const totalW = wMm + Math.max(0, extensionMm)
   const curlStart = totalW - 50
   return { xm, curlStart, totalW, y0 }
 }
 
-/** 中心線の y(x)（実寸）。①付近はほぼ垂直・S字部はベジェを二分法で解く */
+/** 中心線の y(x)（実寸）。S字部はベジェを二分法で解く */
 export function clemencePathY(wMm: number, hMm: number, x: number, extensionMm = 0): number {
   const { xm, y0 } = clemenceShape(wMm, hMm, extensionMm)
   if (x <= 0) return y0
   if (x >= xm) return C
-  // P0=(0,y0) P1=(0, y0-0.5*(y0-C))[ほぼ垂直な立ち上がり] P2=(0.7xm,C)[水平合流] P3=(xm,C)
+  // P0=(0,y0) P1=(0.45xm,y0) P2=(0.55xm,C) P3=(xm,C) — 両端の接線が水平な均等S字
   const bez = (t: number, a: number, b: number, c2: number, d: number) =>
     (1 - t) ** 3 * a + 3 * (1 - t) ** 2 * t * b + 3 * (1 - t) * t ** 2 * c2 + t ** 3 * d
-  const bezX = (t: number) => bez(t, 0, 0, 0.7 * xm, xm)
+  const bezX = (t: number) => bez(t, 0, 0.45 * xm, 0.55 * xm, xm)
   let lo = 0
   let hi = 1
   for (let i = 0; i < 40; i++) {
@@ -117,7 +118,7 @@ export function clemencePathY(wMm: number, hMm: number, x: number, extensionMm =
     else hi = mid
   }
   const t = (lo + hi) / 2
-  return bez(t, y0, y0 - 0.5 * (y0 - C), C, C)
+  return bez(t, y0, y0, C, C)
 }
 
 /**
@@ -135,7 +136,7 @@ export function clemencePathD(
   const f = (v: number) => v.toFixed(1)
   return (
     `M ${f(X(0))} ${f(Y(y0))} ` +
-    `C ${f(X(0))} ${f(Y(y0 - 0.5 * (y0 - C)))} ${f(X(0.7 * xm))} ${f(Y(C))} ${f(X(xm))} ${f(Y(C))} ` +
+    `C ${f(X(0.45 * xm))} ${f(Y(y0))} ${f(X(0.55 * xm))} ${f(Y(C))} ${f(X(xm))} ${f(Y(C))} ` +
     `L ${f(X(Math.max(xm, curlStart)))} ${f(Y(C))} ` +
     `Q ${f(X(totalW - 5))} ${f(Y(C))} ${f(X(totalW - 1))} ${f(Y(C + 30))}`
   )
