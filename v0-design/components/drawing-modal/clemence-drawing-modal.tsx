@@ -1,22 +1,21 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { buildStairDrawingSvg, type StairDrawingOpts } from "@/lib/drawing-modal/stair-svg"
+import { buildClemenceDrawingSvg, type ClemenceDrawingOpts } from "@/lib/drawing-modal/clemence-svg"
 
-interface StairDrawingModalProps {
+interface ClemenceDrawingModalProps {
   open: boolean
   onClose: () => void
-  drawing: StairDrawingOpts
+  drawing: ClemenceDrawingOpts
 }
 
 /**
- * Laurent（階段手摺）の設計図モーダル。既存の制作図モーダルと同じ dm-overlay 方式で、
+ * Clémence（L型手すり）の設計図モーダル。dm-overlay 方式で
  * そのまま印刷/PDF 保存できる（globals.css の @media print が dm-overlay を残す）。
  */
-export function StairDrawingModal({ open, onClose, drawing }: StairDrawingModalProps) {
+export function ClemenceDrawingModal({ open, onClose, drawing }: ClemenceDrawingModalProps) {
   const svgRef = useRef<SVGSVGElement>(null)
 
-  // モーダルが開いている間、body スクロールを止める
   useEffect(() => {
     if (open) {
       document.body.style.overflow = "hidden"
@@ -28,7 +27,7 @@ export function StairDrawingModal({ open, onClose, drawing }: StairDrawingModalP
 
   useEffect(() => {
     if (!open || !svgRef.current) return
-    buildStairDrawingSvg(svgRef.current, drawing)
+    buildClemenceDrawingSvg(svgRef.current, drawing)
   }, [open, drawing])
 
   if (!open) return null
@@ -44,11 +43,11 @@ export function StairDrawingModal({ open, onClose, drawing }: StairDrawingModalP
         <button className="dm-close" onClick={onClose} aria-label="閉じる">
           ×
         </button>
-        <div className="dm-title">設計図プレビュー ── Laurent ローラン 階段手摺</div>
+        <div className="dm-title">設計図プレビュー ── Clémence クレマンス トイレ手すり</div>
         {/* A4 横・余白 8.5mm で印刷すると図面シート(280×193mm)が実寸で出力され、表題欄の尺度が実際に合う */}
         <style>{`@page { size: A4 landscape; margin: 8.5mm; }`}</style>
         <div className="dm-svg-wrap">
-          <svg ref={svgRef} id="stairDrawingSvg" className="cad-sheet" viewBox="0 0 1120 772" />
+          <svg ref={svgRef} id="clemenceDrawingSvg" className="cad-sheet" viewBox="0 0 1120 772" />
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 12, flexWrap: "wrap" }}>
           <button className="dm-print-btn" onClick={() => window.print()}>

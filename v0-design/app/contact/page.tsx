@@ -181,17 +181,30 @@ export default function ContactPage() {
     const lengthsCsv = params.get("lengths")
     // 階段手摺 Laurent の「要問合せ」（全長3.5m超）からの遷移: 入力内容を引き継ぐ
     const stairSteps = params.get("steps")
+    // Clémence の寸法・ブラケット位置指定からの遷移: 入力内容を引き継ぐ
+    const clemenceW = params.get("w")
     const prefillMessage = type === "invoice" && qty && lengthsCsv
       ? `【請求書振込でのご注文（7本以上）】\n\n本数: ${qty} 本\n各本の長さ: ${lengthsCsv.split(',').map((L, i) => `${i + 1}本目 ${L}mm`).join(' / ')}\n\n上記内容で請求書振込でのご注文を希望します。送料を含む合計金額のお見積もりと振込先のご案内をお願いいたします。\n\n配送先住所:\n（ご住所をご記入ください）\n\nその他ご要望:\n`
       : type === "stair" && stairSteps
         ? `【階段手摺 Laurent お見積もり相談（全長3.5m超）】\n\n段数: ${stairSteps}段\n手摺全長の目安: 約${params.get("length") || "—"}mm\n横桟: ${params.get("crossbar") || "なし"}\n色: ${params.get("color") || "マットブラック"}\n\n全長が3.5mを超えるため、配送方法（営業所止め・トラック搬入の可否）を含めたお見積もりを希望します。\n\n配送先住所:\n（ご住所をご記入ください）\n\n※階段の写真を添付いただけると確認がスムーズです。\n\nその他ご要望:\n`
-        : ""
+        : type === "clemence" && clemenceW
+          ? (() => {
+              const ext = Number(params.get("ext") || "0")
+              const extPrice = Number(params.get("extprice") || "0")
+              const total = params.get("total")
+              const extLine = ext > 0
+                ? `延長: ③側+${ext}mm（追加+¥${extPrice.toLocaleString()}）\n`
+                : "延長: なし\n"
+              const totalLine = total ? `概算合計（税込・送料別）: ¥${Number(total).toLocaleString()}\n\n` : "\n"
+              return `【Clémence クレマンス トイレ手すり ご注文】\n\nサイズ: 横 ${clemenceW}mm × 縦 ${params.get("h") || "—"}mm\n${extLine}ブラケット位置（座金B=①バー上端／座金A=②③バー下面）:\n① バー上端\n② ①から右へ ${params.get("x2") || "—"}mm\n③ ①から右へ ${params.get("x3") || "—"}mm\n${totalLine}上記内容でのご注文を希望します。お見積もり（送料込）のご案内をお願いいたします。\n\n※ブラケット位置は壁下地に合わせて微調整できます。下地位置が分かる写真などがあれば添付ください。\n\n配送先住所:\n（ご住所をご記入ください）\n\nその他ご要望:\n`
+            })()
+          : ""
     setForm((prev) => ({
       ...prev,
       category:
         category && CATEGORY_OPTIONS.some((o) => o.value === category)
           ? category
-          : type === "invoice" || type === "stair"
+          : type === "invoice" || type === "stair" || type === "clemence"
             ? "order"
             : prev.category,
       product: product

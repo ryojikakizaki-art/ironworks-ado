@@ -16,6 +16,7 @@ import { KaigoNotice } from "@/components/kaigo-notice"
 import { EmbeddedCheckoutModal } from "@/components/checkout/embedded-checkout-modal"
 import { fireGtagEvent } from "@/lib/gtag"
 import { FinishCommitment } from "@/components/finish-commitment"
+import { ClemenceSpecPanel } from "@/components/clemence-spec-panel"
 
 const FEATURE_ICON_MAP: Record<FeatureIconName, typeof Hammer> = {
   Hammer,
@@ -369,6 +370,8 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   // Embedded Checkout: clientSecret が入ったらモーダルが開く
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
+  // Clémence 専用: 寸法・ブラケット位置の入力内容を「ご注文」リンクへ引き継ぐクエリ
+  const [clemenceQuery, setClemenceQuery] = useState("")
 
   const handleDirectCheckout = async () => {
     setIsCheckingOut(true)
@@ -570,6 +573,9 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
               <TrustBadges badges={product.trustBadges} />
             )}
 
+            {/* ── Clémence 専用: 寸法・ブラケット位置指定＋設計図 PDF ── */}
+            {product.slug === "clemence" && <ClemenceSpecPanel onQueryChange={setClemenceQuery} />}
+
             {/* CTA */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
@@ -642,9 +648,9 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
                 </>
               ) : (
                 <>
-                  {/* 送料計算が必要な商品はお問い合わせフォーム経由 */}
+                  {/* 送料計算が必要な商品はお問い合わせフォーム経由（Clémence は入力内容を引き継ぐ） */}
                   <PrimaryCTA
-                    href={`/contact?product=${encodeURIComponent(product.slug)}&category=order`}
+                    href={`/contact?product=${encodeURIComponent(product.slug)}&category=order${clemenceQuery}`}
                     variant="gold"
                     size="lg"
                     icon={<Mail className="w-4 h-4" />}
