@@ -253,11 +253,11 @@ function detailA(x: number, y: number, s: number): string {
     p.push(line(wallX + plateT, yy, wallX + plateT + 2.2, yy - 2.2, THIN_W))
   }
   p.push(line(wallX + plateT, plateTop - 3, wallX + plateT, plateTop + plateH + 3, MID_W))
-  // 寸法: 62（上）・45（右）・51（下）・t4.5・22φ
+  // 寸法: 62（上・壁面から）・45（右）・51（下）・t4.5・22φ
   const dTop = ballCy - ballR - 3
   p.push(extLine(ballLeft, ballCy - ballR, ballLeft, dTop - 1.5))
-  p.push(extLine(wallX, plateTop, wallX, dTop - 1.5))
-  p.push(dimH(ballLeft, wallX, dTop, `${PLATE_A.sideW}`, { size: 2.6 }))
+  p.push(extLine(wallX + plateT, plateTop, wallX + plateT, dTop - 1.5))
+  p.push(dimH(ballLeft, wallX + plateT, dTop, `${PLATE_A.sideW}`, { size: 2.6 }))
   p.push(extLine(wallX + plateT, plateTop, wallX + plateT + 4.5, plateTop))
   p.push(extLine(wallX + plateT, plateTop + plateH, wallX + plateT + 4.5, plateTop + plateH))
   p.push(dimV(wallX + plateT + 3.5, plateTop, plateTop + plateH, `${PLATE_A.d}`, { size: 2.6 }))
@@ -342,11 +342,11 @@ function detailB(x: number, y: number, s: number): string {
     p.push(line(wallX + plateT, yy, wallX + plateT + 2.2, yy - 2.2, THIN_W))
   }
   p.push(line(wallX + plateT, cy - plateH / 2 - 3, wallX + plateT, cy + plateH / 2 + 3, MID_W))
-  // 寸法: 62（上）・60（右）・22（左）・t4.5
+  // 寸法: 62（上・壁面から）・60（右）・22（左）・t4.5
   const dTop = cy - plateH / 2 - 3
   p.push(extLine(ballCx - ballR, cy - ballR, ballCx - ballR, dTop - 1.5))
-  p.push(extLine(wallX, cy - plateH / 2, wallX, dTop - 1.5))
-  p.push(dimH(ballCx - ballR, wallX, dTop, `${PLATE_B.sideW}`, { size: 2.6 }))
+  p.push(extLine(wallX + plateT, cy - plateH / 2, wallX + plateT, dTop - 1.5))
+  p.push(dimH(ballCx - ballR, wallX + plateT, dTop, `${PLATE_B.sideW}`, { size: 2.6 }))
   p.push(extLine(wallX + plateT, cy - plateH / 2, wallX + plateT + 4.5, cy - plateH / 2))
   p.push(extLine(wallX + plateT, cy + plateH / 2, wallX + plateT + 4.5, cy + plateH / 2))
   p.push(dimV(wallX + plateT + 3.5, cy - plateH / 2, cy + plateH / 2, `${PLATE_B.h}`, { size: 2.6 }))
