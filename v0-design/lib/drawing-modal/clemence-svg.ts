@@ -214,11 +214,14 @@ function detailA(x: number, y: number, s: number): string {
   const plateH = PLATE_A.d / s
   const plateTop = armCy - plateH / 2
   const neckHalf = armT / 2
-  // L 型ネック（玉の下→内側 R で曲がって→壁まで水平）白塗り一体形状
+  // L 型ネック（玉の下→曲がって→壁まで水平）白塗り一体形状。
+  // 内側 R に加えて外側の角にも R（rIn + アーム厚）を付けて滑らかなグースネックにする
   const rIn = 8 / s
+  const rOut = rIn + armT
   p.push(
     `<path d="M ${mm(ballCx - neckHalf).toFixed(1)} ${mm(ballCy).toFixed(1)} ` +
-      `L ${mm(ballCx - neckHalf).toFixed(1)} ${mm(armBot).toFixed(1)} ` +
+      `L ${mm(ballCx - neckHalf).toFixed(1)} ${mm(armBot - rOut).toFixed(1)} ` +
+      `Q ${mm(ballCx - neckHalf).toFixed(1)} ${mm(armBot).toFixed(1)} ${mm(ballCx - neckHalf + rOut).toFixed(1)} ${mm(armBot).toFixed(1)} ` +
       `L ${mm(wallX).toFixed(1)} ${mm(armBot).toFixed(1)} ` +
       `L ${mm(wallX).toFixed(1)} ${mm(armTop).toFixed(1)} ` +
       `L ${mm(ballCx + neckHalf + rIn).toFixed(1)} ${mm(armTop).toFixed(1)} ` +
@@ -260,19 +263,18 @@ function detailA(x: number, y: number, s: number): string {
   const barR2 = fCx + r + 6 / s
   // プレート円（先に描く）
   p.push(circle(fCx, plateCy, r, THICK_W, "#ffffff"))
-  // 穴 4.5φ×3（上2＝±50°・下1＝真下。PCD は作画上 φ30）
+  // 穴 4.5φ×3（120° 等配の放射状。下 90°・上左 210°・上右 330°。PCD は作画上 φ30）
   const pcd = 15 / s
-  ;[230, 310, 90].forEach((deg) => {
+  ;[90, 210, 330].forEach((deg) => {
     const rad = (deg * Math.PI) / 180
     p.push(screwHole(fCx + pcd * Math.cos(rad), plateCy + pcd * Math.sin(rad), s))
   })
-  // 支柱 13（バー下面からプレート内へ・下端は U 字＝半円）
+  // 支柱 13（バー下面からプレートの芯まで・下端の U 字半円の中心＝プレート中心）
   const postHalf = PLATE_A.postD / 2 / s
-  const postBot = plateCy + 2 / s
   p.push(
     `<path d="M ${mm(fCx - postHalf).toFixed(1)} ${mm(fBarCy + barHalf).toFixed(1)} ` +
-      `L ${mm(fCx - postHalf).toFixed(1)} ${mm(postBot - postHalf).toFixed(1)} ` +
-      `A ${mm(postHalf).toFixed(1)} ${mm(postHalf).toFixed(1)} 0 0 0 ${mm(fCx + postHalf).toFixed(1)} ${mm(postBot - postHalf).toFixed(1)} ` +
+      `L ${mm(fCx - postHalf).toFixed(1)} ${mm(plateCy).toFixed(1)} ` +
+      `A ${mm(postHalf).toFixed(1)} ${mm(postHalf).toFixed(1)} 0 0 0 ${mm(fCx + postHalf).toFixed(1)} ${mm(plateCy).toFixed(1)} ` +
       `L ${mm(fCx + postHalf).toFixed(1)} ${mm(fBarCy + barHalf).toFixed(1)}" ` +
       `fill="#ffffff" stroke="${INK}" stroke-width="${MID_W}" />`,
   )
@@ -315,9 +317,8 @@ function detailB(x: number, y: number, s: number): string {
   const armT = 13 / s
   // ストレートアーム（玉→壁）
   p.push(rect(ballCx, cy - armT / 2, wallX - ballCx, armT, MID_W, "#ffffff"))
-  // バー（左から）＋破断線
+  // バー（左から。22 寸法の補助線と重なるため破断線は付けない）
   p.push(rect(barLeft, cy - barHalf, barLen + ballR, barHalf * 2, MID_W, "#ffffff"))
-  p.push(breakMark(barLeft, cy, barHalf))
   // 玉継手 22φ
   p.push(circle(ballCx, cy, ballR, THICK_W, "#ffffff"))
   // 壁プレート 60×t4.5 ＋ 壁ハッチ
@@ -355,8 +356,6 @@ function detailB(x: number, y: number, s: number): string {
   const fBarR = fCx + rx + 6 / s
   p.push(rect(fBarL, fCy - barHalf, fBarR - fBarL, barHalf * 2, MID_W, "#ffffff"))
   p.push(breakMark(fBarL, fCy, barHalf), breakMark(fBarR, fCy, barHalf))
-  // 玉（プレート裏・破線円）
-  p.push(circle(fCx, fCy, ballR, THIN_W, "none", "2.5 1.8"))
   // 寸法: 25（下）・34（右・穴ピッチ）・4.5φ×3
   p.push(extLine(fCx - rx, fCy + ry, fCx - rx, fCy + ry + 4.5))
   p.push(extLine(fCx + rx, fCy + ry, fCx + rx, fCy + ry + 4.5))
