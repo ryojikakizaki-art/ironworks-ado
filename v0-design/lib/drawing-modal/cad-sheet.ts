@@ -177,9 +177,10 @@ export function detailBalloon(
   balloonX: number,
   balloonY: number,
   letter: string,
+  targetRadius = 2.4,
 ): string {
   return (
-    circle(targetX, targetY, 2.4, THIN_W) +
+    circle(targetX, targetY, targetRadius, THIN_W) +
     line(targetX, targetY, balloonX, balloonY, THIN_W) +
     circle(balloonX, balloonY, 3.4, MID_W, "#ffffff") +
     text(balloonX, balloonY + 1.15, letter, { size: 3.5, anchor: "middle", bold: true })

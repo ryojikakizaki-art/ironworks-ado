@@ -12,7 +12,8 @@
 //   側面は L 型グースネック（出寸法 51mm・全幅 62=22+40mm・プレート 45mm 高）
 // - 座金B（①・楕円）: 楕円プレート 25×60mm・t4.5・穴 4.5φ×3・バーが中心を貫通（玉継手）。
 //   側面は玉継手＋ストレートアーム（全幅 62=22+40mm・プレート 60mm 高）
-// - 穴は 4.5φ 通し穴。ビスはタッピング M4×40、各座金 3 本／箇所（3 点で計 9 本・付属）
+// - 穴は 4.5φ 通し穴。ビスはタッピング M4×40（座金A×3本×2箇所＋座金B×2本＝計8本・付属）。
+//   タッチアップ材（1液ウレタン）も付属
 //
 // サイズ・延長（2026-07-09 蠣﨑さん回答）:
 // - 標準は横 W 950〜1,000mm（950mm 未満はお問い合わせ）
@@ -89,7 +90,7 @@ const PLATE_B = {
   w: 25, // 楕円 短径（横）
   h: 60, // 楕円 長径（縦）
   t: 4.5, // プレート厚
-  screws: 3, // 穴 4.5φ×3
+  screws: 2, // 穴 4.5φ×2（上下1個ずつ・ピッチ34）
   ballD: 13, // 玉継手径
   sideW: 62, // 側面全幅
 }
@@ -192,6 +193,21 @@ function breakMark(cx: number, cy: number, hHalf: number): string {
   )
 }
 
+// ── 省略（破断）表示のバー区間: 上下の線＋端部は波線のみ（直線の端キャップは描かない）。
+//    端キャップの直線を残すと破断線と二重に重なって見えるため、上下2本線＋波線だけにする。
+function barBroken(x1: number, x2: number, cy: number, hHalf: number, breakLeft: boolean, breakRight: boolean): string {
+  const parts: string[] = [
+    `<rect x="${mm(x1).toFixed(1)}" y="${mm(cy - hHalf).toFixed(1)}" width="${mm(x2 - x1).toFixed(1)}" height="${mm(hHalf * 2).toFixed(1)}" fill="#ffffff" stroke="none" />`,
+    line(x1, cy - hHalf, x2, cy - hHalf, MID_W),
+    line(x1, cy + hHalf, x2, cy + hHalf, MID_W),
+  ]
+  if (breakLeft) parts.push(breakMark(x1, cy, hHalf))
+  else parts.push(line(x1, cy - hHalf, x1, cy + hHalf, MID_W))
+  if (breakRight) parts.push(breakMark(x2, cy, hHalf))
+  else parts.push(line(x2, cy - hHalf, x2, cy + hHalf, MID_W))
+  return parts.join("")
+}
+
 // ── 詳細 A: 座金A（丸型・②③）。CAD 図準拠＝側面図（左）＋正面図（右）。 ──
 //
 // 側面図: 玉22φ → 21 下がって 13 厚の L 型アームが壁へ → プレート 45×t4.5（全幅62=22+40・出51）
@@ -278,9 +294,8 @@ function detailA(x: number, y: number, s: number): string {
       `L ${mm(fCx + postHalf).toFixed(1)} ${mm(fBarCy + barHalf).toFixed(1)}" ` +
       `fill="#ffffff" stroke="${INK}" stroke-width="${MID_W}" />`,
   )
-  // バー（横断・破断線つき）
-  p.push(rect(barL, fBarCy - barHalf, barR2 - barL, barHalf * 2, MID_W, "#ffffff"))
-  p.push(breakMark(barL, fBarCy, barHalf), breakMark(barR2, fBarCy, barHalf))
+  // バー（横断・両端は破断線のみ＝直線の端キャップは描かない）
+  p.push(barBroken(barL, barR2, fBarCy, barHalf, true, true))
   // 寸法: 13（上・支柱幅）・45（下）・4.5φ×3
   const dTop2 = fBarCy - barHalf - 3
   p.push(extLine(fCx - postHalf, fBarCy - barHalf, fCx - postHalf, dTop2 - 1.5))
@@ -351,11 +366,10 @@ function detailB(x: number, y: number, s: number): string {
   const pitchHalf = 34 / 2 / s
   p.push(screwHole(fCx, fCy - pitchHalf, s))
   p.push(screwHole(fCx, fCy + pitchHalf, s))
-  // バー貫通（横・中央・破断線つき）
+  // バー貫通（横・中央・両端は破断線のみ）
   const fBarL = fCx - rx - 6 / s
   const fBarR = fCx + rx + 6 / s
-  p.push(rect(fBarL, fCy - barHalf, fBarR - fBarL, barHalf * 2, MID_W, "#ffffff"))
-  p.push(breakMark(fBarL, fCy, barHalf), breakMark(fBarR, fCy, barHalf))
+  p.push(barBroken(fBarL, fBarR, fCy, barHalf, true, true))
   // 寸法: 25（下）・34（右・穴ピッチ）・4.5φ×3
   p.push(extLine(fCx - rx, fCy + ry, fCx - rx, fCy + ry + 4.5))
   p.push(extLine(fCx + rx, fCy + ry, fCx + rx, fCy + ry + 4.5))
@@ -457,13 +471,13 @@ export function buildClemenceDrawingSvg(svg: SVGSVGElement, opts: ClemenceDrawin
   parts.push(text(X(0) + PLATE_B.w / 2 / S + 8, Y(clemencePathY(wMm, hMm, 0, extensionMm)) - 6, "①", { size: 3.15 }))
   parts.push(text(X(x2) - roundRad - 2, discCy2 + roundRad + 5, "②", { size: 3.15, anchor: "end" }))
   parts.push(text(X(x3), discCy3 + roundRad + 5, "③", { size: 3.15, anchor: "middle" }))
-  // 詳細 A/B 参照（座金の縁から引き出す）
-  parts.push(detailBalloon(X(x2) + roundRad * 0.7, discCy2 - roundRad * 0.7, X(x2) + 14, discCy2 + roundRad + 8, "A"))
+  // 詳細 A/B 参照: 座金と紛らわしい小さい点でなく、座金全体を囲む円で示す
+  parts.push(detailBalloon(X(x2), discCy2, X(x2) + 14, discCy2 + roundRad + 8, "A", roundRad + 1.5))
   {
     const y0Screen = Y(clemencePathY(wMm, hMm, 0, extensionMm))
     const rxMm = PLATE_B.w / 2 / S
     const ryMm = PLATE_B.h / 2 / S
-    parts.push(detailBalloon(X(0) - rxMm * 0.7, y0Screen - ryMm * 0.7, X(0) - 13, y0Screen - 11, "B"))
+    parts.push(detailBalloon(X(0), y0Screen, X(0) - 13, y0Screen - 11, "B", Math.max(rxMm, ryMm) + 1.5))
   }
 
   // ── 注記（正面図の下・全幅の帯） ──
@@ -475,7 +489,7 @@ export function buildClemenceDrawingSvg(svg: SVGSVGElement, opts: ClemenceDrawin
     noteBlock(10, 108, [
       `サイズ 横 W=${fmt(wMm)} × 縦 H=${fmt(hMm)}mm（標準950〜1,000mm・一律料金）。${extText}`,
       `座金A（②③・丸型φ45・t4.5・穴4.5φ×3・支柱${PLATE_A.postD}でバー下面に接続）／座金B（①・楕円${PLATE_B.w}×${PLATE_B.h}・t4.5・穴4.5φ×3・バー貫通）。`,
-      `②③は①からの水平距離で、壁下地（柱・間柱 455/910 ピッチ）に合わせて指定できます（補強板不要）。固定は ${SCREW_LABEL}・各座金3本／計${PLATE_A.screws * 2 + PLATE_B.screws}本（付属）。`,
+      `②③は①からの水平距離で、壁下地（柱・間柱 455/910 ピッチ）に合わせて指定できます（補強板不要）。固定は ${SCREW_LABEL}・座金A3本×2箇所+座金B2本＝計${PLATE_A.screws * 2 + PLATE_B.screws}本・タッチアップ材（付属）。`,
       `本図は入力寸法から自動生成した参考図です。ハンドメイドのため多少の誤差があります。W950mm未満はお問い合わせください。A4横・倍率100%で尺度どおり出力。`,
     ]),
   )
@@ -492,7 +506,7 @@ export function buildClemenceDrawingSvg(svg: SVGSVGElement, opts: ClemenceDrawin
       scaleText: `${scaleLabel(S)}（詳細図 A・B ${scaleLabel(DETAIL_S)}）`,
       material: `丸棒 ${BAR_D}φ（無垢鉄・鍛造）`,
       finish: "2液型ウレタン艶消し黒 古美仕上げ",
-      accessories: `M4×40 ×${PLATE_A.screws * 2 + PLATE_B.screws}本（各座金3本）`,
+      accessories: `M4×40×${PLATE_A.screws * 2 + PLATE_B.screws}本（A3本×2/B2本）・タッチアップ材`,
       dateText: todayText(),
     }),
   )
