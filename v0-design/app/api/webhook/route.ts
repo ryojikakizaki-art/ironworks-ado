@@ -284,13 +284,33 @@ async function sendSimpleOrderEmail(session: Stripe.Checkout.Session) {
   const unitYen = Number(meta.unit_yen || 0);
   const totalYen = Number(meta.total_yen || session.amount_total || 0);
   const shippingMethod = String(meta.shipping_method || 'クリックポスト（送料込）');
-  const shipDate = toIsoDate(addBusinessDays(new Date(), 3));
+  // 送料が別建ての商品（Clémence 等・佐川急便）は shipping_yen を持つ。
+  // その場合は「送料込」ではなく本体＋送料の内訳を出し、発送予定も制作スケジュール由来にする。
+  const shippingYen = Number(meta.shipping_yen || 0);
+  const shippingTaxYen = Number(meta.shipping_tax_yen || 0);
+  const hasSeparateShipping = shippingYen > 0;
+  const shipDate = meta.shipping_date || toIsoDate(addBusinessDays(new Date(), 3));
 
   // 配送先のみを使う（請求先にはフォールバックしない）
   const { name: shipName, address: addr } = getShippingRecipient(session);
   const recipientName = shipName || name;
 
   const fromAddress = process.env.CONTACT_FROM || 'IRONWORKS ado <noreply@tantetuzest.com>';
+
+  // ご注文内容の明細行（送料別建ての有無で出し分け）
+  const orderSummaryRows = hasSeparateShipping
+    ? `<div class="row"><span class="label">商品</span><span class="value">${esc(productLabel)}</span></div>
+<div class="row"><span class="label">本体（税込）</span><span class="value">¥${unitYen.toLocaleString()}</span></div>
+<div class="row"><span class="label">送料（税抜）</span><span class="value">¥${shippingYen.toLocaleString()}</span></div>
+<div class="row"><span class="label">送料消費税</span><span class="value">¥${shippingTaxYen.toLocaleString()}</span></div>
+<div class="row"><span class="label">配送方法</span><span class="value">${esc(shippingMethod)}</span></div>`
+    : `<div class="row"><span class="label">商品</span><span class="value">${esc(productLabel)}</span></div>
+<div class="row"><span class="label">数量</span><span class="value">${qty}個</span></div>
+<div class="row"><span class="label">単価</span><span class="value">¥${unitYen.toLocaleString()}（税込・送料込）</span></div>
+<div class="row"><span class="label">配送方法</span><span class="value">${esc(shippingMethod)}</span></div>`;
+  const shippingNoteText = hasSeparateShipping
+    ? '佐川急便でお届けします。制作完了後の発送となります（発送日はお届け先地域により前後します）。'
+    : 'クリックポストは投函配達のため、お届け日時のご指定はできません。発送後 2〜3 日でお届け予定です。';
 
   const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
 <style>body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f9f9f9;color:#333;margin:0;padding:0;}
@@ -317,10 +337,7 @@ async function sendSimpleOrderEmail(session: Stripe.Checkout.Session) {
 
 <div class="section-title">ご注文内容</div>
 <div class="summary">
-<div class="row"><span class="label">商品</span><span class="value">${esc(productLabel)}</span></div>
-<div class="row"><span class="label">数量</span><span class="value">${qty}個</span></div>
-<div class="row"><span class="label">単価</span><span class="value">¥${unitYen.toLocaleString()}（税込・送料込）</span></div>
-<div class="row"><span class="label">配送方法</span><span class="value">${esc(shippingMethod)}</span></div>
+${orderSummaryRows}
 <div class="total">合計: ¥${totalYen.toLocaleString()}（税込）</div>
 </div>
 
@@ -333,7 +350,7 @@ async function sendSimpleOrderEmail(session: Stripe.Checkout.Session) {
 
 <hr class="divider">
 <p style="font-size:12px;color:#888;">
-クリックポストは投函配達のため、お届け日時のご指定はできません。発送後 2〜3 日でお届け予定です。<br>
+${esc(shippingNoteText)}<br>
 適格請求書（領収書PDF）は別途 Stripe よりメールにてお送りいたします。<br>
 ご不明点はお気軽にお問い合わせください: <a href="mailto:ado@tantetuzest.com" style="color:#c8a96e;">ado@tantetuzest.com</a>
 </p>
@@ -409,12 +426,29 @@ export async function sendWorkshopEmail(session: Stripe.Checkout.Session, isSimp
     const qty = Number(meta.quantity || 1);
     const unitYen = Number(meta.unit_yen || 0);
     const shippingMethod = String(meta.shipping_method || 'クリックポスト（送料込）');
-    const shipDate = toIsoDate(addBusinessDays(new Date(), 3));
-    productLabel = `${productName} × ${qty}`;
-    orderRows.push(['商品', productName], ['数量', `${qty}個`]);
-    orderRows.push(['単価', `¥${unitYen.toLocaleString()}（税込・送料込）`]);
-    orderRows.push(['配送方法', shippingMethod]);
-    scheduleRows.push(['発送予定', `${formatJpDate(shipDate)}頃`]);
+    // 送料別建て商品（Clémence 等）は本体＋送料の内訳と制作スケジュールを出す。
+    const shippingYen = Number(meta.shipping_yen || 0);
+    const shippingTaxYen = Number(meta.shipping_tax_yen || 0);
+    const hasSeparateShipping = shippingYen > 0;
+    if (hasSeparateShipping) {
+      const isRush = meta.rush_delivery === 'true';
+      productLabel = productName;
+      orderRows.push(['商品', productName]);
+      orderRows.push(['本体（税込）', `¥${unitYen.toLocaleString()}`]);
+      orderRows.push(['送料', `¥${shippingYen.toLocaleString()}（税抜）＋消費税 ¥${shippingTaxYen.toLocaleString()}`]);
+      orderRows.push(['配送方法', shippingMethod]);
+      orderRows.push(['配送区分', isRush ? '特急配送（5営業日）' : '通常配送（10営業日）']);
+      scheduleRows.push(['制作開始', formatJpDate(meta.production_start)]);
+      scheduleRows.push(['制作完了予定', formatJpDate(meta.production_complete)]);
+      scheduleRows.push(['発送予定', formatJpDate(meta.shipping_date)]);
+    } else {
+      const shipDate = toIsoDate(addBusinessDays(new Date(), 3));
+      productLabel = `${productName} × ${qty}`;
+      orderRows.push(['商品', productName], ['数量', `${qty}個`]);
+      orderRows.push(['単価', `¥${unitYen.toLocaleString()}（税込・送料込）`]);
+      orderRows.push(['配送方法', shippingMethod]);
+      scheduleRows.push(['発送予定', `${formatJpDate(shipDate)}頃`]);
+    }
   } else {
     const lengthsInfo = parseLengthsMeta(meta);
     productLabel = `${productName} ${lengthsInfo.short}`;
@@ -617,7 +651,10 @@ async function createSimpleCalendarEvent(session: Stripe.Checkout.Session) {
   const qty = Number(meta.quantity || 1);
   const totalYen = Number(meta.total_yen || session.amount_total || 0);
   const shippingMethod = String(meta.shipping_method || 'クリックポスト（送料込）');
-  const shipDate = toIsoDate(addBusinessDays(new Date(), 3));
+  // 送料別建て商品（Clémence 等）は制作スケジュール由来の発送日を使う。
+  const hasSeparateShipping = Number(meta.shipping_yen || 0) > 0;
+  const shipDate = meta.shipping_date || toIsoDate(addBusinessDays(new Date(), 3));
+  const qtyLabel = hasSeparateShipping ? '' : ` × ${qty}`;
 
   const auth = new google.auth.GoogleAuth({
     credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY),
@@ -626,9 +663,10 @@ async function createSimpleCalendarEvent(session: Stripe.Checkout.Session) {
   const calendar = google.calendar({ version: 'v3', auth });
 
   const description = [
-    `商品: ${productLabel} × ${qty}`,
-    `合計: ¥${totalYen.toLocaleString()}（税込・送料込）`,
+    `商品: ${productLabel}${qtyLabel}`,
+    `合計: ¥${totalYen.toLocaleString()}（税込${hasSeparateShipping ? '' : '・送料込'}）`,
     `配送: ${shippingMethod}`,
+    hasSeparateShipping ? `配送区分: ${meta.rush_delivery === 'true' ? '特急（5営業日）' : '通常（10営業日）'}` : '',
     `お客様: ${recipientName} <${email}>`,
     `住所: ${formatShippingAddress(addr)}`,
     `\nStripe Session: ${session.id}`,
@@ -637,7 +675,7 @@ async function createSimpleCalendarEvent(session: Stripe.Checkout.Session) {
   await calendar.events.insert({
     calendarId: process.env.GOOGLE_CALENDAR_ID,
     requestBody: {
-      summary: `発送TODO — ${productLabel} × ${qty}`,
+      summary: `発送TODO — ${productLabel}${qtyLabel}`,
       description,
       start: { date: shipDate },
       end: { date: shipDate },

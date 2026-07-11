@@ -235,3 +235,34 @@ export function getShippingRange(lengths: number[], productType: ProductType): S
   if (min === Infinity) return null
   return { minShipping: min, maxShipping: max }
 }
+
+/**
+ * Clémence（トイレ手すり）専用の送料計算。
+ *
+ * L 型に固定梱包される商品のため、他の手すりのように長さ(mm)からサイズ区分を
+ * 自動判定する calcShipping の仕組みは合わない。蠣﨑さん確認済みの固定区分
+ * （基本=160サイズ・③側延長時=170サイズ／2026-07-11 確認）を直接引く。
+ * レート表・地域判定は calcShipping と同じ SHIPPING_RATES / PREF_TO_REGION を共有し、
+ * 金額を二重管理しない。
+ */
+export function calcClemenceShipping(prefecture: string, extensionMm: number): ShippingResult {
+  const region = PREF_TO_REGION[prefecture] as Region | undefined
+  if (region === ("okinawa" as Region)) {
+    return {
+      shipping: 0, rate: 0, bundles: 0, note: "", inquiry: true,
+      inquiryReason: "沖縄県への配送は別途お見積もりとなります",
+    }
+  }
+  if (!region) {
+    return { shipping: 0, rate: 0, bundles: 0, note: "配送先都道府県を選択してください", inquiry: false }
+  }
+  const bracket: SizeBracket = extensionMm > 0 ? 170 : 160
+  const rate = SHIPPING_RATES[bracket][region]
+  return {
+    shipping: rate,
+    rate,
+    bundles: 1,
+    note: `${bracket}サイズ（佐川急便）`,
+    inquiry: false,
+  }
+}

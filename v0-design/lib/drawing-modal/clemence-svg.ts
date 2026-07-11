@@ -60,6 +60,11 @@ export const BASE_PRICE = 88000
 export const EXTENSION_MAX_MM = 200
 export const EXTENSION_PRICE_MAX = 3000 // +200mm 時の上限追加額
 export const W_STANDARD_MIN = 950 // これ未満は要問合せ（形状の都合上）
+// 入力レンジ（clemence-spec-panel.tsx のクライアント入力と checkout/simple の
+// サーバ側クランプの両方から参照する。二重管理を避けるためここを正本とする）
+export const W_MAX = 1000
+export const H_MIN = 200
+export const H_MAX = 500
 
 /** ③側延長の追加額（従量・¥100 単位に切り上げ・上限 EXTENSION_PRICE_MAX）。
  *  +200mm で +¥3,000 になる比率（¥15/mm）。0mm なら 0 円。 */
