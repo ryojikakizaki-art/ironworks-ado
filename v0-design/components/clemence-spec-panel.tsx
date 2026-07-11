@@ -21,6 +21,9 @@ import {
   EXTENSION_PRICE_MAX,
   calcExtensionPrice,
   W_STANDARD_MIN,
+  W_MAX,
+  H_MIN,
+  H_MAX,
   BAR_D,
   ROUND_POST_GAP_MM,
   PLATE_A_POST_D,
@@ -28,10 +31,6 @@ import {
   PLATE_B_W,
   PLATE_B_H,
 } from "@/lib/drawing-modal/clemence-svg"
-
-const W_MAX = 1000
-const H_MIN = 200
-const H_MAX = 500
 
 const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(Math.round(v) || lo, lo), hi)
 

@@ -1,10 +1,10 @@
 "use client"
 
-import { useRef, useState } from "react"
+import { useMemo, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronLeft, ChevronRight, Mail, MessageSquare, ShoppingBag, Minus, Plus, Hammer, Paintbrush, Ruler, Wrench, Sparkles, Clock, Truck, ShieldCheck } from "lucide-react"
+import { ChevronLeft, ChevronRight, Mail, MessageSquare, ShoppingBag, Minus, Plus, Hammer, Paintbrush, Ruler, Wrench, Sparkles, Clock, Truck, ShieldCheck, Camera } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
@@ -14,9 +14,14 @@ import { getProductStructuredData } from "@/lib/products/structured-data"
 import { getRelatedProducts, CATALOG_PRODUCTS } from "@/lib/products/catalog"
 import { KaigoNotice } from "@/components/kaigo-notice"
 import { EmbeddedCheckoutModal } from "@/components/checkout/embedded-checkout-modal"
+import { BankOrderModal } from "@/components/checkout/bank-order-modal"
 import { fireGtagEvent } from "@/lib/gtag"
 import { FinishCommitment } from "@/components/finish-commitment"
 import { ClemenceSpecPanel } from "@/components/clemence-spec-panel"
+import { calcClemenceShipping, PREF_TO_REGION } from "@/lib/shipping/sagawa"
+import { getEarliestArrival } from "@/lib/business-days"
+
+const PREFECTURES = Object.keys(PREF_TO_REGION)
 
 const FEATURE_ICON_MAP: Record<FeatureIconName, typeof Hammer> = {
   Hammer,
@@ -213,6 +218,201 @@ function PriceTable({ buildup }: { buildup: NonNullable<SimpleProduct["priceBuil
   )
 }
 
+/** 特急配送の割増率（合計の +20%）。見積計算機つき商品（order-pricing.ts の RUSH_RATE）と同一。 */
+const CLEMENCE_RUSH_RATE = 0.2
+
+/**
+ * Clémence 専用の購入エリア（見積計算機つき商品ページ＝René 等と同じ構成）。
+ * 配送先都道府県 → 納品日・配送（通常／特急+20%）→ 価格内訳 → 合計 →
+ * クレジットカードで購入／銀行振込で注文する の 2 ボタンを縦に並べる。
+ * 送料は佐川急便レート表（税抜・160/170 サイズ）を calcClemenceShipping で引き、
+ * 送料消費税 10% を別建てで加算する（René と同じ税処理）。
+ */
+function ClemencePurchaseBlock({
+  prefecture,
+  onPrefectureChange,
+  shippingInfo,
+  basePrice,
+  extensionPrice,
+  deliveryType,
+  onDeliveryChange,
+  deliveryDate,
+  onCardBuy,
+  onBankOrder,
+  isCheckingOut,
+  error,
+  purchaseAreaRef,
+}: {
+  prefecture: string
+  onPrefectureChange: (v: string) => void
+  shippingInfo: ReturnType<typeof calcClemenceShipping> | null
+  basePrice: number
+  extensionPrice: number
+  deliveryType: "normal" | "express"
+  onDeliveryChange: (v: "normal" | "express") => void
+  deliveryDate: string
+  onCardBuy: () => void
+  onBankOrder: () => void
+  isCheckingOut: boolean
+  error: string | null
+  purchaseAreaRef?: React.RefObject<HTMLDivElement | null>
+}) {
+  const subtotal = basePrice + extensionPrice
+  const expressAddon = deliveryType === "express" ? Math.round(subtotal * CLEMENCE_RUSH_RATE) : 0
+  const shippingReady = !!prefecture && !!shippingInfo && !shippingInfo.inquiry
+  const shipping = shippingReady ? shippingInfo!.shipping : 0
+  const shippingTax = Math.round(shipping * 0.1)
+  const total = subtotal + expressAddon + shipping + shippingTax
+  const canBuy = shippingReady
+
+  return (
+    <div className="flex flex-col gap-6">
+      {/* 配送先 */}
+      <div className="space-y-2">
+        <h3 className="font-serif text-[20px] font-bold text-foreground tracking-tight">
+          配送先
+          {!prefecture && (
+            <span className="ml-2 text-[11px] font-sans font-medium text-red-600 align-middle tracking-wider">必須</span>
+          )}
+        </h3>
+        <select
+          value={prefecture}
+          onChange={(e) => onPrefectureChange(e.target.value)}
+          className={`w-full h-12 px-4 border-2 rounded-md text-[14px] font-medium transition-colors focus:outline-none ${
+            prefecture ? "border-gold bg-gold/5 text-foreground" : "border-gold/60 bg-white text-foreground hover:border-gold"
+          }`}
+        >
+          <option value="">配送先都道府県を選択</option>
+          {PREFECTURES.map((p) => (
+            <option key={p} value={p}>
+              {p}
+            </option>
+          ))}
+        </select>
+        {prefecture && shippingInfo?.inquiry && (
+          <p className="text-[13px] text-red-700">
+            {shippingInfo.inquiryReason || "この配送先は別途お見積もりが必要です"}
+          </p>
+        )}
+      </div>
+
+      {/* 納品日・配送 */}
+      <div className="space-y-3">
+        <h3 className="font-serif text-[20px] font-bold text-foreground tracking-tight">納品日・配送を選ぶ</h3>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => onDeliveryChange("normal")}
+            className={`flex-1 py-4 px-4 rounded-md border-2 transition-all ${
+              deliveryType === "normal" ? "border-gold bg-gold/5" : "border-gold/20 hover:border-gold/50"
+            }`}
+          >
+            <div className="text-[15px] font-medium">通常</div>
+            <div className="text-[12px] text-muted-foreground mt-0.5">10営業日</div>
+          </button>
+          <button
+            type="button"
+            onClick={() => onDeliveryChange("express")}
+            className={`flex-1 py-4 px-4 rounded-md border-2 transition-all ${
+              deliveryType === "express" ? "border-gold bg-gold/5" : "border-gold/20 hover:border-gold/50"
+            }`}
+          >
+            <div className="text-[15px] font-medium">特急 <span className="text-gold">+20%</span></div>
+            <div className="text-[12px] text-muted-foreground mt-0.5">5営業日</div>
+          </button>
+        </div>
+        <p className="text-[14px] text-muted-foreground">
+          お届け予定日: <span className="text-foreground font-medium">{deliveryDate}頃</span>
+        </p>
+      </div>
+
+      {/* 価格内訳 */}
+      <div className="bg-white border border-gold/20 rounded-lg p-5 space-y-2.5">
+        <div className="flex justify-between text-[15px]">
+          <span className="text-muted-foreground">本体料金（500×1000mm 一律）</span>
+          <span className="font-mono">¥{basePrice.toLocaleString()}</span>
+        </div>
+        {extensionPrice > 0 && (
+          <div className="flex justify-between text-[15px]">
+            <span className="text-muted-foreground">③側延長オプション</span>
+            <span className="font-mono">+¥{extensionPrice.toLocaleString()}</span>
+          </div>
+        )}
+        {expressAddon > 0 && (
+          <div className="flex justify-between text-[15px]">
+            <span className="text-muted-foreground">特急割増（+20%）</span>
+            <span className="font-mono">+¥{expressAddon.toLocaleString()}</span>
+          </div>
+        )}
+        {shippingReady && shipping > 0 && (
+          <div className="pt-2 border-t border-border/60 space-y-1">
+            <div className="flex justify-between text-[15px]">
+              <span className="text-muted-foreground">送料（{prefecture}・佐川急便・税抜）</span>
+              <span className="font-mono">+¥{shipping.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between text-[15px]">
+              <span className="text-muted-foreground">送料消費税（10%）</span>
+              <span className="font-mono">+¥{shippingTax.toLocaleString()}</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 合計 */}
+      <div ref={purchaseAreaRef} className="flex items-center gap-4">
+        <div className="w-2 h-12 bg-gold rounded-full" />
+        <div>
+          <span className="text-[13px] tracking-[0.15em] uppercase text-muted-foreground block mb-1">合計（税込）</span>
+          <span className="font-serif text-4xl text-foreground">¥{total.toLocaleString()}</span>
+          {!prefecture && (
+            <p className="mt-1.5 flex items-start gap-1.5 text-[13px] text-muted-foreground">
+              <Truck className="w-3.5 h-3.5 mt-0.5 shrink-0 text-gold" />
+              <span>配送先を選択すると送料を含む合計が確定します</span>
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* CTA ボタン（カード決済＋銀行振込） */}
+      <div className="space-y-3">
+        {error && (
+          <div className="border-2 border-red-500/60 bg-red-50 rounded-md p-3 text-[13px] text-red-700">
+            {error}
+          </div>
+        )}
+        <div className="flex justify-center">
+          <PrimaryCTA
+            onClick={onCardBuy}
+            disabled={isCheckingOut || !canBuy}
+            variant="purchase"
+            size="lg"
+            withArrow
+            className={`font-sans w-full max-w-[340px] ${isCheckingOut ? "cursor-wait" : ""}`}
+          >
+            {isCheckingOut ? "購入ページへ移動中…" : "クレジットカードで購入"}
+          </PrimaryCTA>
+        </div>
+        <div className="flex justify-center">
+          <PrimaryCTA
+            type="button"
+            onClick={onBankOrder}
+            disabled={!canBuy}
+            variant="purchase-steel"
+            size="lg"
+            withArrow
+            className="font-sans w-full max-w-[340px]"
+          >
+            銀行振込で注文する
+          </PrimaryCTA>
+        </div>
+        <p className="text-xs text-muted-foreground text-center leading-loose">
+          佐川急便で発送（送料は配送先により異なります／沖縄県は別途お見積もり）。
+        </p>
+      </div>
+    </div>
+  )
+}
+
 /**
  * ATF（ファーストビュー）に縦並びで安心要素を提示するバッジリスト。
  * - 価格直下に挿入し、価格ショックを和らげつつ高単価商品の検討材料を即座に提示する
@@ -365,13 +565,125 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
   const isQuoteOnly = product.basePrice === 0
   // 送料込・固定価格の小物は Stripe 直接決済が可能
   const isDirectCheckout = !isQuoteOnly && product.shippingIncluded === true
+  // Clémence は延長オプション＋配送先別送料のため専用の直接決済フローを持つ
+  const isClemencePurchase = product.slug === "clemence"
   const [quantity, setQuantity] = useState(1)
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   // Embedded Checkout: clientSecret が入ったらモーダルが開く
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
-  // Clémence 専用: 寸法・ブラケット位置の入力内容を「ご注文」リンクへ引き継ぐクエリ
+  // Clémence 専用: 寸法・ブラケット位置の入力内容を ClemenceSpecPanel から引き継ぐクエリ
   const [clemenceQuery, setClemenceQuery] = useState("")
+  const [clemencePrefecture, setClemencePrefecture] = useState("")
+  const [clemenceDelivery, setClemenceDelivery] = useState<"normal" | "express">("normal")
+  const [isClemenceCheckingOut, setIsClemenceCheckingOut] = useState(false)
+  const [clemenceCheckoutError, setClemenceCheckoutError] = useState<string | null>(null)
+  const [clemenceBankOrderOpen, setClemenceBankOrderOpen] = useState(false)
+  const clemencePurchaseRef = useRef<HTMLDivElement | null>(null)
+
+  const clemenceParams = useMemo(
+    () => new URLSearchParams(clemenceQuery.replace(/^&/, "")),
+    [clemenceQuery],
+  )
+  const clemenceW = Number(clemenceParams.get("w")) || 1000
+  const clemenceH = Number(clemenceParams.get("h")) || 500
+  const clemenceX2 = Number(clemenceParams.get("x2")) || 455
+  const clemenceX3 = Number(clemenceParams.get("x3")) || 910
+  const clemenceExt = Number(clemenceParams.get("ext")) || 0
+  const clemenceExtPrice = Number(clemenceParams.get("extprice")) || 0
+  const clemenceShippingInfo = useMemo(
+    () => (clemencePrefecture ? calcClemenceShipping(clemencePrefecture, clemenceExt) : null),
+    [clemencePrefecture, clemenceExt],
+  )
+  // 見積計算機つき商品（René 等）と同じ営業日ベースでお届け予定日を算出（通常10 / 特急5 営業日）
+  const clemenceDeliveryDate = useMemo(
+    () =>
+      getEarliestArrival(new Date(), clemenceDelivery === "express").toLocaleDateString("ja-JP", {
+        month: "long",
+        day: "numeric",
+      }),
+    [clemenceDelivery],
+  )
+  const clemenceSubtotal = product.basePrice + clemenceExtPrice
+  const clemenceExpressAddon =
+    clemenceDelivery === "express" ? Math.round(clemenceSubtotal * CLEMENCE_RUSH_RATE) : 0
+  const clemenceShipping =
+    clemenceShippingInfo && !clemenceShippingInfo.inquiry ? clemenceShippingInfo.shipping : 0
+  const clemenceShippingTax = Math.round(clemenceShipping * 0.1)
+  const clemenceTotal = clemenceSubtotal + clemenceExpressAddon + clemenceShipping + clemenceShippingTax
+
+  // カード決済・銀行振込で共有する注文ペイロード（サーバ側で価格を再計算するため入力を一致させる）
+  const clemenceOrderPayload = {
+    product: "clemence",
+    prefecture: clemencePrefecture,
+    rushDelivery: clemenceDelivery === "express",
+    w: clemenceW,
+    h: clemenceH,
+    x2: clemenceX2,
+    x3: clemenceX3,
+    ext: clemenceExt,
+  }
+  const clemenceSummary = {
+    productName: `${product.nameJa}（${product.nameEn}）`,
+    productNote: `W${clemenceW}×H${clemenceH}mm・②${clemenceX2}mm/③${clemenceX3}mm${clemenceExt > 0 ? `・③延長+${clemenceExt}mm` : ""} / ${clemenceDelivery === "express" ? "特急配送 5営業日" : "通常配送 10営業日"}`,
+    lines: [
+      { label: "本体料金（500×1000mm 一律）", amount: product.basePrice },
+      ...(clemenceExtPrice > 0 ? [{ label: "③側延長オプション", amount: clemenceExtPrice }] : []),
+      ...(clemenceExpressAddon > 0 ? [{ label: "特急割増（+20%）", amount: clemenceExpressAddon }] : []),
+      ...(clemenceShipping > 0 ? [{ label: `送料（佐川急便・${clemencePrefecture}・税抜）`, amount: clemenceShipping }] : []),
+      ...(clemenceShippingTax > 0 ? [{ label: "送料消費税（10%）", amount: clemenceShippingTax }] : []),
+    ],
+    totalLabel: "合計（税込）",
+    totalAmount: clemenceTotal,
+  }
+
+  const handleClemenceCheckout = async () => {
+    if (!clemencePrefecture || !clemenceShippingInfo || clemenceShippingInfo.inquiry) {
+      setClemenceCheckoutError("配送先都道府県を選択してください")
+      clemencePurchaseRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+      return
+    }
+    setIsClemenceCheckingOut(true)
+    setClemenceCheckoutError(null)
+    fireGtagEvent("begin_checkout", {
+      currency: "JPY",
+      value: clemenceTotal,
+      checkout_method: "card",
+      items: [{ item_id: "clemence", item_name: "Clémence", quantity: 1 }],
+    })
+    try {
+      const res = await fetch("/api/checkout/simple", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(clemenceOrderPayload),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.clientSecret) {
+        throw new Error(data?.error || "セッションの作成に失敗しました")
+      }
+      setCheckoutClientSecret(data.clientSecret)
+      setIsClemenceCheckingOut(false)
+    } catch (err) {
+      setClemenceCheckoutError(err instanceof Error ? err.message : "セッションの作成に失敗しました")
+      setIsClemenceCheckingOut(false)
+    }
+  }
+
+  const handleClemenceBankOrder = () => {
+    if (!clemencePrefecture || !clemenceShippingInfo || clemenceShippingInfo.inquiry) {
+      setClemenceCheckoutError("配送先都道府県を選択してください")
+      clemencePurchaseRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+      return
+    }
+    setClemenceCheckoutError(null)
+    fireGtagEvent("begin_checkout", {
+      currency: "JPY",
+      value: clemenceTotal,
+      checkout_method: "bank",
+      items: [{ item_id: "clemence", item_name: "Clémence", quantity: 1 }],
+    })
+    setClemenceBankOrderOpen(true)
+  }
 
   const handleDirectCheckout = async () => {
     setIsCheckingOut(true)
@@ -646,9 +958,28 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
                     クリックポストで発送（送料込）。Stripe 決済画面に進みます。
                   </p>
                 </>
+              ) : isClemencePurchase ? (
+                <ClemencePurchaseBlock
+                  prefecture={clemencePrefecture}
+                  onPrefectureChange={(v) => {
+                    setClemencePrefecture(v)
+                    setClemenceCheckoutError(null)
+                  }}
+                  shippingInfo={clemenceShippingInfo}
+                  basePrice={product.basePrice}
+                  extensionPrice={clemenceExtPrice}
+                  deliveryType={clemenceDelivery}
+                  onDeliveryChange={setClemenceDelivery}
+                  deliveryDate={clemenceDeliveryDate}
+                  onCardBuy={handleClemenceCheckout}
+                  onBankOrder={handleClemenceBankOrder}
+                  isCheckingOut={isClemenceCheckingOut}
+                  error={clemenceCheckoutError}
+                  purchaseAreaRef={clemencePurchaseRef}
+                />
               ) : (
                 <>
-                  {/* 送料計算が必要な商品はお問い合わせフォーム経由（Clémence は入力内容を引き継ぐ） */}
+                  {/* 送料計算が必要な商品はお問い合わせフォーム経由 */}
                   <PrimaryCTA
                     href={`/contact?product=${encodeURIComponent(product.slug)}&category=order${clemenceQuery}`}
                     variant="gold"
@@ -679,6 +1010,37 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
             <p className="text-sm text-muted-foreground leading-loose mt-10 mb-6 whitespace-pre-line">
               {product.longDescription}
             </p>
+
+            {/* ===== 相談誘導 CTA — 購入前の不安解消（見積計算機つき商品ページと同じパターン） ===== */}
+            <div className="mb-10 rounded-lg border-2 border-gold/50 bg-gold/[0.05] p-6 shadow-sm">
+              <p className="mb-1 flex items-center gap-2 text-[12px] tracking-[0.2em] uppercase text-gold font-semibold">
+                <Camera className="w-4 h-4 shrink-0" />
+                Before you order
+              </p>
+              <p className="mb-3 font-serif text-[18px] font-bold text-foreground">
+                ご購入前に、ご不明点はお気軽にご相談ください
+              </p>
+              <p className="mb-5 text-[14px] leading-relaxed text-muted-foreground">
+                「取り付けられるか不安」「サイズが合うか確認したい」——
+                そんな疑問でも大歓迎です。写真 1 枚送るだけで職人が直接確認します。
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <a
+                  href="https://lin.ee/Tnjukrf"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 rounded-md border-2 border-[#06C755] bg-white px-5 py-3 text-[14px] font-semibold text-[#06C755] transition hover:bg-[#06C755]/5"
+                >
+                  LINE で写真を送る
+                </a>
+                <Link
+                  href={`/contact?product=${encodeURIComponent(product.slug)}`}
+                  className="flex items-center justify-center gap-2 rounded-md border-2 border-gold/40 bg-white px-5 py-3 text-[14px] font-semibold text-foreground transition hover:border-gold hover:text-gold"
+                >
+                  フォームで相談する
+                </Link>
+              </div>
+            </div>
 
             {/* 仕上げのこだわり訴求。仕上げ spec からウレタン塗装／蜜蝋仕上げを自動で出し分け。 */}
             <div className="mb-10">
@@ -813,8 +1175,20 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
           ],
           totalLabel: "合計（税込・送料込）",
           totalAmount: product.basePrice * quantity,
-        } : undefined}
+        } : isClemencePurchase && clemenceShippingInfo && !clemenceShippingInfo.inquiry
+          ? clemenceSummary
+          : undefined}
       />
+
+      {/* Clémence 銀行振込モーダル（見積計算機つき商品と同じフロー） */}
+      {isClemencePurchase && (
+        <BankOrderModal
+          open={clemenceBankOrderOpen}
+          onClose={() => setClemenceBankOrderOpen(false)}
+          orderPayload={clemenceOrderPayload}
+          summary={clemenceSummary}
+        />
+      )}
     </main>
   )
 }

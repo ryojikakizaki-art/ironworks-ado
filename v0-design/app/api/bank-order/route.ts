@@ -2,9 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PRODUCTS, calcPrice, RUSH_RATE } from '@/lib/products/order-pricing';
 // 階段手摺 Laurent の価格・寸法計算の正本（商品ページ・カード決済と共有）。
 import { LAURENT, parseStairOrderBody } from '@/lib/products/stair-pricing';
-import { calcShipping, type ProductType } from '@/lib/shipping/sagawa';
+import { calcShipping, calcClemenceShipping, type ProductType } from '@/lib/shipping/sagawa';
+// Clémence（トイレ手すり）の価格・寸法の正本（商品ページ・カード決済と共有）。
+import {
+  BASE_PRICE as CLEMENCE_BASE_PRICE,
+  EXTENSION_MAX_MM as CLEMENCE_EXTENSION_MAX_MM,
+  W_STANDARD_MIN as CLEMENCE_W_MIN,
+  W_MAX as CLEMENCE_W_MAX,
+  H_MIN as CLEMENCE_H_MIN,
+  H_MAX as CLEMENCE_H_MAX,
+  calcExtensionPrice,
+} from '@/lib/drawing-modal/clemence-svg';
 import { writeOrderRow } from '@/lib/order-ledger';
 import { BANK_ACCOUNT } from '@/lib/bank-account';
+
+const clampNum = (v: unknown, lo: number, hi: number) =>
+  Math.min(Math.max(Math.round(Number(v)) || lo, lo), hi);
 
 // googleapis（受注台帳）を使うため Node ランタイム固定。
 export const runtime = 'nodejs';
@@ -38,6 +51,12 @@ type Body = {
   zakinCustom?: boolean;
   angleDeg?: number;
   angleDir?: string;
+  // Clémence 専用（寸法・ブラケット位置・延長）
+  w?: number;
+  h?: number;
+  x2?: number;
+  x3?: number;
+  ext?: number;
   // お客様情報
   customerName?: string;
   customerKana?: string;
@@ -117,6 +136,37 @@ export async function POST(request: NextRequest) {
     totalYen = stairOrder.price.total + stairShipping.shipping + stairShippingTax;
     productLabel = stairOrder.productLabel;
     specParts = [...stairOrder.specParts, `通常配送（${LAURENT.deliveryBusinessDays}営業日）`];
+  } else if (productKey === 'clemence') {
+    // Clémence（トイレ手すり）: 本体（税込 88,000＋延長）＋特急+20%＋送料（160/170サイズ・税抜）＋送料税10%。
+    // 価格ロジックはカード決済 /api/checkout/simple の Clémence 分岐と一致させる。
+    const w = clampNum(body.w, CLEMENCE_W_MIN, CLEMENCE_W_MAX);
+    const h = clampNum(body.h, CLEMENCE_H_MIN, CLEMENCE_H_MAX);
+    const x2 = clampNum(body.x2, 120, w - 170);
+    const x3 = clampNum(body.x3, x2 + 100, w - 70);
+    const ext = clampNum(body.ext, 0, CLEMENCE_EXTENSION_MAX_MM);
+    const rushDelivery = !!body.rushDelivery;
+
+    const clemenceShipping = calcClemenceShipping(prefecture, ext);
+    if (clemenceShipping.inquiry) {
+      return NextResponse.json({
+        ok: false,
+        error: clemenceShipping.inquiryReason || '配送条件により別途お見積もりが必要です',
+      }, { status: 400 });
+    }
+    const extensionPrice = calcExtensionPrice(ext);
+    const subtotal = CLEMENCE_BASE_PRICE + extensionPrice;
+    const rushSurcharge = rushDelivery ? Math.round(subtotal * RUSH_RATE) : 0;
+    const shippingYen = clemenceShipping.shipping;
+    const shippingTaxYen = Math.round(shippingYen * 0.1);
+    totalYen = subtotal + rushSurcharge + shippingYen + shippingTaxYen;
+
+    const extLabel = ext > 0 ? `・③延長+${ext}mm` : '';
+    productLabel = `Clémence クレマンス トイレ手すり（W${w}×H${h}mm${extLabel}）`;
+    specParts = [
+      `②${x2}mm / ③${x3}mm`,
+      rushDelivery ? '特急配送（5営業日）' : '通常配送（10営業日）',
+      '2液型ウレタン艶消し黒 古美仕上げ',
+    ];
   } else {
   // ↓ 既存の壁付け手すりフロー（diff を最小にするためインデントは変えていない）
   const prod = PRODUCTS[productKey];
