@@ -3,8 +3,9 @@
 import { useMemo, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronLeft, ChevronRight, Mail, MessageSquare, ShoppingBag, Minus, Plus, Hammer, Paintbrush, Ruler, Wrench, Sparkles, Clock, Truck, ShieldCheck, Camera } from "lucide-react"
+import { ChevronLeft, ChevronRight, ChevronDown, Check, Mail, MessageSquare, ShoppingBag, Minus, Plus, Hammer, Paintbrush, Ruler, Wrench, Sparkles, Clock, Truck, ShieldCheck, Camera, Copy, FileDown } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
@@ -20,6 +21,7 @@ import { FinishCommitment } from "@/components/finish-commitment"
 import { ClemenceSpecPanel } from "@/components/clemence-spec-panel"
 import { calcClemenceShipping, PREF_TO_REGION } from "@/lib/shipping/sagawa"
 import { getEarliestArrival } from "@/lib/business-days"
+import { copyToClipboard } from "@/lib/products/quote-share"
 
 const PREFECTURES = Object.keys(PREF_TO_REGION)
 
@@ -222,198 +224,6 @@ function PriceTable({ buildup }: { buildup: NonNullable<SimpleProduct["priceBuil
 const CLEMENCE_RUSH_RATE = 0.2
 
 /**
- * Clémence 専用の購入エリア（見積計算機つき商品ページ＝René 等と同じ構成）。
- * 配送先都道府県 → 納品日・配送（通常／特急+20%）→ 価格内訳 → 合計 →
- * クレジットカードで購入／銀行振込で注文する の 2 ボタンを縦に並べる。
- * 送料は佐川急便レート表（税抜・160/170 サイズ）を calcClemenceShipping で引き、
- * 送料消費税 10% を別建てで加算する（René と同じ税処理）。
- */
-function ClemencePurchaseBlock({
-  prefecture,
-  onPrefectureChange,
-  shippingInfo,
-  basePrice,
-  extensionPrice,
-  deliveryType,
-  onDeliveryChange,
-  deliveryDate,
-  onCardBuy,
-  onBankOrder,
-  isCheckingOut,
-  error,
-  purchaseAreaRef,
-}: {
-  prefecture: string
-  onPrefectureChange: (v: string) => void
-  shippingInfo: ReturnType<typeof calcClemenceShipping> | null
-  basePrice: number
-  extensionPrice: number
-  deliveryType: "normal" | "express"
-  onDeliveryChange: (v: "normal" | "express") => void
-  deliveryDate: string
-  onCardBuy: () => void
-  onBankOrder: () => void
-  isCheckingOut: boolean
-  error: string | null
-  purchaseAreaRef?: React.RefObject<HTMLDivElement | null>
-}) {
-  const subtotal = basePrice + extensionPrice
-  const expressAddon = deliveryType === "express" ? Math.round(subtotal * CLEMENCE_RUSH_RATE) : 0
-  const shippingReady = !!prefecture && !!shippingInfo && !shippingInfo.inquiry
-  const shipping = shippingReady ? shippingInfo!.shipping : 0
-  const shippingTax = Math.round(shipping * 0.1)
-  const total = subtotal + expressAddon + shipping + shippingTax
-  const canBuy = shippingReady
-
-  return (
-    <div className="flex flex-col gap-6">
-      {/* 配送先 */}
-      <div className="space-y-2">
-        <h3 className="font-serif text-[20px] font-bold text-foreground tracking-tight">
-          配送先
-          {!prefecture && (
-            <span className="ml-2 text-[11px] font-sans font-medium text-red-600 align-middle tracking-wider">必須</span>
-          )}
-        </h3>
-        <select
-          value={prefecture}
-          onChange={(e) => onPrefectureChange(e.target.value)}
-          className={`w-full h-12 px-4 border-2 rounded-md text-[14px] font-medium transition-colors focus:outline-none ${
-            prefecture ? "border-gold bg-gold/5 text-foreground" : "border-gold/60 bg-white text-foreground hover:border-gold"
-          }`}
-        >
-          <option value="">配送先都道府県を選択</option>
-          {PREFECTURES.map((p) => (
-            <option key={p} value={p}>
-              {p}
-            </option>
-          ))}
-        </select>
-        {prefecture && shippingInfo?.inquiry && (
-          <p className="text-[13px] text-red-700">
-            {shippingInfo.inquiryReason || "この配送先は別途お見積もりが必要です"}
-          </p>
-        )}
-      </div>
-
-      {/* 納品日・配送 */}
-      <div className="space-y-3">
-        <h3 className="font-serif text-[20px] font-bold text-foreground tracking-tight">納品日・配送を選ぶ</h3>
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={() => onDeliveryChange("normal")}
-            className={`flex-1 py-4 px-4 rounded-md border-2 transition-all ${
-              deliveryType === "normal" ? "border-gold bg-gold/5" : "border-gold/20 hover:border-gold/50"
-            }`}
-          >
-            <div className="text-[15px] font-medium">通常</div>
-            <div className="text-[12px] text-muted-foreground mt-0.5">10営業日</div>
-          </button>
-          <button
-            type="button"
-            onClick={() => onDeliveryChange("express")}
-            className={`flex-1 py-4 px-4 rounded-md border-2 transition-all ${
-              deliveryType === "express" ? "border-gold bg-gold/5" : "border-gold/20 hover:border-gold/50"
-            }`}
-          >
-            <div className="text-[15px] font-medium">特急 <span className="text-gold">+20%</span></div>
-            <div className="text-[12px] text-muted-foreground mt-0.5">5営業日</div>
-          </button>
-        </div>
-        <p className="text-[14px] text-muted-foreground">
-          お届け予定日: <span className="text-foreground font-medium">{deliveryDate}頃</span>
-        </p>
-      </div>
-
-      {/* 価格内訳 */}
-      <div className="bg-white border border-gold/20 rounded-lg p-5 space-y-2.5">
-        <div className="flex justify-between text-[15px]">
-          <span className="text-muted-foreground">本体料金（500×1000mm 一律）</span>
-          <span className="font-mono">¥{basePrice.toLocaleString()}</span>
-        </div>
-        {extensionPrice > 0 && (
-          <div className="flex justify-between text-[15px]">
-            <span className="text-muted-foreground">③側延長オプション</span>
-            <span className="font-mono">+¥{extensionPrice.toLocaleString()}</span>
-          </div>
-        )}
-        {expressAddon > 0 && (
-          <div className="flex justify-between text-[15px]">
-            <span className="text-muted-foreground">特急割増（+20%）</span>
-            <span className="font-mono">+¥{expressAddon.toLocaleString()}</span>
-          </div>
-        )}
-        {shippingReady && shipping > 0 && (
-          <div className="pt-2 border-t border-border/60 space-y-1">
-            <div className="flex justify-between text-[15px]">
-              <span className="text-muted-foreground">送料（{prefecture}・佐川急便・税抜）</span>
-              <span className="font-mono">+¥{shipping.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-[15px]">
-              <span className="text-muted-foreground">送料消費税（10%）</span>
-              <span className="font-mono">+¥{shippingTax.toLocaleString()}</span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* 合計 */}
-      <div ref={purchaseAreaRef} className="flex items-center gap-4">
-        <div className="w-2 h-12 bg-gold rounded-full" />
-        <div>
-          <span className="text-[13px] tracking-[0.15em] uppercase text-muted-foreground block mb-1">合計（税込）</span>
-          <span className="font-serif text-4xl text-foreground">¥{total.toLocaleString()}</span>
-          {!prefecture && (
-            <p className="mt-1.5 flex items-start gap-1.5 text-[13px] text-muted-foreground">
-              <Truck className="w-3.5 h-3.5 mt-0.5 shrink-0 text-gold" />
-              <span>配送先を選択すると送料を含む合計が確定します</span>
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* CTA ボタン（カード決済＋銀行振込） */}
-      <div className="space-y-3">
-        {error && (
-          <div className="border-2 border-red-500/60 bg-red-50 rounded-md p-3 text-[13px] text-red-700">
-            {error}
-          </div>
-        )}
-        <div className="flex justify-center">
-          <PrimaryCTA
-            onClick={onCardBuy}
-            disabled={isCheckingOut || !canBuy}
-            variant="purchase"
-            size="lg"
-            withArrow
-            className={`font-sans w-full max-w-[340px] ${isCheckingOut ? "cursor-wait" : ""}`}
-          >
-            {isCheckingOut ? "購入ページへ移動中…" : "クレジットカードで購入"}
-          </PrimaryCTA>
-        </div>
-        <div className="flex justify-center">
-          <PrimaryCTA
-            type="button"
-            onClick={onBankOrder}
-            disabled={!canBuy}
-            variant="purchase-steel"
-            size="lg"
-            withArrow
-            className="font-sans w-full max-w-[340px]"
-          >
-            銀行振込で注文する
-          </PrimaryCTA>
-        </div>
-        <p className="text-xs text-muted-foreground text-center leading-loose">
-          佐川急便で発送（送料は配送先により異なります／沖縄県は別途お見積もり）。
-        </p>
-      </div>
-    </div>
-  )
-}
-
-/**
  * ATF（ファーストビュー）に縦並びで安心要素を提示するバッジリスト。
  * - 価格直下に挿入し、価格ショックを和らげつつ高単価商品の検討材料を即座に提示する
  * - ハンドメイドEC の品位を保つため装飾は最小限（左にゴールドアイコン + ラベル + 補足）
@@ -572,14 +382,44 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   // Embedded Checkout: clientSecret が入ったらモーダルが開く
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
+  // Clémence 専用: 見積もり共有 URL からの復元（w/h/x2/x3/ext は ClemenceSpecPanel へ
+  // initial として渡す。René の shareQuery と同じ発想だが、Clémence は W/H/ブラケット位置
+  // というまったく別の入力モデルのため lib/products/quote-share.ts は流用せず、
+  // ClemenceSpecPanel が既に生成している w/h/x2/x3/ext クエリのキー名をそのまま共有 URL にも使う）。
+  const clemenceSearchParams = useSearchParams()
+  const clemenceRestored = useMemo(() => {
+    if (!isClemencePurchase) return null
+    const num = (key: string) => {
+      const v = Number(clemenceSearchParams.get(key))
+      return Number.isFinite(v) && v > 0 ? v : undefined
+    }
+    return {
+      w: num("w"),
+      h: num("h"),
+      x2: num("x2"),
+      x3: num("x3"),
+      ext: num("ext"),
+      pref: clemenceSearchParams.get("pref") || "",
+      dt: clemenceSearchParams.get("dt") === "e" ? ("express" as const) : ("normal" as const),
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isClemencePurchase])
+
   // Clémence 専用: 寸法・ブラケット位置の入力内容を ClemenceSpecPanel から引き継ぐクエリ
   const [clemenceQuery, setClemenceQuery] = useState("")
-  const [clemencePrefecture, setClemencePrefecture] = useState("")
-  const [clemenceDelivery, setClemenceDelivery] = useState<"normal" | "express">("normal")
+  const [clemencePrefecture, setClemencePrefecture] = useState(() =>
+    clemenceRestored?.pref && PREFECTURES.includes(clemenceRestored.pref) ? clemenceRestored.pref : "",
+  )
+  const [clemenceDelivery, setClemenceDelivery] = useState<"normal" | "express">(
+    () => clemenceRestored?.dt ?? "normal",
+  )
   const [isClemenceCheckingOut, setIsClemenceCheckingOut] = useState(false)
   const [clemenceCheckoutError, setClemenceCheckoutError] = useState<string | null>(null)
   const [clemenceBankOrderOpen, setClemenceBankOrderOpen] = useState(false)
+  const [isClemencePrefOpen, setIsClemencePrefOpen] = useState(false)
   const clemencePurchaseRef = useRef<HTMLDivElement | null>(null)
+  const clemencePrefRef = useRef<HTMLDivElement | null>(null)
+  const [clemenceLinkCopied, setClemenceLinkCopied] = useState(false)
 
   const clemenceParams = useMemo(
     () => new URLSearchParams(clemenceQuery.replace(/^&/, "")),
@@ -636,6 +476,34 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
     totalLabel: "合計（税込）",
     totalAmount: clemenceTotal,
   }
+
+  // Step 表示用（René と同じ 01〜04 の完了判定）
+  const clemenceStep2Done = clemencePrefecture !== ""
+  const clemenceStep4Ready = clemenceStep2Done
+
+  // 見積もり共有 URL（René の shareUrl/lineShareUrl と同じ役割）。
+  // ClemenceSpecPanel が生成する w/h/x2/x3/ext クエリに配送先・配送区分を足すだけ。
+  const clemenceShareQuery = new URLSearchParams(clemenceParams)
+  clemenceShareQuery.delete("type")
+  clemenceShareQuery.delete("extprice")
+  clemenceShareQuery.delete("total")
+  if (clemencePrefecture) clemenceShareQuery.set("pref", clemencePrefecture)
+  if (clemenceDelivery === "express") clemenceShareQuery.set("dt", "e")
+  const clemenceShareUrl = `https://ado.tantetuzest.com/products/clemence?${clemenceShareQuery.toString()}`
+  const clemenceLineShareUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(clemenceShareUrl)}`
+  const handleClemenceCopyShareLink = async () => {
+    const ok = await copyToClipboard(clemenceShareUrl)
+    if (ok) {
+      setClemenceLinkCopied(true)
+      setTimeout(() => setClemenceLinkCopied(false), 2200)
+    }
+  }
+  const handleClemencePrintQuote = () => window.print()
+  const clemenceQuoteIssueDate = new Date().toLocaleDateString("ja-JP", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })
 
   const handleClemenceCheckout = async () => {
     if (!clemencePrefecture || !clemenceShippingInfo || clemenceShippingInfo.inquiry) {
@@ -880,172 +748,483 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
                    図面フロー側の「価格の目安を先頭へ」と同じ並びに統一） */}
             {!isQuoteOnly && <PriceBlock product={product} />}
 
-            {/* ── 安心バッジ（ATF）── */}
-            {product.trustBadges && product.trustBadges.length > 0 && (
-              <TrustBadges badges={product.trustBadges} />
-            )}
+            {isClemencePurchase ? (
+              <>
+                {/* René 等・見積計算機つき商品ページと同じ並び:
+                    価格のすぐ下に介護保険案内＋仕上げのこだわり訴求を置く（蠣﨑さん指示・2026-07-11） */}
+                {isHandrail && <KaigoNotice />}
+                <div className="mb-10">
+                  <FinishCommitment specs={product.specs} />
+                </div>
 
-            {/* ── Clémence 専用: 寸法・ブラケット位置指定＋設計図 PDF ── */}
-            {product.slug === "clemence" && <ClemenceSpecPanel onQueryChange={setClemenceQuery} />}
+                {/* 商品説明（長文）*/}
+                <p className="text-[15px] leading-relaxed text-foreground whitespace-pre-line mb-10">
+                  {product.longDescription}
+                </p>
 
-            {/* CTA */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4 }}
-              className="flex flex-col gap-3"
-            >
-              {isQuoteOnly ? (
-                <PrimaryCTA
-                  href={`/contact?product=${encodeURIComponent(product.slug)}&category=size`}
-                  variant="dark"
-                  size="lg"
-                  icon={<MessageSquare className="w-4 h-4" />}
-                  withArrow
-                >
-                  {product.primaryCtaLabel ?? "お見積もり・ご相談はこちら"}
-                </PrimaryCTA>
-              ) : isDirectCheckout ? (
-                <>
-                  {/* 数量セレクタ — 立体感のあるカード */}
-                  <div className="flex items-center justify-between border-2 border-gold/20 bg-card rounded-md px-5 py-4 mb-2 shadow-sm">
-                    <span className="font-serif text-[15px] font-medium text-foreground">数量</span>
-                    <div className="flex items-center gap-4">
-                      <button
-                        type="button"
-                        onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                        disabled={isCheckingOut || quantity <= 1}
-                        className="w-9 h-9 flex items-center justify-center rounded-full border border-gold/20 bg-white shadow-sm hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                        aria-label="数量を減らす"
-                      >
-                        <Minus className="w-3.5 h-3.5" />
-                      </button>
-                      <span className="font-serif text-[18px] font-bold min-w-[2ch] text-center text-foreground">
-                        {quantity}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setQuantity((q) => Math.min(10, q + 1))}
-                        disabled={isCheckingOut || quantity >= 10}
-                        className="w-9 h-9 flex items-center justify-center rounded-full border border-gold/20 bg-white shadow-sm hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                        aria-label="数量を増やす"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                  {checkoutError && (
-                    <div className="border-2 border-red-500/60 bg-red-50 rounded-md p-3 text-[13px] text-red-700">
-                      {checkoutError}
-                    </div>
-                  )}
-                  <div className="flex justify-center">
-                    <PrimaryCTA
-                      onClick={handleDirectCheckout}
-                      disabled={isCheckingOut}
-                      variant="purchase"
-                      size="lg"
-                      icon={<ShoppingBag className="w-4 h-4" />}
-                      withArrow
-                      className={isCheckingOut ? "cursor-wait" : ""}
+                {/* ===== 相談誘導 CTA① — 説明文直後（René と同一構成） ===== */}
+                <div className="mb-10 rounded-lg border-2 border-gold/50 bg-gold/[0.05] p-6 shadow-sm">
+                  <p className="mb-1 flex items-center gap-2 text-[12px] tracking-[0.2em] uppercase text-gold font-semibold">
+                    <Camera className="w-4 h-4 shrink-0" />
+                    Before you order
+                  </p>
+                  <p className="mb-3 font-serif text-[18px] font-bold text-foreground">
+                    取り付けられるか、まず確認してみませんか？
+                  </p>
+                  <p className="mb-5 text-[14px] leading-relaxed text-muted-foreground">
+                    「下地の位置がわからない」「サイズが合うか不安」——
+                    そんな疑問でも大歓迎です。写真 1 枚送るだけで職人が直接確認します。
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <a
+                      href="https://lin.ee/Tnjukrf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 rounded-md border-2 border-[#06C755] bg-white px-5 py-3 text-[14px] font-semibold text-[#06C755] transition hover:bg-[#06C755]/5"
                     >
-                      {isCheckingOut
-                        ? "決済ページへ移動中…"
-                        : `ご注文（合計 ¥${(product.basePrice * quantity).toLocaleString()}）`}
-                    </PrimaryCTA>
+                      LINE で写真を送る
+                    </a>
+                    <Link
+                      href={`/contact?product=${encodeURIComponent(product.slug)}`}
+                      className="flex items-center justify-center gap-2 rounded-md border-2 border-gold/40 bg-white px-5 py-3 text-[14px] font-semibold text-foreground transition hover:border-gold hover:text-gold"
+                    >
+                      フォームで相談する
+                    </Link>
                   </div>
-                  <p className="text-xs text-muted-foreground text-center leading-loose">
-                    クリックポストで発送（送料込）。Stripe 決済画面に進みます。
-                  </p>
-                </>
-              ) : isClemencePurchase ? (
-                <ClemencePurchaseBlock
-                  prefecture={clemencePrefecture}
-                  onPrefectureChange={(v) => {
-                    setClemencePrefecture(v)
-                    setClemenceCheckoutError(null)
-                  }}
-                  shippingInfo={clemenceShippingInfo}
-                  basePrice={product.basePrice}
-                  extensionPrice={clemenceExtPrice}
-                  deliveryType={clemenceDelivery}
-                  onDeliveryChange={setClemenceDelivery}
-                  deliveryDate={clemenceDeliveryDate}
-                  onCardBuy={handleClemenceCheckout}
-                  onBankOrder={handleClemenceBankOrder}
-                  isCheckingOut={isClemenceCheckingOut}
-                  error={clemenceCheckoutError}
-                  purchaseAreaRef={clemencePurchaseRef}
-                />
-              ) : (
-                <>
-                  {/* 送料計算が必要な商品はお問い合わせフォーム経由 */}
-                  <PrimaryCTA
-                    href={`/contact?product=${encodeURIComponent(product.slug)}&category=order${clemenceQuery}`}
-                    variant="gold"
-                    size="lg"
-                    icon={<Mail className="w-4 h-4" />}
-                    withArrow
-                  >
-                    {product.primaryCtaLabel ?? "ご注文・お問い合わせ"}
-                  </PrimaryCTA>
-                  <p className="text-xs text-muted-foreground text-center leading-loose">
-                    {product.primaryCtaSub ?? (
-                      <>
-                        ご注文確認後、見積書（送料込）をお送りいたします。
-                        <br />
-                        オンライン決済対応は順次拡大中です。
-                      </>
-                    )}
-                  </p>
-                </>
-              )}
+                </div>
 
-            </motion.div>
+                {/* Divider */}
+                <div className="border-t-2 border-gold/30 pt-6" />
 
-            {/* 介護保険のご案内（手すりカテゴリのみ） */}
-            {isHandrail && <KaigoNotice className="mt-8" />}
+                {/* PRICE CALCULATOR（René の Step 01〜04 構成と同一） */}
+                <div className="space-y-7">
+                  <div className="flex items-center gap-3">
+                    <span className="text-[13px] tracking-[0.2em] uppercase text-gold font-semibold">
+                      PRICE CALCULATOR
+                    </span>
+                    <div className="flex-1 h-px bg-gold/30" />
+                  </div>
 
-            {/* 詳細 */}
-            <p className="text-sm text-muted-foreground leading-loose mt-10 mb-6 whitespace-pre-line">
-              {product.longDescription}
-            </p>
+                  {/* Step 1: サイズとブラケット位置 */}
+                  <div className="relative pl-14">
+                    <div className="absolute left-0 top-0 w-11 h-11 flex items-center justify-center text-[16px] font-serif font-bold rounded-full shadow-sm bg-gold text-white">
+                      01
+                    </div>
+                    <div className="absolute left-[21px] top-12 bottom-0 w-px bg-border" />
+                    <div className="space-y-4">
+                      <h3 className="font-serif text-[22px] font-bold text-foreground tracking-tight">
+                        サイズとブラケット位置を指定
+                      </h3>
+                      <ClemenceSpecPanel onQueryChange={setClemenceQuery} initial={clemenceRestored ?? undefined} />
+                    </div>
+                  </div>
 
-            {/* ===== 相談誘導 CTA — 購入前の不安解消（見積計算機つき商品ページと同じパターン） ===== */}
-            <div className="mb-10 rounded-lg border-2 border-gold/50 bg-gold/[0.05] p-6 shadow-sm">
-              <p className="mb-1 flex items-center gap-2 text-[12px] tracking-[0.2em] uppercase text-gold font-semibold">
-                <Camera className="w-4 h-4 shrink-0" />
-                Before you order
-              </p>
-              <p className="mb-3 font-serif text-[18px] font-bold text-foreground">
-                ご購入前に、ご不明点はお気軽にご相談ください
-              </p>
-              <p className="mb-5 text-[14px] leading-relaxed text-muted-foreground">
-                「取り付けられるか不安」「サイズが合うか確認したい」——
-                そんな疑問でも大歓迎です。写真 1 枚送るだけで職人が直接確認します。
-              </p>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <a
-                  href="https://lin.ee/Tnjukrf"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 rounded-md border-2 border-[#06C755] bg-white px-5 py-3 text-[14px] font-semibold text-[#06C755] transition hover:bg-[#06C755]/5"
+                  {/* Step 2: 配送先 */}
+                  <div className="relative pl-14 pt-6">
+                    <div className={`absolute left-0 top-6 w-11 h-11 flex items-center justify-center text-[16px] font-serif font-bold rounded-full shadow-sm transition-colors ${
+                      clemenceStep2Done ? "bg-gold text-white" : "bg-gold/15 text-gold"
+                    }`}>
+                      02
+                    </div>
+                    <div className="absolute left-[21px] top-[68px] bottom-0 w-px bg-border" />
+                    <div className="space-y-4">
+                      <h3 className="font-serif text-[22px] font-bold text-foreground tracking-tight">
+                        配送先
+                        {!clemencePrefecture && (
+                          <span className="ml-2 text-[11px] font-sans font-medium text-red-600 align-middle tracking-wider">必須</span>
+                        )}
+                      </h3>
+                      <div ref={clemencePrefRef} className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setIsClemencePrefOpen(!isClemencePrefOpen)}
+                          className={`w-full h-12 px-4 flex items-center justify-between border-2 rounded-md text-[14px] font-medium transition-colors ${
+                            clemencePrefecture
+                              ? "border-gold bg-gold/5 text-foreground"
+                              : "border-gold/60 bg-white text-foreground hover:border-gold"
+                          }`}
+                        >
+                          <span className="flex items-center gap-2">
+                            {!clemencePrefecture && (
+                              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-gold/15 text-gold text-[11px] font-bold">
+                                ▼
+                              </span>
+                            )}
+                            <span>{clemencePrefecture || "配送先都道府県を選択 ▸"}</span>
+                          </span>
+                          <ChevronDown className={`w-5 h-5 text-gold transition-transform ${isClemencePrefOpen ? "rotate-180" : ""}`} />
+                        </button>
+                        <AnimatePresence>
+                          {isClemencePrefOpen && (
+                            <motion.div
+                              initial={{ opacity: 0, y: -10 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -10 }}
+                              className="absolute top-full left-0 right-0 mt-1 bg-white border border-gold/20 rounded-md shadow-lg max-h-60 overflow-y-auto z-20"
+                            >
+                              {PREFECTURES.map((pref) => (
+                                <button
+                                  key={pref}
+                                  type="button"
+                                  onClick={() => {
+                                    setClemencePrefecture(pref)
+                                    setIsClemencePrefOpen(false)
+                                    setClemenceCheckoutError(null)
+                                  }}
+                                  className="w-full px-4 py-2 text-left text-[13px] hover:bg-muted transition-colors flex items-center justify-between"
+                                >
+                                  {pref}
+                                  {clemencePrefecture === pref && <Check className="w-4 h-4 text-gold" />}
+                                </button>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Step 3: 納品日・配送 */}
+                  <div className="relative pl-14 pt-6">
+                    <div className="absolute left-0 top-6 w-11 h-11 flex items-center justify-center text-[16px] font-serif font-bold rounded-full shadow-sm bg-gold text-white">
+                      03
+                    </div>
+                    <div className="absolute left-[21px] top-[68px] bottom-0 w-px bg-border" />
+                    <div className="space-y-4">
+                      <h3 className="font-serif text-[22px] font-bold text-foreground tracking-tight">納品日・配送を選ぶ</h3>
+                      <div className="flex gap-3">
+                        <button
+                          type="button"
+                          onClick={() => setClemenceDelivery("normal")}
+                          className={`flex-1 py-4 px-4 rounded-md border-2 transition-all ${
+                            clemenceDelivery === "normal" ? "border-gold bg-gold/5" : "border-gold/20 hover:border-gold/50"
+                          }`}
+                        >
+                          <div className="text-[15px] font-medium">通常</div>
+                          <div className="text-[12px] text-muted-foreground mt-0.5">10営業日</div>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setClemenceDelivery("express")}
+                          className={`flex-1 py-4 px-4 rounded-md border-2 transition-all ${
+                            clemenceDelivery === "express" ? "border-gold bg-gold/5" : "border-gold/20 hover:border-gold/50"
+                          }`}
+                        >
+                          <div className="text-[15px] font-medium">特急 <span className="text-gold">+20%</span></div>
+                          <div className="text-[12px] text-muted-foreground mt-0.5">5営業日</div>
+                        </button>
+                      </div>
+                      <p className="text-[14px] text-muted-foreground">
+                        お届け予定日: <span className="text-foreground font-medium">{clemenceDeliveryDate}頃</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Step 4: 確認して購入 */}
+                  <div className="relative pl-14 pt-6">
+                    <div className={`absolute left-0 top-6 w-11 h-11 flex items-center justify-center text-[16px] font-serif font-bold rounded-full shadow-sm transition-colors ${
+                      clemenceStep4Ready ? "bg-gold text-white" : "bg-gold/15 text-gold"
+                    }`}>
+                      04
+                    </div>
+
+                    <div className="space-y-4">
+                      <h3 className="font-serif text-[22px] font-bold text-foreground tracking-tight">確認して購入</h3>
+
+                      {/* Price Breakdown */}
+                      <div className="bg-white border border-gold/20 rounded-lg p-5 space-y-2.5">
+                        <div className="flex justify-between text-[15px]">
+                          <span className="text-muted-foreground">本体料金（500×1000mm 一律）</span>
+                          <span className="font-mono">¥{product.basePrice.toLocaleString()}</span>
+                        </div>
+                        {clemenceExtPrice > 0 && (
+                          <div className="flex justify-between text-[15px]">
+                            <span className="text-muted-foreground">③側延長オプション</span>
+                            <span className="font-mono">+¥{clemenceExtPrice.toLocaleString()}</span>
+                          </div>
+                        )}
+                        {clemenceExpressAddon > 0 && (
+                          <div className="flex justify-between text-[15px]">
+                            <span className="text-muted-foreground">特急割増（+20%）</span>
+                            <span className="font-mono">+¥{clemenceExpressAddon.toLocaleString()}</span>
+                          </div>
+                        )}
+                        {clemenceShipping > 0 && (
+                          <div className="pt-2 border-t border-border/60 space-y-1">
+                            <div className="flex justify-between text-[15px]">
+                              <span className="text-muted-foreground">送料（{clemencePrefecture}・佐川急便・税抜）</span>
+                              <span className="font-mono">+¥{clemenceShipping.toLocaleString()}</span>
+                            </div>
+                            <div className="flex justify-between text-[15px]">
+                              <span className="text-muted-foreground">送料消費税（10%）</span>
+                              <span className="font-mono">+¥{clemenceShippingTax.toLocaleString()}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Shipping Inquiry Banner（沖縄県のみ） */}
+                      {clemencePrefecture && clemenceShippingInfo?.inquiry && (
+                        <div className="border-2 border-yellow-500/60 bg-yellow-500/5 rounded-lg p-4">
+                          <p className="text-[14px] text-yellow-700 font-medium mb-2">
+                            ⚠ {clemenceShippingInfo.inquiryReason}
+                          </p>
+                          <a
+                            href="mailto:ado@tantetuzest.com"
+                            className="inline-flex items-center gap-1 text-[14px] text-gold hover:text-gold/80 underline"
+                          >
+                            お問い合わせよりご相談ください
+                          </a>
+                        </div>
+                      )}
+
+                      {/* 見積もりを保存・共有・PDF化（René と同一機能） */}
+                      <div className="flex flex-wrap items-center justify-center gap-2 pt-1 pb-1">
+                        <PrimaryCTA
+                          type="button"
+                          onClick={handleClemenceCopyShareLink}
+                          variant="outline"
+                          size="sm"
+                          withArrow={false}
+                          icon={<Copy className="w-3.5 h-3.5" />}
+                          className="text-[13px] tracking-normal normal-case"
+                        >
+                          {clemenceLinkCopied ? "コピーしました" : "この見積もりを共有"}
+                        </PrimaryCTA>
+                        <PrimaryCTA
+                          href={clemenceLineShareUrl}
+                          external
+                          variant="line"
+                          size="sm"
+                          withArrow={false}
+                          className="text-[13px] tracking-normal normal-case"
+                        >
+                          LINEで共有
+                        </PrimaryCTA>
+                        <PrimaryCTA
+                          type="button"
+                          onClick={handleClemencePrintQuote}
+                          variant="outline"
+                          size="sm"
+                          withArrow={false}
+                          icon={<FileDown className="w-3.5 h-3.5" />}
+                          className="text-[13px] tracking-normal normal-case"
+                        >
+                          見積書をPDF保存
+                        </PrimaryCTA>
+                      </div>
+
+                      {/* Total Price */}
+                      <div ref={clemencePurchaseRef} className="flex items-center gap-4 py-5">
+                        <div className="w-2 h-14 bg-gold rounded-full" />
+                        <div>
+                          <span className="text-[13px] tracking-[0.15em] uppercase text-muted-foreground block mb-1">合計（税込）</span>
+                          <span className="font-serif text-4xl lg:text-5xl text-foreground">
+                            ¥{clemenceTotal.toLocaleString()}
+                          </span>
+                          {!clemencePrefecture && (
+                            <p className="mt-1.5 flex items-start gap-1.5 text-[13px] text-muted-foreground">
+                              <Truck className="w-3.5 h-3.5 mt-0.5 shrink-0 text-gold" />
+                              <span>配送先を選択すると送料を含む合計が確定します</span>
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* CTA Buttons */}
+                      <div className="space-y-3">
+                        {clemenceCheckoutError && (
+                          <div className="border-2 border-red-500/60 bg-red-50 rounded-md p-3 text-[13px] text-red-700">
+                            {clemenceCheckoutError}
+                          </div>
+                        )}
+                        {clemencePrefecture && clemenceShippingInfo?.inquiry ? (
+                          <button
+                            disabled
+                            className="w-full py-5 font-serif text-[17px] font-bold rounded-md bg-muted text-muted-foreground cursor-not-allowed"
+                          >
+                            要問い合わせ（別途見積もり）
+                          </button>
+                        ) : (
+                          <div className="space-y-3">
+                            <div className="flex justify-center">
+                              <PrimaryCTA
+                                onClick={handleClemenceCheckout}
+                                disabled={isClemenceCheckingOut}
+                                variant="purchase"
+                                size="lg"
+                                withArrow
+                                className={`font-sans w-full max-w-[340px] ${isClemenceCheckingOut ? "cursor-wait" : ""}`}
+                              >
+                                {isClemenceCheckingOut ? "購入ページへ移動中…" : "クレジットカードで購入"}
+                              </PrimaryCTA>
+                            </div>
+                            <div className="flex justify-center">
+                              <PrimaryCTA
+                                type="button"
+                                onClick={handleClemenceBankOrder}
+                                variant="purchase-steel"
+                                size="lg"
+                                withArrow
+                                className="font-sans w-full max-w-[340px]"
+                              >
+                                銀行振込で注文する
+                              </PrimaryCTA>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* ── 安心バッジ（ATF）── */}
+                {product.trustBadges && product.trustBadges.length > 0 && (
+                  <TrustBadges badges={product.trustBadges} />
+                )}
+
+                {/* CTA */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4 }}
+                  className="flex flex-col gap-3"
                 >
-                  LINE で写真を送る
-                </a>
-                <Link
-                  href={`/contact?product=${encodeURIComponent(product.slug)}`}
-                  className="flex items-center justify-center gap-2 rounded-md border-2 border-gold/40 bg-white px-5 py-3 text-[14px] font-semibold text-foreground transition hover:border-gold hover:text-gold"
-                >
-                  フォームで相談する
-                </Link>
-              </div>
-            </div>
+                  {isQuoteOnly ? (
+                    <PrimaryCTA
+                      href={`/contact?product=${encodeURIComponent(product.slug)}&category=size`}
+                      variant="dark"
+                      size="lg"
+                      icon={<MessageSquare className="w-4 h-4" />}
+                      withArrow
+                    >
+                      {product.primaryCtaLabel ?? "お見積もり・ご相談はこちら"}
+                    </PrimaryCTA>
+                  ) : isDirectCheckout ? (
+                    <>
+                      {/* 数量セレクタ — 立体感のあるカード */}
+                      <div className="flex items-center justify-between border-2 border-gold/20 bg-card rounded-md px-5 py-4 mb-2 shadow-sm">
+                        <span className="font-serif text-[15px] font-medium text-foreground">数量</span>
+                        <div className="flex items-center gap-4">
+                          <button
+                            type="button"
+                            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                            disabled={isCheckingOut || quantity <= 1}
+                            className="w-9 h-9 flex items-center justify-center rounded-full border border-gold/20 bg-white shadow-sm hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            aria-label="数量を減らす"
+                          >
+                            <Minus className="w-3.5 h-3.5" />
+                          </button>
+                          <span className="font-serif text-[18px] font-bold min-w-[2ch] text-center text-foreground">
+                            {quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setQuantity((q) => Math.min(10, q + 1))}
+                            disabled={isCheckingOut || quantity >= 10}
+                            className="w-9 h-9 flex items-center justify-center rounded-full border border-gold/20 bg-white shadow-sm hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                            aria-label="数量を増やす"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      {checkoutError && (
+                        <div className="border-2 border-red-500/60 bg-red-50 rounded-md p-3 text-[13px] text-red-700">
+                          {checkoutError}
+                        </div>
+                      )}
+                      <div className="flex justify-center">
+                        <PrimaryCTA
+                          onClick={handleDirectCheckout}
+                          disabled={isCheckingOut}
+                          variant="purchase"
+                          size="lg"
+                          icon={<ShoppingBag className="w-4 h-4" />}
+                          withArrow
+                          className={isCheckingOut ? "cursor-wait" : ""}
+                        >
+                          {isCheckingOut
+                            ? "決済ページへ移動中…"
+                            : `ご注文（合計 ¥${(product.basePrice * quantity).toLocaleString()}）`}
+                        </PrimaryCTA>
+                      </div>
+                      <p className="text-xs text-muted-foreground text-center leading-loose">
+                        クリックポストで発送（送料込）。Stripe 決済画面に進みます。
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      {/* 送料計算が必要な商品はお問い合わせフォーム経由 */}
+                      <PrimaryCTA
+                        href={`/contact?product=${encodeURIComponent(product.slug)}&category=order${clemenceQuery}`}
+                        variant="gold"
+                        size="lg"
+                        icon={<Mail className="w-4 h-4" />}
+                        withArrow
+                      >
+                        {product.primaryCtaLabel ?? "ご注文・お問い合わせ"}
+                      </PrimaryCTA>
+                      <p className="text-xs text-muted-foreground text-center leading-loose">
+                        {product.primaryCtaSub ?? (
+                          <>
+                            ご注文確認後、見積書（送料込）をお送りいたします。
+                            <br />
+                            オンライン決済対応は順次拡大中です。
+                          </>
+                        )}
+                      </p>
+                    </>
+                  )}
+                </motion.div>
 
-            {/* 仕上げのこだわり訴求。仕上げ spec からウレタン塗装／蜜蝋仕上げを自動で出し分け。 */}
-            <div className="mb-10">
-              <FinishCommitment specs={product.specs} />
-            </div>
+                {/* 介護保険のご案内（手すりカテゴリのみ） */}
+                {isHandrail && <KaigoNotice className="mt-8" />}
+
+                {/* 詳細 */}
+                <p className="text-sm text-muted-foreground leading-loose mt-10 mb-6 whitespace-pre-line">
+                  {product.longDescription}
+                </p>
+
+                {/* ===== 相談誘導 CTA — 購入前の不安解消（見積計算機つき商品ページと同じパターン） ===== */}
+                <div className="mb-10 rounded-lg border-2 border-gold/50 bg-gold/[0.05] p-6 shadow-sm">
+                  <p className="mb-1 flex items-center gap-2 text-[12px] tracking-[0.2em] uppercase text-gold font-semibold">
+                    <Camera className="w-4 h-4 shrink-0" />
+                    Before you order
+                  </p>
+                  <p className="mb-3 font-serif text-[18px] font-bold text-foreground">
+                    ご購入前に、ご不明点はお気軽にご相談ください
+                  </p>
+                  <p className="mb-5 text-[14px] leading-relaxed text-muted-foreground">
+                    「取り付けられるか不安」「サイズが合うか確認したい」——
+                    そんな疑問でも大歓迎です。写真 1 枚送るだけで職人が直接確認します。
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <a
+                      href="https://lin.ee/Tnjukrf"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 rounded-md border-2 border-[#06C755] bg-white px-5 py-3 text-[14px] font-semibold text-[#06C755] transition hover:bg-[#06C755]/5"
+                    >
+                      LINE で写真を送る
+                    </a>
+                    <Link
+                      href={`/contact?product=${encodeURIComponent(product.slug)}`}
+                      className="flex items-center justify-center gap-2 rounded-md border-2 border-gold/40 bg-white px-5 py-3 text-[14px] font-semibold text-foreground transition hover:border-gold hover:text-gold"
+                    >
+                      フォームで相談する
+                    </Link>
+                  </div>
+                </div>
+
+                {/* 仕上げのこだわり訴求。仕上げ spec からウレタン塗装／蜜蝋仕上げを自動で出し分け。 */}
+                <div className="mb-10">
+                  <FinishCommitment specs={product.specs} />
+                </div>
+              </>
+            )}
 
             {/* スペック表 */}
             <div className="mb-2">
@@ -1188,6 +1367,156 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
           orderPayload={clemenceOrderPayload}
           summary={clemenceSummary}
         />
+      )}
+
+      {/* Clémence 見積書 PDF 化（画面には表示せず印刷/PDF保存時のみ表示。
+          app/products/[slug]/page.tsx の .quote-pdf-root 印刷スコープをそのまま使う） */}
+      {isClemencePurchase && (
+        <div className="quote-pdf-root">
+          <style>{`
+            .quote-pdf-root { display: none; }
+            @media print {
+              .quote-pdf-root { display: block; }
+              @page { size: A4 portrait; margin: 0; }
+              html, body { background: #fff !important; margin: 0 !important; padding: 0 !important; }
+              .quote-pdf-root .qp-paper * {
+                color-adjust: exact;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+              }
+            }
+            .quote-pdf-root .qp-paper {
+              width: 210mm;
+              min-height: 297mm;
+              margin: 0 auto;
+              padding: 15mm;
+              box-sizing: border-box;
+              background: #fff;
+              color: #111;
+              font-family: var(--font-rounded-body, "Zen Kaku Gothic New"), "Hiragino Sans", "Yu Gothic", sans-serif;
+              font-size: 11pt;
+              line-height: 1.6;
+            }
+          `}</style>
+          <div className="qp-paper">
+            <div className="flex items-start justify-between gap-6">
+              <div>
+                <h1 className="text-2xl font-bold tracking-[0.15em] text-gray-900">御 見 積 書</h1>
+                <p className="mt-1 text-xs text-gray-500">QUOTATION</p>
+              </div>
+              <div className="text-right text-xs leading-relaxed text-gray-700">
+                <div>発行日: <span className="font-medium text-gray-900">{clemenceQuoteIssueDate}</span></div>
+                <div className="mt-0.5">有効期限: <span className="text-gray-900">発行日より30日間</span></div>
+              </div>
+            </div>
+
+            <div className="mt-6 grid grid-cols-2 gap-6">
+              <div className="border-b-2 border-gray-900 pb-3">
+                <div className="text-xl font-medium text-gray-900">
+                  ＿＿＿＿＿＿＿＿＿＿＿＿ <span className="ml-1 text-base">様</span>
+                </div>
+                <p className="mt-2 text-xs text-gray-600">
+                  下記の通りお見積り申し上げます。ご検討のほど、よろしくお願いいたします。
+                </p>
+              </div>
+              <div>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="text-[11px] leading-relaxed text-gray-800">
+                    <div className="font-medium text-gray-900">鍛鉄工房ZEST</div>
+                    <div>代表 蠣﨑 良治</div>
+                    <div className="mt-1">〒265-0052</div>
+                    <div>千葉県千葉市若葉区和泉町239-2</div>
+                    <div className="mt-0.5">TEL 070-3817-0659</div>
+                    <div>ado@tantetuzest.com</div>
+                    <div className="mt-1 text-[10px] text-gray-600">
+                      適格請求書発行事業者
+                      <br />
+                      登録番号 T7810771171765
+                    </div>
+                  </div>
+                  <Image
+                    src="/images/ado_logo_K.png"
+                    alt="IRONWORKS ado"
+                    width={72}
+                    height={48}
+                    className="h-auto w-[60px]"
+                    unoptimized
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-8">
+              <div className="text-[10px] tracking-[0.2em] text-gray-500">件名</div>
+              <div className="mt-1 border-b border-gray-200 pb-1 text-base font-medium text-gray-900">
+                {clemenceSummary.productName}
+              </div>
+              <div className="mt-1 text-sm text-gray-600">{clemenceSummary.productNote}</div>
+            </div>
+
+            <div className="mt-4 flex items-end justify-between gap-4 border-y-2 border-gray-900 bg-gray-50 px-4 py-3">
+              <div className="text-xs text-gray-700">お見積り合計金額（税込）</div>
+              <div className="font-mono text-2xl font-bold text-gray-900">
+                ¥{clemenceSummary.totalAmount.toLocaleString()}
+              </div>
+            </div>
+
+            <div className="mt-5">
+              <table className="w-full border-collapse text-[11px]">
+                <thead>
+                  <tr className="bg-gray-100 text-left text-[10px] tracking-wider text-gray-700">
+                    <th className="border border-gray-300 px-2 py-1.5 font-medium">内容</th>
+                    <th className="border border-gray-300 px-2 py-1.5 text-right font-medium w-28">金額</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {clemenceSummary.lines.map((line, i) => (
+                    <tr key={i}>
+                      <td className="border border-gray-300 px-2 py-1.5 text-gray-900">
+                        {line.label}
+                      </td>
+                      <td className="border border-gray-300 px-2 py-1.5 text-right font-mono text-gray-900">
+                        ¥{line.amount.toLocaleString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td className="border border-gray-300 bg-gray-900 px-2 py-2 text-xs font-medium text-white">
+                      合計（税込）
+                    </td>
+                    <td className="border border-gray-300 bg-gray-900 px-2 py-2 text-right font-mono text-base font-bold text-white">
+                      ¥{clemenceSummary.totalAmount.toLocaleString()}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+
+            <div className="mt-5">
+              <div className="text-[10px] tracking-[0.2em] text-gray-500">備考</div>
+              <div className="mt-1 min-h-[40px] border border-gray-200 px-3 py-2 text-[11px] leading-relaxed text-gray-800">
+                {clemencePrefecture && clemenceShippingInfo?.inquiry && (
+                  <>
+                    {clemenceShippingInfo.inquiryReason} — 送料は別途お問い合わせにて確定いたします。
+                    <br />
+                  </>
+                )}
+                {!clemencePrefecture && "送料は配送先ご住所により別途加算されます。"}
+                本お見積もりは概算です。仕様変更・部材価格変動により最終価格が変わる場合がございます。
+                <br />
+                こちらの見積もり内容は下記URLからいつでもご確認・再計算いただけます。
+                <br />
+                <span className="break-all text-[10px] text-gray-600">{clemenceShareUrl}</span>
+              </div>
+            </div>
+
+            <div className="mt-6 border-t border-gray-200 pt-2 text-center text-[10px] text-gray-500">
+              IRONWORKS ado — https://ado.tantetuzest.com
+            </div>
+          </div>
+        </div>
       )}
     </main>
   )
