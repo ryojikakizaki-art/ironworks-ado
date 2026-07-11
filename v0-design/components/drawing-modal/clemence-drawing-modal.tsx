@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
+import { createPortal } from "react-dom"
 import { buildClemenceDrawingSvg, type ClemenceDrawingOpts } from "@/lib/drawing-modal/clemence-svg"
 
 interface ClemenceDrawingModalProps {
@@ -32,7 +33,13 @@ export function ClemenceDrawingModal({ open, onClose, drawing }: ClemenceDrawing
 
   if (!open) return null
 
-  return (
+  // globals.css の @media print は `body > *:not(.dm-overlay)...{display:none}` で
+  // dm-overlay 以外の body 直下要素を消して印刷スコープを絞る。ClemenceSpecPanel
+  // （= このモーダルの呼び出し元）は simple-product-page.tsx の <main> 配下に
+  // ネストされているため、通常の JSX ツリーのままだと dm-overlay も <main> の内側になり
+  // body の直接の子にならず、印刷時に <main> ごと非表示になってしまう。
+  // Portal で document.body 直下に描画することで、ネスト位置によらず印刷スコープに入る。
+  return createPortal(
     <div
       className="dm-overlay open"
       onClick={(e) => {
@@ -58,6 +65,7 @@ export function ClemenceDrawingModal({ open, onClose, drawing }: ClemenceDrawing
           </span>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }
