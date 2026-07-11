@@ -43,10 +43,12 @@ const prefectures = [
   "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県",
 ]
 
-// 商品画像ギャラリー（横桟なし／横桟あり）。実物施工写真が撮れるまでの仮イメージ。
+// 商品画像ギャラリー（横桟なし／横桟あり／横桟パターン違い）。実物施工写真が撮れるまでの仮イメージ。
 const GALLERY = [
   { src: "/images/products/laurent/hero.jpg", label: "横桟なし" },
   { src: "/images/products/laurent/hero-crossbar.jpg", label: "横桟あり" },
+  { src: "/images/products/laurent/hero-crossbar-white.jpg", label: "横桟あり（フラットバー・マットホワイト）" },
+  { src: "/images/products/laurent/hero-crossbar-round.jpg", label: "横桟あり（丸鋼・マットブラック）" },
 ]
 
 const SPECS = [
