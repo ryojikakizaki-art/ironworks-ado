@@ -44,11 +44,13 @@ const prefectures = [
 ]
 
 // 商品画像ギャラリー（横桟なし／横桟あり／横桟パターン違い）。実物施工写真が撮れるまでの仮イメージ。
+// マットブラック → マットホワイトの順で並べる。
 const GALLERY = [
-  { src: "/images/products/laurent/hero.jpg", label: "横桟なし" },
-  { src: "/images/products/laurent/hero-crossbar.jpg", label: "横桟あり" },
-  { src: "/images/products/laurent/hero-crossbar-white.jpg", label: "横桟あり（フラットバー・マットホワイト）" },
-  { src: "/images/products/laurent/hero-crossbar-round.jpg", label: "横桟あり（丸鋼・マットブラック）" },
+  { src: "/images/products/laurent/hero.jpg", label: "Laurent 階段手すり 横桟なし マットブラック" },
+  { src: "/images/products/laurent/hero-crossbar.jpg", label: "Laurent 階段手すり 横桟あり マットブラック" },
+  { src: "/images/products/laurent/hero-crossbar-round.jpg", label: "Laurent 階段手すり 横桟あり（丸鋼） マットブラック" },
+  { src: "/images/products/laurent/hero-crossbar-white.jpg", label: "Laurent 階段手すり 横桟あり（フラットバー） マットホワイト" },
+  { src: "/images/products/laurent/hero-crossbar-2-white.jpg", label: "Laurent 階段手すり 横桟2本 マットホワイト" },
 ]
 
 const SPECS = [
@@ -406,15 +408,18 @@ export function StairProductPage() {
               <div className="relative aspect-square bg-secondary rounded-lg overflow-hidden">
                 <Image
                   src={GALLERY[shownImage].src}
-                  alt={`Laurent ローラン 階段手摺（${GALLERY[shownImage].label}）`}
+                  alt={GALLERY[shownImage].label}
                   fill
                   className="object-cover"
                   priority
                   sizes="(max-width: 1024px) 100vw, 50vw"
                 />
+                <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/45 to-transparent pt-14 pb-4 px-4 text-center text-[18px] md:text-[22px] font-medium tracking-wide text-white">
+                  {GALLERY[shownImage].label}
+                </span>
               </div>
-              {/* サムネイル（横桟なし／あり）— タップでメイン画像を切替 */}
-              <div className="grid grid-cols-4 gap-2">
+              {/* サムネイル（横桟なし／あり）— タップでメイン画像を切替。商品名は画像下部に重ねて表示 */}
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                 {GALLERY.map((g, i) => (
                   <button
                     key={g.src}
@@ -426,7 +431,7 @@ export function StairProductPage() {
                     }`}
                   >
                     <Image src={g.src} alt={g.label} fill className="object-cover" sizes="120px" />
-                    <span className="absolute inset-x-0 bottom-0 bg-dark/60 py-0.5 text-center text-[10px] text-white">
+                    <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 via-black/55 to-transparent pt-5 pb-1 px-1 text-center text-[10px] leading-snug text-white">
                       {g.label}
                     </span>
                   </button>
