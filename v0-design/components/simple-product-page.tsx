@@ -1,6 +1,7 @@
 "use client"
 
-import { useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import Image from "next/image"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
@@ -420,6 +421,11 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
   const clemencePurchaseRef = useRef<HTMLDivElement | null>(null)
   const clemencePrefRef = useRef<HTMLDivElement | null>(null)
   const [clemenceLinkCopied, setClemenceLinkCopied] = useState(false)
+  // quote-pdf-root の Portal は document.body を参照するため、SSR では呼び出せない。
+  // マウント後のみ true にして、初回サーバーレンダリングと初回クライアントレンダリングを
+  // 一致させる（isClemencePurchase 自体は SSR でも true になるため直接ガードにはできない）。
+  const [isMounted, setIsMounted] = useState(false)
+  useEffect(() => setIsMounted(true), [])
 
   const clemenceParams = useMemo(
     () => new URLSearchParams(clemenceQuery.replace(/^&/, "")),
@@ -1370,8 +1376,11 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
       )}
 
       {/* Clémence 見積書 PDF 化（画面には表示せず印刷/PDF保存時のみ表示。
-          app/products/[slug]/page.tsx の .quote-pdf-root 印刷スコープをそのまま使う） */}
-      {isClemencePurchase && (
+          app/products/[slug]/page.tsx の .quote-pdf-root 印刷スコープをそのまま使う）。
+          この SimpleProductPage は単一の <main> を返すため、そのままだと .quote-pdf-root が
+          <main> の内側にネストされ body の直接の子にならず、印刷CSSの body > * セレクタに
+          一致しない（= 印刷時に <main> ごと非表示になる）。Portal で body 直下に描画する。 */}
+      {isClemencePurchase && isMounted && createPortal(
         <div className="quote-pdf-root">
           <style>{`
             .quote-pdf-root { display: none; }
@@ -1516,7 +1525,8 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
               IRONWORKS ado — https://ado.tantetuzest.com
             </div>
           </div>
-        </div>
+        </div>,
+        document.body,
       )}
     </main>
   )
