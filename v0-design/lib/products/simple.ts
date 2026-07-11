@@ -270,6 +270,8 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       "210f572a0c70b0750889.jpg",
     ],
     basePrice: 88000,
+    priceFrom: true,
+    priceNote: "③側延長オプション（最大+¥3,000）で価格が変わります。送料は別途、配送先により異なります。",
     featureBullets: [
       { icon: "Hammer", title: "火造り鍛造", desc: "無垢鉄を熱しハンマーで叩き締め、鎚目模様まで手仕事で仕上げます" },
       { icon: "Paintbrush", title: "古美仕上げ", desc: "2液型ウレタン艶消し黒塗装に古美仕上げを重ね、深い表情に" },

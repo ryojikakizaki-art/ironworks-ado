@@ -36,14 +36,16 @@ const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(Math.roun
 
 interface ClemenceSpecPanelProps {
   onQueryChange?: (qs: string) => void
+  /** 見積もり共有 URL からの復元用（未指定時は標準値）。クランプは eff 側で行う。 */
+  initial?: { w?: number; h?: number; x2?: number; x3?: number; ext?: number }
 }
 
-export function ClemenceSpecPanel({ onQueryChange }: ClemenceSpecPanelProps) {
-  const [w, setW] = useState(1000)
-  const [h, setH] = useState(500)
-  const [x2, setX2] = useState(455) // ②: ①（上端）から右への水平距離（下地 455 ピッチ）
-  const [x3, setX3] = useState(910) // ③: ①から右への水平距離
-  const [extension, setExtension] = useState(0) // ③側の延長（0〜200mm）
+export function ClemenceSpecPanel({ onQueryChange, initial }: ClemenceSpecPanelProps) {
+  const [w, setW] = useState(() => initial?.w ?? 1000)
+  const [h, setH] = useState(() => initial?.h ?? 500)
+  const [x2, setX2] = useState(() => initial?.x2 ?? 455) // ②: ①（上端）から右への水平距離（下地 455 ピッチ）
+  const [x3, setX3] = useState(() => initial?.x3 ?? 910) // ③: ①から右への水平距離
+  const [extension, setExtension] = useState(() => initial?.ext ?? 0) // ③側の延長（0〜200mm）
   const [drawingOpen, setDrawingOpen] = useState(false)
 
   // クランプ後の実効値（図・図面・注文引き継ぎはこの値を使う）
