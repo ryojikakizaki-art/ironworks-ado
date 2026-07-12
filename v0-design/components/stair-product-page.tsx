@@ -6,6 +6,7 @@
 // にしている。価格・寸法計算の正本は lib/products/stair-pricing.ts（決済APIと共用）。
 
 import { useMemo, useState } from "react"
+import { motion } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
 import { Camera } from "lucide-react"
@@ -43,15 +44,38 @@ const prefectures = [
   "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県",
 ]
 
+// 横桟の本数・素材から「フラット横桟1本」「丸棒横桟2本」等の表記を作る。
+// ギャラリーのラベルと商品名横の参考価格の両方がこの1関数を参照するため、表記と価格計算の素材・本数が必ず一致する。
+function crossbarSpecLabel(crossbarCount: number, crossbarMaterial: CrossbarMaterial): string {
+  if (crossbarCount === 0) return "横桟なし"
+  return `${crossbarMaterial === "round" ? "丸棒" : "フラット"}横桟${crossbarCount}本`
+}
+
 // 商品画像ギャラリー（横桟なし／横桟あり／横桟パターン違い）。実物施工写真が撮れるまでの仮イメージ。
 // マットブラック → マットホワイトの順で並べる。
-const GALLERY = [
-  { src: "/images/products/laurent/hero.jpg", label: "Laurent 階段手すり 横桟なし マットブラック" },
-  { src: "/images/products/laurent/hero-crossbar.jpg", label: "Laurent 階段手すり 横桟あり マットブラック" },
-  { src: "/images/products/laurent/hero-crossbar-round.jpg", label: "Laurent 階段手すり 横桟あり（丸鋼） マットブラック" },
-  { src: "/images/products/laurent/hero-crossbar-white.jpg", label: "Laurent 階段手すり 横桟あり（フラットバー） マットホワイト" },
-  { src: "/images/products/laurent/hero-crossbar-2-white.jpg", label: "Laurent 階段手すり 横桟2本 マットホワイト" },
+// crossbarCount/crossbarMaterial/color は画像に実際に写っている横桟の本数・素材・色（商品名横の参考価格用）。
+// 横桟ありは全パターン2本（2026-07-12 蠣﨑さん確認）。
+// 見積計算機（STEP02/03）の実際の選択状態とは独立した表示専用の参照値。
+const GALLERY_SPECS: {
+  src: string
+  crossbarCount: number
+  crossbarMaterial: CrossbarMaterial
+  color: StairColor
+}[] = [
+  { src: "/images/products/laurent/hero.jpg", crossbarCount: 0, crossbarMaterial: "round", color: "black" },
+  { src: "/images/products/laurent/hero-crossbar.jpg", crossbarCount: 2, crossbarMaterial: "flat", color: "black" },
+  { src: "/images/products/laurent/hero-crossbar-round.jpg", crossbarCount: 2, crossbarMaterial: "round", color: "black" },
+  { src: "/images/products/laurent/hero-crossbar-white.jpg", crossbarCount: 2, crossbarMaterial: "flat", color: "white" },
+  { src: "/images/products/laurent/hero-crossbar-2-white.jpg", crossbarCount: 2, crossbarMaterial: "round", color: "white" },
 ]
+
+const GALLERY = GALLERY_SPECS.map((g) => ({
+  ...g,
+  label: `Laurent 階段手すり ${crossbarSpecLabel(g.crossbarCount, g.crossbarMaterial)} マット${g.color === "white" ? "ホワイト" : "ブラック"}`,
+}))
+
+// 商品名横の参考価格はサムネイルの階段（8段）に合わせて計算する
+const GALLERY_REFERENCE_STEPS = 8
 
 const SPECS = [
   { label: "タイプ", value: "階段手摺（直線階段専用）" },
@@ -291,6 +315,39 @@ export function StairProductPage() {
   // メイン画像: 手動選択があればそれを、なければ横桟の有無に連動（0本=なし / 1本以上=あり）
   const shownImage = pickedImage ?? (crossbarCount > 0 ? 1 : 0)
 
+  // 商品名横の「横桟なし／横桟あり」参考価格（8段基準・GALLERY の画像ごとの仕様で計算）。
+  // 見積計算機（STEP02/03）の実際の選択とは独立した表示専用の値で、サムネイル選択に連動する。
+  const galleryReferencePrices = useMemo(
+    () =>
+      GALLERY.map(
+        (g) =>
+          calcStairPrice({
+            steps: GALLERY_REFERENCE_STEPS,
+            crossbarCount: g.crossbarCount,
+            crossbarMaterial: g.crossbarMaterial,
+            color: g.color,
+          }).total,
+      ),
+    [],
+  )
+  const noCrossbarReferenceIndex = GALLERY.findIndex((g) => g.crossbarCount === 0)
+  const withCrossbarReferenceIndex = GALLERY.findIndex((g) => g.crossbarCount > 0)
+  const isShownImageWithCrossbar = GALLERY[shownImage].crossbarCount > 0
+  const activeWithCrossbarIndex = isShownImageWithCrossbar ? shownImage : withCrossbarReferenceIndex
+  const noCrossbarReferencePrice = galleryReferencePrices[noCrossbarReferenceIndex]
+  const withCrossbarReferencePrice = galleryReferencePrices[activeWithCrossbarIndex]
+  const withCrossbarReferenceLabel = crossbarSpecLabel(
+    GALLERY[activeWithCrossbarIndex].crossbarCount,
+    GALLERY[activeWithCrossbarIndex].crossbarMaterial,
+  )
+
+  // 右下フロート表示用: 今まさに選んでいるサムネイル1枚そのものの参考価格・仕様ラベル
+  const shownGallerySpec = GALLERY[shownImage]
+  const shownReferencePrice = galleryReferencePrices[shownImage]
+  const shownReferenceLabel = `${crossbarSpecLabel(shownGallerySpec.crossbarCount, shownGallerySpec.crossbarMaterial)}・マット${
+    shownGallerySpec.color === "white" ? "ホワイト" : "ブラック"
+  }`
+
   // 設計図（PDF）用の入力データ。実寸を反映した側面図をモーダルで描画する。
   const drawingOpts = useMemo(
     () => ({
@@ -457,6 +514,26 @@ export function StairProductPage() {
                 <h1 className="font-serif text-4xl lg:text-5xl text-foreground mb-3 leading-tight">
                   Laurent ローラン
                 </h1>
+                {/* 横桟なし／ありの参考価格。サムネイル選択（shownImage）に連動して即座に切り替わる */}
+                <div className="mb-3 flex flex-wrap items-baseline gap-x-5 gap-y-1">
+                  <span className="text-[12px] tracking-wide text-muted-foreground">
+                    参考価格（{GALLERY_REFERENCE_STEPS}段の場合）
+                  </span>
+                  <span
+                    className={`text-[15px] ${
+                      isShownImageWithCrossbar ? "text-muted-foreground" : "font-semibold text-gold"
+                    }`}
+                  >
+                    横桟なし ¥{noCrossbarReferencePrice.toLocaleString()}
+                  </span>
+                  <span
+                    className={`text-[15px] ${
+                      isShownImageWithCrossbar ? "font-semibold text-gold" : "text-muted-foreground"
+                    }`}
+                  >
+                    {withCrossbarReferenceLabel} ¥{withCrossbarReferencePrice.toLocaleString()}
+                  </span>
+                </div>
                 <p className="text-[16px] text-muted-foreground leading-relaxed">
                   鍛冶職人制作 階段手摺 フラットバー 9×38 マットブラック
                 </p>
@@ -944,6 +1021,22 @@ export function StairProductPage() {
       </main>
 
       <Footer />
+
+      {/* 右下フロート価格表示: サムネイル選択（shownImage）に連動し、選んでいる1枚の参考価格を最初から常時表示する */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.25 }}
+        className="fixed z-40 right-4 md:right-6 max-w-[170px] md:max-w-[200px] rounded-lg border border-gold/30 bg-white px-3 py-2 md:px-3.5 md:py-2.5 shadow-lg [bottom:calc(env(safe-area-inset-bottom)+1rem)]"
+        aria-live="polite"
+      >
+        <p className="text-[10px] md:text-[11px] tracking-wide text-muted-foreground">
+          参考価格（{GALLERY_REFERENCE_STEPS}段・{shownReferenceLabel}）
+        </p>
+        <p className="font-serif text-lg md:text-xl text-gold leading-tight">
+          ¥{shownReferencePrice.toLocaleString()}
+        </p>
+      </motion.div>
 
       <EmbeddedCheckoutModal
         open={!!checkoutClientSecret}
