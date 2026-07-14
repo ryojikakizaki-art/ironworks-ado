@@ -3,11 +3,12 @@
 // 横型オーダーメイド階段手すり（Élisabeth 等）の参考価格シミュレーター。
 // simple.ts の product.simulator 指定がある商品ページの価格表示直下に表示する。
 //
-// - 階段の段数（直階段・6〜15段）を選ぶと、手すりを階段に実際に配置した
-//   側面図と参考価格の内訳がリアルタイムに出る（2026-07-14 蠣﨑さん指示:
-//   斜めの実配置で見せる・登り始めと登り終わりは水平に近く曲がる曲線）
-// - 手すり全長は一般的な直階段（蹴上200mm・踏面240mm・蹴込み20mm =
-//   lib/products/stair-pricing.ts の Laurent 標準と同値）で概算する
+// - 階段の段数（直階段・6〜15段）と「階段の幅」「床から最上段までの高さ」を
+//   入力すると、手すりを階段に実配置した側面図と参考価格がリアルタイムに出る
+// - 手すりの長さ＝1段目と最上段の段鼻の直線距離＋両端の水平部（段鼻から各200mm）
+//   （2026-07-14 蠣﨑さん指示。幅・高さ未入力時は蹴上200mm・踏面220mm相当の
+//   標準寸法を段数から自動セットする）
+// - 手すりは緩やかな曲線で、登り始めと登り終わりは水平に近く曲がる形状で描画
 // - 座金数は横型座金ルール（端100mm・最大ピッチ850mm ＝ calcZakin）で
 //   自動算出し、「価格について」の公開価格表と同じ算出基準になる
 // - 選択内容・参考価格は onQueryChange 経由で「見積もり依頼」リンクに引き継がれ、
@@ -18,30 +19,36 @@ import { Minus, Plus } from "lucide-react"
 import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants"
 import type { RailSimulatorConfig } from "@/lib/products/simple"
 
-// ── 階段の概算寸法 (mm)。Laurent（stair-pricing.ts）の標準寸法と揃える ──
-const RISER = 200 // 蹴上
-const GOING = 220 // 1段あたりの水平進み（踏面240 − 蹴込み20）
+// ── 階段の標準寸法 (mm)。幅・高さの自動セットに使う ──
+const STD_RISER = 200 // 蹴上
+const STD_GOING = 220 // 1段あたりの水平進み（踏面240 − 蹴込み20）
 const RAIL_H = 800 // 段鼻から手すり中心までの高さ
-const END_RUN = 250 // 登り始め・登り終わりの水平部（各）
-const STEP_DIAG = Math.hypot(GOING, RISER) // 1段ぶんの斜め距離 ≒ 297.3
+const END_RUN = 200 // 登り始め・登り終わりの水平部（段鼻から各200mm）
+
+// 入力範囲 (mm)
+const W_MIN = 800
+const W_MAX = 6000
+const H_MIN = 800
+const H_MAX = 3600
+
+const clamp = (v: number, lo: number, hi: number) => Math.min(Math.max(Math.round(v) || lo, lo), hi)
+
+/** 段数 → 標準の階段の幅（1段目〜最上段の段鼻の水平距離） */
+const stdWidth = (steps: number) => (steps - 1) * STD_GOING
+/** 段数 → 標準の床から最上段までの高さ */
+const stdHeight = (steps: number) => steps * STD_RISER
 
 // ミニ図解の viewBox / 配色（inline-rail-simulator.tsx と揃える）。
 // 注記テキストは縮小時に小さくなりすぎるため SVG 内には置かず、HTML 側に出す
 const VB_W = 500
 const VB_H = 320
 const COLOR_BAR = "#333"
-const COLOR_TEXT = "#555"
 const COLOR_BRACKET = "#c8a96e" // 座金（金色）
 // 壁＝薄グレー・階段＝白抜き。壁を敷くことで座金支柱が「壁付け」に見え、
 // 手すりが宙に浮いた印象になるのを防ぐ（配色は承認済みグレー #f3f4f6 系）
 const COLOR_WALL = "#f3f4f6"
 const COLOR_STAIR_FILL = "#ffffff"
 const COLOR_STAIR_LINE = "#c2c6cd"
-
-/** 段数 → 手すり全長の概算 (mm・10mm 丸め)。斜め部 + 両端の水平部 */
-export function calcRailLengthMm(steps: number): number {
-  return Math.round(((steps - 1) * STEP_DIAG + END_RUN * 2) / 10) * 10
-}
 
 interface RailPriceSimulatorProps {
   config: RailSimulatorConfig
@@ -52,11 +59,32 @@ interface RailPriceSimulatorProps {
 
 export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPriceSimulatorProps) {
   const [steps, setSteps] = useState(config.steps.default)
+  const [wMm, setWMm] = useState(stdWidth(config.steps.default))
+  const [hMm, setHMm] = useState(stdHeight(config.steps.default))
+  // 幅・高さをお客様が手入力したら、以降は段数を変えても上書きしない
+  const [wTouched, setWTouched] = useState(false)
+  const [hTouched, setHTouched] = useState(false)
   const [zakinId, setZakinId] = useState(config.zakinTypes[0]?.id ?? "")
   const [endShape, setEndShape] = useState(config.endShapes?.[0] ?? "")
 
   const N = Math.min(Math.max(steps, config.steps.min), config.steps.max)
-  const L = calcRailLengthMm(N)
+  const changeSteps = (next: number) => {
+    const n = Math.min(Math.max(next, config.steps.min), config.steps.max)
+    setSteps(n)
+    if (!wTouched) setWMm(stdWidth(n))
+    if (!hTouched) setHMm(stdHeight(n))
+  }
+
+  // クランプ後の実効値（図・価格・注文引き継ぎはこの値を使う）
+  const W = clamp(wMm, W_MIN, W_MAX)
+  const H = clamp(hMm, H_MIN, H_MAX)
+  const riser = H / N // 蹴上（床から最上段の高さ ÷ 段数）
+  const going = W / (N - 1) // 1段あたりの水平進み
+
+  // 手すりの長さ: 1段目と最上段の段鼻の直線距離 ＋ 両端の水平部（各200mm）
+  const noseDiag = Math.round(Math.hypot(W, H - riser))
+  const L = Math.round((noseDiag + END_RUN * 2) / 10) * 10
+
   const zakinType = config.zakinTypes.find((z) => z.id === zakinId) ?? config.zakinTypes[0]
   const zakinCount = calcZakin(L)
 
@@ -67,44 +95,44 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
 
   useEffect(() => {
     onQueryChange?.(
-      `&type=${queryType}&steps=${N}&len=${L}&end=${encodeURIComponent(endShape)}&zakin=${zakinType.id}&zcount=${zakinCount}&total=${total}`,
+      `&type=${queryType}&steps=${N}&w=${W}&h=${H}&len=${L}&end=${encodeURIComponent(endShape)}&zakin=${zakinType.id}&zcount=${zakinCount}&total=${total}`,
     )
-  }, [N, L, endShape, zakinType.id, zakinCount, total, queryType, onQueryChange])
+  }, [N, W, H, L, endShape, zakinType.id, zakinCount, total, queryType, onQueryChange])
 
-  // ── ミニ図解（側面図・階段に実配置。段数・座金数に連動） ──
+  // ── ミニ図解（側面図・階段に実配置。段数・幅・高さ・座金数に連動） ──
   const svg = useMemo(() => {
     // mm 座標系（y は上向き・床 = 0）。手すりは段鼻ラインの RAIL_H 上を通り、
     // 両端は水平に近く曲がる（登り始め = 床上、登り終わり = 上階床上）。
     const x1 = 0 // 1段目の段鼻 x
-    const x2 = (N - 1) * GOING // 最上段の段鼻 x
-    const yb = RISER + RAIL_H // 下側水平部の高さ
-    const yt = N * RISER + RAIL_H // 上側水平部の高さ
+    const x2 = W // 最上段の段鼻 x
+    const yb = riser + RAIL_H // 下側水平部の高さ
+    const yt = H + RAIL_H // 上側水平部の高さ
     const x0 = x1 - END_RUN
     const x3 = x2 + END_RUN
     const margin = 130 // 唐草・床の張り出しぶん
 
-    const wMm = x3 - x0 + margin * 2
-    const hMm = yt
+    const wAll = x3 - x0 + margin * 2
+    const hAll = yt
     const padX = 24
     const padTop = 24
     const padBottom = 24
-    const scale = Math.min((VB_W - padX * 2) / wMm, (VB_H - padTop - padBottom) / hMm)
-    const ox = padX + ((VB_W - padX * 2) - wMm * scale) / 2 - (x0 - margin) * scale
-    const oy = padTop + ((VB_H - padTop - padBottom) - hMm * scale) / 2 + hMm * scale
+    const scale = Math.min((VB_W - padX * 2) / wAll, (VB_H - padTop - padBottom) / hAll)
+    const ox = padX + ((VB_W - padX * 2) - wAll * scale) / 2 - (x0 - margin) * scale
+    const oy = padTop + ((VB_H - padTop - padBottom) - hAll * scale) / 2 + hAll * scale
     const X = (mm: number) => ox + mm * scale
     const Y = (mm: number) => oy - mm * scale
 
     // 階段（直階段）: 床 → 各段 → 上階床
     let stair = `M ${X(x0 - margin)} ${Y(0)} L ${X(0)} ${Y(0)}`
     for (let k = 1; k <= N; k++) {
-      const treadEndX = k === N ? x3 + margin : k * GOING
-      stair += ` L ${X((k - 1) * GOING)} ${Y(k * RISER)} L ${X(treadEndX)} ${Y(k * RISER)}`
+      const treadEndX = k === N ? x3 + margin : k * going
+      stair += ` L ${X((k - 1) * going)} ${Y(k * riser)} L ${X(treadEndX)} ${Y(k * riser)}`
     }
     stair += ` L ${X(x3 + margin)} ${Y(0)} Z`
 
     // 手すり: 水平 → 緩やかに曲がって斜め → 緩やかに曲がって水平
-    const slope = RISER / GOING
-    const T = 200 // 曲がりの遷移幅 (mm)。大きいほど緩やかな曲線に見える
+    const slope = (H - riser) / W
+    const T = Math.min(200, W * 0.15) // 曲がりの遷移幅 (mm)。大きいほど緩やかな曲線
     const rail =
       `M ${X(x0)} ${Y(yb)}` +
       ` L ${X(x1 - 80)} ${Y(yb)}` +
@@ -118,9 +146,10 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
     const curlEnd = `M ${X(x3)} ${Y(yt)} c 10 2 12 12 4 14 c -6 1.5 -8 -4 -3 -6`
 
     // 座金: 手すりに沿った距離 → 折れ線（水平/斜め/水平）上の位置と法線方向
+    const diagLen = Math.hypot(W, H - riser)
     const segs = [
       { len: END_RUN, from: { x: x0, y: yb }, dir: { x: 1, y: 0 } },
-      { len: (N - 1) * STEP_DIAG, from: { x: x1, y: yb }, dir: { x: GOING / STEP_DIAG, y: RISER / STEP_DIAG } },
+      { len: diagLen, from: { x: x1, y: yb }, dir: { x: W / diagLen, y: (H - riser) / diagLen } },
       { len: END_RUN, from: { x: x2, y: yt }, dir: { x: 1, y: 0 } },
     ]
     const totalLen = segs.reduce((s, seg) => s + seg.len, 0)
@@ -155,7 +184,10 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
     })
 
     return { stair, rail, curlStart, curlEnd, zakin }
-  }, [N, L, zakinCount])
+  }, [N, W, H, riser, going, L, zakinCount])
+
+  const inputCls =
+    "w-full border border-border rounded-md px-3 py-2 text-[15px] bg-white focus:outline-none focus:border-gold"
 
   return (
     <div className="mb-8 border-2 border-gold/20 bg-card rounded-md p-5">
@@ -166,12 +198,12 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
         参考価格シミュレーター
       </p>
       <p className="text-[13px] text-muted-foreground leading-relaxed mb-4">
-        階段の段数を選ぶと、実際の取り付けイメージと参考価格がすぐに確認できます。
+        階段の段数・幅・高さを入れると、実際の取り付けイメージと参考価格がすぐに確認できます。
         手すりは緩やかな曲線で、登り始めと登り終わりは水平に近く曲がる形状です。
       </p>
 
-      {/* ミニ図解（側面図・段数と座金数に連動） */}
-      <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="w-full h-auto bg-white rounded-md border border-border mb-4">
+      {/* ミニ図解（側面図・入力に連動） */}
+      <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="w-full h-auto bg-white rounded-md border border-border mb-2">
         <rect x="0" y="0" width={VB_W} height={VB_H} rx="6" fill={COLOR_WALL} />
         <path d={svg.stair} fill={COLOR_STAIR_FILL} stroke={COLOR_STAIR_LINE} strokeWidth="1.5" strokeLinejoin="round" />
         {svg.zakin.map((z, i) => (
@@ -184,13 +216,15 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
         <path d={svg.curlStart} fill="none" stroke={COLOR_BAR} strokeWidth="3.5" strokeLinecap="round" />
         <path d={svg.curlEnd} fill="none" stroke={COLOR_BAR} strokeWidth="3.5" strokeLinecap="round" />
       </svg>
-      <p className="text-[12px] md:text-[13px] text-muted-foreground text-center -mt-2 mb-4 leading-relaxed">
+      <p className="text-[12px] md:text-[13px] text-muted-foreground text-center mb-4 leading-relaxed">
         直階段 {N}段・手すり全長 約{L.toLocaleString()}mm・座金 {zakinCount} 箇所
-        <span className="block text-[11px] md:text-[12px]">（座金は自動算出・位置は目安）</span>
+        <span className="block text-[11px] md:text-[12px]">
+          （段鼻間 約{noseDiag.toLocaleString()}mm ＋ 両端の水平部 各{END_RUN}mm／座金は自動算出・位置は目安）
+        </span>
       </p>
 
       {/* 段数 */}
-      <div className="flex items-center justify-between border border-border rounded-md bg-white px-4 py-3 mb-1">
+      <div className="flex items-center justify-between border border-border rounded-md bg-white px-4 py-3 mb-3">
         <span className="text-[14px] text-foreground">
           階段の段数
           <span className="block text-[11px] text-muted-foreground mt-0.5">
@@ -200,7 +234,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
         <div className="flex items-center gap-4">
           <button
             type="button"
-            onClick={() => setSteps((s) => Math.max(config.steps.min, s - 1))}
+            onClick={() => changeSteps(N - 1)}
             disabled={N <= config.steps.min}
             className="w-9 h-9 flex items-center justify-center rounded-full border border-gold/20 bg-white shadow-sm hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             aria-label="段数を減らす"
@@ -212,7 +246,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
           </span>
           <button
             type="button"
-            onClick={() => setSteps((s) => Math.min(config.steps.max, s + 1))}
+            onClick={() => changeSteps(N + 1)}
             disabled={N >= config.steps.max}
             className="w-9 h-9 flex items-center justify-center rounded-full border border-gold/20 bg-white shadow-sm hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
             aria-label="段数を増やす"
@@ -221,9 +255,47 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
           </button>
         </div>
       </div>
+
+      {/* 階段の幅・高さ（ラベルの折返し差があっても入力欄は下端で揃える） */}
+      <div className="grid grid-cols-2 gap-3 mb-1 items-end">
+        <label className="block">
+          <span className="text-[13px] text-muted-foreground">階段の幅（mm）</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={W_MIN}
+            max={W_MAX}
+            step={10}
+            value={wMm}
+            onChange={(e) => {
+              setWMm(Number(e.target.value))
+              setWTouched(true)
+            }}
+            onBlur={() => setWMm(W)}
+            className={inputCls}
+          />
+        </label>
+        <label className="block">
+          <span className="text-[13px] text-muted-foreground">床から最上段の高さ（mm）</span>
+          <input
+            type="number"
+            inputMode="numeric"
+            min={H_MIN}
+            max={H_MAX}
+            step={10}
+            value={hMm}
+            onChange={(e) => {
+              setHMm(Number(e.target.value))
+              setHTouched(true)
+            }}
+            onBlur={() => setHMm(H)}
+            className={inputCls}
+          />
+        </label>
+      </div>
       <p className="text-[12px] text-muted-foreground leading-relaxed mb-4">
-        手すり全長の目安: 約{L.toLocaleString()}mm
-        （蹴上200mm・踏面240mmの一般的な直階段＋両端の水平部 各約{END_RUN}mm で概算）
+        幅＝1段目から最上段までの段鼻の水平距離。分からない場合はそのままで構いません
+        （段数に合わせた一般的な寸法・蹴上200mm・踏面220mm相当を自動セットしています）。
       </p>
 
       {/* 座金タイプ */}
@@ -311,9 +383,10 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
       </div>
 
       <p className="text-[11px] md:text-[12px] text-muted-foreground leading-relaxed">
-        ※ 手すり全長は一般的な直階段の寸法で、座金の数は端 100mm・最大 850mm
-        間隔の標準ピッチで自動算出した参考値です。実際の階段の形状・寸法・取付下地により
-        長さ・本数・金額が変わります。下の「見積もり依頼」からこの内容がそのまま引き継がれます（お見積もり無料）。
+        ※ 手すり全長＝1段目と最上段の段鼻の直線距離＋両端の水平部（段鼻から各{END_RUN}mm）。
+        座金の数は端 100mm・最大 850mm 間隔の標準ピッチで自動算出した参考値です。
+        実際の階段の形状・寸法・取付下地により長さ・本数・金額が変わります。
+        下の「見積もり依頼」からこの内容がそのまま引き継がれます（お見積もり無料）。
       </p>
     </div>
   )
