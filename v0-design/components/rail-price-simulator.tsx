@@ -20,6 +20,7 @@ import Image from "next/image"
 import { Minus, Plus } from "lucide-react"
 import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants"
 import { galleryUrl } from "@/lib/products/display"
+import { END_ART } from "@/lib/products/elisabeth-end-art"
 import type { RailSimulatorConfig } from "@/lib/products/simple"
 
 // ── 階段の標準寸法 (mm)。幅・高さの自動セットに使う ──
@@ -54,13 +55,50 @@ const COLOR_WALL = "#f3f4f6"
 const COLOR_STAIR_FILL = "#ffffff"
 const COLOR_STAIR_LINE = "#c2c6cd"
 
-// エンド形状（唐草）の簡略パス。ローカル座標（0,0 が手すり端・外向き = +x）。
-// 上側エンドはそのまま、下側エンドは scale(-1,1) で左向きに反転して使う。
-// Type A: 細く打ち伸ばした先を大きく丸めたループ状（実物写真参照）
-// Type B: 下に垂れて先端が渦を巻くフック状（実物写真参照）
+// レール本体の描画太さ (viewBox 単位)。エンドのトレース画はバー太さ（barPx）が
+// この値に一致するよう縮尺して接続する
+const RAIL_STROKE = 5
+
+// エンド形状（唐草）のフォールバック簡易パス。END_ART に実物写真トレースが
+// ある id はそちらを優先し、未トレースの id のみこの簡易カールで描く。
+// ローカル座標（0,0 が手すり端・外向き = +x）。下側エンドは scale(-1,1) で反転
 const END_PATHS: Record<string, string> = {
   A: "M 0 0 C 9 -1 18 -6 21 -12 C 23 -17 19 -21 14 -19 C 9 -17 8 -11 12 -8 C 15 -5.5 20 -5 24 -7",
   B: "M 0 0 C 7 1 12 5 13 11 C 14 18 9 22 4 20 C 0 18 0.5 13 4.5 12.5 C 7 12.2 8.5 14 8 16",
+}
+
+/**
+ * 手すり端の唐草エンド 1 個ぶんの SVG 要素。
+ * - END_ART にトレース画がある場合: バー切り口（アート右端・attachY）を
+ *   レール端 (x, y) に接続し、barPx がレール太さと一致する縮尺で描く。
+ *   outward=+1（上側・右向き）はアートを左右反転して外側へ伸ばす
+ * - 無い場合: 簡易カールのパスにフォールバック
+ */
+function EndDecoration({ id, x, y, outward }: { id: string; x: number; y: number; outward: 1 | -1 }) {
+  const art = END_ART[id]
+  if (art) {
+    const s = RAIL_STROKE / art.barPx
+    // アート座標系はループ=左・バー切り口=右端。outward=-1（下側・左向き）は
+    // そのまま、outward=+1 は scale(-s) で反転して切り口をレール端に合わせる
+    return (
+      <g transform={`translate(${x} ${y}) scale(${-outward * s} ${s}) translate(${-art.viewW} ${-art.attachY})`}>
+        <g transform={art.innerTransform}>
+          <path d={art.d} fill={COLOR_BAR} />
+        </g>
+      </g>
+    )
+  }
+  return (
+    <g transform={`translate(${x} ${y}) scale(${outward} 1)`}>
+      <path
+        d={END_PATHS[id] ?? END_PATHS.A}
+        fill="none"
+        stroke={COLOR_BAR}
+        strokeWidth="3.5"
+        strokeLinecap="round"
+      />
+    </g>
+  )
 }
 
 interface RailPriceSimulatorProps {
@@ -158,9 +196,9 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
       ` Q ${X(x2)} ${Y(yt)} ${X(x2 + 80)} ${Y(yt)}` +
       ` L ${X(x3)} ${Y(yt)}`
 
-    // エンド（唐草）取り付け位置。下側は左向きに反転
-    const endBottomTransform = `translate(${X(x0)} ${Y(yb)}) scale(-1 1)`
-    const endTopTransform = `translate(${X(x3)} ${Y(yt)})`
+    // エンド（唐草）の取り付け位置（レール端の座標）
+    const endBottomAt = { x: X(x0), y: Y(yb) }
+    const endTopAt = { x: X(x3), y: Y(yt) }
 
     // 座金: 手すりに沿った距離 → 折れ線（水平/斜め/水平）上の位置と法線方向
     const diagLen = Math.hypot(W, H - riser)
@@ -220,7 +258,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
       inputYPct: ((Y(0) + Y(H)) / 2 / VB_H) * 100,
     }
 
-    return { stair, rail, endBottomTransform, endTopTransform, zakin, dimW, dimH }
+    return { stair, rail, endBottomAt, endTopAt, zakin, dimW, dimH }
   }, [N, W, H, riser, going, L, zakinCount])
 
   const dimInputCls =
@@ -266,14 +304,10 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
               <circle cx={z.cx} cy={z.cy} r={5} fill={COLOR_BRACKET} stroke="#a8894e" strokeWidth="1" />
             </g>
           ))}
-          <path d={svg.rail} fill="none" stroke={COLOR_BAR} strokeWidth="5" strokeLinecap="round" />
-          {/* エンド（唐草 Type A/B・選択に連動） */}
-          <g transform={svg.endBottomTransform}>
-            <path d={END_PATHS[endBottom] ?? END_PATHS.A} fill="none" stroke={COLOR_BAR} strokeWidth="3.5" strokeLinecap="round" />
-          </g>
-          <g transform={svg.endTopTransform}>
-            <path d={END_PATHS[endTop] ?? END_PATHS.A} fill="none" stroke={COLOR_BAR} strokeWidth="3.5" strokeLinecap="round" />
-          </g>
+          <path d={svg.rail} fill="none" stroke={COLOR_BAR} strokeWidth={RAIL_STROKE} strokeLinecap="round" />
+          {/* エンド（唐草 Type A/B・選択に連動。実物写真トレースのシルエット） */}
+          <EndDecoration id={endBottom} x={svg.endBottomAt.x} y={svg.endBottomAt.y} outward={-1} />
+          <EndDecoration id={endTop} x={svg.endTopAt.x} y={svg.endTopAt.y} outward={1} />
         </svg>
         {/* 幅の入力マス（寸法線の下・中央） */}
         <div
