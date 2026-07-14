@@ -4,19 +4,22 @@
 // simple.ts の product.simulator 指定がある商品ページの価格表示直下に表示する。
 //
 // - 階段の段数（直階段・6〜15段）と「階段の幅」「床から最上段までの高さ」を
-//   入力すると、手すりを階段に実配置した側面図と参考価格がリアルタイムに出る
+//   入力すると、手すりを階段に実配置した側面図と参考価格がリアルタイムに出る。
+//   幅・高さの入力マスは図中の寸法線上に配置（2026-07-14 蠣﨑さん指示:
+//   一般のお客様に測る場所が伝わるように）
 // - 手すりの長さ＝1段目と最上段の段鼻の直線距離＋両端の水平部（段鼻から各200mm）
-//   （2026-07-14 蠣﨑さん指示。幅・高さ未入力時は蹴上200mm・踏面220mm相当の
-//   標準寸法を段数から自動セットする）
-// - 手すりは緩やかな曲線で、登り始めと登り終わりは水平に近く曲がる形状で描画
+// - エンド（唐草形状 Type A / B）は下側（登り始め）・上側（登り終わり）で
+//   それぞれ実物写真サムネイルから選択でき、図中の手すり端の形も連動して変わる
 // - 座金数は横型座金ルール（端100mm・最大ピッチ850mm ＝ calcZakin）で
 //   自動算出し、「価格について」の公開価格表と同じ算出基準になる
 // - 選択内容・参考価格は onQueryChange 経由で「見積もり依頼」リンクに引き継がれ、
 //   お問い合わせフォームの本文にプリフィルされる（app/contact/page.tsx）
 
 import { useEffect, useMemo, useState } from "react"
+import Image from "next/image"
 import { Minus, Plus } from "lucide-react"
 import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants"
+import { galleryUrl } from "@/lib/products/display"
 import type { RailSimulatorConfig } from "@/lib/products/simple"
 
 // ── 階段の標準寸法 (mm)。幅・高さの自動セットに使う ──
@@ -41,14 +44,24 @@ const stdHeight = (steps: number) => steps * STD_RISER
 // ミニ図解の viewBox / 配色（inline-rail-simulator.tsx と揃える）。
 // 注記テキストは縮小時に小さくなりすぎるため SVG 内には置かず、HTML 側に出す
 const VB_W = 500
-const VB_H = 320
+const VB_H = 340
 const COLOR_BAR = "#333"
 const COLOR_BRACKET = "#c8a96e" // 座金（金色）
+const COLOR_DIM = "#9ca3af" // 寸法線
 // 壁＝薄グレー・階段＝白抜き。壁を敷くことで座金支柱が「壁付け」に見え、
 // 手すりが宙に浮いた印象になるのを防ぐ（配色は承認済みグレー #f3f4f6 系）
 const COLOR_WALL = "#f3f4f6"
 const COLOR_STAIR_FILL = "#ffffff"
 const COLOR_STAIR_LINE = "#c2c6cd"
+
+// エンド形状（唐草）の簡略パス。ローカル座標（0,0 が手すり端・外向き = +x）。
+// 上側エンドはそのまま、下側エンドは scale(-1,1) で左向きに反転して使う。
+// Type A: 細く打ち伸ばした先を大きく丸めたループ状（実物写真参照）
+// Type B: 下に垂れて先端が渦を巻くフック状（実物写真参照）
+const END_PATHS: Record<string, string> = {
+  A: "M 0 0 C 9 -1 18 -6 21 -12 C 23 -17 19 -21 14 -19 C 9 -17 8 -11 12 -8 C 15 -5.5 20 -5 24 -7",
+  B: "M 0 0 C 7 1 12 5 13 11 C 14 18 9 22 4 20 C 0 18 0.5 13 4.5 12.5 C 7 12.2 8.5 14 8 16",
+}
 
 interface RailPriceSimulatorProps {
   config: RailSimulatorConfig
@@ -65,7 +78,9 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
   const [wTouched, setWTouched] = useState(false)
   const [hTouched, setHTouched] = useState(false)
   const [zakinId, setZakinId] = useState(config.zakinTypes[0]?.id ?? "")
-  const [endShape, setEndShape] = useState(config.endShapes?.[0] ?? "")
+  const endOptions = config.endShapes ?? []
+  const [endBottom, setEndBottom] = useState(endOptions[0]?.id ?? "A")
+  const [endTop, setEndTop] = useState(endOptions[0]?.id ?? "A")
 
   const N = Math.min(Math.max(steps, config.steps.min), config.steps.max)
   const changeSteps = (next: number) => {
@@ -95,11 +110,11 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
 
   useEffect(() => {
     onQueryChange?.(
-      `&type=${queryType}&steps=${N}&w=${W}&h=${H}&len=${L}&end=${encodeURIComponent(endShape)}&zakin=${zakinType.id}&zcount=${zakinCount}&total=${total}`,
+      `&type=${queryType}&steps=${N}&w=${W}&h=${H}&len=${L}&endb=${encodeURIComponent(endBottom)}&endt=${encodeURIComponent(endTop)}&zakin=${zakinType.id}&zcount=${zakinCount}&total=${total}`,
     )
-  }, [N, W, H, L, endShape, zakinType.id, zakinCount, total, queryType, onQueryChange])
+  }, [N, W, H, L, endBottom, endTop, zakinType.id, zakinCount, total, queryType, onQueryChange])
 
-  // ── ミニ図解（側面図・階段に実配置。段数・幅・高さ・座金数に連動） ──
+  // ── ミニ図解（側面図・階段に実配置。入力に連動） ──
   const svg = useMemo(() => {
     // mm 座標系（y は上向き・床 = 0）。手すりは段鼻ラインの RAIL_H 上を通り、
     // 両端は水平に近く曲がる（登り始め = 床上、登り終わり = 上階床上）。
@@ -111,13 +126,15 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
     const x3 = x2 + END_RUN
     const margin = 130 // 唐草・床の張り出しぶん
 
+    // 右 76px = 高さ寸法線＋入力マス、下 64px = 幅寸法線＋入力マスの余白
+    const padL = 16
+    const padR = 76
+    const padTop = 20
+    const padBottom = 64
     const wAll = x3 - x0 + margin * 2
     const hAll = yt
-    const padX = 24
-    const padTop = 24
-    const padBottom = 24
-    const scale = Math.min((VB_W - padX * 2) / wAll, (VB_H - padTop - padBottom) / hAll)
-    const ox = padX + ((VB_W - padX * 2) - wAll * scale) / 2 - (x0 - margin) * scale
+    const scale = Math.min((VB_W - padL - padR) / wAll, (VB_H - padTop - padBottom) / hAll)
+    const ox = padL + ((VB_W - padL - padR) - wAll * scale) / 2 - (x0 - margin) * scale
     const oy = padTop + ((VB_H - padTop - padBottom) - hAll * scale) / 2 + hAll * scale
     const X = (mm: number) => ox + mm * scale
     const Y = (mm: number) => oy - mm * scale
@@ -141,9 +158,9 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
       ` Q ${X(x2)} ${Y(yt)} ${X(x2 + 80)} ${Y(yt)}` +
       ` L ${X(x3)} ${Y(yt)}`
 
-    // 唐草エンド（両端の渦巻き・固定 px サイズ）
-    const curlStart = `M ${X(x0)} ${Y(yb)} c -10 2 -12 12 -4 14 c 6 1.5 8 -4 3 -6`
-    const curlEnd = `M ${X(x3)} ${Y(yt)} c 10 2 12 12 4 14 c -6 1.5 -8 -4 -3 -6`
+    // エンド（唐草）取り付け位置。下側は左向きに反転
+    const endBottomTransform = `translate(${X(x0)} ${Y(yb)}) scale(-1 1)`
+    const endTopTransform = `translate(${X(x3)} ${Y(yt)})`
 
     // 座金: 手すりに沿った距離 → 折れ線（水平/斜め/水平）上の位置と法線方向
     const diagLen = Math.hypot(W, H - riser)
@@ -183,11 +200,31 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
       }
     })
 
-    return { stair, rail, curlStart, curlEnd, zakin }
+    // ── 寸法線（幅・高さ）と入力マスの位置 ──
+    // 幅: 1段目の段鼻 x=0 〜 最上段の段鼻 x=W。床下の寸法線に補助線でつなぐ
+    const dimWy = Y(0) + 20
+    const dimW = {
+      line: { x1: X(0), x2: X(W), y: dimWy },
+      ext1: { x: X(0), y1: Y(riser), y2: dimWy + 5 },
+      ext2: { x: X(W), y1: Y(H), y2: dimWy + 5 },
+      inputXPct: ((X(0) + X(W)) / 2 / VB_W) * 100,
+      inputYPct: ((dimWy + 24) / VB_H) * 100,
+    }
+    // 高さ: 床 0 〜 最上段 H。階段右側の寸法線に補助線でつなぐ
+    const dimHx = X(x3 + margin) + 16
+    const dimH = {
+      line: { y1: Y(0), y2: Y(H), x: dimHx },
+      ext1: { y: Y(0), x1: X(x3 + margin), x2: dimHx + 5 },
+      ext2: { y: Y(H), x1: X(x2), x2: dimHx + 5 },
+      inputXPct: ((dimHx + 6) / VB_W) * 100,
+      inputYPct: ((Y(0) + Y(H)) / 2 / VB_H) * 100,
+    }
+
+    return { stair, rail, endBottomTransform, endTopTransform, zakin, dimW, dimH }
   }, [N, W, H, riser, going, L, zakinCount])
 
-  const inputCls =
-    "w-full border border-border rounded-md px-3 py-2 text-[15px] bg-white focus:outline-none focus:border-gold"
+  const dimInputCls =
+    "w-[76px] border border-border rounded-md px-1 py-0.5 text-[13px] text-center bg-white shadow-sm focus:outline-none focus:border-gold"
 
   return (
     <div className="mb-8 border-2 border-gold/20 bg-card rounded-md p-5">
@@ -198,33 +235,108 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
         参考価格シミュレーター
       </p>
       <p className="text-[13px] text-muted-foreground leading-relaxed mb-4">
-        階段の段数・幅・高さを入れると、実際の取り付けイメージと参考価格がすぐに確認できます。
-        手すりは緩やかな曲線で、登り始めと登り終わりは水平に近く曲がる形状です。
+        階段の段数を選び、図の中の幅・高さを入れると、実際の取り付けイメージと参考価格が
+        すぐに確認できます。手すりは緩やかな曲線で、登り始めと登り終わりは水平に近く曲がる形状です。
       </p>
 
-      {/* ミニ図解（側面図・入力に連動） */}
-      <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="w-full h-auto bg-white rounded-md border border-border mb-2">
-        <rect x="0" y="0" width={VB_W} height={VB_H} rx="6" fill={COLOR_WALL} />
-        <path d={svg.stair} fill={COLOR_STAIR_FILL} stroke={COLOR_STAIR_LINE} strokeWidth="1.5" strokeLinejoin="round" />
-        {svg.zakin.map((z, i) => (
-          <g key={i}>
-            <line x1={z.x1} y1={z.y1} x2={z.x2} y2={z.y2} stroke={COLOR_BAR} strokeWidth="2.5" />
-            <circle cx={z.cx} cy={z.cy} r={5} fill={COLOR_BRACKET} stroke="#a8894e" strokeWidth="1" />
+      {/* ミニ図解（側面図・入力に連動）。幅・高さの入力マスは寸法線上に重ねる */}
+      <div className="relative mb-2">
+        <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="w-full h-auto bg-white rounded-md border border-border">
+          <rect x="0" y="0" width={VB_W} height={VB_H} rx="6" fill={COLOR_WALL} />
+          <path d={svg.stair} fill={COLOR_STAIR_FILL} stroke={COLOR_STAIR_LINE} strokeWidth="1.5" strokeLinejoin="round" />
+          {/* 寸法線: 幅（1段目〜最上段の段鼻の水平距離） */}
+          <g stroke={COLOR_DIM} strokeWidth="1">
+            <line x1={svg.dimW.ext1.x} y1={svg.dimW.ext1.y1} x2={svg.dimW.ext1.x} y2={svg.dimW.ext1.y2} strokeDasharray="3 3" />
+            <line x1={svg.dimW.ext2.x} y1={svg.dimW.ext2.y1} x2={svg.dimW.ext2.x} y2={svg.dimW.ext2.y2} strokeDasharray="3 3" />
+            <line x1={svg.dimW.line.x1} y1={svg.dimW.line.y} x2={svg.dimW.line.x2} y2={svg.dimW.line.y} />
+            <line x1={svg.dimW.line.x1} y1={svg.dimW.line.y - 4} x2={svg.dimW.line.x1} y2={svg.dimW.line.y + 4} />
+            <line x1={svg.dimW.line.x2} y1={svg.dimW.line.y - 4} x2={svg.dimW.line.x2} y2={svg.dimW.line.y + 4} />
           </g>
-        ))}
-        <path d={svg.rail} fill="none" stroke={COLOR_BAR} strokeWidth="5" strokeLinecap="round" />
-        <path d={svg.curlStart} fill="none" stroke={COLOR_BAR} strokeWidth="3.5" strokeLinecap="round" />
-        <path d={svg.curlEnd} fill="none" stroke={COLOR_BAR} strokeWidth="3.5" strokeLinecap="round" />
-      </svg>
-      <p className="text-[12px] md:text-[13px] text-muted-foreground text-center mb-4 leading-relaxed">
+          {/* 寸法線: 高さ（床〜最上段） */}
+          <g stroke={COLOR_DIM} strokeWidth="1">
+            <line x1={svg.dimH.ext1.x1} y1={svg.dimH.ext1.y} x2={svg.dimH.ext1.x2} y2={svg.dimH.ext1.y} strokeDasharray="3 3" />
+            <line x1={svg.dimH.ext2.x1} y1={svg.dimH.ext2.y} x2={svg.dimH.ext2.x2} y2={svg.dimH.ext2.y} strokeDasharray="3 3" />
+            <line x1={svg.dimH.line.x} y1={svg.dimH.line.y1} x2={svg.dimH.line.x} y2={svg.dimH.line.y2} />
+            <line x1={svg.dimH.line.x - 4} y1={svg.dimH.line.y1} x2={svg.dimH.line.x + 4} y2={svg.dimH.line.y1} />
+            <line x1={svg.dimH.line.x - 4} y1={svg.dimH.line.y2} x2={svg.dimH.line.x + 4} y2={svg.dimH.line.y2} />
+          </g>
+          {svg.zakin.map((z, i) => (
+            <g key={i}>
+              <line x1={z.x1} y1={z.y1} x2={z.x2} y2={z.y2} stroke={COLOR_BAR} strokeWidth="2.5" />
+              <circle cx={z.cx} cy={z.cy} r={5} fill={COLOR_BRACKET} stroke="#a8894e" strokeWidth="1" />
+            </g>
+          ))}
+          <path d={svg.rail} fill="none" stroke={COLOR_BAR} strokeWidth="5" strokeLinecap="round" />
+          {/* エンド（唐草 Type A/B・選択に連動） */}
+          <g transform={svg.endBottomTransform}>
+            <path d={END_PATHS[endBottom] ?? END_PATHS.A} fill="none" stroke={COLOR_BAR} strokeWidth="3.5" strokeLinecap="round" />
+          </g>
+          <g transform={svg.endTopTransform}>
+            <path d={END_PATHS[endTop] ?? END_PATHS.A} fill="none" stroke={COLOR_BAR} strokeWidth="3.5" strokeLinecap="round" />
+          </g>
+        </svg>
+        {/* 幅の入力マス（寸法線の下・中央） */}
+        <div
+          className="absolute flex flex-col items-center"
+          style={{ left: `${svg.dimW.inputXPct}%`, top: `${svg.dimW.inputYPct}%`, transform: "translate(-50%, -50%)" }}
+        >
+          <input
+            type="number"
+            inputMode="numeric"
+            min={W_MIN}
+            max={W_MAX}
+            step={10}
+            value={wMm}
+            onChange={(e) => {
+              setWMm(Number(e.target.value))
+              setWTouched(true)
+            }}
+            onBlur={() => setWMm(W)}
+            aria-label="階段の幅（mm）"
+            className={dimInputCls}
+          />
+          <span className="text-[10px] text-muted-foreground leading-tight mt-0.5 bg-white/80 px-1 rounded">
+            幅（mm）
+          </span>
+        </div>
+        {/* 高さの入力マス（右側の寸法線・中央） */}
+        <div
+          className="absolute flex flex-col items-center"
+          style={{ left: `${svg.dimH.inputXPct}%`, top: `${svg.dimH.inputYPct}%`, transform: "translate(-50%, -50%)" }}
+        >
+          <input
+            type="number"
+            inputMode="numeric"
+            min={H_MIN}
+            max={H_MAX}
+            step={10}
+            value={hMm}
+            onChange={(e) => {
+              setHMm(Number(e.target.value))
+              setHTouched(true)
+            }}
+            onBlur={() => setHMm(H)}
+            aria-label="床から最上段までの高さ（mm）"
+            className={dimInputCls}
+          />
+          <span className="text-[10px] text-muted-foreground leading-tight mt-0.5 bg-white/80 px-1 rounded">
+            高さ（mm）
+          </span>
+        </div>
+      </div>
+      <p className="text-[12px] md:text-[13px] text-muted-foreground text-center mb-2 leading-relaxed">
         直階段 {N}段・手すり全長 約{L.toLocaleString()}mm・座金 {zakinCount} 箇所
         <span className="block text-[11px] md:text-[12px]">
           （段鼻間 約{noseDiag.toLocaleString()}mm ＋ 両端の水平部 各{END_RUN}mm／座金は自動算出・位置は目安）
         </span>
       </p>
+      <p className="text-[12px] text-muted-foreground leading-relaxed mb-4">
+        幅＝1段目から最上段までの段鼻の水平距離、高さ＝床から最上段までの高さです。
+        分からない場合はそのままで構いません（段数に合わせた一般的な寸法を自動セットしています）。
+      </p>
 
       {/* 段数 */}
-      <div className="flex items-center justify-between border border-border rounded-md bg-white px-4 py-3 mb-3">
+      <div className="flex items-center justify-between border border-border rounded-md bg-white px-4 py-3 mb-4">
         <span className="text-[14px] text-foreground">
           階段の段数
           <span className="block text-[11px] text-muted-foreground mt-0.5">
@@ -256,48 +368,6 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
         </div>
       </div>
 
-      {/* 階段の幅・高さ（ラベルの折返し差があっても入力欄は下端で揃える） */}
-      <div className="grid grid-cols-2 gap-3 mb-1 items-end">
-        <label className="block">
-          <span className="text-[13px] text-muted-foreground">階段の幅（mm）</span>
-          <input
-            type="number"
-            inputMode="numeric"
-            min={W_MIN}
-            max={W_MAX}
-            step={10}
-            value={wMm}
-            onChange={(e) => {
-              setWMm(Number(e.target.value))
-              setWTouched(true)
-            }}
-            onBlur={() => setWMm(W)}
-            className={inputCls}
-          />
-        </label>
-        <label className="block">
-          <span className="text-[13px] text-muted-foreground">床から最上段の高さ（mm）</span>
-          <input
-            type="number"
-            inputMode="numeric"
-            min={H_MIN}
-            max={H_MAX}
-            step={10}
-            value={hMm}
-            onChange={(e) => {
-              setHMm(Number(e.target.value))
-              setHTouched(true)
-            }}
-            onBlur={() => setHMm(H)}
-            className={inputCls}
-          />
-        </label>
-      </div>
-      <p className="text-[12px] text-muted-foreground leading-relaxed mb-4">
-        幅＝1段目から最上段までの段鼻の水平距離。分からない場合はそのままで構いません
-        （段数に合わせた一般的な寸法・蹴上200mm・踏面220mm相当を自動セットしています）。
-      </p>
-
       {/* 座金タイプ */}
       <p className="text-[13px] text-muted-foreground mb-2">座金タイプ</p>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
@@ -327,31 +397,54 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
         ))}
       </div>
 
-      {/* エンド形状（価格は同一） */}
-      {config.endShapes && config.endShapes.length > 0 && (
+      {/* エンド形状（唐草 Type A/B・下側と上側で個別に選択。価格は同一） */}
+      {endOptions.length > 0 && (
         <div className="mb-4">
           <p className="text-[13px] text-muted-foreground mb-2">
-            エンド形状（両端 {config.endCount} 個・どちらも同価格）
+            エンド形状 唐草（両端 {config.endCount} 個・A / B どちらも同価格）
           </p>
-          <div className="flex gap-2">
-            {config.endShapes.map((shape) => (
-              <button
-                key={shape}
-                type="button"
-                onClick={() => setEndShape(shape)}
-                className={`rounded-md border-2 px-5 py-2 text-[14px] font-medium transition-colors ${
-                  endShape === shape
-                    ? "border-gold bg-gold/10 text-foreground"
-                    : "border-border bg-white text-muted-foreground hover:border-gold/50"
-                }`}
-              >
-                {shape} パターン
-              </button>
+          <div className="grid grid-cols-2 gap-3">
+            {(
+              [
+                { key: "bottom", label: "下側（登り始め）", value: endBottom, set: setEndBottom },
+                { key: "top", label: "上側（登り終わり）", value: endTop, set: setEndTop },
+              ] as const
+            ).map((side) => (
+              <div key={side.key}>
+                <p className="text-[12px] text-foreground font-medium mb-1.5">{side.label}</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {endOptions.map((opt) => (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => side.set(opt.id)}
+                      aria-pressed={side.value === opt.id}
+                      className={`rounded-md border-2 overflow-hidden bg-white transition-colors ${
+                        side.value === opt.id ? "border-gold" : "border-border hover:border-gold/50"
+                      }`}
+                    >
+                      <span className="relative block aspect-square">
+                        <Image
+                          src={galleryUrl(opt.img)}
+                          alt={`唐草エンド Type ${opt.id}`}
+                          fill
+                          className="object-cover"
+                          sizes="120px"
+                        />
+                      </span>
+                      <span
+                        className={`block text-[12px] py-1 font-medium ${
+                          side.value === opt.id ? "text-foreground bg-gold/10" : "text-muted-foreground"
+                        }`}
+                      >
+                        {opt.id} パターン
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
-          <p className="text-[11px] text-muted-foreground mt-1.5">
-            エンド部分の形状はギャラリーの商品写真でご確認いただけます。
-          </p>
         </div>
       )}
 
@@ -364,7 +457,9 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
           <dd className="font-serif text-foreground">¥{railPrice.toLocaleString()}</dd>
         </div>
         <div className="flex justify-between py-2">
-          <dt className="text-muted-foreground">唐草エンド（両端 {config.endCount} 個）</dt>
+          <dt className="text-muted-foreground">
+            唐草エンド（下 {endBottom}・上 {endTop}）
+          </dt>
           <dd className="font-serif text-foreground">¥{endTotal.toLocaleString()}</dd>
         </div>
         <div className="flex justify-between py-2">

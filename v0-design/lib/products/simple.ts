@@ -100,8 +100,12 @@ export interface RailSimulatorConfig {
   endPrice: number
   /** エンド装飾の個数（両端 2 個が標準） */
   endCount: number
-  /** エンド形状の選択肢（例: ["A", "B"]）。どれを選んでも価格は同一 */
-  endShapes?: string[]
+  /**
+   * エンド形状の選択肢（唐草 Type A / B など）。どれを選んでも価格は同一。
+   * img は実物写真（gallery ID or ローカルパス）でサムネイル表示に使う。
+   * 下側（登り始め）・上側（登り終わり）でそれぞれ選択できる。
+   */
+  endShapes?: { id: string; img: string }[]
   /** 座金タイプの選択肢（id は見積もり依頼リンクの引き継ぎに使う） */
   zakinTypes: { id: string; label: string; price: number; note?: string }[]
   /** 階段の段数の範囲（直階段のみ・2026-07-14 蠣﨑さん指定: 6〜15段） */
@@ -218,7 +222,11 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       unitPricePerM: 36000,
       endPrice: 10000,
       endCount: 2,
-      endShapes: ["A", "B"],
+      // 実物写真（Art nouveau Type A / Type B のギャラリー画像）をサムネイルに使う
+      endShapes: [
+        { id: "A", img: "ca8b847ba967280f8655.jpg" },
+        { id: "B", img: "010728a1313b8ddfc41e.jpg" },
+      ],
       zakinTypes: [
         { id: "maki", label: "巻き付け座金", price: 8000, note: "支柱に巻きつくデザイン座金（手打ち）" },
         { id: "weld", label: "通常溶接座金", price: 4000, note: "シンプルなまる座金（溶接のみ）" },
