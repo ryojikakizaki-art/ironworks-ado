@@ -205,9 +205,11 @@ export default function ContactPage() {
                 const zakinLabel = params.get("zakin") === "weld" ? "通常溶接座金" : "巻き付け座金"
                 const zcount = params.get("zcount") || "—"
                 const end = params.get("end") || "A"
+                const stepsN = params.get("steps")
                 const total = params.get("total")
+                const stepsLine = stepsN ? `階段: 直階段 ${stepsN}段（蹴上200mm・踏面240mmで概算）\n` : ""
                 const totalLine = total ? `参考価格（税込・送料別）: ¥${Number(total).toLocaleString()}\n\n` : "\n"
-                return `【Élisabeth エリザベート 階段手すり お見積もり依頼】\n\n手すりの長さ: ${Number(simLen).toLocaleString()}mm\nエンド形状: ${end} パターン\n座金タイプ: ${zakinLabel} × ${zcount} 箇所\n${totalLine}上記内容でのお見積もりを希望します。\n\n※座金の本数は階段の形状・下地位置により変わります。階段の写真や図面を添付いただけると正確なお見積もりがスムーズです。\n\n設置場所（階段・廊下など）:\n（ご記入ください）\n\nその他ご要望:\n`
+                return `【Élisabeth エリザベート 階段手すり お見積もり依頼】\n\n${stepsLine}手すり全長の目安: 約${Number(simLen).toLocaleString()}mm\nエンド形状: ${end} パターン\n座金タイプ: ${zakinLabel} × ${zcount} 箇所\n${totalLine}上記内容でのお見積もりを希望します。\n\n※手すりの長さ・座金の本数は実際の階段の寸法・形状・下地位置により変わります。階段の写真や図面を添付いただけると正確なお見積もりがスムーズです。\n\n設置場所の階段について（段数・回り階段の有無など）:\n（ご記入ください）\n\nその他ご要望:\n`
               })()
             : ""
     setForm((prev) => ({

@@ -85,11 +85,13 @@ export interface PriceBuildup {
 }
 
 /**
- * 参考価格シミュレーター（横型オーダーメイド手すり向け）の設定。
- * 指定があれば商品ページの価格表示直下に、長さ・オプション選択式の
- * シミュレーターを表示する（components/rail-price-simulator.tsx）。
+ * 参考価格シミュレーター（横型オーダーメイド階段手すり向け）の設定。
+ * 指定があれば商品ページの価格表示直下に、階段の段数（直階段）を選ぶと
+ * 実配置の側面図と参考価格が出るシミュレーターを表示する
+ * （components/rail-price-simulator.tsx）。
+ * 手すり全長は蹴上200mm・踏面240mmの一般的な直階段で概算し、
  * 座金数は横型座金ルール（端100mm・最大ピッチ850mm ＝ rene-constants の
- * calcZakin）で自動算出し、priceBuildup.table の公開価格表と一致させる。
+ * calcZakin）で自動算出する（priceBuildup.table と同じ算出基準）。
  */
 export interface RailSimulatorConfig {
   /** 1m あたりの本体単価（税込） */
@@ -102,12 +104,8 @@ export interface RailSimulatorConfig {
   endShapes?: string[]
   /** 座金タイプの選択肢（id は見積もり依頼リンクの引き継ぎに使う） */
   zakinTypes: { id: string; label: string; price: number; note?: string }[]
-  /** 長さの下限 (mm) */
-  minMm: number
-  /** 長さの上限 (mm) */
-  maxMm: number
-  /** 長さのプリセット (mm)。価格表の行と揃えるとお客様が照合しやすい */
-  presetsMm?: number[]
+  /** 階段の段数の範囲（直階段のみ・2026-07-14 蠣﨑さん指定: 6〜15段） */
+  steps: { min: number; max: number; default: number }
 }
 
 export interface SimpleProduct {
@@ -214,7 +212,8 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       },
     },
     // シミュレーターの座金数は横型座金ルール（端100・ピッチ850）で自動算出され、
-    // 上の table 全行（1.5m=3 / 2m=4 / 2.5m=4 / 3m=5 / 4m=6 / 5m=7 箇所）と一致する。
+    // 上の table と同じ算出基準（1.5m=3 / 2m=4 / 2.5m=4 / 3m=5 / 4m=6 / 5m=7 箇所）。
+    // 段数 6〜15 → 全長約 1,990〜4,660mm で table のレンジ内に収まる。
     simulator: {
       unitPricePerM: 36000,
       endPrice: 10000,
@@ -224,9 +223,7 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
         { id: "maki", label: "巻き付け座金", price: 8000, note: "支柱に巻きつくデザイン座金（手打ち）" },
         { id: "weld", label: "通常溶接座金", price: 4000, note: "シンプルなまる座金（溶接のみ）" },
       ],
-      minMm: 1000,
-      maxMm: 5000,
-      presetsMm: [1500, 2000, 2500, 3000, 4000, 5000],
+      steps: { min: 6, max: 15, default: 13 },
     },
     badge: "Artisan",
     trustBadges: [
