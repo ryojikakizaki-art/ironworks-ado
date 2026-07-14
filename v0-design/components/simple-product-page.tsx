@@ -20,6 +20,7 @@ import { BankOrderModal } from "@/components/checkout/bank-order-modal"
 import { fireGtagEvent } from "@/lib/gtag"
 import { FinishCommitment } from "@/components/finish-commitment"
 import { ClemenceSpecPanel } from "@/components/clemence-spec-panel"
+import { RailPriceSimulator } from "@/components/rail-price-simulator"
 import { calcClemenceShipping, PREF_TO_REGION } from "@/lib/shipping/sagawa"
 import { getEarliestArrival } from "@/lib/business-days"
 import { copyToClipboard } from "@/lib/products/quote-share"
@@ -408,6 +409,9 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
 
   // Clémence 専用: 寸法・ブラケット位置の入力内容を ClemenceSpecPanel から引き継ぐクエリ
   const [clemenceQuery, setClemenceQuery] = useState("")
+  // 参考価格シミュレーター（Élisabeth 等 product.simulator 指定商品）の選択内容を
+  // 見積もり依頼リンクに引き継ぐクエリ。clemenceQuery とは商品が排他なので同時には使われない
+  const [simulatorQuery, setSimulatorQuery] = useState("")
   const [clemencePrefecture, setClemencePrefecture] = useState(() =>
     clemenceRestored?.pref && PREFECTURES.includes(clemenceRestored.pref) ? clemenceRestored.pref : "",
   )
@@ -1086,6 +1090,15 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
               </>
             ) : (
               <>
+                {/* ── 参考価格シミュレーター（Élisabeth 等・価格のすぐ下） ── */}
+                {product.simulator && (
+                  <RailPriceSimulator
+                    config={product.simulator}
+                    queryType={product.slug}
+                    onQueryChange={setSimulatorQuery}
+                  />
+                )}
+
                 {/* ── 安心バッジ（ATF）── */}
                 {product.trustBadges && product.trustBadges.length > 0 && (
                   <TrustBadges badges={product.trustBadges} />
@@ -1163,9 +1176,10 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
                     </>
                   ) : (
                     <>
-                      {/* 送料計算が必要な商品はお問い合わせフォーム経由 */}
+                      {/* 送料計算が必要な商品はお問い合わせフォーム経由。
+                          シミュレーターつき商品は選択内容（長さ・座金・参考価格）も引き継ぐ */}
                       <PrimaryCTA
-                        href={`/contact?product=${encodeURIComponent(product.slug)}&category=order${clemenceQuery}`}
+                        href={`/contact?product=${encodeURIComponent(product.slug)}&category=order${clemenceQuery}${simulatorQuery}`}
                         variant="gold"
                         size="lg"
                         icon={<Mail className="w-4 h-4" />}

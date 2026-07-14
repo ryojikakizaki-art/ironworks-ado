@@ -183,6 +183,8 @@ export default function ContactPage() {
     const stairSteps = params.get("steps")
     // Clémence の寸法・ブラケット位置指定からの遷移: 入力内容を引き継ぐ
     const clemenceW = params.get("w")
+    // Élisabeth の参考価格シミュレーターからの遷移: 選択内容を引き継ぐ
+    const simLen = params.get("len")
     const prefillMessage = type === "invoice" && qty && lengthsCsv
       ? `【請求書振込でのご注文（7本以上）】\n\n本数: ${qty} 本\n各本の長さ: ${lengthsCsv.split(',').map((L, i) => `${i + 1}本目 ${L}mm`).join(' / ')}\n\n上記内容で請求書振込でのご注文を希望します。送料を含む合計金額のお見積もりと振込先のご案内をお願いいたします。\n\n配送先住所:\n（ご住所をご記入ください）\n\nその他ご要望:\n`
       : type === "stair" && stairSteps
@@ -198,13 +200,22 @@ export default function ContactPage() {
               const totalLine = total ? `概算合計（税込・送料別）: ¥${Number(total).toLocaleString()}\n\n` : "\n"
               return `【Clémence クレマンス トイレ手すり ご注文】\n\nサイズ: 横 ${clemenceW}mm × 縦 ${params.get("h") || "—"}mm\n${extLine}ブラケット位置（座金B=①バー上端／座金A=②③バー下面）:\n① バー上端\n② ①から右へ ${params.get("x2") || "—"}mm\n③ ①から右へ ${params.get("x3") || "—"}mm\n${totalLine}上記内容でのご注文を希望します。お見積もり（送料込）のご案内をお願いいたします。\n\n※ブラケット位置は壁下地に合わせて微調整できます。下地位置が分かる写真などがあれば添付ください。\n\n配送先住所:\n（ご住所をご記入ください）\n\nその他ご要望:\n`
             })()
-          : ""
+          : type === "elisabeth" && simLen
+            ? (() => {
+                const zakinLabel = params.get("zakin") === "weld" ? "通常溶接座金" : "巻き付け座金"
+                const zcount = params.get("zcount") || "—"
+                const end = params.get("end") || "A"
+                const total = params.get("total")
+                const totalLine = total ? `参考価格（税込・送料別）: ¥${Number(total).toLocaleString()}\n\n` : "\n"
+                return `【Élisabeth エリザベート 階段手すり お見積もり依頼】\n\n手すりの長さ: ${Number(simLen).toLocaleString()}mm\nエンド形状: ${end} パターン\n座金タイプ: ${zakinLabel} × ${zcount} 箇所\n${totalLine}上記内容でのお見積もりを希望します。\n\n※座金の本数は階段の形状・下地位置により変わります。階段の写真や図面を添付いただけると正確なお見積もりがスムーズです。\n\n設置場所（階段・廊下など）:\n（ご記入ください）\n\nその他ご要望:\n`
+              })()
+            : ""
     setForm((prev) => ({
       ...prev,
       category:
         category && CATEGORY_OPTIONS.some((o) => o.value === category)
           ? category
-          : type === "invoice" || type === "stair" || type === "clemence"
+          : type === "invoice" || type === "stair" || type === "clemence" || type === "elisabeth"
             ? "order"
             : prev.category,
       product: product
