@@ -69,19 +69,21 @@ const END_PATHS: Record<string, string> = {
 
 /**
  * 手すり端の唐草エンド 1 個ぶんの SVG 要素。
- * - END_ART にトレース画がある場合: バー切り口（アート右端・attachY）を
- *   レール端 (x, y) に接続し、barPx がレール太さと一致する縮尺で描く。
- *   outward=+1（上側・右向き）はアートを左右反転して外側へ伸ばす
+ * - END_ART にトレース画がある場合: ネック切り口（アート右端・attachY）を
+ *   レール端 (x, y) に接続し、切り口の太さがレール太さと一致する縮尺で描く。
+ *   下側（outward=-1）は写真の向きのまま、上側（outward=+1）は 180° 回転。
+ *   左右反転だと唐草の巻き方向が実物と逆になるため、反転は使わない
+ *   （2026-07-15 蠣﨑さん指摘）
  * - 無い場合: 簡易カールのパスにフォールバック
  */
 function EndDecoration({ id, x, y, outward }: { id: string; x: number; y: number; outward: 1 | -1 }) {
   const art = END_ART[id]
   if (art) {
     const s = RAIL_STROKE / art.barPx
-    // アート座標系はループ=左・バー切り口=右端。outward=-1（下側・左向き）は
-    // そのまま、outward=+1 は scale(-s) で反転して切り口をレール端に合わせる
+    // アート座標系はループ=左・切り口=右端。scale(-outward・s) の一様スケールは
+    // 下側で scale(s)（そのまま）、上側で scale(-s) = 180° 回転 + 縮尺になる
     return (
-      <g transform={`translate(${x} ${y}) scale(${-outward * s} ${s}) translate(${-art.viewW} ${-art.attachY})`}>
+      <g transform={`translate(${x} ${y}) scale(${-outward * s}) translate(${-art.viewW} ${-art.attachY})`}>
         <g transform={art.innerTransform}>
           <path d={art.d} fill={COLOR_BAR} />
         </g>
