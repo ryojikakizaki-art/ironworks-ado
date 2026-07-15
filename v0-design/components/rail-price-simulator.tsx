@@ -59,8 +59,15 @@ const COLOR_STAIR_LINE = "#c2c6cd"
 // この値に一致するよう縮尺して接続する
 const RAIL_STROKE = 5
 // エンドを外側へ向かってわずかに下げる角度 (度)。手すりから滑らかに垂れて
-// つながって見えるようにする（2026-07-15 蠣﨑さん指示「もう少し角度を下げ」）
-const END_TILT_DEG = 6
+// つながって見えるようにする（2026-07-15 蠣﨑さん調整: 6°は下がりすぎ→2.5°）
+const END_TILT_DEG = 2.5
+// エンド装飾の追加縮小率（実物はエンドを細く打ち伸ばすため本体より小ぶりに見える。
+// 2026-07-15 蠣﨑さん指示「大きさを70%に」）
+const END_ART_SCALE = 0.7
+// レール本体の緩やかな揺らぎ（うねり）。Élisabeth の実物は直線でなく
+// ゆったりした波を持つ（2026-07-15 蠣﨑さん指示）。振幅 (mm) と 1 波長の目安 (mm)
+const WAVE_AMP_MM = 40
+const WAVE_LEN_MM = 900
 
 // エンド形状（唐草）のフォールバック簡易パス。END_ART に実物写真トレースが
 // ある id はそちらを優先し、未トレースの id のみこの簡易カールで描く。
@@ -83,7 +90,7 @@ const END_PATHS: Record<string, string> = {
 function EndDecoration({ id, x, y, outward }: { id: string; x: number; y: number; outward: 1 | -1 }) {
   const art = END_ART[id]
   if (art) {
-    const s = RAIL_STROKE / art.barPx
+    const s = (RAIL_STROKE / art.barPx) * END_ART_SCALE
     // アート座標系はループ=左・切り口=右端。x 方向だけ -outward・s を掛けると
     // 下側で scale(s, s)（そのまま）、上側で scale(-s, s) = 左右反転になる。
     // rotate は外側の先端が END_TILT_DEG ぶん下がる向き（下側=反時計回り・上側=時計回り）
@@ -194,14 +201,36 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
     }
     stair += ` L ${X(x3 + margin)} ${Y(0)} Z`
 
-    // 手すり: 水平 → 緩やかに曲がって斜め → 緩やかに曲がって水平
+    // 手すり: 水平 → 緩やかに曲がって斜め（緩やかな揺らぎ付き） → 緩やかに曲がって水平
+    // 実物の Élisabeth は直線でなくゆったりした波を持つため、斜め区間に
+    // 正弦波のうねりを重ねる。両端は窓関数で振幅 0・接線一致にし、
+    // エンド装飾へスムーズにつながるようにする（2026-07-15 蠣﨑さん指示）
     const slope = (H - riser) / W
     const T = Math.min(200, W * 0.15) // 曲がりの遷移幅 (mm)。大きいほど緩やかな曲線
+    const waveAt = (t: number, dlen: number) => {
+      // t: 斜め区間の進行率 0..1。窓 0.5(1-cos2πt) は両端で値 0・傾き 0
+      const waves = Math.max(2, Math.round(dlen / WAVE_LEN_MM))
+      return WAVE_AMP_MM * Math.sin(2 * Math.PI * waves * t) * 0.5 * (1 - Math.cos(2 * Math.PI * t))
+    }
+    const Pa = { x: x1 + T, y: yb + T * slope }
+    const Pb = { x: x2 - T, y: yt - T * slope }
+    const wdx = Pb.x - Pa.x
+    const wdy = Pb.y - Pa.y
+    const wlen = Math.hypot(wdx, wdy)
+    const wnx = -wdy / wlen // 左法線（うねりの向き）
+    const wny = wdx / wlen
+    let wavePath = ""
+    const WAVE_STEPS = 48
+    for (let i = 1; i <= WAVE_STEPS; i++) {
+      const t = i / WAVE_STEPS
+      const off = waveAt(t, wlen)
+      wavePath += ` L ${X(Pa.x + wdx * t + wnx * off)} ${Y(Pa.y + wdy * t + wny * off)}`
+    }
     const rail =
       `M ${X(x0)} ${Y(yb)}` +
       ` L ${X(x1 - 80)} ${Y(yb)}` +
-      ` Q ${X(x1)} ${Y(yb)} ${X(x1 + T)} ${Y(yb + T * slope)}` +
-      ` L ${X(x2 - T)} ${Y(yt - T * slope)}` +
+      ` Q ${X(x1)} ${Y(yb)} ${X(Pa.x)} ${Y(Pa.y)}` +
+      wavePath +
       ` Q ${X(x2)} ${Y(yt)} ${X(x2 + 80)} ${Y(yt)}` +
       ` L ${X(x3)} ${Y(yt)}`
 
@@ -234,8 +263,17 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
       const last = segs[segs.length - 1]
       return { x: last.from.x + last.dir.x * last.len, y: last.from.y, nx: 0, ny: -1 }
     }
+    // 斜め区間の座金はレールのうねりに追従させる（arc 距離 → 波の t へ変換）
+    const Ta = Math.hypot(T, T * slope) // 遷移カーブぶんの斜め距離
     const zakin = getZakinPositions(L, zakinCount).map((pos) => {
       const p = pointAt(pos)
+      const dOnDiag = pos - END_RUN // 斜めセグメント内の距離（負なら水平部）
+      if (dOnDiag > Ta && dOnDiag < diagLen - Ta) {
+        const t = (dOnDiag - Ta) / (diagLen - Ta * 2)
+        const off = waveAt(t, wlen)
+        p.x += wnx * off
+        p.y += wny * off
+      }
       const postMm = 110
       return {
         x1: X(p.x),
