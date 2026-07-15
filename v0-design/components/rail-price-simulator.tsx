@@ -213,15 +213,14 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
     // エンド装飾へスムーズにつながるようにする（2026-07-15 蠣﨑さん指示）
     const slope = (H - riser) / W
     const T = Math.min(200, W * 0.15) // 曲がりの遷移幅 (mm)。大きいほど緩やかな曲線
-    // 波数は段数で決まる: 10段まで1周期・11段からは2周期（蠣﨑さん指定）
+    // 波数は段数で決まる: 10段まで1周期＝1つの大きなS・11段からは2周期（蠣﨑さん指定）
     const waves = N >= WAVE_2CYCLE_MIN_STEPS ? 2 : 1
     const waveAt = (t: number) => {
-      // t: 斜め区間の進行率 0..1。振幅は中間で一定 ±WAVE_AMP_MM、
-      // 両端 20% は smoothstep で 0 に収束してエンドへ繋げる。
+      // t: 斜め区間の進行率 0..1。純粋な正弦 1 本＝「下振れ→上振れ」の
+      // 滑らかな S を描く。収束用の窓関数は端に余計な曲がり（ぐねぐね感）を
+      // 生むため使わない（2026-07-15 蠣﨑さん不合格指摘で撤去）。
       // -sin なので必ず「下振れ」で始まり、最後は「上振れ」から水平部へ収まる
-      const ramp = (v: number) => (v <= 0 ? 0 : v >= 1 ? 1 : v * v * (3 - 2 * v))
-      const win = Math.min(ramp(t / 0.2), ramp((1 - t) / 0.2))
-      return -WAVE_AMP_MM * Math.sin(2 * Math.PI * waves * t) * win
+      return -WAVE_AMP_MM * Math.sin(2 * Math.PI * waves * t)
     }
     const Pa = { x: x1 + T, y: yb + T * slope }
     const Pb = { x: x2 - T, y: yt - T * slope }
