@@ -65,9 +65,11 @@ const END_TILT_DEG = 2.5
 // 2026-07-15 蠣﨑さん指示「大きさを70%に」）
 const END_ART_SCALE = 0.7
 // レール本体の緩やかな揺らぎ（うねり）。Élisabeth の実物は直線でなく
-// ゆったりした波を持つ（2026-07-15 蠣﨑さん指示）。振幅 (mm) と 1 波長の目安 (mm)
+// ゆったりした波を持つ（2026-07-15 蠣﨑さん指示）。
+// 「不規則にぐねぐね」ではなく「大きな弧」: 波長を長く取り、振幅は
+// 中間で一定 ±40mm・両端だけ短いランプで 0 に収束させる
 const WAVE_AMP_MM = 40
-const WAVE_LEN_MM = 900
+const WAVE_LEN_MM = 1800
 
 // エンド形状（唐草）のフォールバック簡易パス。END_ART に実物写真トレースが
 // ある id はそちらを優先し、未トレースの id のみこの簡易カールで描く。
@@ -208,9 +210,12 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
     const slope = (H - riser) / W
     const T = Math.min(200, W * 0.15) // 曲がりの遷移幅 (mm)。大きいほど緩やかな曲線
     const waveAt = (t: number, dlen: number) => {
-      // t: 斜め区間の進行率 0..1。窓 0.5(1-cos2πt) は両端で値 0・傾き 0
-      const waves = Math.max(2, Math.round(dlen / WAVE_LEN_MM))
-      return WAVE_AMP_MM * Math.sin(2 * Math.PI * waves * t) * 0.5 * (1 - Math.cos(2 * Math.PI * t))
+      // t: 斜め区間の進行率 0..1。大きな弧＝波数は少なく（波長 WAVE_LEN_MM 目安・最低1）、
+      // 振幅は中間で一定 ±WAVE_AMP_MM。両端 15% だけ smoothstep で 0 に収束
+      const waves = Math.max(1, Math.round(dlen / WAVE_LEN_MM))
+      const ramp = (v: number) => (v <= 0 ? 0 : v >= 1 ? 1 : v * v * (3 - 2 * v))
+      const win = Math.min(ramp(t / 0.15), ramp((1 - t) / 0.15))
+      return WAVE_AMP_MM * Math.sin(2 * Math.PI * waves * t) * win
     }
     const Pa = { x: x1 + T, y: yb + T * slope }
     const Pb = { x: x2 - T, y: yt - T * slope }
