@@ -216,16 +216,14 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
     // 波数は段数で決まる: 10段まで1周期＝1つの大きなS・11段からは2周期（蠣﨑さん指定）
     const waves = N >= WAVE_2CYCLE_MIN_STEPS ? 2 : 1
     const waveAt = (t: number) => {
-      // t: 斜め区間の進行率 0..1。蠣﨑さんの赤線スケッチ（2026-07-15）に合わせた
-      // 非対称の S: 下振れは長く浅く（前半 60%・頂点 30% 付近）＝真っ直ぐ気味の
-      // 立ち上がり、上振れは登り終わり近くで大きく盛り上がり（頂点 80% 付近）、
-      // crest からエンドへ収まる。2周期時は同じ形を前半・後半に繰り返す
-      const SPLIT = 0.6
-      const f = (u: number) =>
-        u < SPLIT
-          ? -WAVE_AMP_MM * Math.sin((Math.PI * u) / SPLIT)
-          : WAVE_AMP_MM * Math.sin((Math.PI * (u - SPLIT)) / (1 - SPLIT))
-      return waves === 1 ? f(t) : f((t * waves) % 1)
+      // t: 斜め区間の進行率 0..1。蠣﨑さんの赤線スケッチ（2026-07-15）の
+      // 「浅い立ち上がり→終端寄りで大きく盛り上がってエンドへ」を、
+      // 位相を滑らかに歪ませた正弦 1 本で表現する。区分関数と違い
+      // どこにも折れ・曲率の急変がなく、いびつにならない。
+      // LAMBDA=0 で左右対称、大きいほど谷・山が終端側に寄る（谷38%・山83%付近）
+      const LAMBDA = 0.6
+      const w = (1 - LAMBDA) * t + LAMBDA * t * t
+      return -WAVE_AMP_MM * Math.sin(2 * Math.PI * waves * w)
     }
     const Pa = { x: x1 + T, y: yb + T * slope }
     const Pb = { x: x2 - T, y: yt - T * slope }
