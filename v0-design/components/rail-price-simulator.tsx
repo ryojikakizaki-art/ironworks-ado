@@ -58,18 +58,20 @@ const COLOR_STAIR_LINE = "#c2c6cd"
 // レール本体の描画太さ (viewBox 単位)。エンドのトレース画はバー太さ（barPx）が
 // この値に一致するよう縮尺して接続する
 const RAIL_STROKE = 5
-// エンドを外側へ向かってわずかに下げる角度 (度)。手すりから滑らかに垂れて
-// つながって見えるようにする（2026-07-15 蠣﨑さん調整: 6°は下がりすぎ→2.5°）
-const END_TILT_DEG = 2.5
+// エンドを外側へ向かってわずかに下げる角度 (度・上下で別指定)。
+// 2026-07-15 蠣﨑さん調整: 下段はもう少し下げ、上段は手すりから
+// スムーズに繋がるよう浅く
+const END_TILT_BOTTOM_DEG = 5
+const END_TILT_TOP_DEG = 1.5
 // エンド装飾の追加縮小率（実物はエンドを細く打ち伸ばすため本体より小ぶりに見える。
 // 2026-07-15 蠣﨑さん指示「大きさを70%に」）
 const END_ART_SCALE = 0.7
 // レール本体の緩やかな揺らぎ（うねり）。Élisabeth の実物は直線でなく
 // ゆったりした波を持つ（2026-07-15 蠣﨑さん指示）。
-// 「不規則にぐねぐね」ではなく「大きな弧」: 波長を長く取り、振幅は
-// 中間で一定 ±40mm・両端だけ短いランプで 0 に収束させる
+// 「不規則にぐねぐね」ではなく「大きな弧」: 基本は全長で 1 つの大きな S。
+// 振幅は中間で一定 ±40mm・両端はランプで 0 に収束させてエンドへ繋げる
 const WAVE_AMP_MM = 40
-const WAVE_LEN_MM = 1800
+const WAVE_LEN_MM = 3200
 
 // エンド形状（唐草）のフォールバック簡易パス。END_ART に実物写真トレースが
 // ある id はそちらを優先し、未トレースの id のみこの簡易カールで描く。
@@ -95,10 +97,11 @@ function EndDecoration({ id, x, y, outward }: { id: string; x: number; y: number
     const s = (RAIL_STROKE / art.barPx) * END_ART_SCALE
     // アート座標系はループ=左・切り口=右端。x 方向だけ -outward・s を掛けると
     // 下側で scale(s, s)（そのまま）、上側で scale(-s, s) = 左右反転になる。
-    // rotate は外側の先端が END_TILT_DEG ぶん下がる向き（下側=反時計回り・上側=時計回り）
+    // rotate は外側の先端が tilt ぶん下がる向き（下側=反時計回り・上側=時計回り）
+    const tilt = outward === 1 ? END_TILT_TOP_DEG : END_TILT_BOTTOM_DEG
     return (
       <g
-        transform={`translate(${x} ${y}) rotate(${outward * END_TILT_DEG}) scale(${-outward * s} ${s}) translate(${-art.viewW} ${-art.attachY})`}
+        transform={`translate(${x} ${y}) rotate(${outward * tilt}) scale(${-outward * s} ${s}) translate(${-art.viewW} ${-art.attachY})`}
       >
         <g transform={art.innerTransform}>
           <path d={art.d} fill={COLOR_BAR} />
@@ -211,11 +214,13 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
     const T = Math.min(200, W * 0.15) // 曲がりの遷移幅 (mm)。大きいほど緩やかな曲線
     const waveAt = (t: number, dlen: number) => {
       // t: 斜め区間の進行率 0..1。大きな弧＝波数は少なく（波長 WAVE_LEN_MM 目安・最低1）、
-      // 振幅は中間で一定 ±WAVE_AMP_MM。両端 15% だけ smoothstep で 0 に収束
+      // 振幅は中間で一定 ±WAVE_AMP_MM。両端 20% は smoothstep で 0 に収束。
+      // 符号は「登り始め側で下に膨らみ→上りで上に膨らむ」向き（-sin）。
+      // 下段エンドの垂れ・上段の水平部と流れが揃い、繋がりが滑らかに見える
       const waves = Math.max(1, Math.round(dlen / WAVE_LEN_MM))
       const ramp = (v: number) => (v <= 0 ? 0 : v >= 1 ? 1 : v * v * (3 - 2 * v))
-      const win = Math.min(ramp(t / 0.15), ramp((1 - t) / 0.15))
-      return WAVE_AMP_MM * Math.sin(2 * Math.PI * waves * t) * win
+      const win = Math.min(ramp(t / 0.2), ramp((1 - t) / 0.2))
+      return -WAVE_AMP_MM * Math.sin(2 * Math.PI * waves * t) * win
     }
     const Pa = { x: x1 + T, y: yb + T * slope }
     const Pb = { x: x2 - T, y: yt - T * slope }
