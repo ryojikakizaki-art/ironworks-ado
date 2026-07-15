@@ -67,11 +67,12 @@ const END_TILT_TOP_DEG = 1.5
 // 2026-07-15 蠣﨑さん指示「大きさを70%に」）
 const END_ART_SCALE = 0.7
 // レール本体の緩やかな揺らぎ（うねり）。Élisabeth の実物は直線でなく
-// ゆったりした波を持つ（2026-07-15 蠣﨑さん指示）。
-// 「不規則にぐねぐね」ではなく「大きな弧」: 基本は全長で 1 つの大きな S。
-// 振幅は中間で一定 ±40mm・両端はランプで 0 に収束させてエンドへ繋げる
+// ゆったりした波を持つ（2026-07-15 蠣﨑さん指定仕様）:
+// - 10段までは上下に1回ずつ（1周期）・11段からは2回ずつ（2周期）
+// - 下段は必ず「下振れ」から始まり、上段は「上振れ」から緩やかにエンドへ
+// - 弧の大きさは長さに応じて変わる（周期＝斜め全長÷波数）・振れ幅は上下40mm
 const WAVE_AMP_MM = 40
-const WAVE_LEN_MM = 3200
+const WAVE_2CYCLE_MIN_STEPS = 11 // この段数以上で2周期
 
 // エンド形状（唐草）のフォールバック簡易パス。END_ART に実物写真トレースが
 // ある id はそちらを優先し、未トレースの id のみこの簡易カールで描く。
@@ -212,12 +213,12 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
     // エンド装飾へスムーズにつながるようにする（2026-07-15 蠣﨑さん指示）
     const slope = (H - riser) / W
     const T = Math.min(200, W * 0.15) // 曲がりの遷移幅 (mm)。大きいほど緩やかな曲線
-    const waveAt = (t: number, dlen: number) => {
-      // t: 斜め区間の進行率 0..1。大きな弧＝波数は少なく（波長 WAVE_LEN_MM 目安・最低1）、
-      // 振幅は中間で一定 ±WAVE_AMP_MM。両端 20% は smoothstep で 0 に収束。
-      // 符号は「登り始め側で下に膨らみ→上りで上に膨らむ」向き（-sin）。
-      // 下段エンドの垂れ・上段の水平部と流れが揃い、繋がりが滑らかに見える
-      const waves = Math.max(1, Math.round(dlen / WAVE_LEN_MM))
+    // 波数は段数で決まる: 10段まで1周期・11段からは2周期（蠣﨑さん指定）
+    const waves = N >= WAVE_2CYCLE_MIN_STEPS ? 2 : 1
+    const waveAt = (t: number) => {
+      // t: 斜め区間の進行率 0..1。振幅は中間で一定 ±WAVE_AMP_MM、
+      // 両端 20% は smoothstep で 0 に収束してエンドへ繋げる。
+      // -sin なので必ず「下振れ」で始まり、最後は「上振れ」から水平部へ収まる
       const ramp = (v: number) => (v <= 0 ? 0 : v >= 1 ? 1 : v * v * (3 - 2 * v))
       const win = Math.min(ramp(t / 0.2), ramp((1 - t) / 0.2))
       return -WAVE_AMP_MM * Math.sin(2 * Math.PI * waves * t) * win
@@ -233,7 +234,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
     const WAVE_STEPS = 48
     for (let i = 1; i <= WAVE_STEPS; i++) {
       const t = i / WAVE_STEPS
-      const off = waveAt(t, wlen)
+      const off = waveAt(t)
       wavePath += ` L ${X(Pa.x + wdx * t + wnx * off)} ${Y(Pa.y + wdy * t + wny * off)}`
     }
     const rail =
@@ -280,7 +281,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
       const dOnDiag = pos - END_RUN // 斜めセグメント内の距離（負なら水平部）
       if (dOnDiag > Ta && dOnDiag < diagLen - Ta) {
         const t = (dOnDiag - Ta) / (diagLen - Ta * 2)
-        const off = waveAt(t, wlen)
+        const off = waveAt(t)
         p.x += wnx * off
         p.y += wny * off
       }
