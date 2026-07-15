@@ -58,6 +58,9 @@ const COLOR_STAIR_LINE = "#c2c6cd"
 // レール本体の描画太さ (viewBox 単位)。エンドのトレース画はバー太さ（barPx）が
 // この値に一致するよう縮尺して接続する
 const RAIL_STROKE = 5
+// エンドを外側へ向かってわずかに下げる角度 (度)。手すりから滑らかに垂れて
+// つながって見えるようにする（2026-07-15 蠣﨑さん指示「もう少し角度を下げ」）
+const END_TILT_DEG = 6
 
 // エンド形状（唐草）のフォールバック簡易パス。END_ART に実物写真トレースが
 // ある id はそちらを優先し、未トレースの id のみこの簡易カールで描く。
@@ -82,9 +85,12 @@ function EndDecoration({ id, x, y, outward }: { id: string; x: number; y: number
   if (art) {
     const s = RAIL_STROKE / art.barPx
     // アート座標系はループ=左・切り口=右端。x 方向だけ -outward・s を掛けると
-    // 下側で scale(s, s)（そのまま）、上側で scale(-s, s) = 左右反転になる
+    // 下側で scale(s, s)（そのまま）、上側で scale(-s, s) = 左右反転になる。
+    // rotate は外側の先端が END_TILT_DEG ぶん下がる向き（下側=反時計回り・上側=時計回り）
     return (
-      <g transform={`translate(${x} ${y}) scale(${-outward * s} ${s}) translate(${-art.viewW} ${-art.attachY})`}>
+      <g
+        transform={`translate(${x} ${y}) rotate(${outward * END_TILT_DEG}) scale(${-outward * s} ${s}) translate(${-art.viewW} ${-art.attachY})`}
+      >
         <g transform={art.innerTransform}>
           <path d={art.d} fill={COLOR_BAR} />
         </g>
