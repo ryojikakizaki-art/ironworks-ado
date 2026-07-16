@@ -84,6 +84,34 @@ export interface PriceBuildup {
   }
 }
 
+/**
+ * 参考価格シミュレーター（横型オーダーメイド階段手すり向け）の設定。
+ * 指定があれば商品ページの価格表示直下に、階段の段数（直階段）を選ぶと
+ * 実配置の側面図と参考価格が出るシミュレーターを表示する
+ * （components/rail-price-simulator.tsx）。
+ * 手すり全長は蹴上200mm・踏面240mmの一般的な直階段で概算し、
+ * 座金数は横型座金ルール（端100mm・最大ピッチ850mm ＝ rene-constants の
+ * calcZakin）で自動算出する（priceBuildup.table と同じ算出基準）。
+ */
+export interface RailSimulatorConfig {
+  /** 1m あたりの本体単価（税込） */
+  unitPricePerM: number
+  /** エンド装飾の単価（税込・1 個あたり） */
+  endPrice: number
+  /** エンド装飾の個数（両端 2 個が標準） */
+  endCount: number
+  /**
+   * エンド形状の選択肢（唐草 Type A / B など）。どれを選んでも価格は同一。
+   * img は実物写真（gallery ID or ローカルパス）でサムネイル表示に使う。
+   * 下側（登り始め）・上側（登り終わり）でそれぞれ選択できる。
+   */
+  endShapes?: { id: string; img: string }[]
+  /** 座金タイプの選択肢（id は見積もり依頼リンクの引き継ぎに使う） */
+  zakinTypes: { id: string; label: string; price: number; note?: string }[]
+  /** 階段の段数の範囲（直階段のみ・2026-07-14 蠣﨑さん指定: 6〜15段） */
+  steps: { min: number; max: number; default: number }
+}
+
 export interface SimpleProduct {
   slug: string
   nameEn: string
@@ -106,6 +134,8 @@ export interface SimpleProduct {
   trustBadges?: TrustBadge[]
   /** 価格内訳（オーダーメイド商品向け）。指定があれば basePrice 単独表示の代わりに「単価 + 例 + 価格表」を表示 */
   priceBuildup?: PriceBuildup
+  /** 参考価格シミュレーター（横型オーダーメイド手すり向け）。指定があれば価格表示直下に表示 */
+  simulator?: RailSimulatorConfig
   /** 主 CTA の文言上書き。未指定なら従来どおり「ご注文・お問い合わせ」 / 「お見積もり・ご相談はこちら」 */
   primaryCtaLabel?: string
   /** 主 CTA 下の補足説明（添付物 / 下見可否など） */
@@ -184,6 +214,24 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
         footnote:
           "※ 両端唐草エンド付き／座金は強度上 1m あたり 1.5〜2 箇所を目安に算出。階段の形状・取付下地で本数が変わります。正確な見積もりは図面でご相談ください。",
       },
+    },
+    // シミュレーターの座金数は横型座金ルール（端100・ピッチ850）で自動算出され、
+    // 上の table と同じ算出基準（1.5m=3 / 2m=4 / 2.5m=4 / 3m=5 / 4m=6 / 5m=7 箇所）。
+    // 段数 6〜15 → 全長約 1,990〜4,660mm で table のレンジ内に収まる。
+    simulator: {
+      unitPricePerM: 36000,
+      endPrice: 10000,
+      endCount: 2,
+      // 実物写真（Art nouveau Type A / Type B のギャラリー画像）をサムネイルに使う
+      endShapes: [
+        { id: "A", img: "ca8b847ba967280f8655.jpg" },
+        { id: "B", img: "010728a1313b8ddfc41e.jpg" },
+      ],
+      zakinTypes: [
+        { id: "maki", label: "巻き付け座金", price: 8000, note: "支柱に巻きつくデザイン座金（手打ち）" },
+        { id: "weld", label: "通常溶接座金", price: 4000, note: "シンプルなまる座金（溶接のみ）" },
+      ],
+      steps: { min: 6, max: 15, default: 13 },
     },
     badge: "Artisan",
     trustBadges: [
