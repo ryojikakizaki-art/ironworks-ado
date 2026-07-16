@@ -334,6 +334,16 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
         すぐに確認できます。手すりは緩やかな曲線で、登り始めと登り終わりは水平に近く曲がる形状です。
       </p>
 
+      {/* 開発中バナー: 手すりの曲線描画はまだ調整中のため、図のイメージ精度について
+          お客様に誤解を与えないよう明示する（2026-07-15 蠣﨑さん指示・仕切り直し前提） */}
+      <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-3">
+        <p className="text-[12px] md:text-[13px] text-amber-800 leading-relaxed">
+          <span className="font-semibold">※ このシミュレーターは現在開発中です。</span>
+          曲線の描画は調整中のため、図の形状は実際の仕上がりと異なる場合があります。
+          長さ・座金数・参考価格の数値は目安としてご利用いただけます。
+        </p>
+      </div>
+
       {/* ミニ図解（側面図・入力に連動）。幅・高さの入力マスは寸法線上に重ねる */}
       <div className="relative mb-2">
         <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="w-full h-auto bg-white rounded-md border border-border">
