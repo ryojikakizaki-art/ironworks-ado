@@ -56,23 +56,45 @@ const COLOR_STAIR_FILL = "#ffffff"
 const COLOR_STAIR_LINE = "#c2c6cd"
 
 // レール本体の描画太さ (viewBox 単位)。エンドのトレース画はバー太さ（barPx）が
-// この値に一致するよう縮尺して接続する
-const RAIL_STROKE = 5
+// この値 × END_ART_SCALE に一致するよう縮尺して接続する。
+// 2026-07-16 蠣﨑さん指示: エンドの切り口太さと揃うよう 5 → 3.5 に細く
+// （実寸 22φ ≒ 2.7 にも近づく）
+const RAIL_STROKE = 3.5
 // エンドを外側へ向かってわずかに下げる角度 (度・上下で別指定)。
 // 2026-07-15 蠣﨑さん調整: 下段はもう少し下げ、上段は手すりから
 // スムーズに繋がるよう浅く
 const END_TILT_BOTTOM_DEG = 5
 const END_TILT_TOP_DEG = 1.5
-// エンド装飾の追加縮小率（実物はエンドを細く打ち伸ばすため本体より小ぶりに見える。
-// 2026-07-15 蠣﨑さん指示「大きさを70%に」）
-const END_ART_SCALE = 0.7
-// レール本体の緩やかな揺らぎ（うねり）。Élisabeth の実物は直線でなく
-// ゆったりした波を持つ（2026-07-15 蠣﨑さん指定仕様）:
-// - 10段までは上下に1回ずつ（1周期）・11段からは2回ずつ（2周期）
-// - 下段は必ず「下振れ」から始まり、上段は「上振れ」から緩やかにエンドへ
-// - 弧の大きさは長さに応じて変わる（周期＝斜め全長÷波数）・振れ幅は上下40mm
-const WAVE_AMP_MM = 40
-const WAVE_2CYCLE_MIN_STEPS = 11 // この段数以上で2周期
+// 2026-07-16 蠣﨑さん指摘: 上段では A はもう少し下向きに、B は縮小に合わせて
+// 角度も見直し。パターンごとに上段の傾きを個別指定（下段は指摘なし・共通のまま）
+const END_TILT_TOP_DEG_BY_ID: Record<string, number> = { A: 9, B: 4 }
+// エンド装飾の縮尺補正。アートの切り口太さ = RAIL_STROKE × この値。
+// 2026-07-16: レールを 3.5 に細くしたのに合わせ 1.0 に変更（アートの絶対サイズは
+// 旧 5×0.7=3.5 と同じまま、レールとの太さ段差を解消）
+const END_ART_SCALE = 1.0
+// 2026-07-16 蠣﨑さん指摘: B パターンは切り口太さで揃えても全体が大きすぎる
+// （実物写真のトリミング倍率の違いにより、A と同じ基準では実寸より大きく見える）。
+// 実際の大きさに合わせる追加縮小率（A は変更なし）
+const END_ART_EXTRA_SCALE_BY_ID: Record<string, number> = { A: 1, B: 0.62 }
+// レール本体の曲線プロファイル。蠣﨑さんの言語化仕様（2026-07-16）:
+// 「登り始めは少しきつめに上がり、その後山なりに緩やかに曲がり、
+//   中央座金を中心として下弓なりになり、上がりきり付近でエンド部が
+//   水平近くになるように少しきつめに下がり、エンドに綺麗につながる（登りと逆）」
+// を、斜め区間の弦からの偏差（弦長比 %）として等間隔 33 点で表現したもの
+// （生成 = ado作業ファイル/elisabeth-simulator-curve/spec_profile.py）。
+// 8 回の正弦波近似がすべて不合格だった後、この言語化仕様ベースで初めて
+// 「ほぼ良い」の評価を得た形（2026-07-16 蠣﨑さん確認済み）。
+const WAVE_PROFILE_PCT = [
+  0, 0.39, 0.75, 1.07, 1.33, 1.51, 1.59, 1.57, 1.41, 1.11, 0.7, 0.24, -0.23,
+  -0.66, -1.0, -1.22, -1.3, -1.22, -1.0, -0.66, -0.23, 0.24, 0.7, 1.11, 1.41,
+  1.57, 1.59, 1.51, 1.33, 1.07, 0.75, 0.39, 0,
+]
+// 偏差の倍率（1 = 仕様どおり。プレビューでの見た目調整用ノブ）
+const WAVE_SCALE = 1
+// 両端の曲がりの丸み（移動平均フィレットの半径感 mm）。「きつめ」だが折れない程度
+const FILLET_MM = 160
+// レール中心線のサンプリング間隔 (mm)
+const SAMPLE_MM = 25
 
 // エンド形状（唐草）のフォールバック簡易パス。END_ART に実物写真トレースが
 // ある id はそちらを優先し、未トレースの id のみこの簡易カールで描く。
@@ -95,11 +117,11 @@ const END_PATHS: Record<string, string> = {
 function EndDecoration({ id, x, y, outward }: { id: string; x: number; y: number; outward: 1 | -1 }) {
   const art = END_ART[id]
   if (art) {
-    const s = (RAIL_STROKE / art.barPx) * END_ART_SCALE
+    const s = (RAIL_STROKE / art.barPx) * END_ART_SCALE * (END_ART_EXTRA_SCALE_BY_ID[id] ?? 1)
     // アート座標系はループ=左・切り口=右端。x 方向だけ -outward・s を掛けると
     // 下側で scale(s, s)（そのまま）、上側で scale(-s, s) = 左右反転になる。
     // rotate は外側の先端が tilt ぶん下がる向き（下側=反時計回り・上側=時計回り）
-    const tilt = outward === 1 ? END_TILT_TOP_DEG : END_TILT_BOTTOM_DEG
+    const tilt = outward === 1 ? (END_TILT_TOP_DEG_BY_ID[id] ?? END_TILT_TOP_DEG) : END_TILT_BOTTOM_DEG
     return (
       <g
         transform={`translate(${x} ${y}) rotate(${outward * tilt}) scale(${-outward * s} ${s}) translate(${-art.viewW} ${-art.attachY})`}
@@ -207,49 +229,57 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
     }
     stair += ` L ${X(x3 + margin)} ${Y(0)} Z`
 
-    // 手すり: 水平 → 緩やかに曲がって斜め（緩やかな揺らぎ付き） → 緩やかに曲がって水平
-    // 実物の Élisabeth は直線でなくゆったりした波を持つため、斜め区間に
-    // 正弦波のうねりを重ねる。両端は窓関数で振幅 0・接線一致にし、
-    // エンド装飾へスムーズにつながるようにする（2026-07-15 蠣﨑さん指示）
-    const slope = (H - riser) / W
-    const T = Math.min(200, W * 0.15) // 曲がりの遷移幅 (mm)。大きいほど緩やかな曲線
-    // 波数は段数で決まる: 10段まで1周期＝1つの大きなS・11段からは2周期（蠣﨑さん指定）
-    const waves = N >= WAVE_2CYCLE_MIN_STEPS ? 2 : 1
-    const waveAt = (t: number) => {
-      // t: 斜め区間の進行率 0..1。蠣﨑さんの赤線スケッチ（2026-07-15 第2版）:
-      // 浅い振れと大きな振れが混ざる「いびつ」を避け、下振れ・上振れが
-      // 同じ大きさで均等に流れる純粋な正弦 1 本（谷25%・山75%・±40mm）。
-      // 折れ・曲率の急変・非対称の歪みが一切ない、最もなめらかな S
-      return -WAVE_AMP_MM * Math.sin(2 * Math.PI * waves * t)
+    // 手すり: 水平部 → 斜め区間（言語化仕様の揺らぎ） → 水平部 を細かい
+    // 折れ線でサンプリングし、全体を移動平均でならして角に自然なフィレット
+    // （きつめだが折れない曲がり）を作る。Q ベジェ + 正弦の合成では実物の
+    // 非対称な流れを再現できなかったため、実測プロファイルベースに刷新
+    // （2026-07-16。経緯は WAVE_PROFILE_PCT のコメント参照）
+    const diagLen = Math.hypot(W, H - riser)
+    const unx = -(H - riser) / diagLen // 斜め区間の上向き法線
+    const uny = W / diagLen
+    const devAt = (s: number) => {
+      // s: 斜め区間の進行率 0..1 → 弦からの偏差 mm（上向き正・線形補間）
+      const f = Math.min(Math.max(s, 0), 1) * (WAVE_PROFILE_PCT.length - 1)
+      const i = Math.floor(f)
+      const j = Math.min(i + 1, WAVE_PROFILE_PCT.length - 1)
+      const pct = WAVE_PROFILE_PCT[i] + (WAVE_PROFILE_PCT[j] - WAVE_PROFILE_PCT[i]) * (f - i)
+      return (pct / 100) * diagLen * WAVE_SCALE
     }
-    const Pa = { x: x1 + T, y: yb + T * slope }
-    const Pb = { x: x2 - T, y: yt - T * slope }
-    const wdx = Pb.x - Pa.x
-    const wdy = Pb.y - Pa.y
-    const wlen = Math.hypot(wdx, wdy)
-    const wnx = -wdy / wlen // 左法線（うねりの向き）
-    const wny = wdx / wlen
-    let wavePath = ""
-    const WAVE_STEPS = 48
-    for (let i = 1; i <= WAVE_STEPS; i++) {
-      const t = i / WAVE_STEPS
-      const off = waveAt(t)
-      wavePath += ` L ${X(Pa.x + wdx * t + wnx * off)} ${Y(Pa.y + wdy * t + wny * off)}`
+    const raw: Array<{ x: number; y: number }> = []
+    for (let d = 0; d < x1 - x0; d += SAMPLE_MM) raw.push({ x: x0 + d, y: yb })
+    const diagSteps = Math.ceil(diagLen / SAMPLE_MM)
+    for (let i = 0; i <= diagSteps; i++) {
+      const s = i / diagSteps
+      const off = devAt(s)
+      raw.push({ x: x1 + W * s + unx * off, y: yb + (H - riser) * s + uny * off })
     }
-    const rail =
-      `M ${X(x0)} ${Y(yb)}` +
-      ` L ${X(x1 - 80)} ${Y(yb)}` +
-      ` Q ${X(x1)} ${Y(yb)} ${X(Pa.x)} ${Y(Pa.y)}` +
-      wavePath +
-      ` Q ${X(x2)} ${Y(yt)} ${X(x2 + 80)} ${Y(yt)}` +
-      ` L ${X(x3)} ${Y(yt)}`
+    for (let d = SAMPLE_MM; d <= END_RUN; d += SAMPLE_MM) raw.push({ x: x2 + d, y: yt })
+    if (raw[raw.length - 1].x < x3) raw.push({ x: x3, y: yt })
+    const win = Math.round(FILLET_MM / SAMPLE_MM)
+    // 両端の外側に水平の仮想点を足してから移動平均する。端で窓を縮める方式だと
+    // 「コーナーに引かれて下がる→接続点で戻る」浅い凹みがエンド手前に出るため
+    // （2026-07-16 蠣﨑さん指摘: 最後の山からエンドの間が凹む）
+    const padded = [
+      ...Array.from({ length: win }, (_, k) => ({ x: x0 - (win - k) * SAMPLE_MM, y: yb })),
+      ...raw,
+      ...Array.from({ length: win }, (_, k) => ({ x: x3 + (k + 1) * SAMPLE_MM, y: yt })),
+    ]
+    const pts = raw.map((_, i) => {
+      let sx = 0
+      let sy = 0
+      for (let k = i; k <= i + 2 * win; k++) {
+        sx += padded[k].x
+        sy += padded[k].y
+      }
+      return { x: sx / (2 * win + 1), y: sy / (2 * win + 1) }
+    })
+    const rail = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${X(p.x)} ${Y(p.y)}`).join(" ")
 
     // エンド（唐草）の取り付け位置（レール端の座標）
     const endBottomAt = { x: X(x0), y: Y(yb) }
     const endTopAt = { x: X(x3), y: Y(yt) }
 
     // 座金: 手すりに沿った距離 → 折れ線（水平/斜め/水平）上の位置と法線方向
-    const diagLen = Math.hypot(W, H - riser)
     const segs = [
       { len: END_RUN, from: { x: x0, y: yb }, dir: { x: 1, y: 0 } },
       { len: diagLen, from: { x: x1, y: yb }, dir: { x: W / diagLen, y: (H - riser) / diagLen } },
@@ -273,16 +303,14 @@ export function RailPriceSimulator({ config, queryType, onQueryChange }: RailPri
       const last = segs[segs.length - 1]
       return { x: last.from.x + last.dir.x * last.len, y: last.from.y, nx: 0, ny: -1 }
     }
-    // 斜め区間の座金はレールのうねりに追従させる（arc 距離 → 波の t へ変換）
-    const Ta = Math.hypot(T, T * slope) // 遷移カーブぶんの斜め距離
+    // 斜め区間の座金はレールの揺らぎに追従させる（arc 距離 → プロファイル s へ変換）
     const zakin = getZakinPositions(L, zakinCount).map((pos) => {
       const p = pointAt(pos)
       const dOnDiag = pos - END_RUN // 斜めセグメント内の距離（負なら水平部）
-      if (dOnDiag > Ta && dOnDiag < diagLen - Ta) {
-        const t = (dOnDiag - Ta) / (diagLen - Ta * 2)
-        const off = waveAt(t)
-        p.x += wnx * off
-        p.y += wny * off
+      if (dOnDiag > 0 && dOnDiag < diagLen) {
+        const off = devAt(dOnDiag / diagLen)
+        p.x += unx * off
+        p.y += uny * off
       }
       const postMm = 110
       return {
