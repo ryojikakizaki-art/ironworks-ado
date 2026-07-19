@@ -194,6 +194,9 @@ export default function ContactPage() {
               const ext = Number(params.get("ext") || "0")
               const extPrice = Number(params.get("extprice") || "0")
               const total = params.get("total")
+                const erb = params.get("erb")
+                const ert = params.get("ert")
+                const runNote = erb && ert ? `段鼻から 下${erb}mm・上${ert}mm` : "各200mm"
               const extLine = ext > 0
                 ? `延長: ③側+${ext}mm（追加+¥${extPrice.toLocaleString()}）\n`
                 : "延長: なし\n"
@@ -210,13 +213,16 @@ export default function ContactPage() {
                 const stairW = params.get("w")
                 const stairH = params.get("h")
                 const total = params.get("total")
+                const erb = params.get("erb")
+                const ert = params.get("ert")
+                const runNote = erb && ert ? `段鼻から 下${erb}mm・上${ert}mm` : "各200mm"
                 const dims =
                   stairW && stairH
                     ? `・幅 約${Number(stairW).toLocaleString()}mm・床から最上段の高さ 約${Number(stairH).toLocaleString()}mm`
                     : ""
                 const stepsLine = stepsN ? `階段: 直階段 ${stepsN}段${dims}\n` : ""
                 const totalLine = total ? `参考価格（税込・送料別）: ¥${Number(total).toLocaleString()}\n\n` : "\n"
-                return `【Élisabeth エリザベート 階段手すり お見積もり依頼】\n\n${stepsLine}手すり全長の目安: 約${Number(simLen).toLocaleString()}mm（段鼻間の直線距離＋両端の水平部 各200mm）\nエンド形状（唐草）: 下側（登り始め）${endB} パターン・上側（登り終わり）${endT} パターン\n座金タイプ: ${zakinLabel} × ${zcount} 箇所\n${totalLine}上記内容でのお見積もりを希望します。\n\n※手すりの長さ・座金の本数は実際の階段の寸法・形状・下地位置により変わります。階段の写真や図面を添付いただけると正確なお見積もりがスムーズです。\n\n設置場所の階段について（段数・回り階段の有無など）:\n（ご記入ください）\n\nその他ご要望:\n`
+                return `【Élisabeth エリザベート 階段手すり お見積もり依頼】\n\n${stepsLine}手すり全長の目安: 約${Number(simLen).toLocaleString()}mm（段鼻間の直線距離＋両端の水平部 ${runNote}）\nエンド形状（唐草）: 下側（登り始め）${endB} パターン・上側（登り終わり）${endT} パターン\n座金タイプ: ${zakinLabel} × ${zcount} 箇所\n${totalLine}上記内容でのお見積もりを希望します。\n\n※手すりの長さ・座金の本数は実際の階段の寸法・形状・下地位置により変わります。階段の写真や図面を添付いただけると正確なお見積もりがスムーズです。\n\n設置場所の階段について（段数・回り階段の有無など）:\n（ご記入ください）\n\nその他ご要望:\n`
               })()
             : ""
     setForm((prev) => ({
