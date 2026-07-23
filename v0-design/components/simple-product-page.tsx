@@ -6,7 +6,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
-import { ChevronLeft, ChevronRight, ChevronDown, Check, Mail, MessageSquare, ShoppingBag, Minus, Plus, Hammer, Paintbrush, Ruler, Wrench, Sparkles, Clock, Truck, ShieldCheck, Camera, Copy, FileDown } from "lucide-react"
+import { ChevronLeft, ChevronRight, ChevronDown, Check, Mail, MessageSquare, ShoppingBag, Minus, Plus, Hammer, Paintbrush, Ruler, Wrench, Sparkles, Clock, Truck, ShieldCheck, Camera, Copy, FileDown, Maximize2 } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
@@ -20,7 +20,6 @@ import { BankOrderModal } from "@/components/checkout/bank-order-modal"
 import { fireGtagEvent } from "@/lib/gtag"
 import { FinishCommitment } from "@/components/finish-commitment"
 import { ClemenceSpecPanel } from "@/components/clemence-spec-panel"
-import { RailPriceSimulator } from "@/components/rail-price-simulator"
 import { calcClemenceShipping, PREF_TO_REGION } from "@/lib/shipping/sagawa"
 import { getEarliestArrival } from "@/lib/business-days"
 import { copyToClipboard } from "@/lib/products/quote-share"
@@ -409,9 +408,6 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
 
   // Clémence 専用: 寸法・ブラケット位置の入力内容を ClemenceSpecPanel から引き継ぐクエリ
   const [clemenceQuery, setClemenceQuery] = useState("")
-  // 参考価格シミュレーター（Élisabeth 等 product.simulator 指定商品）の選択内容を
-  // 見積もり依頼リンクに引き継ぐクエリ。clemenceQuery とは商品が排他なので同時には使われない
-  const [simulatorQuery, setSimulatorQuery] = useState("")
   const [clemencePrefecture, setClemencePrefecture] = useState(() =>
     clemenceRestored?.pref && PREFECTURES.includes(clemenceRestored.pref) ? clemenceRestored.pref : "",
   )
@@ -1090,13 +1086,29 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
               </>
             ) : (
               <>
-                {/* ── 参考価格シミュレーター（Élisabeth 等・価格のすぐ下） ── */}
+                {/* ── 参考価格シミュレーター案内（Élisabeth 等・価格のすぐ下） ──
+                    シミュレーターは数値入力が多く、商品ページ内の狭い幅だと操作しづらいため
+                    埋め込まず、数値入力しやすい全画面ページへ誘導する（2026-07-22 蠣﨑さん指示） */}
                 {product.simulator && (
-                  <RailPriceSimulator
-                    config={product.simulator}
-                    queryType={product.slug}
-                    onQueryChange={setSimulatorQuery}
-                  />
+                  <div className="mb-8 border-2 border-gold/20 bg-card rounded-md p-5">
+                    <p className="text-[11px] tracking-[0.2em] text-gold font-semibold uppercase mb-1">
+                      Price simulator
+                    </p>
+                    <p className="font-serif text-[16px] font-medium text-foreground mb-1">
+                      参考価格シミュレーター
+                    </p>
+                    <p className="text-[13px] md:text-[14px] text-muted-foreground leading-relaxed mb-4">
+                      階段の段数・幅・高さ・エンド部を入れると、実際の取り付けイメージと参考価格が
+                      その場で分かります。数値を入力しやすい全画面で開きます。
+                    </p>
+                    <Link
+                      href={`/products/${product.slug}/simulator`}
+                      className="inline-flex items-center gap-2 rounded-full bg-dark text-white text-[14px] md:text-[15px] font-semibold px-6 py-3 shadow-sm hover:bg-dark/85 transition-colors"
+                    >
+                      <Maximize2 className="w-4 h-4" />
+                      シミュレーターを開く
+                    </Link>
+                  </div>
                 )}
 
                 {/* ── 安心バッジ（ATF）── */}
@@ -1177,9 +1189,9 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
                   ) : (
                     <>
                       {/* 送料計算が必要な商品はお問い合わせフォーム経由。
-                          シミュレーターつき商品は選択内容（長さ・座金・参考価格）も引き継ぐ */}
+                          シミュレーターは全画面ページで見積もり依頼まで完結する */}
                       <PrimaryCTA
-                        href={`/contact?product=${encodeURIComponent(product.slug)}&category=order${clemenceQuery}${simulatorQuery}`}
+                        href={`/contact?product=${encodeURIComponent(product.slug)}&category=order${clemenceQuery}`}
                         variant="gold"
                         size="lg"
                         icon={<Mail className="w-4 h-4" />}
