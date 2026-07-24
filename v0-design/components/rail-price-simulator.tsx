@@ -28,8 +28,22 @@ import type { RailSimulatorConfig } from "@/lib/products/simple"
 
 // ── 階段の標準寸法 (mm)。幅・高さの自動セットに使う ──
 const STD_RISER = 200 // 蹴上
-const STD_GOING = 220 // 1段あたりの水平進み（踏面240 − 蹴込み20）
+const STD_TREAD = 240 // 踏面
+const STD_KICK = 20 // 蹴込み
+const STD_GOING = STD_TREAD - STD_KICK // 1段あたりの水平進み（段鼻々距離）＝踏面−蹴込み
 const RAIL_H = 800 // 段鼻から手すり中心までの高さ
+
+// ── 蹴上・踏面・蹴込の入力範囲 (mm)。正確な階段寸法出し用
+// （2026-07-22 蠣﨑さん指示: 段鼻・蹴上・踏面・蹴込の説明とともに入力欄を作る） ──
+const RISER_MIN = 120
+const RISER_MAX = 250
+const TREAD_MIN = 180
+const TREAD_MAX = 350
+const KICK_MIN = 0
+const KICK_MAX = 40
+// 1段目〜最上段の段鼻の直線距離を直接入力する場合の範囲 (mm)
+const DIAG_MIN = 800
+const DIAG_MAX = 6000
 
 // ── エンド装飾（唐草）の実寸比率描画パラメータ ──
 // 手すり本体の実寸径 (mm)。唐草はこの径基準の実寸比率で描く（× SIZE_FACTOR）
@@ -260,6 +274,101 @@ function DimStepper({
   )
 }
 
+/** 両端に矢印のついた寸法線（水平・垂直どちらの向きでも使える汎用パーツ） */
+function DoubleArrow({
+  x1,
+  y1,
+  x2,
+  y2,
+  color,
+  width = 3,
+}: {
+  x1: number
+  y1: number
+  x2: number
+  y2: number
+  color: string
+  width?: number
+}) {
+  const dx = x2 - x1
+  const dy = y2 - y1
+  const len = Math.hypot(dx, dy) || 1
+  const ux = dx / len
+  const uy = dy / len
+  const px = -uy
+  const py = ux
+  const head = 7
+  const halfW = 4
+  const tri = (tipX: number, tipY: number, dx2: number, dy2: number) => {
+    const baseX = tipX - dx2 * head
+    const baseY = tipY - dy2 * head
+    return `${tipX},${tipY} ${baseX + px * halfW},${baseY + py * halfW} ${baseX - px * halfW},${baseY - py * halfW}`
+  }
+  return (
+    <g>
+      <line x1={x1 + ux * head} y1={y1 + uy * head} x2={x2 - ux * head} y2={y2 - uy * head} stroke={color} strokeWidth={width} />
+      <polygon points={tri(x1, y1, -ux, -uy)} fill={color} />
+      <polygon points={tri(x2, y2, ux, uy)} fill={color} />
+    </g>
+  )
+}
+
+/**
+ * 「段鼻・蹴上・踏面・蹴込」の用語説明イラスト（1段ぶんの断面・シンプルな L 字形）。
+ * 踏面＝青・蹴込＝緑・蹴上＝赤の両矢印で色分けし、名前をひと目で対応づけられるように
+ * する（2026-07-22 蠣﨑さん指示: 分かりやすい図にしたい。参考画像のスタイルに合わせた）
+ */
+function StairPartsDiagram() {
+  const COLOR_TREAD = "#2563eb" // 踏面＝青
+  const COLOR_KICK = "#16a34a" // 蹴込＝緑
+  const COLOR_RISER = "#dc2626" // 蹴上＝赤
+  // ローカル座標系（図解用の任意スケール）
+  const noseX = 34 // 段鼻（踏面の手前端）
+  const backX = 210 // 踏面の奥端
+  const setbackX = 66 // 蹴込み板の位置（段鼻から蹴込ぶん奥）
+  const topY = 34 // 踏面の上面
+  const treadThick = 20 // 踏面の板厚（見た目用）
+  const midY = topY + treadThick
+  const botY = 168 // 蹴込み板の下端
+
+  return (
+    <svg viewBox="0 0 300 210" className="w-full h-auto max-w-[300px] mx-auto">
+      {/* 段の断面（L字形。段鼻の下にオーバーハングした蹴込みを表現） */}
+      <path
+        d={`M ${noseX} ${topY} L ${backX} ${topY} L ${backX} ${botY} L ${setbackX} ${botY} L ${setbackX} ${midY} L ${noseX} ${midY} Z`}
+        fill="#fff"
+        stroke={COLOR_BAR}
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
+      {/* 段鼻（強調ドット＋ラベル） */}
+      <circle cx={noseX} cy={topY} r={3.5} fill="#b8860b" />
+      <text x={noseX - 6} y={topY - 10} textAnchor="middle" fontSize="12" fontWeight="700" fill="#b8860b">
+        段鼻
+      </text>
+      <line x1={noseX} y1={topY - 6} x2={noseX - 4} y2={topY - 16} stroke="#b8860b" strokeWidth="1" />
+
+      {/* 踏面（青・上面いっぱいの幅） */}
+      <DoubleArrow x1={noseX} y1={topY - 16} x2={backX} y2={topY - 16} color={COLOR_TREAD} />
+      <text x={(noseX + backX) / 2} y={topY - 22} textAnchor="middle" fontSize="14" fontWeight="700" fill={COLOR_TREAD}>
+        踏面
+      </text>
+
+      {/* 蹴込（緑・段鼻の真下の小さな引っ込み） */}
+      <DoubleArrow x1={noseX} y1={midY + 11} x2={setbackX} y2={midY + 11} color={COLOR_KICK} width={2.5} />
+      <text x={noseX - 8} y={midY + 15} textAnchor="end" fontSize="12" fontWeight="700" fill={COLOR_KICK}>
+        蹴込
+      </text>
+
+      {/* 蹴上（赤・段の全高） */}
+      <DoubleArrow x1={backX + 24} y1={topY} x2={backX + 24} y2={botY} color={COLOR_RISER} />
+      <text x={backX + 32} y={(topY + botY) / 2} fontSize="14" fontWeight="700" fill={COLOR_RISER} dominantBaseline="middle">
+        蹴上
+      </text>
+    </svg>
+  )
+}
+
 interface RailPriceSimulatorProps {
   config: RailSimulatorConfig
   /** 見積もり依頼リンクに付ける type= の値（商品 slug） */
@@ -276,6 +385,12 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
   // 幅・高さをお客様が手入力したら、以降は段数を変えても上書きしない
   const [wTouched, setWTouched] = useState(false)
   const [hTouched, setHTouched] = useState(false)
+  // 蹴上・踏面・蹴込（正確な階段寸法出し用・2026-07-22 蠣﨑さん指示）。
+  // 触ると幅・高さより優先され、段数を変えるたびにこの値から幅・高さを再計算する
+  const [riserMm, setRiserMm] = useState(STD_RISER)
+  const [treadMm, setTreadMm] = useState(STD_TREAD)
+  const [kickMm, setKickMm] = useState(STD_KICK)
+  const [perStepTouched, setPerStepTouched] = useState(false)
   // 両端の水平部（段鼻から手すり端まで）。下段・上段で個別指定
   const [runBMm, setRunBMm] = useState(END_RUN)
   const [runTMm, setRunTMm] = useState(END_RUN)
@@ -293,8 +408,15 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
   }
 
   // クランプ後の実効値（図・価格・注文引き継ぎはこの値を使う）
-  const W = clamp(wMm, W_MIN, W_MAX)
-  const H = clamp(hMm, H_MIN, H_MAX)
+  const riserEff = clamp(riserMm, RISER_MIN, RISER_MAX)
+  const treadEff = clamp(treadMm, TREAD_MIN, TREAD_MAX)
+  const kickEff = clamp(kickMm, KICK_MIN, KICK_MAX)
+  // 蹴上・踏面・蹴込を入力した場合はそちらを優先し、幅・高さはそこから逆算する
+  // （2026-07-22 蠣﨑さん指示: 正確な階段の寸法出しのため）
+  const W = perStepTouched
+    ? clamp((N - 1) * (treadEff - kickEff), W_MIN, W_MAX)
+    : clamp(wMm, W_MIN, W_MAX)
+  const H = perStepTouched ? clamp(N * riserEff, H_MIN, H_MAX) : clamp(hMm, H_MIN, H_MAX)
   const RB = clamp(runBMm, RUN_MIN_BOTTOM, RUN_MAX) // 下側（登り始め）の水平部
   const RT = clamp(runTMm, RUN_MIN_TOP, RUN_MAX) // 上側（登り終わり）の水平部
   const riser = H / N // 蹴上（床から最上段の高さ ÷ 段数）
@@ -303,6 +425,20 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
   // 手すりの長さ: 1段目と最上段の段鼻の直線距離 ＋ 両端の水平部
   const noseDiag = Math.round(Math.hypot(W, H - riser))
   const L = Math.round((noseDiag + RB + RT) / 10) * 10
+
+  // 1段目〜最上段の段鼻の距離を直接入力（2026-07-22 蠣﨑さん指示: 現場で斜めに
+  // 一発で測れる寸法）。幅・高さと同じ比率を保ったまま、入力値に合わせて両方を
+  // 比例縮尺する（角度＝階段の勾配は変えない）。蹴上・踏面・蹴込モードよりも
+  // 優先し、直接測った実測値を最終的な正とする
+  const setNoseDiagDirect = (v: number) => {
+    if (!(v > 0) || !(noseDiag > 0)) return
+    const scale = v / noseDiag
+    setWMm(Math.round(W * scale))
+    setHMm(Math.round(riser + (H - riser) * scale))
+    setWTouched(true)
+    setHTouched(true)
+    setPerStepTouched(false)
+  }
 
   const zakinType = config.zakinTypes.find((z) => z.id === zakinId) ?? config.zakinTypes[0]
   const zakinCount = calcZakin(L)
@@ -314,9 +450,9 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
 
   useEffect(() => {
     onQueryChange?.(
-      `&type=${queryType}&steps=${N}&w=${W}&h=${H}&erb=${RB}&ert=${RT}&len=${L}&endb=${encodeURIComponent(endBottom)}&endt=${encodeURIComponent(endTop)}&zakin=${zakinType.id}&zcount=${zakinCount}&total=${total}`,
+      `&type=${queryType}&steps=${N}&w=${W}&h=${H}&riser=${riserEff}&tread=${treadEff}&kick=${kickEff}&diag=${noseDiag}&erb=${RB}&ert=${RT}&len=${L}&endb=${encodeURIComponent(endBottom)}&endt=${encodeURIComponent(endTop)}&zakin=${zakinType.id}&zcount=${zakinCount}&total=${total}`,
     )
-  }, [N, W, H, RB, RT, L, endBottom, endTop, zakinType.id, zakinCount, total, queryType, onQueryChange])
+  }, [N, W, H, riserEff, treadEff, kickEff, noseDiag, RB, RT, L, endBottom, endTop, zakinType.id, zakinCount, total, queryType, onQueryChange])
 
   // ── ミニ図解（側面図・階段に実配置。入力に連動） ──
   const svg = useMemo(() => {
@@ -661,11 +797,12 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
         <DimStepper
           label="階段の幅"
           hint="1段目〜最上段の段鼻"
-          value={wMm}
+          value={perStepTouched ? W : wMm}
           effective={W}
           setValue={(v) => {
             setWMm(v)
             setWTouched(true)
+            setPerStepTouched(false)
           }}
           min={W_MIN}
           max={W_MAX}
@@ -673,17 +810,19 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
         <DimStepper
           label="高さ"
           hint="床〜最上段"
-          value={hMm}
+          value={perStepTouched ? H : hMm}
           effective={H}
           setValue={(v) => {
             setHMm(v)
             setHTouched(true)
+            setPerStepTouched(false)
           }}
           min={H_MIN}
           max={H_MAX}
         />
         {/* ↑ setWMm/setHMm は number でも関数更新でも受けられる（useState の setter）ため
-             DimStepper の関数更新がそのまま通る */}
+             DimStepper の関数更新がそのまま通る。蹴上・踏面・蹴込モード中は value に
+             逆算した実効値を出す（stale な wMm/hMm を表示してしまわないため） */}
         <DimStepper
           label="下側エンド"
           hint={`段鼻〜先端（${RUN_MIN_BOTTOM}〜${RUN_MAX}）`}
@@ -709,6 +848,91 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
         下側は段鼻より出ないこともあり、0 で段鼻とループの端が揃います。
         分からない場合はそのままで構いません（段数に合わせた一般的な寸法を自動セットしています）。
       </p>
+
+      {/* 正確な階段寸法の入力（蹴上・踏面・蹴込／段鼻間の直線距離）。
+          現地で正確に測って仕様を確定したいお客様向けの詳細入力
+          （2026-07-22 蠣﨑さん指示: 段鼻・蹴上・踏面・蹴込の説明とともに入力欄を作る。
+          1段目〜最上段の段鼻の距離も直接入力できるように） */}
+      <div className="mb-4 rounded-md border border-border bg-white p-4">
+        <p className="text-[13px] font-medium text-foreground mb-1">
+          より正確に測りたい方へ ── 階段各部の寸法
+        </p>
+        <p className="text-[12px] text-muted-foreground leading-relaxed mb-3">
+          現地で階段を実測できる場合は、蹴上・踏面・蹴込（下図）を入力すると幅・高さが自動計算され、
+          より正確な仕様になります。入力すると上の「階段の幅」「高さ」より優先されます。
+        </p>
+        <StairPartsDiagram />
+        <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-muted-foreground leading-relaxed mt-2 mb-3">
+          <div><dt className="inline font-medium text-foreground">段鼻：</dt><dd className="inline">各段の踏面の前端（一番手前に出た角）</dd></div>
+          <div><dt className="inline font-medium text-foreground">蹴上：</dt><dd className="inline">1段あたりの高さ（垂直）</dd></div>
+          <div><dt className="inline font-medium text-foreground">踏面：</dt><dd className="inline">足を乗せる面の奥行き（水平）</dd></div>
+          <div><dt className="inline font-medium text-foreground">蹴込：</dt><dd className="inline">段鼻の真下、蹴込み板の引っ込み幅</dd></div>
+        </dl>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+          <DimStepper
+            label="蹴上"
+            hint="1段の高さ"
+            value={riserMm}
+            effective={riserEff}
+            setValue={(v) => {
+              setRiserMm(v)
+              setPerStepTouched(true)
+            }}
+            min={RISER_MIN}
+            max={RISER_MAX}
+          />
+          <DimStepper
+            label="踏面"
+            hint="足を乗せる面の奥行き"
+            value={treadMm}
+            effective={treadEff}
+            setValue={(v) => {
+              setTreadMm(v)
+              setPerStepTouched(true)
+            }}
+            min={TREAD_MIN}
+            max={TREAD_MAX}
+          />
+          <DimStepper
+            label="蹴込"
+            hint="段鼻下の引っ込み"
+            value={kickMm}
+            effective={kickEff}
+            setValue={(v) => {
+              setKickMm(v)
+              setPerStepTouched(true)
+            }}
+            min={KICK_MIN}
+            max={KICK_MAX}
+          />
+        </div>
+        <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-white px-3 py-2">
+          <span className="text-[13px] text-foreground leading-tight">
+            段鼻間の距離（直接入力）
+            <span className="block text-[10px] text-muted-foreground mt-0.5">
+              1段目〜最上段の段鼻を斜めに直接測った場合はこちら
+            </span>
+          </span>
+          <div className="flex items-center gap-1">
+            <input
+              type="number"
+              inputMode="numeric"
+              min={DIAG_MIN}
+              max={DIAG_MAX}
+              step={10}
+              value={noseDiag}
+              onChange={(e) => setNoseDiagDirect(Number(e.target.value))}
+              onBlur={(e) => setNoseDiagDirect(clamp(Number(e.target.value), DIAG_MIN, DIAG_MAX))}
+              aria-label="1段目と最上段の段鼻の距離（mm）"
+              className="w-20 h-8 border border-border rounded-md text-center text-[14px] bg-white focus:outline-none focus:border-gold"
+            />
+            <span className="text-[12px] text-muted-foreground">mm</span>
+          </div>
+        </div>
+        <p className="text-[11px] text-muted-foreground leading-relaxed mt-2">
+          段鼻間の距離を入力すると、現在の幅・高さの比率（勾配）を保ったまま両方を自動で伸縮します。
+        </p>
+      </div>
 
       {/* 段数 */}
       <div className="flex items-center justify-between border border-border rounded-md bg-white px-4 py-3 mb-4">
