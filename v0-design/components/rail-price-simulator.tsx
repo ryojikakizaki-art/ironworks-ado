@@ -616,12 +616,12 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
   const wMid = clamp(wMidMm, WALL_MID_MIN, WALL_MAX)
   // 廻り段ゾーン（曲がり角）の奥行き＝階段の有効幅
   const bandW = shape === "U" ? Math.max(400, Math.min(950, (wMid - 300) / 2)) : STAIR_BAND_L
-  // 四角い踊り場の曲がり角には段がないので、廻り段の数は 0。
-  // 廻り段のときは、曲がり角に接する段が斜めになる（1段目側が6段なら6段目がななめ）
+  // 曲がり角に接する段は「廻り段（斜め）」か「四角い踊り場」。
+  // 踊り場も1段とみなす（2026-07-25 蠣﨑さん指定）ので、どちらでも曲がり角の段は
+  // ①の段数に含まれ、壁沿いに平行に並ぶ段はそのぶん少なくなる
   const isLanding = shape === "L" && cornerType === "landing"
-  // 壁沿いに平行に並ぶ段の数
   const straightStart = isLanding
-    ? nStart
+    ? Math.max(nStart - 1, 0)
     : shape === "L"
       ? Math.max(
           0,
@@ -629,11 +629,16 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
         )
       : Math.max(nStart - 1, 0)
   // 最終段側の平行段。コの字は曲がり角に接する1段が廻り段・最後の1段が2階なので2段少ない。
-  // L字は曲がり角の段が①に入っている（踊り場なら段そのものが無い）ので2階のぶんだけ少ない
+  // L字は曲がり角の段が①に入っているので2階のぶんだけ少ない
   const straightEnd = Math.max(nEnd - (shape === "U" ? 2 : 1), 0)
-  // 曲がり角の壁の面から最終段の段鼻（＝2階の床の端）までの距離。
-  // 壁の長さとは無関係に階段の段数で決まる（2026-07-25 蠣﨑さん指摘: 揃うとは限らない）
-  const topNoseAt = bandW + straightEnd * nosePitch
+  // 1段目の段鼻（壁から70mm入る）と、平行段が終わる位置
+  const firstNoseAt = wStart - FIRST_STEP_OFFSET
+  // 曲がり角（廻り段ゾーン／踊り場）の奥行き。平行段の終わりから曲がり角の壁までを
+  // そのまま曲がり角にすることで、階段と曲がり角が離れないようにする
+  // （2026-07-25 蠣﨑さん指摘: コーナーと階段が離れてしまうことがある）
+  const turnDepth = Math.max(firstNoseAt - straightStart * nosePitch, 0)
+  // 曲がり角の壁の面から最終段の段鼻（＝2階の床の端）まで。壁の長さとは無関係に決まる
+  const topNoseAt = turnDepth + straightEnd * nosePitch
   // 全体の段数（昇りきりの2階を含む）。まとめて指定すると各フライトへ振り分ける
   const totalSteps = shape === "U" ? nStart + nMid + nEnd : nStart + nEnd
   /** 全体の段数を増減する。1段ずつ、少ない側のフライトに足す（減らすときは多い側から） */
@@ -648,7 +653,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
    *  （踊り場は段が踊り場の手前で終わるぶん壁が長くなる） */
   const changeCornerType = (next: CornerType) => {
     setCornerType(next)
-    const parallel = next === "landing" ? nStart : Math.max(nStart - L_WINDER_STEPS, 1)
+    const parallel = Math.max(nStart - (next === "landing" ? 1 : L_WINDER_STEPS), 1)
     setWStartMm(Math.round(FIRST_STEP_OFFSET + parallel * nosePitch + bandW))
   }
   /** 階段の形を選び直したら、その形の標準的な壁寸法にリセットする */
@@ -674,7 +679,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
     // 壁の長さと階段の長さは互いに影響しない（2026-07-25 蠣﨑さん指摘）ので、
     // 斜めの区間は段数から、余りは平らな部分として別々に出す
     // 曲がり角が四角い踊り場のときは、そこは平ら（上がらない）ので斜辺に含めない
-    const cornerRun = isLanding ? 0 : Math.max(bandW - CORNER_WALL_GAP, 0)
+    const cornerRun = isLanding ? 0 : Math.max(turnDepth - CORNER_WALL_GAP, 0)
     const startSlopeRun = straightStart * nosePitch + cornerRun
     const endSlopeRun = straightEnd * nosePitch + cornerRun
     // 手すりは壁より外へは出せない（固定できない）ので、昇りきり側のエンドは
@@ -698,7 +703,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
       const slopeRun = d.allSlope ? span : Math.min(d.slopeRunWant, span)
       // 段数ぶんの階段が壁に収まらない＝斜めが壁からはみ出すとき
       // 踊り場は上がらないが手すりは必ずその上を通るので、収まり判定には含める
-      const needRun = d.slopeRunWant + (d.allSlope ? 0 : isLanding ? Math.max(bandW - CORNER_WALL_GAP, 0) : 0)
+      const needRun = d.slopeRunWant + (d.allSlope ? 0 : isLanding ? Math.max(turnDepth - CORNER_WALL_GAP, 0) : 0)
       const overflow = !d.allSlope && needRun > span
       const flatRun = span - slopeRun
       const slopeLen = d.allSlope
@@ -731,7 +736,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
       totalZakin: rails.reduce((s, r) => s + r.zakin, 0),
       totalPrice: rails.reduce((s, r) => s + r.price, 0),
     }
-  }, [shape, isLanding, wStart, wMid, wEnd, bandW, straightStart, straightEnd, topNoseAt, nStart, nMid, nEnd, nosePitch, riserEff, config.unitPricePerM, config.endPrice, zakinType.price])
+  }, [shape, isLanding, wStart, wMid, wEnd, bandW, turnDepth, straightStart, straightEnd, topNoseAt, nStart, nMid, nEnd, nosePitch, riserEff, config.unitPricePerM, config.endPrice, zakinType.price])
 
   useEffect(() => {
     if (winding) {
@@ -976,7 +981,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
     const XL = isU ? -wMid : -wEnd
     // 壁の外側の寸法線・縦書きラベル用スペース（狭いとラベルが viewBox の端で切れる）
     const dimSide = PLAN_WALL_T + 230
-    const topNoseAtPlan = bandW + straightEnd * nosePitch
+    const topNoseAtPlan = topNoseAt
     const topRailEndPlan = Math.min(topNoseAtPlan + WINDING_END_RUN, wEnd)
     const xMin = isU
       ? XL - dimSide
@@ -1043,9 +1048,11 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
     // 壁は「壁の幅」の入力どおりの長さで描き、寸法線と一致させる。
     // 階段の白抜きは実際に段がある範囲だけに描き、壁が余ったぶんは床のままにして
     // 空白の段（不要な階段のマス）が出ないようにする
-    const firstNoseY = wStart - FIRST_STEP_OFFSET
-    // 平行段が終わって廻り段ゾーンに入る位置（1階側）
-    const turnEdgeY = firstNoseY - straightStart * going
+    const firstNoseY = firstNoseAt
+    // 曲がり角ゾーンの奥行き。平行段の終わりから曲がり角の壁までをそのまま曲がり角に
+    // するので、階段と曲がり角は必ずつながる
+    const turnY = turnDepth
+    const turnEdgeY = turnY
     const topNoseY = topNoseAt // 最終段の段鼻（＝2階の床の端）。壁の端とは揃わない
     const topRailEndY = Math.min(topNoseY + WINDING_END_RUN, wEnd)
     if (isU) {
@@ -1054,9 +1061,9 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
       rectMm(rects, XL - PLAN_WALL_T, -PLAN_WALL_T, PLAN_WALL_T, 0, "#e5e7eb")
       rectMm(rects, XL - PLAN_WALL_T, 0, XL, wEnd, "#e5e7eb")
       // 階段の白抜き: 廻り段ゾーン（中間壁ぜんぶ）・フライト①の平行段・フライト③の平行段
-      rectMm(stairRects, XL, 0, 0, bandW, COLOR_STAIR_FILL)
+      rectMm(stairRects, XL, 0, 0, turnY, COLOR_STAIR_FILL)
       if (straightStart > 0) rectMm(stairRects, -bandW, turnEdgeY, 0, firstNoseY, COLOR_STAIR_FILL)
-      if (straightEnd > 0) rectMm(stairRects, XL, bandW, XL + bandW, topNoseY, COLOR_STAIR_FILL)
+      if (straightEnd > 0) rectMm(stairRects, XL, turnY, XL + bandW, topNoseY, COLOR_STAIR_FILL)
       // 2階の床（最終段の段鼻から先）。昇りきりの段＝2階なので、そこに最後の段数を置く
       rectMm(rects, XL, topNoseY, XL + bandW, topNoseY + WINDING_END_RUN + 140, COLOR_WALL)
       stepNums.push({ x: X(XL + bandW / 2), y: Y(topNoseY + 90), n: nStart + nMid + nEnd })
@@ -1065,13 +1072,13 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
       rectMm(rects, 0, -PLAN_WALL_T, PLAN_WALL_T, wStart, "#e5e7eb")
       rectMm(rects, XL, -PLAN_WALL_T, PLAN_WALL_T, 0, "#e5e7eb")
       // 階段の白抜き: 曲がり角の廻り段ゾーン・フライト①の平行段・フライト②の平行段
-      rectMm(stairRects, -bandW, 0, 0, bandW, COLOR_STAIR_FILL)
+      rectMm(stairRects, -bandW, 0, 0, turnY, COLOR_STAIR_FILL)
       if (straightStart > 0) rectMm(stairRects, -bandW, turnEdgeY, 0, firstNoseY, COLOR_STAIR_FILL)
-      if (straightEnd > 0) rectMm(stairRects, -topNoseY, 0, -bandW, bandW, COLOR_STAIR_FILL)
+      if (straightEnd > 0) rectMm(stairRects, -topNoseY, 0, -bandW, turnY, COLOR_STAIR_FILL)
       // 2階の床（最終段の段鼻から先）
-      rectMm(rects, -topNoseY - WINDING_END_RUN - 140, 0, -topNoseY, bandW, COLOR_WALL)
-      stepNums.push({ x: X(-topNoseY - 90), y: Y(bandW / 2), n: nStart + nEnd })
-      labels.push({ x: X(-topNoseY - WINDING_END_RUN - 60), y: Y(bandW / 2) + 4, text: "2階", size: 12, muted: true, anchor: "middle" })
+      rectMm(rects, -topNoseY - WINDING_END_RUN - 140, 0, -topNoseY, turnY, COLOR_WALL)
+      stepNums.push({ x: X(-topNoseY - 90), y: Y(turnY / 2), n: nStart + nEnd })
+      labels.push({ x: X(-topNoseY - WINDING_END_RUN - 60), y: Y(turnY / 2) + 4, text: "2階", size: 12, muted: true, anchor: "middle" })
     }
     labels.push({ x: X(-bandW / 2), y: Y(firstNoseY + 110), text: "1階", size: 12, muted: true, anchor: "middle" })
 
@@ -1151,26 +1158,28 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
     // （踏面は斜め以外いつも一定）。曲がり角に接する段は廻り段として扇形に割る
     if (isU) {
       // ①: 1階側の平行段（最後の1段は廻り段なので nStart−1 段）
-      parallelSteps(straightStart, firstNoseY, -1, 1, true, [-bandW, 0], 1, bandW)
+      parallelSteps(straightStart, firstNoseY, -1, 1, true, [-bandW, 0], 1, turnY)
       // 廻り段: 壁①に接する1段＋中間壁の nMid 段＋壁③に接する1段を 180 度で割る
-      winderFan(XL / 2, bandW, 0, 180, nMid + 2, nStart, { xMin: XL, xMax: 0, yMin: 0, yMax: bandW })
+      winderFan(XL / 2, turnY, 0, 180, nMid + 2, nStart, { xMin: XL, xMax: 0, yMin: 0, yMax: turnY })
       // ③: 廻り段のあとの平行段（最後の番号＝2階は別に置く）
-      parallelSteps(straightEnd, bandW, 1, nStart + nMid + 2, true, [XL, XL + bandW])
+      parallelSteps(straightEnd, turnY, 1, nStart + nMid + 2, true, [XL, XL + bandW])
     } else if (isLanding) {
       // L字・四角い踊り場: 曲がり角に段は無い。①②とも平行段だけ
-      parallelSteps(nStart, firstNoseY, -1, 1, true, [-bandW, 0], 1, bandW)
-      parallelSteps(straightEnd, -bandW, -1, nStart + 1, false, [0, bandW])
-      labels.push({ x: X(-bandW / 2), y: Y(bandW / 2) + 4, text: "踊り場", size: 11, muted: true, anchor: "middle" })
+      parallelSteps(straightStart, firstNoseY, -1, 1, true, [-bandW, 0], 1, turnY)
+      parallelSteps(straightEnd, -bandW, -1, nStart + 1, false, [0, turnY])
+      // 踊り場も1段とみなすので、曲がり角の段数を踊り場に置く
+      stepNums.push({ x: X(-bandW / 2), y: Y(turnY / 2) - 8, n: nStart })
+      labels.push({ x: X(-bandW / 2), y: Y(turnY / 2) + 12, text: "踊り場", size: 11, muted: true, anchor: "middle" })
     } else {
       // L字・廻り段: 曲がり角の廻り段は①の段数に含める
-      parallelSteps(straightStart, firstNoseY, -1, 1, true, [-bandW, 0], 1, bandW)
-      winderFan(-bandW, bandW, 0, 90, Math.max(nStart - straightStart, 1), straightStart + 1, {
+      parallelSteps(straightStart, firstNoseY, -1, 1, true, [-bandW, 0], 1, turnY)
+      winderFan(-bandW, turnY, 0, 90, Math.max(nStart - straightStart, 1), straightStart + 1, {
         xMin: -bandW,
         xMax: 0,
         yMin: 0,
-        yMax: bandW,
+        yMax: turnY,
       })
-      parallelSteps(straightEnd, -bandW, -1, nStart + 1, false, [0, bandW])
+      parallelSteps(straightEnd, -bandW, -1, nStart + 1, false, [0, turnY])
     }
 
     // 手すり（本ごとの直線ピース）。a=登り始め側の端・b=登り終わり側の端。
@@ -1296,7 +1305,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
         anchor: t.anchor === "start" ? ("end" as const) : t.anchor === "end" ? ("start" as const) : t.anchor,
       })),
     }
-  }, [winding, shape, isLanding, turnDir, wStart, wMid, wEnd, bandW, straightStart, straightEnd, topNoseAt, nStart, nMid, nEnd, nosePitch])
+  }, [winding, shape, isLanding, turnDir, wStart, wMid, wEnd, bandW, turnDepth, firstNoseAt, straightStart, straightEnd, topNoseAt, nStart, nMid, nEnd, nosePitch])
 
   return (
     <div className="mb-8 border-2 border-gold/20 bg-card rounded-md p-5">
