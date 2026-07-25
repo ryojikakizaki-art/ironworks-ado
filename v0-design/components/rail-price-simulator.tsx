@@ -92,13 +92,20 @@ const CORNER_WALL_GAP = 80
 // 回り階段モードのエンド部（段鼻から唐草先端までの水平部）。
 // 最終段の段鼻から 300mm 過ぎてエンドの端が終わる＝1段目側も同値で概算
 const WINDING_END_RUN = 300
-// 各壁の幅の入力範囲。コの字の壁②（壁から壁の内寸）は階段2列ぶんで最小値が大きい
+// 各壁の幅＝手すりが付く壁の全長（曲がり角の壁の面 〜 階段室の端）の入力範囲。
+// コの字の中間壁（壁から壁の内寸）は階段2列ぶんで最小値が大きい
+// （2026-07-25 蠣﨑さん確定: 壁の幅＝手すりが付く壁の全長。図の壁の描画長さと一致させる）
 const WALL_MIN = 600
 const WALL_MID_MIN = 1400
 const WALL_MAX = 4000
-// 既定値（一般的な住宅の回り階段を想定）
-const WALL_DEFAULT = 2000
+// コの字の中間壁（階段室の幅）の既定値
 const WALL_MID_DEFAULT = 1800
+// 各フライトの段数の入力範囲・既定値（2回廻る登り切り15段＝6+3+6 を既定に）
+const STEPS_MIN = 1
+const STEPS_MAX = 30
+const N_START_DEFAULT = 6
+const N_MID_DEFAULT = 3
+const N_END_DEFAULT = 6
 // 平面図で手すり中心線を壁面から離す距離（壁〜手すり離れ40mm＋バー半径）
 const RAIL_WALL_OFFSET_MM = 55
 // 平面図の壁の描画厚み
@@ -255,6 +262,7 @@ function DimStepper({
   min,
   max,
   step = 10,
+  unit,
 }: {
   label: string
   hint?: string
@@ -265,6 +273,8 @@ function DimStepper({
   min: number
   max: number
   step?: number
+  /** 入力欄の右に出す単位（段数入力の「段」など。未指定なら mm 前提で出さない） */
+  unit?: string
 }) {
   // ±ボタンは関数更新（prev ベース）でクランプする。prop の effective を使うと
   // React のバッチ処理中に古い値のまま複数回加算されて取りこぼす（連打で +10 しか
@@ -295,6 +305,7 @@ function DimStepper({
           aria-label={label}
           className="w-16 h-8 border border-border rounded-md text-center text-[14px] bg-white focus:outline-none focus:border-gold"
         />
+        {unit && <span className="text-[12px] text-muted-foreground">{unit}</span>}
         <button type="button" onClick={() => stepBy(step)} disabled={effective >= max} aria-label={`${label}を増やす`} className={btnCls}>
           <Plus className="w-3.5 h-3.5" />
         </button>
@@ -466,10 +477,18 @@ interface RailPriceSimulatorProps {
 export function RailPriceSimulator({ config, queryType, onQueryChange, hideFullscreenLink }: RailPriceSimulatorProps) {
   // 階段の形（上から見た図）。直階段＝従来の側面図モード、L字・コの字＝平面図モード
   const [shape, setShape] = useState<StairShape>("straight")
-  // 回り階段モードの各壁の幅（意味は形状ごとに違う。DimStepper の hint 参照）
-  const [w1Mm, setW1Mm] = useState(WALL_DEFAULT)
-  const [w2Mm, setW2Mm] = useState(WALL_MID_DEFAULT)
-  const [w3Mm, setW3Mm] = useState(WALL_DEFAULT)
+  // 回り階段モードの段数（フライトごと）。start = 1階から曲がり角まで（廻り段を含む）、
+  // mid = 中間壁の廻り段（コの字のみ）、end = 最終段の壁
+  const [nStart, setNStart] = useState(N_START_DEFAULT)
+  const [nMid, setNMid] = useState(N_MID_DEFAULT)
+  const [nEnd, setNEnd] = useState(N_END_DEFAULT)
+  // 各壁の幅＝手すりが付く壁の全長。1階側・最終段側は null のあいだ
+  // 段数×段鼻ピッチを自動セットし、お客様が手入力したら以降は段数を変えても上書きしない
+  // （直階段の幅・高さと同じ挙動）。touched フラグを別に持たず null を「未入力」とするのは、
+  // ±ボタン連打が同じバッチに入っても関数更新のキューで正しく積み上がるようにするため
+  const [wStartMm, setWStartMm] = useState<number | null>(null)
+  const [wMidMm, setWMidMm] = useState(WALL_MID_DEFAULT)
+  const [wEndMm, setWEndMm] = useState<number | null>(null)
   const [steps, setSteps] = useState(config.steps.default)
   const [wMm, setWMm] = useState(stdWidth(config.steps.default))
   const [hMm, setHMm] = useState(stdHeight(config.steps.default))
@@ -540,37 +559,63 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
   const total = railPrice + endTotal + zakinTotal
 
   // ── 回り階段モード（L字・コの字）の概算 ──
-  // 手すりはフライトごとの直線ピース別体（曲げ加工しない）。各本の長さ＝
-  // 壁沿いの水平距離（曲がり角は壁から80mm逃がし）を階段勾配で斜めに換算し、
-  // 1段目側・最終段側だけエンド部（段鼻から先端300mm・水平）を足す。
-  // 勾配＝蹴上 ÷（踏面−蹴込）。廻り段部分も同じ勾配とみなす概算
-  const w1 = clamp(w1Mm, WALL_MIN, WALL_MAX)
-  const w2 = clamp(w2Mm, shape === "U" ? WALL_MID_MIN : WALL_MIN, WALL_MAX)
-  const w3 = clamp(w3Mm, WALL_MIN, WALL_MAX)
+  // 手すりはフライトごとの直線ピース別体（曲げ加工しない）。各本の長さは
+  // 「段数を正」で出す（2026-07-25 蠣﨑さん確定）:
+  //   斜めの区間＝段数 × 段鼻ピッチ（踏面−蹴込）を勾配で斜めに換算
+  //   壁の幅の余り（斜めが届かないぶん）＝水平部としてそのまま加算
+  //   1段目側・最終段側はさらにエンド部（段鼻から先端まで300mm・水平）を加算
+  // 壁の幅＝手すりが付く壁の全長で、曲がり角では壁から80mm逃がす
+  const nosePitch = Math.max(treadEff - kickEff, 1) // 段鼻から段鼻までの水平ピッチ
+  // 壁①（1階側）・最終段側の壁は段数 × 段鼻ピッチを自動セット（手入力があれば優先）
+  const wStartAuto = clamp(nStart * nosePitch, WALL_MIN, WALL_MAX)
+  const wEndAuto = clamp(nEnd * nosePitch, WALL_MIN, WALL_MAX)
+  const wStart = wStartMm === null ? wStartAuto : clamp(wStartMm, WALL_MIN, WALL_MAX)
+  const wEnd = wEndMm === null ? wEndAuto : clamp(wEndMm, WALL_MIN, WALL_MAX)
+  const wMid = clamp(wMidMm, WALL_MID_MIN, WALL_MAX)
+  /** 壁の幅の ± / 直接入力。未入力（null）のあいだは自動セット値を基準に増減する */
+  const setWallValue =
+    (set: (u: (prev: number | null) => number) => void, auto: number) =>
+    (v: number | ((prev: number) => number)) =>
+      set((prev) => (typeof v === "function" ? v(prev ?? auto) : v))
   const winding = useMemo(() => {
     if (shape === "straight") return null
-    const going = Math.max(treadEff - kickEff, 1)
-    const slopeFactor = Math.hypot(going, riserEff) / going
+    const slopeFactor = Math.hypot(nosePitch, riserEff) / nosePitch
+    // span = その壁で手すりが占める水平距離（曲がり角の逃がしを引いたもの）
+    // steps = その壁を上る段数・endRun = 段鼻から先のエンド部（両端のみ）
     const defs =
       shape === "L"
         ? [
-            { pos: "1段目側", runMm: w1 - CORNER_WALL_GAP, flatMm: WINDING_END_RUN, end: "bottom" as const },
-            { pos: "最終段側", runMm: w2 - CORNER_WALL_GAP, flatMm: WINDING_END_RUN, end: "top" as const },
+            { pos: "1段目側", label: "壁①", wall: wStart, span: wStart - CORNER_WALL_GAP, steps: nStart, endRun: WINDING_END_RUN, end: "bottom" as const },
+            { pos: "最終段側", label: "壁②", wall: wEnd, span: wEnd - CORNER_WALL_GAP, steps: nEnd, endRun: WINDING_END_RUN, end: "top" as const },
           ]
         : [
-            { pos: "1段目側", runMm: w1 - CORNER_WALL_GAP, flatMm: WINDING_END_RUN, end: "bottom" as const },
-            { pos: "中間", runMm: w2 - CORNER_WALL_GAP * 2, flatMm: 0, end: null },
-            { pos: "最終段側", runMm: w3 - CORNER_WALL_GAP, flatMm: WINDING_END_RUN, end: "top" as const },
+            { pos: "1段目側", label: "壁①", wall: wStart, span: wStart - CORNER_WALL_GAP, steps: nStart, endRun: WINDING_END_RUN, end: "bottom" as const },
+            { pos: "中間", label: "壁②", wall: wMid, span: wMid - CORNER_WALL_GAP * 2, steps: nMid, endRun: 0, end: null },
+            { pos: "最終段側", label: "壁③", wall: wEnd, span: wEnd - CORNER_WALL_GAP, steps: nEnd, endRun: WINDING_END_RUN, end: "top" as const },
           ]
     const rails = defs.map((d, i) => {
-      const len = Math.round((Math.max(d.runMm, 0) * slopeFactor + d.flatMm) / 10) * 10
+      const span = Math.max(d.span, 0)
+      // 斜めの水平投影は壁に収まる範囲まで（段数が壁より多ければ壁いっぱいが斜め）
+      const wantRun = d.steps * nosePitch
+      const slopeRun = Math.min(wantRun, span)
+      // 「収まらない」は階段そのものが壁に入りきらないときだけ。手すりは必ず壁の手前
+      // 80mm で終わるので、その 80mm ぶんは食い違いとして扱わない
+      const overflow = wantRun > d.wall
+      const flatRun = span - slopeRun
+      const slopeLen = slopeRun * slopeFactor
+      const len = Math.round((slopeLen + flatRun + d.endRun) / 10) * 10
       const zakin = calcZakin(len)
       const body = Math.round((len / 1000) * config.unitPricePerM)
       const endFee = d.end ? config.endPrice : 0
       return {
         no: ["①", "②", "③"][i],
         pos: d.pos,
+        label: d.label,
         end: d.end,
+        steps: d.steps,
+        slopeRun,
+        flatRun: flatRun + d.endRun,
+        overflow,
         len,
         zakin,
         price: body + zakin * zakinType.price + endFee,
@@ -579,24 +624,30 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
     return {
       slopeFactor,
       rails,
+      hasOverflow: rails.some((r) => r.overflow),
+      totalSteps: rails.reduce((s, r) => s + r.steps, 0),
       totalLen: rails.reduce((s, r) => s + r.len, 0),
       totalZakin: rails.reduce((s, r) => s + r.zakin, 0),
       totalPrice: rails.reduce((s, r) => s + r.price, 0),
     }
-  }, [shape, w1, w2, w3, riserEff, treadEff, kickEff, config.unitPricePerM, config.endPrice, zakinType.price])
+  }, [shape, wStart, wMid, wEnd, nStart, nMid, nEnd, nosePitch, riserEff, config.unitPricePerM, config.endPrice, zakinType.price])
 
   useEffect(() => {
     if (winding) {
-      const railsQ = winding.rails.map((r, i) => `&len${i + 1}=${r.len}&zc${i + 1}=${r.zakin}`).join("")
+      const railsQ = winding.rails
+        .map((r, i) => `&len${i + 1}=${r.len}&zc${i + 1}=${r.zakin}&sn${i + 1}=${r.steps}`)
+        .join("")
+      const wallsQ =
+        shape === "U" ? `&w1=${wStart}&w2=${wMid}&w3=${wEnd}` : `&w1=${wStart}&w2=${wEnd}`
       onQueryChange?.(
-        `&type=${queryType}&shape=${shape}&riser=${riserEff}&tread=${treadEff}&kick=${kickEff}&w1=${w1}&w2=${w2}${shape === "U" ? `&w3=${w3}` : ""}${railsQ}&len=${winding.totalLen}&endb=${encodeURIComponent(endBottom)}&endt=${encodeURIComponent(endTop)}&zakin=${zakinType.id}&zcount=${winding.totalZakin}&total=${winding.totalPrice}`,
+        `&type=${queryType}&shape=${shape}&riser=${riserEff}&tread=${treadEff}&kick=${kickEff}${wallsQ}&nsum=${winding.totalSteps}${railsQ}&len=${winding.totalLen}&endb=${encodeURIComponent(endBottom)}&endt=${encodeURIComponent(endTop)}&zakin=${zakinType.id}&zcount=${winding.totalZakin}&total=${winding.totalPrice}`,
       )
       return
     }
     onQueryChange?.(
       `&type=${queryType}&steps=${N}&w=${W}&h=${H}&riser=${riserEff}&tread=${treadEff}&kick=${kickEff}&diag=${noseDiag}&erb=${RB}&ert=${RT}&len=${L}&endb=${encodeURIComponent(endBottom)}&endt=${encodeURIComponent(endTop)}&zakin=${zakinType.id}&zcount=${zakinCount}&total=${total}`,
     )
-  }, [winding, shape, w1, w2, w3, N, W, H, riserEff, treadEff, kickEff, noseDiag, RB, RT, L, endBottom, endTop, zakinType.id, zakinCount, total, queryType, onQueryChange])
+  }, [winding, shape, wStart, wMid, wEnd, N, W, H, riserEff, treadEff, kickEff, noseDiag, RB, RT, L, endBottom, endTop, zakinType.id, zakinCount, total, queryType, onQueryChange])
 
   // ── ミニ図解（側面図・階段に実配置。入力に連動） ──
   const svg = useMemo(() => {
@@ -817,20 +868,22 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
   // 廻る扇形の段割りで表現（描画のみ・長さ計算には影響しない）
   const plan = useMemo(() => {
     if (!winding || shape === "straight") return null
-    const going = Math.max(treadEff - kickEff, 1)
+    const going = nosePitch
     const isU = shape === "U"
     // 階段の有効幅（描画用）。コの字は壁②の内寸に「廻り段2箇所＋その間の直線部」が
     // 収まるよう、間に最低 300mm 残る幅に自動調整する（2列がぴったり収まる幅にすると
     // 廻り段の扇形が同じ位置に重なって図が破綻するため）
     const bandW = isU
-      ? Math.max(400, Math.min(950, (w2 - 300) / 2, Math.min(w1, w3) * 0.45))
-      : Math.max(500, Math.min(950, Math.min(w1, w2) * 0.45))
-    const XL = -w2 // コの字: 左壁の内面
-    const dimSide = PLAN_WALL_T + 170 // 壁の外側の寸法線・ラベル用スペース
-    const xMin = isU ? XL - dimSide : -w2 - WINDING_END_RUN - 260
+      ? Math.max(400, Math.min(950, (wMid - 300) / 2, Math.min(wStart, wEnd) * 0.45))
+      : Math.max(500, Math.min(950, Math.min(wStart, wEnd) * 0.45))
+    // コの字は左壁の内面 x = -wMid、L字は最終段の壁の端 x = -wEnd
+    const XL = isU ? -wMid : -wEnd
+    // 壁の外側の寸法線・縦書きラベル用スペース（狭いとラベルが viewBox の端で切れる）
+    const dimSide = PLAN_WALL_T + 230
+    const xMin = isU ? XL - dimSide : XL - WINDING_END_RUN - 260
     const xMax = dimSide
     const yMin = -PLAN_WALL_T - 150
-    const yMax = (isU ? Math.max(w1, w3) : w1) + WINDING_END_RUN + 130
+    const yMax = (isU ? Math.max(wStart, wEnd) : wStart) + WINDING_END_RUN + 150
     const s = Math.min((VB_W - 8) / (xMax - xMin), (VB_PLAN_H - 8) / (yMax - yMin))
     const ox = (VB_W - (xMax - xMin) * s) / 2 - xMin * s
     const oy = (VB_PLAN_H - (yMax - yMin) * s) / 2 - yMin * s
@@ -880,36 +933,47 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
       dims.push({ x1: X2 + nx * 4, y1: Y2 + ny * 4, x2: X2 - nx * 4, y2: Y2 - ny * 4 })
     }
 
-    const wallBottomR = w1 + WINDING_END_RUN + 60 // 右壁の下端
+    // 壁は「壁の幅」の入力どおりの長さで描き、寸法線と一致させる
+    // （2026-07-25 蠣﨑さん指摘: 壁の幅と寸法線が合っていない）。
+    // 手すりのエンド部は階段室の端から 300mm 外へ出るので、壁の先は 1階／2階の床になる
     if (isU) {
-      // 壁: 右（壁①側）・正面（曲がり部）・左（壁③側）
-      rectMm(rects, 0, -PLAN_WALL_T, PLAN_WALL_T, wallBottomR, "#e5e7eb")
+      // 壁: 右（壁①）・正面（壁②＝中間壁）・左（壁③）
+      rectMm(rects, 0, -PLAN_WALL_T, PLAN_WALL_T, wStart, "#e5e7eb")
       rectMm(rects, XL - PLAN_WALL_T, -PLAN_WALL_T, PLAN_WALL_T, 0, "#e5e7eb")
-      rectMm(rects, XL - PLAN_WALL_T, 0, XL, w3 + WINDING_END_RUN + 60, "#e5e7eb")
-      // 階段の白抜き: フライト1（廻り段込み）・フライト2・フライト3
-      rectMm(stairRects, -bandW, 0, 0, w1, COLOR_STAIR_FILL)
+      rectMm(rects, XL - PLAN_WALL_T, 0, XL, wEnd, "#e5e7eb")
+      // 階段の白抜き: フライト①（廻り段込み）・中間・フライト③
+      rectMm(stairRects, -bandW, 0, 0, wStart, COLOR_STAIR_FILL)
       rectMm(stairRects, XL + bandW, 0, -bandW, bandW, COLOR_STAIR_FILL)
-      rectMm(stairRects, XL, 0, XL + bandW, w3, COLOR_STAIR_FILL)
+      rectMm(stairRects, XL, 0, XL + bandW, wEnd, COLOR_STAIR_FILL)
       // 2階の床（最終段の先）
-      rectMm(rects, XL, w3, XL + bandW, w3 + WINDING_END_RUN + 140, COLOR_WALL)
-      labels.push({ x: X(XL + bandW / 2), y: Y(w3 + (WINDING_END_RUN + 140) / 2) + 4, text: "2階", size: 12, muted: true, anchor: "middle" })
+      rectMm(rects, XL, wEnd, XL + bandW, wEnd + WINDING_END_RUN + 140, COLOR_WALL)
+      labels.push({ x: X(XL + bandW / 2), y: Y(wEnd + WINDING_END_RUN + 110) + 4, text: "2階", size: 12, muted: true, anchor: "middle" })
     } else {
-      rectMm(rects, 0, -PLAN_WALL_T, PLAN_WALL_T, wallBottomR, "#e5e7eb")
-      rectMm(rects, -w2 - WINDING_END_RUN - 200, -PLAN_WALL_T, PLAN_WALL_T, 0, "#e5e7eb")
-      rectMm(stairRects, -bandW, 0, 0, w1, COLOR_STAIR_FILL)
-      rectMm(stairRects, -w2, 0, -bandW, bandW, COLOR_STAIR_FILL)
-      rectMm(rects, -w2 - WINDING_END_RUN - 200, 0, -w2, bandW, COLOR_WALL)
-      labels.push({ x: X(-w2 - (WINDING_END_RUN + 200) / 2), y: Y(bandW / 2) + 4, text: "2階", size: 12, muted: true, anchor: "middle" })
+      rectMm(rects, 0, -PLAN_WALL_T, PLAN_WALL_T, wStart, "#e5e7eb")
+      rectMm(rects, XL, -PLAN_WALL_T, PLAN_WALL_T, 0, "#e5e7eb")
+      rectMm(stairRects, -bandW, 0, 0, wStart, COLOR_STAIR_FILL)
+      rectMm(stairRects, XL, 0, -bandW, bandW, COLOR_STAIR_FILL)
+      // 2階の床（最終段の先）
+      rectMm(rects, XL - WINDING_END_RUN - 140, 0, XL, bandW, COLOR_WALL)
+      labels.push({ x: X(XL - WINDING_END_RUN - 60), y: Y(bandW / 2) + 4, text: "2階", size: 12, muted: true, anchor: "middle" })
     }
-    labels.push({ x: X(-bandW / 2), y: Y(w1 + 230), text: "1階", size: 12, muted: true, anchor: "middle" })
+    labels.push({ x: X(-bandW / 2), y: Y(wStart + WINDING_END_RUN + 110), text: "1階", size: 12, muted: true, anchor: "middle" })
 
-    // 段板の線（踏面−蹴込 間隔）。フライト1 は 1段目の段鼻 y=w1 から廻り段まで
-    for (let yy = w1; yy > bandW + 1; yy -= going) lineMm(stepLines, -bandW, yy, 0, yy)
+    // 段板の線（段鼻ピッチ間隔）。1段目の段鼻＝階段室の端から段数ぶんだけ引く。
+    // 段数 × 段鼻ピッチが壁の幅に足りない場合、その手前は平らな部分（踊り場）になる
+    const stepLinesAlong = (n: number, at: (v: number) => void, from: number, dir: -1 | 1, limit: number) => {
+      for (let k = 0; k < n; k++) {
+        const v = from + dir * k * going
+        if (dir < 0 ? v < limit : v > limit) break
+        at(v)
+      }
+    }
+    stepLinesAlong(nStart, (yy) => lineMm(stepLines, -bandW, yy, 0, yy), wStart, -1, bandW + 1)
     if (isU) {
-      for (let xx = XL + bandW + going; xx < -bandW - 1; xx += going) lineMm(stepLines, xx, 0, xx, bandW)
-      for (let yy = w3; yy > bandW + 1; yy -= going) lineMm(stepLines, XL, yy, XL + bandW, yy)
+      stepLinesAlong(nMid, (xx) => lineMm(stepLines, xx, 0, xx, bandW), -bandW - going, -1, XL + bandW)
+      stepLinesAlong(nEnd, (yy) => lineMm(stepLines, XL, yy, XL + bandW, yy), wEnd, -1, bandW + 1)
     } else {
-      for (let xx = -w2; xx < -bandW - 1; xx += going) lineMm(stepLines, xx, 0, xx, bandW)
+      stepLinesAlong(nEnd, (xx) => lineMm(stepLines, xx, 0, xx, bandW), XL, 1, -bandW - 1)
     }
     // 廻り段（扇形の段割り。sx=+1 右コーナー・-1 左コーナー）
     const fan = (px: number, py: number, sx: number) => {
@@ -925,13 +989,13 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
     // tip の側に唐草エンド（1段目側=① の a・最終段側=最後の本の b）
     const railDefs = isU
       ? [
-          { a: { x: -RAIL_WALL_OFFSET_MM, y: w1 + WINDING_END_RUN }, b: { x: -RAIL_WALL_OFFSET_MM, y: CORNER_WALL_GAP }, tip: "a" as const, wallDir: { x: 1, y: 0 } },
+          { a: { x: -RAIL_WALL_OFFSET_MM, y: wStart + WINDING_END_RUN }, b: { x: -RAIL_WALL_OFFSET_MM, y: CORNER_WALL_GAP }, tip: "a" as const, wallDir: { x: 1, y: 0 } },
           { a: { x: -CORNER_WALL_GAP, y: RAIL_WALL_OFFSET_MM }, b: { x: XL + CORNER_WALL_GAP, y: RAIL_WALL_OFFSET_MM }, tip: null, wallDir: { x: 0, y: -1 } },
-          { a: { x: XL + RAIL_WALL_OFFSET_MM, y: CORNER_WALL_GAP }, b: { x: XL + RAIL_WALL_OFFSET_MM, y: w3 + WINDING_END_RUN }, tip: "b" as const, wallDir: { x: -1, y: 0 } },
+          { a: { x: XL + RAIL_WALL_OFFSET_MM, y: CORNER_WALL_GAP }, b: { x: XL + RAIL_WALL_OFFSET_MM, y: wEnd + WINDING_END_RUN }, tip: "b" as const, wallDir: { x: -1, y: 0 } },
         ]
       : [
-          { a: { x: -RAIL_WALL_OFFSET_MM, y: w1 + WINDING_END_RUN }, b: { x: -RAIL_WALL_OFFSET_MM, y: CORNER_WALL_GAP }, tip: "a" as const, wallDir: { x: 1, y: 0 } },
-          { a: { x: -CORNER_WALL_GAP, y: RAIL_WALL_OFFSET_MM }, b: { x: -w2 - WINDING_END_RUN, y: RAIL_WALL_OFFSET_MM }, tip: "b" as const, wallDir: { x: 0, y: -1 } },
+          { a: { x: -RAIL_WALL_OFFSET_MM, y: wStart + WINDING_END_RUN }, b: { x: -RAIL_WALL_OFFSET_MM, y: CORNER_WALL_GAP }, tip: "a" as const, wallDir: { x: 1, y: 0 } },
+          { a: { x: -CORNER_WALL_GAP, y: RAIL_WALL_OFFSET_MM }, b: { x: XL - WINDING_END_RUN, y: RAIL_WALL_OFFSET_MM }, tip: "b" as const, wallDir: { x: 0, y: -1 } },
         ]
     const railLines: PlanLine[] = []
     const zakinTicks: PlanLine[] = []
@@ -969,18 +1033,18 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
       }
     })
     // 唐草エンドの先端ラベル
-    labels.push({ x: X(-RAIL_WALL_OFFSET_MM) - 12, y: Y(w1 + WINDING_END_RUN) + 4, text: "唐草エンド", size: 11, anchor: "end" })
+    labels.push({ x: X(-RAIL_WALL_OFFSET_MM) - 12, y: Y(wStart + WINDING_END_RUN) + 4, text: "唐草エンド", size: 11, anchor: "end" })
     if (isU) {
-      labels.push({ x: X(XL + RAIL_WALL_OFFSET_MM) + 12, y: Y(w3 + WINDING_END_RUN) + 4, text: "唐草エンド", size: 11, anchor: "start" })
+      labels.push({ x: X(XL + RAIL_WALL_OFFSET_MM) + 12, y: Y(wEnd + WINDING_END_RUN) + 4, text: "唐草エンド", size: 11, anchor: "start" })
     } else {
       // L字の上側エンドは壁沿いに水平なので、ラベルは手すりの下（2階の床側）に出す
       // （壁の帯の上に重ねると読みにくいため）
-      labels.push({ x: X(-w2 - WINDING_END_RUN), y: Y(RAIL_WALL_OFFSET_MM) + 20, text: "唐草エンド", size: 11, anchor: "middle" })
+      labels.push({ x: X(XL - WINDING_END_RUN), y: Y(RAIL_WALL_OFFSET_MM) + 20, text: "唐草エンド", size: 11, anchor: "middle" })
     }
 
     // 上り方向の矢印（フライト1 の中央）
-    const arrowTailY = w1 - 80
-    const arrowHeadY = Math.max(bandW + 180, w1 - 700)
+    const arrowTailY = wStart - 80
+    const arrowHeadY = Math.max(bandW + 180, wStart - 700)
     const arrow = {
       x1: X(-bandW / 2),
       y1: Y(arrowTailY),
@@ -989,36 +1053,38 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
     }
     labels.push({ x: X(-bandW / 2) + 8, y: Y((arrowTailY + arrowHeadY) / 2) + 4, text: "上り", size: 11, anchor: "start", muted: true })
 
-    // 寸法線: 壁①（右壁沿い・正面の壁の面 〜 1段目の段鼻）
+    // ── 寸法線 ──
+    // 「壁の幅」＝手すりが付く壁の全長。壁の描画長さと寸法線の両端を必ず一致させる
+    // （2026-07-25 蠣﨑さん指摘）。壁の端には壁を横切るティックを入れて、
+    // どこからどこまでを測った寸法か図だけで分かるようにする
+    const wallEndTick = (x1: number, y1: number, x2: number, y2: number) => lineMm(dims, x1, y1, x2, y2)
+    // 壁①（右壁・曲がり角の壁の面 〜 階段室の手前端）
     const dimX1 = PLAN_WALL_T + 90
-    dimWithTicks(dimX1, 0, dimX1, w1)
+    dimWithTicks(dimX1, 0, dimX1, wStart)
     lineMm(dims, 0, 0, dimX1 + 15, 0, true)
-    lineMm(dims, 0, w1, dimX1 + 15, w1, true)
-    labels.push({ x: X(dimX1) + 12, y: Y(w1 / 2), text: `壁① ${w1.toLocaleString()}`, size: 11, weight: 600, anchor: "middle", rotate: 90 })
-    // 寸法線: 壁②（正面の壁の外側）
+    lineMm(dims, 0, wStart, dimX1 + 15, wStart, true)
+    wallEndTick(0, wStart, PLAN_WALL_T, wStart)
+    labels.push({ x: X(dimX1) + 12, y: Y(wStart / 2), text: `壁① ${wStart.toLocaleString()}`, size: 11, weight: 600, anchor: "middle", rotate: 90 })
+    // 壁②（正面の壁）: コの字＝中間壁（壁から壁の内寸）／L字＝最終段の壁
     const dimY2 = -PLAN_WALL_T - 70
-    if (isU) {
-      dimWithTicks(0, dimY2, XL, dimY2)
-      lineMm(dims, 0, -PLAN_WALL_T, 0, dimY2 - 15, true)
-      lineMm(dims, XL, -PLAN_WALL_T, XL, dimY2 - 15, true)
-      labels.push({ x: X(XL / 2), y: Y(dimY2) - 6, text: `壁② ${w2.toLocaleString()}`, size: 11, weight: 600, anchor: "middle" })
-    } else {
-      dimWithTicks(0, dimY2, -w2, dimY2)
-      lineMm(dims, 0, -PLAN_WALL_T, 0, dimY2 - 15, true)
-      lineMm(dims, -w2, 0, -w2, dimY2 - 15, true)
-      labels.push({ x: X(-w2 / 2), y: Y(dimY2) - 6, text: `壁② ${w2.toLocaleString()}`, size: 11, weight: 600, anchor: "middle" })
-    }
-    // 寸法線: 壁③（コの字のみ・左壁沿い）
+    const midLabel = isU ? `壁② ${wMid.toLocaleString()}` : `壁② ${wEnd.toLocaleString()}`
+    dimWithTicks(0, dimY2, XL, dimY2)
+    lineMm(dims, 0, -PLAN_WALL_T, 0, dimY2 - 15, true)
+    lineMm(dims, XL, -PLAN_WALL_T, XL, dimY2 - 15, true)
+    if (!isU) wallEndTick(XL, -PLAN_WALL_T, XL, 0)
+    labels.push({ x: X(XL / 2), y: Y(dimY2) - 6, text: midLabel, size: 11, weight: 600, anchor: "middle" })
+    // 壁③（コの字のみ・左壁＝最終段の壁）
     if (isU) {
       const dimX3 = XL - PLAN_WALL_T - 90
-      dimWithTicks(dimX3, 0, dimX3, w3)
+      dimWithTicks(dimX3, 0, dimX3, wEnd)
       lineMm(dims, XL, 0, dimX3 - 15, 0, true)
-      lineMm(dims, XL, w3, dimX3 - 15, w3, true)
-      labels.push({ x: X(dimX3) - 12, y: Y(w3 / 2), text: `壁③ ${w3.toLocaleString()}`, size: 11, weight: 600, anchor: "middle", rotate: -90 })
+      lineMm(dims, XL, wEnd, dimX3 - 15, wEnd, true)
+      wallEndTick(XL, wEnd, XL - PLAN_WALL_T, wEnd)
+      labels.push({ x: X(dimX3) - 12, y: Y(wEnd / 2), text: `壁③ ${wEnd.toLocaleString()}`, size: 11, weight: 600, anchor: "middle", rotate: -90 })
     }
 
     return { rects, stairRects, stepLines, dims, labels, railLines, zakinTicks, tips, arrow }
-  }, [winding, shape, w1, w2, w3, treadEff, kickEff])
+  }, [winding, shape, wStart, wMid, wEnd, nStart, nMid, nEnd, nosePitch])
 
   return (
     <div className="mb-8 border-2 border-gold/20 bg-card rounded-md p-5">
@@ -1412,7 +1478,8 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
             </svg>
           </div>
           <p className="text-[13px] md:text-[14px] text-foreground text-center mb-3 leading-relaxed">
-            {shape === "L" ? "かね折れ階段（L字）" : "折り返し階段（コの字）"}・手すり{winding.rails.length}本{" "}
+            {shape === "L" ? "かね折れ階段（L字）" : "折り返し階段（コの字）"}・全{winding.totalSteps}段・手すり
+            {winding.rails.length}本{" "}
             <span className="font-serif font-bold text-[15px] md:text-[16px]">
               合計 約{winding.totalLen.toLocaleString()}mm
             </span>
@@ -1425,60 +1492,115 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
           {/* 本ごとの概算長さ（図の①②③に対応） */}
           <div className="grid grid-cols-1 gap-1.5 mb-3">
             {winding.rails.map((r) => (
-              <div key={r.no} className="flex items-center justify-between rounded-md border border-border bg-white px-3 py-2 text-[13px] md:text-[14px]">
+              <div key={r.no} className="flex items-center justify-between gap-2 rounded-md border border-border bg-white px-3 py-2 text-[13px] md:text-[14px]">
                 <span className="text-foreground">
                   {r.no} {r.pos}
-                  {r.end && <span className="text-[11px] text-muted-foreground ml-1">唐草エンド付き</span>}
+                  <span className="block text-[11px] text-muted-foreground mt-0.5">
+                    {r.label}・{r.steps}段
+                    {r.flatRun > 0 && `・水平部 ${Math.round(r.flatRun).toLocaleString()}mm`}
+                    {r.end && "・唐草エンド付き"}
+                  </span>
                 </span>
-                <span className="font-serif text-foreground">
+                <span className="font-serif text-foreground shrink-0">
                   約{r.len.toLocaleString()}mm・座金{r.zakin}箇所
                 </span>
               </div>
             ))}
           </div>
 
+          {/* 段数ぶんの階段が壁に収まらないときだけ、長さが壁で頭打ちになることを伝える */}
+          {winding.hasOverflow && (
+            <p className="text-[12px] md:text-[13px] text-amber-800 bg-amber-50 border border-amber-300 rounded-md px-3 py-2 mb-3 leading-relaxed">
+              段数ぶんの階段が壁の幅に収まっていません。手すりの長さは壁の幅までで計算しています。
+              段数を減らすか、壁の幅を広げるとより実際に近い概算になります。
+            </p>
+          )}
+
+          {/* 段数の入力（フライトごと。手すりの斜めの長さはここが基準） */}
+          <p className="text-[13px] text-muted-foreground mb-2">段数（図の①②③ごと）</p>
+          <div className={`grid grid-cols-1 gap-2 mb-3 ${shape === "U" ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
+            <DimStepper
+              label="① 1階〜曲がり角"
+              hint="廻り段（斜めの段）を含む"
+              value={nStart}
+              effective={nStart}
+              setValue={setNStart}
+              min={STEPS_MIN}
+              max={STEPS_MAX}
+              step={1}
+              unit="段"
+            />
+            {shape === "U" && (
+              <DimStepper
+                label="② 中間壁"
+                hint="廻り段（斜めの段）の数"
+                value={nMid}
+                effective={nMid}
+                setValue={setNMid}
+                min={STEPS_MIN}
+                max={STEPS_MAX}
+                step={1}
+                unit="段"
+              />
+            )}
+            <DimStepper
+              label={`${shape === "U" ? "③" : "②"} 最終段の壁`}
+              hint="登り切りまでの段数"
+              value={nEnd}
+              effective={nEnd}
+              setValue={setNEnd}
+              min={STEPS_MIN}
+              max={STEPS_MAX}
+              step={1}
+              unit="段"
+            />
+          </div>
+
           {/* 壁の幅の入力（図の寸法線に対応） */}
+          <p className="text-[13px] text-muted-foreground mb-2">壁の幅（手すりが付く壁の全長）</p>
           <div className={`grid grid-cols-1 gap-2 mb-3 ${shape === "U" ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
             <DimStepper
               label="壁①の幅"
-              hint="1段目の段鼻 〜 正面の壁"
-              value={w1Mm}
-              effective={w1}
-              setValue={setW1Mm}
+              hint="曲がり角の壁の面 〜 階段室の手前端"
+              value={wStart}
+              effective={wStart}
+              setValue={setWallValue(setWStartMm, wStartAuto)}
               min={WALL_MIN}
-              max={WALL_MAX}
-            />
-            <DimStepper
-              label="壁②の幅"
-              hint={shape === "U" ? "壁から壁の内寸" : "のぼってきた壁 〜 最終段の段鼻"}
-              value={w2Mm}
-              effective={w2}
-              setValue={setW2Mm}
-              min={shape === "U" ? WALL_MID_MIN : WALL_MIN}
               max={WALL_MAX}
             />
             {shape === "U" && (
               <DimStepper
-                label="壁③の幅"
-                hint="曲がってきた壁 〜 最終段の段鼻"
-                value={w3Mm}
-                effective={w3}
-                setValue={setW3Mm}
-                min={WALL_MIN}
+                label="壁②の幅"
+                hint="壁から壁の内寸（階段室の幅）"
+                value={wMidMm}
+                effective={wMid}
+                setValue={setWMidMm}
+                min={WALL_MID_MIN}
                 max={WALL_MAX}
               />
             )}
+            <DimStepper
+              label={`壁${shape === "U" ? "③" : "②"}の幅`}
+              hint="曲がり角の壁の面 〜 最終段の段鼻"
+              value={wEnd}
+              effective={wEnd}
+              setValue={setWallValue(setWEndMm, wEndAuto)}
+              min={WALL_MIN}
+              max={WALL_MAX}
+            />
           </div>
           <p className="text-[12px] text-muted-foreground leading-relaxed mb-4">
-            壁の幅＝手すりが付く壁に沿った水平距離です（図の寸法線の位置）。
-            左右が逆向きの階段でも同じ入力で概算できます。分からない場合はそのままで構いません。
+            壁の幅＝手すりが付く壁の全長です（図の寸法線と壁の長さが一致します）。
+            段数を入れると壁の幅は自動でセットされ、実測値があれば上書きできます。
+            段数ぶんの階段が壁より短いときは、余りを平らな部分として手すりの長さに足します。
+            左右が逆向きの階段でも同じ入力で概算できます。
           </p>
 
           {/* 蹴上・踏面・蹴込（勾配の計算に使用） */}
           <div className="mb-4 rounded-md border border-border bg-white p-4">
             <p className="text-[13px] font-medium text-foreground mb-1">階段の勾配 ── 蹴上・踏面・蹴込</p>
             <p className="text-[12px] text-muted-foreground leading-relaxed mb-3">
-              手すりの斜めの長さは、蹴上・踏面・蹴込（下図）から計算した階段の勾配で換算します。
+              手すりの斜めの長さは、段数と蹴上・踏面・蹴込（下図）から計算します。
               分かる範囲で入力してください（未入力なら一般的な寸法で概算します）。
             </p>
             <StairPartsDiagram />
@@ -1662,8 +1784,8 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
           のぼってきた側の壁から{CORNER_WALL_GAP}mm空けて次の1本が始まります。
           各本の金額＝本体（1mあたり¥{config.unitPricePerM.toLocaleString()}）＋座金で、
           唐草エンドは1段目側・最終段側の2箇所のみ（各¥{config.endPrice.toLocaleString()}）に付きます。
-          エンド部は段鼻から先端まで{WINDING_END_RUN}mm・勾配は蹴上/踏面からの換算による概算のため、
-          実際の階段の形状・寸法・取付下地により長さ・本数・金額が変わります。
+          斜めの長さは段数と蹴上・踏面・蹴込から、エンド部は段鼻から先端まで{WINDING_END_RUN}mm として
+          算出した概算のため、実際の階段の形状・寸法・取付下地により長さ・本数・金額が変わります。
           下の「見積もり依頼」からこの内容がそのまま引き継がれます（お見積もり無料）。
         </p>
       )}
