@@ -222,6 +222,37 @@ export default function ContactPage() {
                     : ""
                 const stepsLine = stepsN ? `階段: 直階段 ${stepsN}段${dims}\n` : ""
                 const totalLine = total ? `参考価格（税込・送料別）: ¥${Number(total).toLocaleString()}\n\n` : "\n"
+                // 回り階段モード（かね折れ L字 / 折り返し コの字）: 手すりが複数本に
+                // 分かれるため、本ごとの長さ・座金数を明細として書き出す
+                // （2026-07-25 蠣﨑さん指示: 回り階段の一括概算）
+                const shape = params.get("shape")
+                if (shape === "L" || shape === "U") {
+                  const shapeName = shape === "L" ? "かね折れ階段（L字・曲がり1回）" : "折り返し階段（コの字・曲がり2回）"
+                  const positions = shape === "L" ? ["1段目側", "最終段側"] : ["1段目側", "中間", "最終段側"]
+                  const marks = ["①", "②", "③"]
+                  const railLines = positions
+                    .map((pos, i) => {
+                      const len = params.get(`len${i + 1}`)
+                      const zc = params.get(`zc${i + 1}`)
+                      const endNote =
+                        i === 0
+                          ? `・唐草エンド ${endB} パターン`
+                          : i === positions.length - 1
+                            ? `・唐草エンド ${endT} パターン`
+                            : ""
+                      return `${marks[i]} ${pos}: 約${len ? Number(len).toLocaleString() : "—"}mm・座金${zc || "—"}箇所${endNote}`
+                    })
+                    .join("\n")
+                  const wallLines = [
+                    `壁①の幅: ${params.get("w1") ? `${Number(params.get("w1")).toLocaleString()}mm` : "—"}`,
+                    `壁②の幅: ${params.get("w2") ? `${Number(params.get("w2")).toLocaleString()}mm` : "—"}`,
+                    shape === "U" && params.get("w3") ? `壁③の幅: ${Number(params.get("w3")).toLocaleString()}mm` : "",
+                  ]
+                    .filter(Boolean)
+                    .join("\n")
+                  const slope = `蹴上 ${params.get("riser") || "—"}mm・踏面 ${params.get("tread") || "—"}mm・蹴込 ${params.get("kick") || "—"}mm`
+                  return `【Élisabeth エリザベート 階段手すり お見積もり依頼（回り階段）】\n\n階段の形: ${shapeName}\n${wallLines}\n階段の勾配: ${slope}\n\n手すり ${positions.length}本の概算:\n${railLines}\n\n手すり合計長さ: 約${Number(simLen).toLocaleString()}mm・座金 合計${zcount}箇所\n座金タイプ: ${zakinLabel}\n${totalLine}上記内容でのお見積もりを希望します。\n\n※回り階段の手すりは曲がりごとに分かれた直線の手すりを1本ずつお作りします（曲がり角は壁から80mm逃がし）。長さ・座金の本数は実際の階段の寸法・形状・下地位置により変わります。階段の写真や図面を添付いただけると正確なお見積もりがスムーズです。\n\n設置場所の階段について（段数・踊り場の有無など）:\n（ご記入ください）\n\nその他ご要望:\n`
+                }
                 return `【Élisabeth エリザベート 階段手すり お見積もり依頼】\n\n${stepsLine}手すり全長の目安: 約${Number(simLen).toLocaleString()}mm（段鼻間の直線距離＋両端の水平部 ${runNote}）\nエンド形状（唐草）: 下側（登り始め）${endB} パターン・上側（登り終わり）${endT} パターン\n座金タイプ: ${zakinLabel} × ${zcount} 箇所\n${totalLine}上記内容でのお見積もりを希望します。\n\n※手すりの長さ・座金の本数は実際の階段の寸法・形状・下地位置により変わります。階段の写真や図面を添付いただけると正確なお見積もりがスムーズです。\n\n設置場所の階段について（段数・回り階段の有無など）:\n（ご記入ください）\n\nその他ご要望:\n`
               })()
             : ""
