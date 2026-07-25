@@ -101,8 +101,9 @@ const WALL_MID_MIN = 1400
 const WALL_MAX = 4000
 // コの字の中間壁（階段室の幅）の既定値
 const WALL_MID_DEFAULT = 1800
-// 壁の寸法の ± ボタン1回ぶん。10mm 刻みだと現場寸法に合わせるのに時間がかかるため
-const WALL_STEP = 50
+// 壁の寸法の ± ボタン1回ぶん（現場寸法に合わせるので細かく刻む。
+// まとめて変えたいときは入力欄に直接打ち込める）
+const WALL_STEP = 10
 // 1段目の段鼻は壁から 70mm 入ったところから始まる（2026-07-25 蠣﨑さん指定）
 const FIRST_STEP_OFFSET = 70
 // 廻り段ゾーン（曲がり角）の奥行き＝階段の有効幅。L字は標準的な階段幅を使い、
@@ -123,7 +124,9 @@ const WALL_START_DEFAULT_U =
   FIRST_STEP_OFFSET + (N_START_DEFAULT - 1) * STD_NOSE_PITCH + STAIR_BAND_L
 const WALL_END_DEFAULT_U = STAIR_BAND_L + (N_END_DEFAULT - 2) * STD_NOSE_PITCH + WINDING_END_RUN
 // L字は曲がり角の廻り段を①の段数に含めるので、①は平行段ぶん＋廻り段ゾーン
-const L_STRAIGHT_DEFAULT = 3
+// L字の曲がり角の廻り段は 90 度を3段で廻るのを標準とする
+const L_WINDER_STEPS = 3
+const L_STRAIGHT_DEFAULT = N_START_DEFAULT - L_WINDER_STEPS
 const WALL_START_DEFAULT_L = FIRST_STEP_OFFSET + L_STRAIGHT_DEFAULT * STD_NOSE_PITCH + STAIR_BAND_L
 const WALL_END_DEFAULT_L = STAIR_BAND_L + (N_END_DEFAULT - 1) * STD_NOSE_PITCH + WINDING_END_RUN
 // 平面図で手すり中心線を壁面から離す距離（壁〜手すり離れ40mm＋バー半径）
@@ -431,6 +434,10 @@ function StairPartsDiagram() {
 
 // ── 階段の形（上から見た図）の選択肢 ──
 type StairShape = "straight" | "L" | "U"
+/** 曲がる向き（上から見て）。left = 上って左へ曲がる（既定） */
+type TurnDir = "left" | "right"
+/** 曲がり角の作り。winder = 廻り段（斜め）／landing = 四角い踊り場 */
+type CornerType = "winder" | "landing"
 
 const SHAPE_OPTIONS: { id: StairShape; label: string; sub: string }[] = [
   { id: "straight", label: "直階段", sub: "手すり1本" },
@@ -499,9 +506,28 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
   const [shape, setShape] = useState<StairShape>("straight")
   // 回り階段モードの段数（フライトごと）。start = 1階から曲がり角まで（廻り段を含む）、
   // mid = 中間壁の廻り段（コの字のみ）、end = 最終段の壁
-  const [nStart, setNStart] = useState(N_START_DEFAULT)
-  const [nMid, setNMid] = useState(N_MID_DEFAULT)
-  const [nEnd, setNEnd] = useState(N_END_DEFAULT)
+  const [turnDir, setTurnDir] = useState<TurnDir>("left")
+  const [cornerType, setCornerType] = useState<CornerType>("winder")
+  // フライトごとの段数は1つの state にまとめる。合計の ± は「今どちらが多いか」で
+  // 振り分け先を決めるため、連打が同じバッチに入っても取りこぼさないよう関数更新で扱う
+  const [flights, setFlights] = useState({
+    start: N_START_DEFAULT,
+    mid: N_MID_DEFAULT,
+    end: N_END_DEFAULT,
+  })
+  const { start: nStart, mid: nMid, end: nEnd } = flights
+  const stepSetter =
+    (key: "start" | "mid" | "end") => (v: number | ((prev: number) => number)) =>
+      setFlights((f) => ({
+        ...f,
+        [key]: Math.min(
+          Math.max(Math.round(typeof v === "function" ? v(f[key]) : v) || f[key], STEPS_MIN),
+          STEPS_MAX,
+        ),
+      }))
+  const setNStart = stepSetter("start")
+  const setNMid = stepSetter("mid")
+  const setNEnd = stepSetter("end")
   // 各壁の幅＝手すりが付く壁の全長。段数とは独立した入力で、段数を変えても動かない
   // （2026-07-25 蠣﨑さん指摘: 壁の長さと階段の長さは影響し合わない）。
   // 階段の形を選び直したときだけ、その形の標準寸法にリセットする
@@ -590,22 +616,41 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
   const wMid = clamp(wMidMm, WALL_MID_MIN, WALL_MAX)
   // 廻り段ゾーン（曲がり角）の奥行き＝階段の有効幅
   const bandW = shape === "U" ? Math.max(400, Math.min(950, (wMid - 300) / 2)) : STAIR_BAND_L
-  // 壁沿いに平行に並ぶ段の数。曲がり角に接する段は廻り段（斜め）になるので
-  // 1段目側は最後の1段が廻り段（2026-07-25 蠣﨑さん指摘: 6段なら6段目はななめ）。
-  // L字は曲がり角の廻り段をすべて①の段数に含めるので、平行段の数を壁の長さから割り出す
-  const straightStart =
-    shape === "L"
+  // 四角い踊り場の曲がり角には段がないので、廻り段の数は 0。
+  // 廻り段のときは、曲がり角に接する段が斜めになる（1段目側が6段なら6段目がななめ）
+  const isLanding = shape === "L" && cornerType === "landing"
+  // 壁沿いに平行に並ぶ段の数
+  const straightStart = isLanding
+    ? nStart
+    : shape === "L"
       ? Math.max(
           0,
           Math.min(nStart - 1, Math.round((wStart - FIRST_STEP_OFFSET - bandW) / nosePitch)),
         )
       : Math.max(nStart - 1, 0)
   // 最終段側の平行段。コの字は曲がり角に接する1段が廻り段・最後の1段が2階なので2段少ない。
-  // L字は曲がり角の廻り段が①に入っているので2階のぶんだけ少ない
+  // L字は曲がり角の段が①に入っている（踊り場なら段そのものが無い）ので2階のぶんだけ少ない
   const straightEnd = Math.max(nEnd - (shape === "U" ? 2 : 1), 0)
   // 曲がり角の壁の面から最終段の段鼻（＝2階の床の端）までの距離。
   // 壁の長さとは無関係に階段の段数で決まる（2026-07-25 蠣﨑さん指摘: 揃うとは限らない）
   const topNoseAt = bandW + straightEnd * nosePitch
+  // 全体の段数（昇りきりの2階を含む）。まとめて指定すると各フライトへ振り分ける
+  const totalSteps = shape === "U" ? nStart + nMid + nEnd : nStart + nEnd
+  /** 全体の段数を増減する。1段ずつ、少ない側のフライトに足す（減らすときは多い側から） */
+  const bumpTotalSteps = (delta: number) =>
+    setFlights((f) => {
+      const useStart = delta > 0 ? f.start <= f.end : f.start >= f.end
+      const key = useStart ? "start" : "end"
+      const next = Math.min(Math.max(f[key] + delta, STEPS_MIN), STEPS_MAX)
+      return { ...f, [key]: next }
+    })
+  /** 曲がり角の作りを変えたら、それに合う壁①の標準寸法に入れ直す
+   *  （踊り場は段が踊り場の手前で終わるぶん壁が長くなる） */
+  const changeCornerType = (next: CornerType) => {
+    setCornerType(next)
+    const parallel = next === "landing" ? nStart : Math.max(nStart - L_WINDER_STEPS, 1)
+    setWStartMm(Math.round(FIRST_STEP_OFFSET + parallel * nosePitch + bandW))
+  }
   /** 階段の形を選び直したら、その形の標準的な壁寸法にリセットする */
   const changeShape = (next: StairShape) => {
     setShape(next)
@@ -628,8 +673,10 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
     //   最終段の壁 … 曲がり角から最終段の段鼻まで斜め＋段鼻から 300mm のエンド部
     // 壁の長さと階段の長さは互いに影響しない（2026-07-25 蠣﨑さん指摘）ので、
     // 斜めの区間は段数から、余りは平らな部分として別々に出す
-    const startSlopeRun = straightStart * nosePitch + Math.max(bandW - CORNER_WALL_GAP, 0)
-    const endSlopeRun = Math.max(topNoseAt - CORNER_WALL_GAP, 0)
+    // 曲がり角が四角い踊り場のときは、そこは平ら（上がらない）ので斜辺に含めない
+    const cornerRun = isLanding ? 0 : Math.max(bandW - CORNER_WALL_GAP, 0)
+    const startSlopeRun = straightStart * nosePitch + cornerRun
+    const endSlopeRun = straightEnd * nosePitch + cornerRun
     // 手すりは壁より外へは出せない（固定できない）ので、昇りきり側のエンドは
     // 壁の端で頭打ちにする（2026-07-25 蠣﨑さん指摘）
     const topRailEnd = Math.min(topNoseAt + WINDING_END_RUN, wEnd)
@@ -650,7 +697,9 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
       // 段鼻ピッチではなく「その区間の上がり高さ」で斜辺を出す
       const slopeRun = d.allSlope ? span : Math.min(d.slopeRunWant, span)
       // 段数ぶんの階段が壁に収まらない＝斜めが壁からはみ出すとき
-      const overflow = !d.allSlope && d.slopeRunWant > span
+      // 踊り場は上がらないが手すりは必ずその上を通るので、収まり判定には含める
+      const needRun = d.slopeRunWant + (d.allSlope ? 0 : isLanding ? Math.max(bandW - CORNER_WALL_GAP, 0) : 0)
+      const overflow = !d.allSlope && needRun > span
       const flatRun = span - slopeRun
       const slopeLen = d.allSlope
         ? Math.hypot(span, d.steps * riserEff)
@@ -682,7 +731,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
       totalZakin: rails.reduce((s, r) => s + r.zakin, 0),
       totalPrice: rails.reduce((s, r) => s + r.price, 0),
     }
-  }, [shape, wStart, wMid, wEnd, bandW, straightStart, topNoseAt, nStart, nMid, nEnd, nosePitch, riserEff, config.unitPricePerM, config.endPrice, zakinType.price])
+  }, [shape, isLanding, wStart, wMid, wEnd, bandW, straightStart, straightEnd, topNoseAt, nStart, nMid, nEnd, nosePitch, riserEff, config.unitPricePerM, config.endPrice, zakinType.price])
 
   useEffect(() => {
     if (winding) {
@@ -1039,10 +1088,13 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
       across: [number, number],
       /** 進む向きに対して段数の番号が増えるか（-1 = 減る。最終段側は 2階から下る並び） */
       noStep: 1 | -1 = 1,
+      /** 曲がり角ゾーンの境界。これを越える段は描かない（段が踊り場や廻り段に食い込まない） */
+      limit?: number,
     ) => {
       for (let k = 0; k < n; k++) {
         const a = from + dir * k * going
         const b = a + dir * going
+        if (limit !== undefined && (dir < 0 ? b < limit - 0.5 : b > limit + 0.5)) break
         // 段の境界線（次の段の段鼻）
         if (horizontal) lineMm(stepLines, across[0], b, across[1], b)
         else lineMm(stepLines, b, across[0], b, across[1])
@@ -1099,14 +1151,19 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
     // （踏面は斜め以外いつも一定）。曲がり角に接する段は廻り段として扇形に割る
     if (isU) {
       // ①: 1階側の平行段（最後の1段は廻り段なので nStart−1 段）
-      parallelSteps(straightStart, firstNoseY, -1, 1, true, [-bandW, 0])
+      parallelSteps(straightStart, firstNoseY, -1, 1, true, [-bandW, 0], 1, bandW)
       // 廻り段: 壁①に接する1段＋中間壁の nMid 段＋壁③に接する1段を 180 度で割る
       winderFan(XL / 2, bandW, 0, 180, nMid + 2, nStart, { xMin: XL, xMax: 0, yMin: 0, yMax: bandW })
       // ③: 廻り段のあとの平行段（最後の番号＝2階は別に置く）
       parallelSteps(straightEnd, bandW, 1, nStart + nMid + 2, true, [XL, XL + bandW])
+    } else if (isLanding) {
+      // L字・四角い踊り場: 曲がり角に段は無い。①②とも平行段だけ
+      parallelSteps(nStart, firstNoseY, -1, 1, true, [-bandW, 0], 1, bandW)
+      parallelSteps(straightEnd, -bandW, -1, nStart + 1, false, [0, bandW])
+      labels.push({ x: X(-bandW / 2), y: Y(bandW / 2) + 4, text: "踊り場", size: 11, muted: true, anchor: "middle" })
     } else {
-      // L字: 曲がり角の廻り段は①の段数に含める
-      parallelSteps(straightStart, firstNoseY, -1, 1, true, [-bandW, 0])
+      // L字・廻り段: 曲がり角の廻り段は①の段数に含める
+      parallelSteps(straightStart, firstNoseY, -1, 1, true, [-bandW, 0], 1, bandW)
       winderFan(-bandW, bandW, 0, 90, Math.max(nStart - straightStart, 1), straightStart + 1, {
         xMin: -bandW,
         xMax: 0,
@@ -1216,8 +1273,30 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
       labels.push({ x: X(dimX3) - 12, y: Y(wEnd / 2), text: `壁③ ${wEnd.toLocaleString()}`, size: 11, weight: 600, anchor: "middle", rotate: -90 })
     }
 
-    return { rects, stairRects, stepLines, dims, labels, stepNums, railLines, zakinTicks, tips, arrow }
-  }, [winding, shape, wStart, wMid, wEnd, bandW, straightStart, straightEnd, topNoseAt, nStart, nMid, nEnd, nosePitch])
+    const out = { rects, stairRects, stepLines, dims, labels, stepNums, railLines, zakinTicks, tips, arrow }
+    if (turnDir === "left") return out
+    // 上って右に曲がる階段は、左回りの図を左右反転して描く。
+    // 文字は反転させたくないので、図形の座標だけを鏡に写す
+    const fx = (x: number) => VB_W - x
+    return {
+      ...out,
+      rects: out.rects.map((r) => ({ ...r, x: fx(r.x + r.w) })),
+      stairRects: out.stairRects.map((r) => ({ ...r, x: fx(r.x + r.w) })),
+      stepLines: out.stepLines.map((l) => ({ ...l, x1: fx(l.x1), x2: fx(l.x2) })),
+      dims: out.dims.map((l) => ({ ...l, x1: fx(l.x1), x2: fx(l.x2) })),
+      railLines: out.railLines.map((l) => ({ ...l, x1: fx(l.x1), x2: fx(l.x2) })),
+      zakinTicks: out.zakinTicks.map((l) => ({ ...l, x1: fx(l.x1), x2: fx(l.x2) })),
+      tips: out.tips.map((t) => ({ ...t, x: fx(t.x) })),
+      stepNums: out.stepNums.map((n) => ({ ...n, x: fx(n.x) })),
+      arrow: { ...out.arrow, x1: fx(out.arrow.x1), x2: fx(out.arrow.x2) },
+      labels: out.labels.map((t) => ({
+        ...t,
+        x: fx(t.x),
+        rotate: t.rotate ? -t.rotate : t.rotate,
+        anchor: t.anchor === "start" ? ("end" as const) : t.anchor === "end" ? ("start" as const) : t.anchor,
+      })),
+    }
+  }, [winding, shape, isLanding, turnDir, wStart, wMid, wEnd, bandW, straightStart, straightEnd, topNoseAt, nStart, nMid, nEnd, nosePitch])
 
   return (
     <div className="mb-8 border-2 border-gold/20 bg-card rounded-md p-5">
@@ -1669,12 +1748,43 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
             </p>
           )}
 
-          {/* 段数の入力（フライトごと。手すりの斜めの長さはここが基準） */}
-          <p className="text-[13px] text-muted-foreground mb-2">段数（図の①②③ごと）</p>
+          {/* 段数（全体）と、図の①②③ごとの内訳 */}
+          <p className="text-[13px] text-muted-foreground mb-2">段数（昇りきりの2階を含む全体）</p>
+          <div className="flex items-center justify-between border border-border rounded-md bg-white px-4 py-3 mb-2">
+            <span className="text-[14px] text-foreground">
+              階段の段数
+              <span className="block text-[11px] text-muted-foreground mt-0.5">
+                全体の段数。変えると①②③へ振り分けます
+              </span>
+            </span>
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => bumpTotalSteps(-1)}
+                disabled={totalSteps <= 2}
+                className="w-9 h-9 flex items-center justify-center rounded-full border border-gold/20 bg-white shadow-sm hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                aria-label="階段の段数を減らす"
+              >
+                <Minus className="w-3.5 h-3.5" />
+              </button>
+              <span className="font-serif text-[18px] font-bold min-w-[3.5ch] text-center text-foreground">
+                {totalSteps}段
+              </span>
+              <button
+                type="button"
+                onClick={() => bumpTotalSteps(1)}
+                className="w-9 h-9 flex items-center justify-center rounded-full border border-gold/20 bg-white shadow-sm hover:border-gold hover:text-gold transition-colors"
+                aria-label="階段の段数を増やす"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+          <p className="text-[12px] text-muted-foreground mb-2">内訳（図の①②③ごと）</p>
           <div className={`grid grid-cols-1 gap-2 mb-3 ${shape === "U" ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
             <DimStepper
               label="① 1階側の壁"
-              hint={shape === "U" ? "壁①に接する段数" : "曲がり角の廻り段を含む"}
+              hint={shape === "U" || isLanding ? "壁①に接する段数" : "曲がり角の廻り段を含む"}
               value={nStart}
               effective={nStart}
               setValue={setNStart}
@@ -1709,50 +1819,56 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
             />
           </div>
 
-          {/* 壁の幅の入力（図の寸法線に対応） */}
-          <p className="text-[13px] text-muted-foreground mb-2">壁の幅（手すりが付く壁の全長）</p>
-          <div className={`grid grid-cols-1 gap-2 mb-3 ${shape === "U" ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
-            <DimStepper
-              label="壁①の幅"
-              hint="曲がり角の壁の面 〜 階段室の手前端"
-              value={wStartMm}
-              effective={wStart}
-              setValue={setWStartMm}
-              min={WALL_MIN}
-              max={WALL_MAX}
-              step={WALL_STEP}
-            />
-            {shape === "U" && (
-              <DimStepper
-                label="壁②の幅"
-                hint="壁から壁の内寸（階段室の幅）"
-                value={wMidMm}
-                effective={wMid}
-                setValue={setWMidMm}
-                min={WALL_MID_MIN}
-                max={WALL_MAX}
-                step={WALL_STEP}
-              />
-            )}
-            <DimStepper
-              label={`壁${shape === "U" ? "③" : "②"}の幅`}
-              hint="曲がり角の壁の面 〜 壁の端"
-              value={wEndMm}
-              effective={wEnd}
-              setValue={setWEndMm}
-              min={WALL_MIN}
-              max={WALL_MAX}
-              step={WALL_STEP}
-            />
+          {/* 曲がる方向（上から見て・図が左右反転する） */}
+          <p className="text-[13px] text-muted-foreground mb-2">曲がる方向（上から見て）</p>
+          <div className="grid grid-cols-2 gap-2 mb-4">
+            {(
+              [
+                { id: "left" as const, label: "上って左へ曲がる" },
+                { id: "right" as const, label: "上って右へ曲がる" },
+              ]
+            ).map((opt) => (
+              <button
+                key={opt.id}
+                type="button"
+                onClick={() => setTurnDir(opt.id)}
+                aria-pressed={turnDir === opt.id}
+                className={`rounded-md border-2 bg-white px-3 py-2.5 text-[13px] md:text-[14px] font-medium transition-colors ${
+                  turnDir === opt.id ? "border-gold text-foreground" : "border-border text-muted-foreground hover:border-gold/50"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
           </div>
-          <p className="text-[12px] text-muted-foreground leading-relaxed mb-4">
-            壁の幅＝手すりが付く壁の全長です（図の寸法線と壁の長さが一致します）。
-            踏面は一定として段数ぶんの階段を並べるので、壁の長さと階段の長さは連動しません。
-            壁が余ったぶんは平らな部分として手すりの長さに足し、手すりは壁より外へは出しません。
-            曲がり角に接する段は廻り段（斜め）になります。
-            {shape === "U" && "中間壁の段は全て廻り段で、壁いっぱいを斜めに計算します。"}
-            左右が逆向きの階段でも同じ入力で概算できます。
-          </p>
+
+          {/* 曲がり角の作り（かね折れのみ。廻り段か踊り場かで手すりの長さが変わる） */}
+          {shape === "L" && (
+            <>
+              <p className="text-[13px] text-muted-foreground mb-2">曲がり角の作り</p>
+              <div className="grid grid-cols-2 gap-2 mb-4">
+                {(
+                  [
+                    { id: "winder" as const, label: "廻り段（斜め）", sub: "角で段を廻して上がる" },
+                    { id: "landing" as const, label: "踊り場（四角）", sub: "角は平らで段が無い" },
+                  ]
+                ).map((opt) => (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => changeCornerType(opt.id)}
+                    aria-pressed={cornerType === opt.id}
+                    className={`rounded-md border-2 bg-white px-3 py-2.5 transition-colors ${
+                      cornerType === opt.id ? "border-gold" : "border-border hover:border-gold/50"
+                    }`}
+                  >
+                    <span className="block text-[13px] md:text-[14px] font-medium text-foreground">{opt.label}</span>
+                    <span className="block text-[11px] text-muted-foreground mt-0.5">{opt.sub}</span>
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
 
           {/* 蹴上・踏面・蹴込（勾配の計算に使用） */}
           <div className="mb-4 rounded-md border border-border bg-white p-4">
@@ -1801,6 +1917,51 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
               />
             </div>
           </div>
+          {/* 壁の幅の入力（図の寸法線に対応） */}
+          <p className="text-[13px] text-muted-foreground mb-2">壁の幅（手すりが付く壁の全長）</p>
+          <div className={`grid grid-cols-1 gap-2 mb-3 ${shape === "U" ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
+            <DimStepper
+              label="壁①の幅"
+              hint="曲がり角の壁の面 〜 階段室の手前端"
+              value={wStartMm}
+              effective={wStart}
+              setValue={setWStartMm}
+              min={WALL_MIN}
+              max={WALL_MAX}
+              step={WALL_STEP}
+            />
+            {shape === "U" && (
+              <DimStepper
+                label="壁②の幅"
+                hint="壁から壁の内寸（階段室の幅）"
+                value={wMidMm}
+                effective={wMid}
+                setValue={setWMidMm}
+                min={WALL_MID_MIN}
+                max={WALL_MAX}
+                step={WALL_STEP}
+              />
+            )}
+            <DimStepper
+              label={`壁${shape === "U" ? "③" : "②"}の幅`}
+              hint="曲がり角の壁の面 〜 壁の端"
+              value={wEndMm}
+              effective={wEnd}
+              setValue={setWEndMm}
+              min={WALL_MIN}
+              max={WALL_MAX}
+              step={WALL_STEP}
+            />
+          </div>
+          <p className="text-[12px] text-muted-foreground leading-relaxed mb-4">
+            壁の幅＝手すりが付く壁の全長です（図の寸法線と壁の長さが一致します）。
+            踏面は一定として段数ぶんの階段を並べるので、壁の長さと階段の長さは連動しません。
+            壁が余ったぶんは平らな部分として手すりの長さに足し、手すりは壁より外へは出しません。
+            曲がり角に接する段は廻り段（斜め）になります。
+            {shape === "U" && "中間壁の段は全て廻り段で、壁いっぱいを斜めに計算します。"}
+            左右が逆向きの階段でも同じ入力で概算できます。
+          </p>
+
         </>
       )}
 
