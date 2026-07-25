@@ -97,7 +97,11 @@ const WINDING_END_RUN_BOTTOM = 0
 // コの字の中間壁（壁から壁の内寸）は階段2列ぶんで最小値が大きい
 // （2026-07-25 蠣﨑さん確定: 壁の幅＝手すりが付く壁の全長。図の壁の描画長さと一致させる）
 const WALL_MIN = 600
-const WALL_MID_MIN = 1400
+// 階段の有効幅（＝廻り段ゾーンの奥行き）。入力では変わらない一定値にする
+// （2026-07-25 蠣﨑さん指摘: 踏面ではなく階段の幅が変わってしまっている）。
+// 住宅の一般的な階段の有効幅
+const STAIR_BAND = 750
+const WALL_MID_MIN = STAIR_BAND * 2 + 100
 const WALL_MAX = 4000
 // コの字の中間壁（階段室の幅）の既定値
 const WALL_MID_DEFAULT = 1800
@@ -106,9 +110,6 @@ const WALL_MID_DEFAULT = 1800
 const WALL_STEP = 10
 // 1段目の段鼻は壁から 70mm 入ったところから始まる（2026-07-25 蠣﨑さん指定）
 const FIRST_STEP_OFFSET = 70
-// 廻り段ゾーン（曲がり角）の奥行き＝階段の有効幅。L字は標準的な階段幅を使い、
-// コの字は中間壁の内寸に2列＋間の300mmが収まる幅に合わせる
-const STAIR_BAND_L = 750
 // 各フライトの段数の入力範囲・既定値（2回廻る登り切り15段＝6+4+5 を既定に）。
 // 中間壁は基本4段で全て廻り段（斜め）、最終段側は昇りきった段（2階）を含めて数える
 const STEPS_MIN = 1
@@ -121,14 +122,14 @@ const N_END_DEFAULT = 5
 const STD_NOSE_PITCH = STD_TREAD - STD_KICK
 // 曲がり角に接する段は廻り段（斜め）になるので、壁沿いに平行に並ぶ段は1段少ない
 const WALL_START_DEFAULT_U =
-  FIRST_STEP_OFFSET + (N_START_DEFAULT - 1) * STD_NOSE_PITCH + STAIR_BAND_L
-const WALL_END_DEFAULT_U = STAIR_BAND_L + (N_END_DEFAULT - 2) * STD_NOSE_PITCH + WINDING_END_RUN
+  FIRST_STEP_OFFSET + (N_START_DEFAULT - 1) * STD_NOSE_PITCH + STAIR_BAND
+const WALL_END_DEFAULT_U = STAIR_BAND + (N_END_DEFAULT - 2) * STD_NOSE_PITCH + WINDING_END_RUN
 // L字は曲がり角の廻り段を①の段数に含めるので、①は平行段ぶん＋廻り段ゾーン
 // L字の曲がり角の廻り段は 90 度を3段で廻るのを標準とする
 const L_WINDER_STEPS = 3
 const L_STRAIGHT_DEFAULT = N_START_DEFAULT - L_WINDER_STEPS
-const WALL_START_DEFAULT_L = FIRST_STEP_OFFSET + L_STRAIGHT_DEFAULT * STD_NOSE_PITCH + STAIR_BAND_L
-const WALL_END_DEFAULT_L = STAIR_BAND_L + (N_END_DEFAULT - 1) * STD_NOSE_PITCH + WINDING_END_RUN
+const WALL_START_DEFAULT_L = FIRST_STEP_OFFSET + L_STRAIGHT_DEFAULT * STD_NOSE_PITCH + STAIR_BAND
+const WALL_END_DEFAULT_L = STAIR_BAND + (N_END_DEFAULT - 1) * STD_NOSE_PITCH + WINDING_END_RUN
 // 平面図で手すり中心線を壁面から離す距離（壁〜手すり離れ40mm＋バー半径）
 const RAIL_WALL_OFFSET_MM = 55
 // 平面図の壁の描画厚み
@@ -614,8 +615,8 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
   const wStart = clamp(wStartMm, WALL_MIN, WALL_MAX)
   const wEnd = clamp(wEndMm, WALL_MIN, WALL_MAX)
   const wMid = clamp(wMidMm, WALL_MID_MIN, WALL_MAX)
-  // 廻り段ゾーン（曲がり角）の奥行き＝階段の有効幅
-  const bandW = shape === "U" ? Math.max(400, Math.min(950, (wMid - 300) / 2)) : STAIR_BAND_L
+  // 階段の有効幅は形にも壁の寸法にも依存しない一定値
+  const bandW = STAIR_BAND
   // 曲がり角に接する段は「廻り段（斜め）」か「四角い踊り場」。
   // 踊り場も1段とみなす（2026-07-25 蠣﨑さん指定）ので、どちらでも曲がり角の段は
   // ①の段数に含まれ、壁沿いに平行に並ぶ段はそのぶん少なくなる
@@ -633,10 +634,11 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
   const straightEnd = Math.max(nEnd - (shape === "U" ? 2 : 1), 0)
   // 1段目の段鼻（壁から70mm入る）と、平行段が終わる位置
   const firstNoseAt = wStart - FIRST_STEP_OFFSET
-  // 曲がり角（廻り段ゾーン／踊り場）の奥行き。平行段の終わりから曲がり角の壁までを
-  // そのまま曲がり角にすることで、階段と曲がり角が離れないようにする
-  // （2026-07-25 蠣﨑さん指摘: コーナーと階段が離れてしまうことがある）
-  const turnDepth = Math.max(firstNoseAt - straightStart * nosePitch, 0)
+  // 曲がり角（廻り段ゾーン／踊り場）は階段の幅ぶんの正方形。階段の幅は入力で
+  // 変わらない一定値にする（2026-07-25 蠣﨑さん指摘: 踏面ではなく幅が変わっている）。
+  // 平行段が曲がり角まで届かないぶんは平らな部分（踊り場）として階段を連続して描くので、
+  // 階段と曲がり角は離れない（同: コーナーと階段が離れてしまうことがある）
+  const turnDepth = bandW
   // 曲がり角の壁の面から最終段の段鼻（＝2階の床の端）まで。壁の長さとは無関係に決まる
   const topNoseAt = turnDepth + straightEnd * nosePitch
   // 全体の段数（昇りきりの2階を含む）。まとめて指定すると各フライトへ振り分ける
@@ -1052,7 +1054,6 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
     // 曲がり角ゾーンの奥行き。平行段の終わりから曲がり角の壁までをそのまま曲がり角に
     // するので、階段と曲がり角は必ずつながる
     const turnY = turnDepth
-    const turnEdgeY = turnY
     const topNoseY = topNoseAt // 最終段の段鼻（＝2階の床の端）。壁の端とは揃わない
     const topRailEndY = Math.min(topNoseY + WINDING_END_RUN, wEnd)
     if (isU) {
@@ -1062,7 +1063,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
       rectMm(rects, XL - PLAN_WALL_T, 0, XL, wEnd, "#e5e7eb")
       // 階段の白抜き: 廻り段ゾーン（中間壁ぜんぶ）・フライト①の平行段・フライト③の平行段
       rectMm(stairRects, XL, 0, 0, turnY, COLOR_STAIR_FILL)
-      if (straightStart > 0) rectMm(stairRects, -bandW, turnEdgeY, 0, firstNoseY, COLOR_STAIR_FILL)
+      if (firstNoseY > turnY) rectMm(stairRects, -bandW, turnY, 0, firstNoseY, COLOR_STAIR_FILL)
       if (straightEnd > 0) rectMm(stairRects, XL, turnY, XL + bandW, topNoseY, COLOR_STAIR_FILL)
       // 2階の床（最終段の段鼻から先）。昇りきりの段＝2階なので、そこに最後の段数を置く
       rectMm(rects, XL, topNoseY, XL + bandW, topNoseY + WINDING_END_RUN + 140, COLOR_WALL)
@@ -1073,7 +1074,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
       rectMm(rects, XL, -PLAN_WALL_T, PLAN_WALL_T, 0, "#e5e7eb")
       // 階段の白抜き: 曲がり角の廻り段ゾーン・フライト①の平行段・フライト②の平行段
       rectMm(stairRects, -bandW, 0, 0, turnY, COLOR_STAIR_FILL)
-      if (straightStart > 0) rectMm(stairRects, -bandW, turnEdgeY, 0, firstNoseY, COLOR_STAIR_FILL)
+      if (firstNoseY > turnY) rectMm(stairRects, -bandW, turnY, 0, firstNoseY, COLOR_STAIR_FILL)
       if (straightEnd > 0) rectMm(stairRects, -topNoseY, 0, -bandW, turnY, COLOR_STAIR_FILL)
       // 2階の床（最終段の段鼻から先）
       rectMm(rects, -topNoseY - WINDING_END_RUN - 140, 0, -topNoseY, turnY, COLOR_WALL)
