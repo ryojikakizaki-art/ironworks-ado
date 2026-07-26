@@ -388,23 +388,103 @@ function DoubleArrow({
 /**
  * 「段鼻・蹴上・踏面・蹴込」の用語説明イラスト（1段ぶんの断面・シンプルな L 字形）。
  * 踏面＝青・蹴込＝緑・蹴上＝赤の両矢印で色分けし、名前をひと目で対応づけられるように
- * する（2026-07-22 蠣﨑さん指示: 分かりやすい図にしたい。参考画像のスタイルに合わせた）
+ * する（2026-07-22 蠣﨑さん指示）。
+ * 2026-07-26 蠣﨑さん指示で改修:
+ * - 段鼻ラベルは踏面の寸法線と重ならないよう、引出線で左上へ離した
+ * - 蹴上の寸法線は段鼻側（左）に出す（右端＝踏面の奥側だと段鼻から遠く直感的でないため）
+ * - 蹴上・踏面・蹴込は「ラベルの文字」の位置に直接入力欄を置く（foreignObject）。
+ *   寸法線から引出線で図の外側の余白へ離すことで、値と図の対応が一目でわかり、
+ *   かつ入力欄が段の絵に重ならないようにしている
  */
-function StairPartsDiagram() {
+function StairPartsDiagram({
+  riser,
+  riserEff,
+  setRiser,
+  tread,
+  treadEff,
+  setTread,
+  kick,
+  kickEff,
+  setKick,
+}: {
+  riser: number
+  riserEff: number
+  setRiser: (v: number) => void
+  tread: number
+  treadEff: number
+  setTread: (v: number) => void
+  kick: number
+  kickEff: number
+  setKick: (v: number) => void
+}) {
   const COLOR_TREAD = "#2563eb" // 踏面＝青
   const COLOR_KICK = "#16a34a" // 蹴込＝緑
   const COLOR_RISER = "#dc2626" // 蹴上＝赤
-  // ローカル座標系（図解用の任意スケール）
-  const noseX = 34 // 段鼻（踏面の手前端）
-  const backX = 210 // 踏面の奥端
-  const setbackX = 66 // 蹴込み板の位置（段鼻から蹴込ぶん奥）
-  const topY = 34 // 踏面の上面
-  const treadThick = 20 // 踏面の板厚（見た目用）
+  // ローカル座標系（図解用の任意スケール）。蹴上の寸法線を段鼻側（左）に出すため
+  // 左側に余白を広めに取っている
+  const noseX = 150 // 段鼻（踏面の手前端）
+  const backX = 310 // 踏面の奥端
+  const setbackX = 182 // 蹴込み板の位置（段鼻から蹴込ぶん奥）
+  const topY = 76 // 踏面の上面
+  const treadThick = 18 // 踏面の板厚（見た目用）
   const midY = topY + treadThick
-  const botY = 168 // 蹴込み板の下端
+  const botY = 220 // 蹴込み板の下端
+  const VBW = 340
+  const VBH = 264
+
+  /** 引出線の先＝図の余白に置く「色付きラベル＋1mm単位の入力欄」 */
+  const InlineInput = ({
+    x,
+    y,
+    w,
+    labelText,
+    color,
+    value,
+    onChange,
+    onCommit,
+    ariaLabel,
+  }: {
+    x: number
+    y: number
+    w: number
+    labelText: string
+    color: string
+    value: number
+    onChange: (v: number) => void
+    onCommit: () => void
+    ariaLabel: string
+  }) => (
+    <foreignObject x={x - w / 2} y={y} width={w} height={40}>
+      <div className="flex flex-col items-center leading-none gap-1">
+        <span className="text-[12px] font-bold" style={{ color }}>
+          {labelText}
+        </span>
+        <div className="flex items-center gap-0.5">
+          <input
+            type="number"
+            inputMode="numeric"
+            step={1}
+            value={value}
+            onChange={(e) => onChange(Number(e.target.value))}
+            onBlur={onCommit}
+            aria-label={ariaLabel}
+            className="w-11 h-6 border rounded text-center text-[11px] bg-white focus:outline-none"
+            style={{ borderColor: color }}
+          />
+          <span className="text-[9px] text-muted-foreground">mm</span>
+        </div>
+      </div>
+    </foreignObject>
+  )
 
   return (
-    <svg viewBox="0 0 300 210" className="w-full h-auto max-w-[300px] mx-auto">
+    <svg
+      viewBox={`0 0 ${VBW} ${VBH}`}
+      className="w-full h-auto max-w-[340px] mx-auto"
+      style={{ overflow: "visible" }}
+    >
+      {/* 蹴込の入力欄は viewBox の下端をわずかに超えて置いているため、SVG 既定の
+          overflow:hidden だと下端が見切れる。overflow:visible で解除する */}
       {/* 段の断面（L字形。段鼻の下にオーバーハングした蹴込みを表現） */}
       <path
         d={`M ${noseX} ${topY} L ${backX} ${topY} L ${backX} ${botY} L ${setbackX} ${botY} L ${setbackX} ${midY} L ${noseX} ${midY} Z`}
@@ -413,30 +493,84 @@ function StairPartsDiagram() {
         strokeWidth="2.5"
         strokeLinejoin="round"
       />
-      {/* 段鼻（強調ドット＋ラベル） */}
+
+      {/* 段鼻: ドット＋引出線で左上へ離したラベル（踏面の寸法線と重ならない位置） */}
       <circle cx={noseX} cy={topY} r={3.5} fill="#b8860b" />
-      <text x={noseX - 6} y={topY - 10} textAnchor="middle" fontSize="12" fontWeight="700" fill="#b8860b">
+      <line x1={noseX} y1={topY} x2={noseX - 48} y2={topY - 34} stroke="#b8860b" strokeWidth="1" strokeDasharray="2 2" />
+      <text x={noseX - 52} y={topY - 40} textAnchor="middle" fontSize="12" fontWeight="700" fill="#b8860b">
         段鼻
       </text>
-      <line x1={noseX} y1={topY - 6} x2={noseX - 4} y2={topY - 16} stroke="#b8860b" strokeWidth="1" />
 
-      {/* 踏面（青・上面いっぱいの幅） */}
+      {/* 踏面（青）: 寸法線＋引出線で図の上余白へ離した入力欄 */}
       <DoubleArrow x1={noseX} y1={topY - 16} x2={backX} y2={topY - 16} color={COLOR_TREAD} />
-      <text x={(noseX + backX) / 2} y={topY - 22} textAnchor="middle" fontSize="14" fontWeight="700" fill={COLOR_TREAD}>
-        踏面
-      </text>
+      <line
+        x1={(noseX + backX) / 2}
+        y1={topY - 16}
+        x2={(noseX + backX) / 2}
+        y2={4}
+        stroke={COLOR_TREAD}
+        strokeWidth="1"
+        strokeDasharray="2 2"
+      />
+      <InlineInput
+        x={(noseX + backX) / 2}
+        y={0}
+        w={80}
+        labelText="踏面"
+        color={COLOR_TREAD}
+        value={tread}
+        onChange={setTread}
+        onCommit={() => setTread(treadEff)}
+        ariaLabel="踏面"
+      />
 
-      {/* 蹴込（緑・段鼻の真下の小さな引っ込み） */}
+      {/* 蹴込（緑）: 寸法線＋引出線で図の下余白へ離した入力欄 */}
       <DoubleArrow x1={noseX} y1={midY + 11} x2={setbackX} y2={midY + 11} color={COLOR_KICK} width={2.5} />
-      <text x={noseX - 8} y={midY + 15} textAnchor="end" fontSize="12" fontWeight="700" fill={COLOR_KICK}>
-        蹴込
-      </text>
+      <line
+        x1={(noseX + setbackX) / 2}
+        y1={midY + 11}
+        x2={(noseX + setbackX) / 2}
+        y2={botY + 14}
+        stroke={COLOR_KICK}
+        strokeWidth="1"
+        strokeDasharray="2 2"
+      />
+      <InlineInput
+        x={(noseX + setbackX) / 2}
+        y={botY + 16}
+        w={80}
+        labelText="蹴込"
+        color={COLOR_KICK}
+        value={kick}
+        onChange={setKick}
+        onCommit={() => setKick(kickEff)}
+        ariaLabel="蹴込"
+      />
 
-      {/* 蹴上（赤・段の全高） */}
-      <DoubleArrow x1={backX + 24} y1={topY} x2={backX + 24} y2={botY} color={COLOR_RISER} />
-      <text x={backX + 32} y={(topY + botY) / 2} fontSize="14" fontWeight="700" fill={COLOR_RISER} dominantBaseline="middle">
-        蹴上
-      </text>
+      {/* 蹴上（赤）: 段鼻側（左）に寸法線＋引出線で図の左余白へ離した入力欄。
+          入力欄（幅80）は寸法線の左に置くため、寸法線の x はその右端より
+          右へ離す（入力欄と重ならないよう寸法線 x=100・入力欄中心 x=40＝右端80） */}
+      <DoubleArrow x1={100} y1={topY} x2={100} y2={botY} color={COLOR_RISER} />
+      <line
+        x1={100}
+        y1={(topY + botY) / 2}
+        x2={84}
+        y2={(topY + botY) / 2}
+        stroke={COLOR_RISER}
+        strokeWidth="1"
+        strokeDasharray="2 2"
+      />
+      <InlineInput
+        x={40}
+        y={(topY + botY) / 2 - 20}
+        w={80}
+        labelText="蹴上"
+        color={COLOR_RISER}
+        value={riser}
+        onChange={setRiser}
+        onCommit={() => setRiser(riserEff)}
+        ariaLabel="蹴上"
+      />
     </svg>
   )
 }
@@ -1428,46 +1562,28 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
           <p className="text-[12px] text-muted-foreground leading-relaxed mb-3">
             手すりの斜めの長さは、段数と蹴上・踏面・蹴込（下図）から計算します。
             分かる範囲で入力してください（未入力なら一般的な寸法で概算します）。
+            図の色付き文字の下が入力欄です（1mm単位で入力できます）。
           </p>
-          <StairPartsDiagram />
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3">
-            <DimStepper
-              label="蹴上"
-              hint="1段の高さ"
-              value={riserMm}
-              effective={riserEff}
-              setValue={(v) => {
-                setRiserMm(v)
-                setPerStepTouched(true)
-              }}
-              min={RISER_MIN}
-              max={RISER_MAX}
-            />
-            <DimStepper
-              label="踏面"
-              hint="足を乗せる面の奥行き"
-              value={treadMm}
-              effective={treadEff}
-              setValue={(v) => {
-                setTreadMm(v)
-                setPerStepTouched(true)
-              }}
-              min={TREAD_MIN}
-              max={TREAD_MAX}
-            />
-            <DimStepper
-              label="蹴込"
-              hint="段鼻下の引っ込み"
-              value={kickMm}
-              effective={kickEff}
-              setValue={(v) => {
-                setKickMm(v)
-                setPerStepTouched(true)
-              }}
-              min={KICK_MIN}
-              max={KICK_MAX}
-            />
-          </div>
+          <StairPartsDiagram
+            riser={riserMm}
+            riserEff={riserEff}
+            setRiser={(v) => {
+              setRiserMm(v)
+              setPerStepTouched(true)
+            }}
+            tread={treadMm}
+            treadEff={treadEff}
+            setTread={(v) => {
+              setTreadMm(v)
+              setPerStepTouched(true)
+            }}
+            kick={kickMm}
+            kickEff={kickEff}
+            setKick={(v) => {
+              setKickMm(v)
+              setPerStepTouched(true)
+            }}
+          />
         </div>
       ) : (
         <div className="mb-4 rounded-md border border-border bg-white p-4">
@@ -1477,52 +1593,34 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
           <p className="text-[12px] text-muted-foreground leading-relaxed mb-3">
             現地で階段を実測できる場合は、蹴上・踏面・蹴込（下図）を入力すると幅・高さが自動計算され、
             より正確な仕様になります。入力すると下の「階段の幅」「高さ」より優先されます。
+            図の色付き文字の下が入力欄です（1mm単位で入力できます）。
           </p>
-          <StairPartsDiagram />
+          <StairPartsDiagram
+            riser={riserMm}
+            riserEff={riserEff}
+            setRiser={(v) => {
+              setRiserMm(v)
+              setPerStepTouched(true)
+            }}
+            tread={treadMm}
+            treadEff={treadEff}
+            setTread={(v) => {
+              setTreadMm(v)
+              setPerStepTouched(true)
+            }}
+            kick={kickMm}
+            kickEff={kickEff}
+            setKick={(v) => {
+              setKickMm(v)
+              setPerStepTouched(true)
+            }}
+          />
           <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-muted-foreground leading-relaxed mt-2 mb-3">
             <div><dt className="inline font-medium text-foreground">段鼻：</dt><dd className="inline">各段の踏面の前端（一番手前に出た角）</dd></div>
             <div><dt className="inline font-medium text-foreground">蹴上：</dt><dd className="inline">1段あたりの高さ（垂直）</dd></div>
             <div><dt className="inline font-medium text-foreground">踏面：</dt><dd className="inline">足を乗せる面の奥行き（水平）</dd></div>
             <div><dt className="inline font-medium text-foreground">蹴込：</dt><dd className="inline">段鼻の真下、蹴込み板の引っ込み幅</dd></div>
           </dl>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
-            <DimStepper
-              label="蹴上"
-              hint="1段の高さ"
-              value={riserMm}
-              effective={riserEff}
-              setValue={(v) => {
-                setRiserMm(v)
-                setPerStepTouched(true)
-              }}
-              min={RISER_MIN}
-              max={RISER_MAX}
-            />
-            <DimStepper
-              label="踏面"
-              hint="足を乗せる面の奥行き"
-              value={treadMm}
-              effective={treadEff}
-              setValue={(v) => {
-                setTreadMm(v)
-                setPerStepTouched(true)
-              }}
-              min={TREAD_MIN}
-              max={TREAD_MAX}
-            />
-            <DimStepper
-              label="蹴込"
-              hint="段鼻下の引っ込み"
-              value={kickMm}
-              effective={kickEff}
-              setValue={(v) => {
-                setKickMm(v)
-                setPerStepTouched(true)
-              }}
-              min={KICK_MIN}
-              max={KICK_MAX}
-            />
-          </div>
           <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-white px-3 py-2">
             <span className="text-[13px] text-foreground leading-tight">
               段鼻間の距離（直接入力）
