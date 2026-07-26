@@ -1421,6 +1421,137 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
         </div>
       </div>
 
+      {/* 階段の勾配（蹴上・踏面・蹴込）。段数のすぐ下に置く（2026-07-25 蠣﨑さん指示） */}
+      {winding ? (
+        <div className="mb-4 rounded-md border border-border bg-white p-4">
+          <p className="text-[13px] font-medium text-foreground mb-1">階段の勾配 ── 蹴上・踏面・蹴込</p>
+          <p className="text-[12px] text-muted-foreground leading-relaxed mb-3">
+            手すりの斜めの長さは、段数と蹴上・踏面・蹴込（下図）から計算します。
+            分かる範囲で入力してください（未入力なら一般的な寸法で概算します）。
+          </p>
+          <StairPartsDiagram />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3">
+            <DimStepper
+              label="蹴上"
+              hint="1段の高さ"
+              value={riserMm}
+              effective={riserEff}
+              setValue={(v) => {
+                setRiserMm(v)
+                setPerStepTouched(true)
+              }}
+              min={RISER_MIN}
+              max={RISER_MAX}
+            />
+            <DimStepper
+              label="踏面"
+              hint="足を乗せる面の奥行き"
+              value={treadMm}
+              effective={treadEff}
+              setValue={(v) => {
+                setTreadMm(v)
+                setPerStepTouched(true)
+              }}
+              min={TREAD_MIN}
+              max={TREAD_MAX}
+            />
+            <DimStepper
+              label="蹴込"
+              hint="段鼻下の引っ込み"
+              value={kickMm}
+              effective={kickEff}
+              setValue={(v) => {
+                setKickMm(v)
+                setPerStepTouched(true)
+              }}
+              min={KICK_MIN}
+              max={KICK_MAX}
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="mb-4 rounded-md border border-border bg-white p-4">
+          <p className="text-[13px] font-medium text-foreground mb-1">
+            より正確に測りたい方へ ── 階段各部の寸法
+          </p>
+          <p className="text-[12px] text-muted-foreground leading-relaxed mb-3">
+            現地で階段を実測できる場合は、蹴上・踏面・蹴込（下図）を入力すると幅・高さが自動計算され、
+            より正確な仕様になります。入力すると下の「階段の幅」「高さ」より優先されます。
+          </p>
+          <StairPartsDiagram />
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-muted-foreground leading-relaxed mt-2 mb-3">
+            <div><dt className="inline font-medium text-foreground">段鼻：</dt><dd className="inline">各段の踏面の前端（一番手前に出た角）</dd></div>
+            <div><dt className="inline font-medium text-foreground">蹴上：</dt><dd className="inline">1段あたりの高さ（垂直）</dd></div>
+            <div><dt className="inline font-medium text-foreground">踏面：</dt><dd className="inline">足を乗せる面の奥行き（水平）</dd></div>
+            <div><dt className="inline font-medium text-foreground">蹴込：</dt><dd className="inline">段鼻の真下、蹴込み板の引っ込み幅</dd></div>
+          </dl>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+            <DimStepper
+              label="蹴上"
+              hint="1段の高さ"
+              value={riserMm}
+              effective={riserEff}
+              setValue={(v) => {
+                setRiserMm(v)
+                setPerStepTouched(true)
+              }}
+              min={RISER_MIN}
+              max={RISER_MAX}
+            />
+            <DimStepper
+              label="踏面"
+              hint="足を乗せる面の奥行き"
+              value={treadMm}
+              effective={treadEff}
+              setValue={(v) => {
+                setTreadMm(v)
+                setPerStepTouched(true)
+              }}
+              min={TREAD_MIN}
+              max={TREAD_MAX}
+            />
+            <DimStepper
+              label="蹴込"
+              hint="段鼻下の引っ込み"
+              value={kickMm}
+              effective={kickEff}
+              setValue={(v) => {
+                setKickMm(v)
+                setPerStepTouched(true)
+              }}
+              min={KICK_MIN}
+              max={KICK_MAX}
+            />
+          </div>
+          <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-white px-3 py-2">
+            <span className="text-[13px] text-foreground leading-tight">
+              段鼻間の距離（直接入力）
+              <span className="block text-[10px] text-muted-foreground mt-0.5">
+                1段目〜最上段の段鼻を斜めに直接測った場合はこちら
+              </span>
+            </span>
+            <div className="flex items-center gap-1">
+              <input
+                type="number"
+                inputMode="numeric"
+                min={DIAG_MIN}
+                max={DIAG_MAX}
+                step={10}
+                value={noseDiag}
+                onChange={(e) => setNoseDiagDirect(Number(e.target.value))}
+                onBlur={(e) => setNoseDiagDirect(clamp(Number(e.target.value), DIAG_MIN, DIAG_MAX))}
+                aria-label="1段目と最上段の段鼻の距離（mm）"
+                className="w-20 h-8 border border-border rounded-md text-center text-[14px] bg-white focus:outline-none focus:border-gold"
+              />
+              <span className="text-[12px] text-muted-foreground">mm</span>
+            </div>
+          </div>
+          <p className="text-[11px] text-muted-foreground leading-relaxed mt-2">
+            段鼻間の距離を入力すると、現在の幅・高さの比率（勾配）を保ったまま両方を自動で伸縮します。
+          </p>
+        </div>
+      )}
+
       {!winding && (
       <>
       {/* ミニ図解（側面図・入力に連動）。数値は図内にラベル表示、編集は図の下のコントロール */}
@@ -1585,91 +1716,6 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
         下側は段鼻より出ないこともあり、0 で段鼻とループの端が揃います。
         分からない場合はそのままで構いません（段数に合わせた一般的な寸法を自動セットしています）。
       </p>
-
-      {/* 正確な階段寸法の入力（蹴上・踏面・蹴込／段鼻間の直線距離）。
-          現地で正確に測って仕様を確定したいお客様向けの詳細入力
-          （2026-07-22 蠣﨑さん指示: 段鼻・蹴上・踏面・蹴込の説明とともに入力欄を作る。
-          1段目〜最上段の段鼻の距離も直接入力できるように） */}
-      <div className="mb-4 rounded-md border border-border bg-white p-4">
-        <p className="text-[13px] font-medium text-foreground mb-1">
-          より正確に測りたい方へ ── 階段各部の寸法
-        </p>
-        <p className="text-[12px] text-muted-foreground leading-relaxed mb-3">
-          現地で階段を実測できる場合は、蹴上・踏面・蹴込（下図）を入力すると幅・高さが自動計算され、
-          より正確な仕様になります。入力すると上の「階段の幅」「高さ」より優先されます。
-        </p>
-        <StairPartsDiagram />
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] text-muted-foreground leading-relaxed mt-2 mb-3">
-          <div><dt className="inline font-medium text-foreground">段鼻：</dt><dd className="inline">各段の踏面の前端（一番手前に出た角）</dd></div>
-          <div><dt className="inline font-medium text-foreground">蹴上：</dt><dd className="inline">1段あたりの高さ（垂直）</dd></div>
-          <div><dt className="inline font-medium text-foreground">踏面：</dt><dd className="inline">足を乗せる面の奥行き（水平）</dd></div>
-          <div><dt className="inline font-medium text-foreground">蹴込：</dt><dd className="inline">段鼻の真下、蹴込み板の引っ込み幅</dd></div>
-        </dl>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
-          <DimStepper
-            label="蹴上"
-            hint="1段の高さ"
-            value={riserMm}
-            effective={riserEff}
-            setValue={(v) => {
-              setRiserMm(v)
-              setPerStepTouched(true)
-            }}
-            min={RISER_MIN}
-            max={RISER_MAX}
-          />
-          <DimStepper
-            label="踏面"
-            hint="足を乗せる面の奥行き"
-            value={treadMm}
-            effective={treadEff}
-            setValue={(v) => {
-              setTreadMm(v)
-              setPerStepTouched(true)
-            }}
-            min={TREAD_MIN}
-            max={TREAD_MAX}
-          />
-          <DimStepper
-            label="蹴込"
-            hint="段鼻下の引っ込み"
-            value={kickMm}
-            effective={kickEff}
-            setValue={(v) => {
-              setKickMm(v)
-              setPerStepTouched(true)
-            }}
-            min={KICK_MIN}
-            max={KICK_MAX}
-          />
-        </div>
-        <div className="flex items-center justify-between gap-2 rounded-md border border-border bg-white px-3 py-2">
-          <span className="text-[13px] text-foreground leading-tight">
-            段鼻間の距離（直接入力）
-            <span className="block text-[10px] text-muted-foreground mt-0.5">
-              1段目〜最上段の段鼻を斜めに直接測った場合はこちら
-            </span>
-          </span>
-          <div className="flex items-center gap-1">
-            <input
-              type="number"
-              inputMode="numeric"
-              min={DIAG_MIN}
-              max={DIAG_MAX}
-              step={10}
-              value={noseDiag}
-              onChange={(e) => setNoseDiagDirect(Number(e.target.value))}
-              onBlur={(e) => setNoseDiagDirect(clamp(Number(e.target.value), DIAG_MIN, DIAG_MAX))}
-              aria-label="1段目と最上段の段鼻の距離（mm）"
-              className="w-20 h-8 border border-border rounded-md text-center text-[14px] bg-white focus:outline-none focus:border-gold"
-            />
-            <span className="text-[12px] text-muted-foreground">mm</span>
-          </div>
-        </div>
-        <p className="text-[11px] text-muted-foreground leading-relaxed mt-2">
-          段鼻間の距離を入力すると、現在の幅・高さの比率（勾配）を保ったまま両方を自動で伸縮します。
-        </p>
-      </div>
 
       </>
       )}
@@ -1868,53 +1914,6 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
             </>
           )}
 
-          {/* 蹴上・踏面・蹴込（勾配の計算に使用） */}
-          <div className="mb-4 rounded-md border border-border bg-white p-4">
-            <p className="text-[13px] font-medium text-foreground mb-1">階段の勾配 ── 蹴上・踏面・蹴込</p>
-            <p className="text-[12px] text-muted-foreground leading-relaxed mb-3">
-              手すりの斜めの長さは、段数と蹴上・踏面・蹴込（下図）から計算します。
-              分かる範囲で入力してください（未入力なら一般的な寸法で概算します）。
-            </p>
-            <StairPartsDiagram />
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mt-3">
-              <DimStepper
-                label="蹴上"
-                hint="1段の高さ"
-                value={riserMm}
-                effective={riserEff}
-                setValue={(v) => {
-                  setRiserMm(v)
-                  setPerStepTouched(true)
-                }}
-                min={RISER_MIN}
-                max={RISER_MAX}
-              />
-              <DimStepper
-                label="踏面"
-                hint="足を乗せる面の奥行き"
-                value={treadMm}
-                effective={treadEff}
-                setValue={(v) => {
-                  setTreadMm(v)
-                  setPerStepTouched(true)
-                }}
-                min={TREAD_MIN}
-                max={TREAD_MAX}
-              />
-              <DimStepper
-                label="蹴込"
-                hint="段鼻下の引っ込み"
-                value={kickMm}
-                effective={kickEff}
-                setValue={(v) => {
-                  setKickMm(v)
-                  setPerStepTouched(true)
-                }}
-                min={KICK_MIN}
-                max={KICK_MAX}
-              />
-            </div>
-          </div>
           {/* 壁の幅の入力（図の寸法線に対応） */}
           <p className="text-[13px] text-muted-foreground mb-2">壁の幅（手すりが付く壁の全長）</p>
           <div className={`grid grid-cols-1 gap-2 mb-3 ${shape === "U" ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
