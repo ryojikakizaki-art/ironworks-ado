@@ -517,6 +517,9 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
     end: N_END_DEFAULT,
   })
   const { start: nStart, mid: nMid, end: nEnd } = flights
+  // かね折れの1階側フライトのうち、壁沿いに平行に並ぶ段の数（残りが曲がり角の廻り段）。
+  // 2026-07-25 蠣﨑さん指示で入力できるようにした（従来は壁の長さから逆算していた）
+  const [lStraight, setLStraight] = useState(L_STRAIGHT_DEFAULT)
   const stepSetter =
     (key: "start" | "mid" | "end") => (v: number | ((prev: number) => number)) =>
       setFlights((f) => ({
@@ -556,12 +559,15 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
   const [endTop, setEndTop] = useState(endOptions[0]?.id ?? "A")
 
   const N = Math.min(Math.max(steps, config.steps.min), config.steps.max)
-  const changeSteps = (next: number) => {
-    const n = Math.min(Math.max(next, config.steps.min), config.steps.max)
-    setSteps(n)
-    if (!wTouched) setWMm(stdWidth(n))
-    if (!hTouched) setHMm(stdHeight(n))
-  }
+  /** 直階段の段数を増減する。連打が同じバッチに入っても取りこぼさないよう関数更新で扱う */
+  const bumpSteps = (delta: number) =>
+    setSteps((prev) => Math.min(Math.max(prev + delta, config.steps.min), config.steps.max))
+  // 幅・高さは段数に追従させる（お客様が手入力したら以降は上書きしない）。
+  // 段数の更新と分けることで、± の連打でも段数が正しく積み上がる
+  useEffect(() => {
+    if (!wTouched) setWMm(stdWidth(N))
+    if (!hTouched) setHMm(stdHeight(N))
+  }, [N, wTouched, hTouched])
 
   // クランプ後の実効値（図・価格・注文引き継ぎはこの値を使う）
   const riserEff = clamp(riserMm, RISER_MIN, RISER_MAX)
@@ -621,13 +627,9 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
   // 踊り場も1段とみなす（2026-07-25 蠣﨑さん指定）ので、どちらでも曲がり角の段は
   // ①の段数に含まれ、壁沿いに平行に並ぶ段はそのぶん少なくなる
   const isLanding = shape === "L" && cornerType === "landing"
-  const straightStart = isLanding
-    ? Math.max(nStart - 1, 0)
-    : shape === "L"
-      ? Math.max(
-          0,
-          Math.min(nStart - 1, Math.round((wStart - FIRST_STEP_OFFSET - bandW) / nosePitch)),
-        )
+  const straightStart =
+    shape === "L" && !isLanding
+      ? Math.max(0, Math.min(nStart - 1, lStraight))
       : Math.max(nStart - 1, 0)
   // 最終段側の平行段。コの字は曲がり角に接する1段が廻り段・最後の1段が2階なので2段少ない。
   // L字は曲がり角の段が①に入っているので2階のぶんだけ少ない
@@ -655,7 +657,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
    *  （踊り場は段が踊り場の手前で終わるぶん壁が長くなる） */
   const changeCornerType = (next: CornerType) => {
     setCornerType(next)
-    const parallel = Math.max(nStart - (next === "landing" ? 1 : L_WINDER_STEPS), 1)
+    const parallel = next === "landing" ? Math.max(nStart - 1, 1) : Math.max(Math.min(lStraight, nStart - 1), 1)
     setWStartMm(Math.round(FIRST_STEP_OFFSET + parallel * nosePitch + bandW))
   }
   /** 階段の形を選び直したら、その形の標準的な壁寸法にリセットする */
@@ -738,7 +740,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
       totalZakin: rails.reduce((s, r) => s + r.zakin, 0),
       totalPrice: rails.reduce((s, r) => s + r.price, 0),
     }
-  }, [shape, isLanding, wStart, wMid, wEnd, bandW, turnDepth, straightStart, straightEnd, topNoseAt, nStart, nMid, nEnd, nosePitch, riserEff, config.unitPricePerM, config.endPrice, zakinType.price])
+  }, [shape, isLanding, lStraight, wStart, wMid, wEnd, bandW, turnDepth, straightStart, straightEnd, topNoseAt, nStart, nMid, nEnd, nosePitch, riserEff, config.unitPricePerM, config.endPrice, zakinType.price])
 
   useEffect(() => {
     if (winding) {
@@ -1306,7 +1308,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
         anchor: t.anchor === "start" ? ("end" as const) : t.anchor === "end" ? ("start" as const) : t.anchor,
       })),
     }
-  }, [winding, shape, isLanding, turnDir, wStart, wMid, wEnd, bandW, turnDepth, firstNoseAt, straightStart, straightEnd, topNoseAt, nStart, nMid, nEnd, nosePitch])
+  }, [winding, shape, isLanding, lStraight, turnDir, wStart, wMid, wEnd, bandW, turnDepth, firstNoseAt, straightStart, straightEnd, topNoseAt, nStart, nMid, nEnd, nosePitch])
 
   return (
     <div className="mb-8 border-2 border-gold/20 bg-card rounded-md p-5">
@@ -1367,6 +1369,41 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
             <span className="block text-[10px] md:text-[11px] text-muted-foreground mt-0.5">{opt.sub}</span>
           </button>
         ))}
+      </div>
+
+      {/* 階段の段数。どの形でも一番はじめに選ぶ（2026-07-25 蠣﨑さん指示） */}
+      <div className="flex items-center justify-between border border-border rounded-md bg-white px-4 py-3 mb-4">
+        <span className="text-[14px] text-foreground">
+          階段の段数
+          <span className="block text-[11px] text-muted-foreground mt-0.5">
+            {winding
+              ? "昇りきりの2階を含む全体。変えると①②③へ振り分けます"
+              : `直階段 ${config.steps.min}〜${config.steps.max}段`}
+          </span>
+        </span>
+        <div className="flex items-center gap-4">
+          <button
+            type="button"
+            onClick={() => (winding ? bumpTotalSteps(-1) : bumpSteps(-1))}
+            disabled={winding ? totalSteps <= 2 : N <= config.steps.min}
+            className="w-9 h-9 flex items-center justify-center rounded-full border border-gold/20 bg-white shadow-sm hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            aria-label="階段の段数を減らす"
+          >
+            <Minus className="w-3.5 h-3.5" />
+          </button>
+          <span className="font-serif text-[18px] font-bold min-w-[3.5ch] text-center text-foreground">
+            {winding ? totalSteps : N}段
+          </span>
+          <button
+            type="button"
+            onClick={() => (winding ? bumpTotalSteps(1) : bumpSteps(1))}
+            disabled={!winding && N >= config.steps.max}
+            className="w-9 h-9 flex items-center justify-center rounded-full border border-gold/20 bg-white shadow-sm hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            aria-label="階段の段数を増やす"
+          >
+            <Plus className="w-3.5 h-3.5" />
+          </button>
+        </div>
       </div>
 
       {!winding && (
@@ -1600,38 +1637,6 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
         </p>
       </div>
 
-      {/* 段数 */}
-      <div className="flex items-center justify-between border border-border rounded-md bg-white px-4 py-3 mb-4">
-        <span className="text-[14px] text-foreground">
-          階段の段数
-          <span className="block text-[11px] text-muted-foreground mt-0.5">
-            直階段 {config.steps.min}〜{config.steps.max}段
-          </span>
-        </span>
-        <div className="flex items-center gap-4">
-          <button
-            type="button"
-            onClick={() => changeSteps(N - 1)}
-            disabled={N <= config.steps.min}
-            className="w-9 h-9 flex items-center justify-center rounded-full border border-gold/20 bg-white shadow-sm hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            aria-label="段数を減らす"
-          >
-            <Minus className="w-3.5 h-3.5" />
-          </button>
-          <span className="font-serif text-[18px] font-bold min-w-[3.5ch] text-center text-foreground">
-            {N}段
-          </span>
-          <button
-            type="button"
-            onClick={() => changeSteps(N + 1)}
-            disabled={N >= config.steps.max}
-            className="w-9 h-9 flex items-center justify-center rounded-full border border-gold/20 bg-white shadow-sm hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-            aria-label="段数を増やす"
-          >
-            <Plus className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      </div>
       </>
       )}
 
@@ -1758,39 +1763,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
             </p>
           )}
 
-          {/* 段数（全体）と、図の①②③ごとの内訳 */}
-          <p className="text-[13px] text-muted-foreground mb-2">段数（昇りきりの2階を含む全体）</p>
-          <div className="flex items-center justify-between border border-border rounded-md bg-white px-4 py-3 mb-2">
-            <span className="text-[14px] text-foreground">
-              階段の段数
-              <span className="block text-[11px] text-muted-foreground mt-0.5">
-                全体の段数。変えると①②③へ振り分けます
-              </span>
-            </span>
-            <div className="flex items-center gap-4">
-              <button
-                type="button"
-                onClick={() => bumpTotalSteps(-1)}
-                disabled={totalSteps <= 2}
-                className="w-9 h-9 flex items-center justify-center rounded-full border border-gold/20 bg-white shadow-sm hover:border-gold hover:text-gold transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                aria-label="階段の段数を減らす"
-              >
-                <Minus className="w-3.5 h-3.5" />
-              </button>
-              <span className="font-serif text-[18px] font-bold min-w-[3.5ch] text-center text-foreground">
-                {totalSteps}段
-              </span>
-              <button
-                type="button"
-                onClick={() => bumpTotalSteps(1)}
-                className="w-9 h-9 flex items-center justify-center rounded-full border border-gold/20 bg-white shadow-sm hover:border-gold hover:text-gold transition-colors"
-                aria-label="階段の段数を増やす"
-              >
-                <Plus className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          </div>
-          <p className="text-[12px] text-muted-foreground mb-2">内訳（図の①②③ごと）</p>
+          <p className="text-[13px] text-muted-foreground mb-2">段数の内訳（図の①②③ごと）</p>
           <div className={`grid grid-cols-1 gap-2 mb-3 ${shape === "U" ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
             <DimStepper
               label="① 1階側の壁"
@@ -1812,6 +1785,19 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
                 setValue={setNMid}
                 min={STEPS_MIN}
                 max={STEPS_MAX}
+                step={1}
+                unit="段"
+              />
+            )}
+            {shape === "L" && !isLanding && (
+              <DimStepper
+                label="① のうち平行な段"
+                hint={`残り${Math.max(nStart - straightStart, 0)}段が曲がり角の廻り段`}
+                value={lStraight}
+                effective={straightStart}
+                setValue={setLStraight}
+                min={0}
+                max={Math.max(nStart - 1, 0)}
                 step={1}
                 unit="段"
               />
