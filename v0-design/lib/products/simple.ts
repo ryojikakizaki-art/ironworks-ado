@@ -231,7 +231,7 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
         { id: "maki", label: "巻き付け座金", price: 8000, note: "支柱に巻きつくデザイン座金（手打ち）" },
         { id: "weld", label: "通常溶接座金", price: 4000, note: "シンプルなまる座金（溶接のみ）" },
       ],
-      steps: { min: 6, max: 15, default: 13 },
+      steps: { min: 6, max: 15, default: 14 },
     },
     badge: "Artisan",
     trustBadges: [

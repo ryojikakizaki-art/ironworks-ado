@@ -110,26 +110,32 @@ const WALL_MID_DEFAULT = 1800
 const WALL_STEP = 10
 // 1段目の段鼻は壁から 70mm 入ったところから始まる（2026-07-25 蠣﨑さん指定）
 const FIRST_STEP_OFFSET = 70
-// 各フライトの段数の入力範囲・既定値（2回廻る登り切り15段＝6+4+5 を既定に）。
+// 各フライトの段数の入力範囲。どの形も既定は全14段（2026-07-25 蠣﨑さん指定）。
 // 中間壁は基本4段で全て廻り段（斜め）、最終段側は昇りきった段（2階）を含めて数える
 const STEPS_MIN = 1
 const STEPS_MAX = 30
-const N_START_DEFAULT = 6
-const N_MID_DEFAULT = 4
-const N_END_DEFAULT = 5
+const STAIR_STEPS_DEFAULT = 14
+// L字の曲がり角の廻り段は 90 度を3段で廻るのを標準とする
+const L_WINDER_STEPS = 3
+// 形ごとの段数の内訳（合計が STAIR_STEPS_DEFAULT）。
+// コの字は 5+4+5、かね折れは 7+7（mid は使わない）
+const FLIGHT_DEFAULTS: Record<"L" | "U", { start: number; mid: number; end: number }> = {
+  U: { start: 5, mid: 4, end: 5 },
+  L: { start: 7, mid: 4, end: 7 },
+}
+const L_STRAIGHT_DEFAULT = FLIGHT_DEFAULTS.L.start - L_WINDER_STEPS
 // 壁の幅の既定値。標準寸法（蹴上200・踏面240・蹴込20＝段鼻ピッチ220）の
 // 既定の段数がちょうど収まる長さ。段数とは独立の入力なので、形を選び直したときだけ入る
 const STD_NOSE_PITCH = STD_TREAD - STD_KICK
 // 曲がり角に接する段は廻り段（斜め）になるので、壁沿いに平行に並ぶ段は1段少ない
 const WALL_START_DEFAULT_U =
-  FIRST_STEP_OFFSET + (N_START_DEFAULT - 1) * STD_NOSE_PITCH + STAIR_BAND
-const WALL_END_DEFAULT_U = STAIR_BAND + (N_END_DEFAULT - 2) * STD_NOSE_PITCH + WINDING_END_RUN
+  FIRST_STEP_OFFSET + (FLIGHT_DEFAULTS.U.start - 1) * STD_NOSE_PITCH + STAIR_BAND
+const WALL_END_DEFAULT_U =
+  STAIR_BAND + (FLIGHT_DEFAULTS.U.end - 2) * STD_NOSE_PITCH + WINDING_END_RUN
 // L字は曲がり角の廻り段を①の段数に含めるので、①は平行段ぶん＋廻り段ゾーン
-// L字の曲がり角の廻り段は 90 度を3段で廻るのを標準とする
-const L_WINDER_STEPS = 3
-const L_STRAIGHT_DEFAULT = N_START_DEFAULT - L_WINDER_STEPS
 const WALL_START_DEFAULT_L = FIRST_STEP_OFFSET + L_STRAIGHT_DEFAULT * STD_NOSE_PITCH + STAIR_BAND
-const WALL_END_DEFAULT_L = STAIR_BAND + (N_END_DEFAULT - 1) * STD_NOSE_PITCH + WINDING_END_RUN
+const WALL_END_DEFAULT_L =
+  STAIR_BAND + (FLIGHT_DEFAULTS.L.end - 1) * STD_NOSE_PITCH + WINDING_END_RUN
 // 平面図で手すり中心線を壁面から離す距離（壁〜手すり離れ40mm＋バー半径）
 const RAIL_WALL_OFFSET_MM = 55
 // 平面図の壁の描画厚み
@@ -511,11 +517,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
   const [cornerType, setCornerType] = useState<CornerType>("winder")
   // フライトごとの段数は1つの state にまとめる。合計の ± は「今どちらが多いか」で
   // 振り分け先を決めるため、連打が同じバッチに入っても取りこぼさないよう関数更新で扱う
-  const [flights, setFlights] = useState({
-    start: N_START_DEFAULT,
-    mid: N_MID_DEFAULT,
-    end: N_END_DEFAULT,
-  })
+  const [flights, setFlights] = useState(FLIGHT_DEFAULTS.U)
   const { start: nStart, mid: nMid, end: nEnd } = flights
   // かね折れの1階側フライトのうち、壁沿いに平行に並ぶ段の数（残りが曲がり角の廻り段）。
   // 2026-07-25 蠣﨑さん指示で入力できるようにした（従来は壁の長さから逆算していた）
@@ -664,9 +666,12 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
   const changeShape = (next: StairShape) => {
     setShape(next)
     if (next === "L") {
+      setFlights(FLIGHT_DEFAULTS.L)
+      setLStraight(L_STRAIGHT_DEFAULT)
       setWStartMm(WALL_START_DEFAULT_L)
       setWEndMm(WALL_END_DEFAULT_L)
     } else if (next === "U") {
+      setFlights(FLIGHT_DEFAULTS.U)
       setWStartMm(WALL_START_DEFAULT_U)
       setWEndMm(WALL_END_DEFAULT_U)
     }
@@ -787,9 +792,13 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
 
     // 階段（直階段）: 床 → 各段 → 上階床
     let stair = `M ${X(x0 - margin)} ${Y(0)} L ${X(0)} ${Y(0)}`
+    // 段数の番号（各段の踏面のすぐ下＝蹴上の面に置く）。最後の番号＝昇りきり（2階）で、
+    // 回り階段の平面図と数え方を揃える（2026-07-25 蠣﨑さん指示: 直階段にも段数表示）
+    const stepNums: { x: number; y: number; n: number }[] = []
     for (let k = 1; k <= N; k++) {
       const treadEndX = k === N ? x3 + margin : k * going
       stair += ` L ${X((k - 1) * going)} ${Y(k * riser)} L ${X(treadEndX)} ${Y(k * riser)}`
+      stepNums.push({ x: X((k - 0.5) * going), y: Y(k * riser) + 11, n: k })
     }
     stair += ` L ${X(x3 + margin)} ${Y(0)} Z`
 
@@ -969,7 +978,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
       labelY: dimTotalY + 15,
     }
 
-    return { stair, rail, endBottomAt, endTopAt, zakin, dimW, dimH, dimRB, dimRT, dimTotal, scale }
+    return { stair, rail, endBottomAt, endTopAt, zakin, stepNums, dimW, dimH, dimRB, dimRT, dimTotal, scale }
   }, [N, W, H, RB, RT, riser, going, L, zakinCount, endBottom, endTop])
 
   // ── 平面図（上から見た図・回り階段モード）──
@@ -1413,6 +1422,25 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
         <svg viewBox={`0 0 ${VB_W} ${VB_H}`} className="w-full h-auto bg-white rounded-md border border-border">
           <rect x="0" y="0" width={VB_W} height={VB_H} rx="6" fill={COLOR_WALL} />
           <path d={svg.stair} fill={COLOR_STAIR_FILL} stroke={COLOR_STAIR_LINE} strokeWidth="1.5" strokeLinejoin="round" />
+          {/* 各段の段数（最後の番号＝昇りきり2階） */}
+          {svg.stepNums.map((p, i) => (
+            <text
+              key={`sn${i}`}
+              x={p.x}
+              y={p.y}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize="10"
+              fontWeight="600"
+              fill="#6b7280"
+              stroke="#fff"
+              strokeWidth="2.5"
+              paintOrder="stroke"
+              style={{ strokeLinejoin: "round" }}
+            >
+              {p.n}
+            </text>
+          ))}
           {/* 寸法線: 幅（1段目〜最上段の段鼻の水平距離） */}
           <g stroke={COLOR_DIM} strokeWidth="1">
             <line x1={svg.dimW.ext1.x} y1={svg.dimW.ext1.y1} x2={svg.dimW.ext1.x} y2={svg.dimW.ext1.y2} strokeDasharray="3 3" />
