@@ -123,7 +123,9 @@ const FLIGHT_DEFAULTS: Record<"L" | "U", { start: number; mid: number; end: numb
   U: { start: 5, mid: 4, end: 5 },
   L: { start: 7, mid: 4, end: 7 },
 }
-const L_STRAIGHT_DEFAULT = FLIGHT_DEFAULTS.L.start - L_WINDER_STEPS
+// ①に入る廻り段は「曲がり角の廻り段のうち最後の1段を除いたぶん」なので、
+// 平行段の既定は ①の段数 −（廻り段 − 1）
+const L_STRAIGHT_DEFAULT = FLIGHT_DEFAULTS.L.start - (L_WINDER_STEPS - 1)
 // 壁の幅の既定値。標準寸法（蹴上200・踏面240・蹴込20＝段鼻ピッチ220）の
 // 既定の段数がちょうど収まる長さ。段数とは独立の入力なので、形を選び直したときだけ入る
 const STD_NOSE_PITCH = STD_TREAD - STD_KICK
@@ -135,7 +137,7 @@ const WALL_END_DEFAULT_U =
 // L字は曲がり角の廻り段を①の段数に含めるので、①は平行段ぶん＋廻り段ゾーン
 const WALL_START_DEFAULT_L = FIRST_STEP_OFFSET + L_STRAIGHT_DEFAULT * STD_NOSE_PITCH + STAIR_BAND
 const WALL_END_DEFAULT_L =
-  STAIR_BAND + (FLIGHT_DEFAULTS.L.end - 1) * STD_NOSE_PITCH + WINDING_END_RUN
+  STAIR_BAND + (FLIGHT_DEFAULTS.L.end - 2) * STD_NOSE_PITCH + WINDING_END_RUN
 // 平面図で手すり中心線を壁面から離す距離（壁〜手すり離れ40mm＋バー半径）
 const RAIL_WALL_OFFSET_MM = 55
 // 平面図の壁の描画厚み
@@ -635,7 +637,11 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
       : Math.max(nStart - 1, 0)
   // 最終段側の平行段。コの字は曲がり角に接する1段が廻り段・最後の1段が2階なので2段少ない。
   // L字は曲がり角の段が①に入っているので2階のぶんだけ少ない
-  const straightEnd = Math.max(nEnd - (shape === "U" ? 2 : 1), 0)
+  // 最終段側の平行段。曲がり角に接する1段が廻り段・最後の1段が2階なので2段少ない
+  // （踊り場のときは廻り段が無いので2階のぶんだけ）。かね折れも同じ数え方にして、
+  // ①は壁①に接する段だけを数える（2026-07-25 蠣﨑さん指摘: コーナーの最後の段まで
+  // ①に含まれてしまっていた）
+  const straightEnd = Math.max(nEnd - (isLanding ? 1 : 2), 0)
   // 1段目の段鼻（壁から70mm入る）と、平行段が終わる位置
   const firstNoseAt = wStart - FIRST_STEP_OFFSET
   // 曲がり角（廻り段ゾーン／踊り場）は階段の幅ぶんの正方形。階段の幅は入力で
@@ -1185,13 +1191,13 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
     } else {
       // L字・廻り段: 曲がり角の廻り段は①の段数に含める
       parallelSteps(straightStart, firstNoseY, -1, 1, true, [-bandW, 0], 1, turnY)
-      winderFan(-bandW, turnY, 0, 90, Math.max(nStart - straightStart, 1), straightStart + 1, {
+      winderFan(-bandW, turnY, 0, 90, Math.max(nStart - straightStart + 1, 1), straightStart + 1, {
         xMin: -bandW,
         xMax: 0,
         yMin: 0,
         yMax: turnY,
       })
-      parallelSteps(straightEnd, -bandW, -1, nStart + 1, false, [0, turnY])
+      parallelSteps(straightEnd, -bandW, -1, nStart + 2, false, [0, turnY])
     }
 
     // 手すり（本ごとの直線ピース）。a=登り始め側の端・b=登り終わり側の端。
@@ -1751,38 +1757,6 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
               ))}
             </svg>
           </div>
-          <p className="text-[13px] md:text-[14px] text-foreground text-center mb-3 leading-relaxed">
-            {shape === "L" ? "かね折れ階段（L字）" : "折り返し階段（コの字）"}・全{winding.totalSteps}段・手すり
-            {winding.rails.length}本{" "}
-            <span className="font-serif font-bold text-[15px] md:text-[16px]">
-              合計 約{winding.totalLen.toLocaleString()}mm
-            </span>
-            ・座金 合計{winding.totalZakin}箇所
-            <span className="block text-[11px] md:text-[12px] text-muted-foreground">
-              （曲がり角は壁から{CORNER_WALL_GAP}mm 逃がし・登り始めのエンドは段鼻の位置・
-              昇りきりのエンドは段鼻から{WINDING_END_RUN}mm 出る／手すりは壁より外へは出ません）
-            </span>
-          </p>
-
-          {/* 本ごとの概算長さ（図の①②③に対応） */}
-          <div className="grid grid-cols-1 gap-1.5 mb-3">
-            {winding.rails.map((r) => (
-              <div key={r.no} className="flex items-center justify-between gap-2 rounded-md border border-border bg-white px-3 py-2 text-[13px] md:text-[14px]">
-                <span className="text-foreground">
-                  {r.no} {r.pos}
-                  <span className="block text-[11px] text-muted-foreground mt-0.5">
-                    {r.label}・{r.steps}段
-                    {r.flatRun > 0 && `・水平部 ${Math.round(r.flatRun).toLocaleString()}mm`}
-                    {r.end && "・唐草エンド付き"}
-                  </span>
-                </span>
-                <span className="font-serif text-foreground shrink-0">
-                  約{r.len.toLocaleString()}mm・座金{r.zakin}箇所
-                </span>
-              </div>
-            ))}
-          </div>
-
           {/* 段数ぶんの階段が壁に収まらないときだけ、長さが壁で頭打ちになることを伝える */}
           {winding.hasOverflow && (
             <p className="text-[12px] md:text-[13px] text-amber-800 bg-amber-50 border border-amber-300 rounded-md px-3 py-2 mb-3 leading-relaxed">
@@ -1820,7 +1794,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
             {shape === "L" && !isLanding && (
               <DimStepper
                 label="① のうち平行な段"
-                hint={`残り${Math.max(nStart - straightStart, 0)}段が曲がり角の廻り段`}
+                hint={`曲がり角の廻り段は${Math.max(nStart - straightStart + 1, 1)}段（うち1段は②に属します）`}
                 value={lStraight}
                 effective={straightStart}
                 setValue={setLStraight}
@@ -2099,6 +2073,10 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
               <dt className="text-muted-foreground">
                 {r.no} {r.pos} 約{r.len.toLocaleString()}mm・座金{r.zakin}箇所
                 {r.end ? `・唐草エンド（${r.end === "bottom" ? endBottom : endTop}）` : ""}
+                <span className="block text-[11px] mt-0.5">
+                  {r.label}・{r.steps}段
+                  {r.flatRun > 0 && `・水平部 ${Math.round(r.flatRun).toLocaleString()}mm`}
+                </span>
               </dt>
               <dd className="font-serif text-foreground shrink-0">¥{r.price.toLocaleString()}</dd>
             </div>
