@@ -279,6 +279,59 @@ function EndDecoration({
 }
 
 /**
+ * 数値の入力欄。スマホで「消して打ち直す」が途中でキャンセルされないようにするための
+ * 共通コンポーネント（2026-07-26 蠣﨑さん報告の対応）。
+ *
+ * type="number" は入力途中の値をブラウザが不正と判断すると e.target.value を "" で返す。
+ * それを Number() に通すと 0 になり、消した瞬間に 0 が入って打ち直せなくなっていた。
+ * ここでは type="text" + inputMode="numeric" にして数字だけ受け取り、入力中は
+ * 文字列のドラフトを保持する（空欄のままにできる）。確定＝フォーカスが外れたときに
+ * 親側でクランプする。
+ *
+ * ※ このコンポーネントは必ずモジュール直下に置くこと。描画関数の中で定義すると
+ *   再レンダーのたびに別コンポーネント扱いになり、input が作り直されて1文字ごとに
+ *   フォーカスが外れる（今回の不具合の主因）。
+ */
+function NumberInput({
+  value,
+  onChange,
+  onCommit,
+  ariaLabel,
+  className,
+  style,
+}: {
+  value: number
+  onChange: (v: number) => void
+  onCommit: () => void
+  ariaLabel: string
+  className?: string
+  style?: React.CSSProperties
+}) {
+  const [draft, setDraft] = useState<string | null>(null)
+  return (
+    <input
+      type="text"
+      inputMode="numeric"
+      pattern="[0-9]*"
+      value={draft ?? String(value)}
+      onFocus={() => setDraft(String(value))}
+      onChange={(e) => {
+        const digits = e.target.value.replace(/[^0-9]/g, "")
+        setDraft(digits)
+        if (digits !== "") onChange(Number(digits))
+      }}
+      onBlur={() => {
+        setDraft(null)
+        onCommit()
+      }}
+      aria-label={ariaLabel}
+      className={className}
+      style={style}
+    />
+  )
+}
+
+/**
  * 図の下に置く寸法入力コントロール（幅・高さ・下側エンド・上側エンド共通）。
  * 以前は SVG の寸法線上に入力マスを重ねていたが、スマホなど図が小さい端末では
  * 固定サイズの入力欄が手すり・階段に重なって見づらかったため（2026-07-22 蠣﨑さん指摘）、
@@ -325,16 +378,11 @@ function DimStepper({
         <button type="button" onClick={() => stepBy(-step)} disabled={effective <= min} aria-label={`${label}を減らす`} className={btnCls}>
           <Minus className="w-3.5 h-3.5" />
         </button>
-        <input
-          type="number"
-          inputMode="numeric"
-          min={min}
-          max={max}
-          step={step}
+        <NumberInput
           value={value}
-          onChange={(e) => setValue(Number(e.target.value))}
-          onBlur={() => setValue(effective)}
-          aria-label={label}
+          onChange={setValue}
+          onCommit={() => setValue(effective)}
+          ariaLabel={label}
           className="w-16 h-8 border border-border rounded-md text-center text-[14px] bg-white focus:outline-none focus:border-gold"
         />
         {unit && <span className="text-[12px] text-muted-foreground">{unit}</span>}
@@ -385,6 +433,9 @@ function DoubleArrow({
   )
 }
 
+/** 階段各部の図に重ねる入力欄の位置（viewBox 座標。x=中心・y=上端） */
+type DiagramFieldPos = { x: number; y: number }
+
 /**
  * 「段鼻・蹴上・踏面・蹴込」の用語説明イラスト（1段ぶんの断面・シンプルな L 字形）。
  * 踏面＝青・蹴込＝緑・蹴上＝赤の両矢印で色分けし、名前をひと目で対応づけられるように
@@ -392,9 +443,13 @@ function DoubleArrow({
  * 2026-07-26 蠣﨑さん指示で改修:
  * - 段鼻ラベルは踏面の寸法線と重ならないよう、引出線で左上へ離した
  * - 蹴上の寸法線は段鼻側（左）に出す（右端＝踏面の奥側だと段鼻から遠く直感的でないため）
- * - 蹴上・踏面・蹴込は「ラベルの文字」の位置に直接入力欄を置く（foreignObject）。
- *   寸法線から引出線で図の外側の余白へ離すことで、値と図の対応が一目でわかり、
- *   かつ入力欄が段の絵に重ならないようにしている
+ * - 蹴上・踏面・蹴込は「ラベルの文字」の位置に直接入力欄を置く。寸法線から引出線で
+ *   図の外側の余白へ離すことで、値と図の対応が一目でわかるようにしている
+ *
+ * 入力欄は SVG の foreignObject ではなく、SVG に重ねた通常の HTML として置く。
+ * foreignObject の中の input はスマホ（特に iOS Safari）でフォーカスやキーボードの
+ * 挙動が不安定なため（2026-07-26 蠣﨑さん報告「スマホで数値入力が上手く出来ない」）。
+ * viewBox は縦横比が固定なので、x/y を % に直せば図の拡大縮小に追従する。
  */
 function StairPartsDiagram({
   riser,
@@ -421,8 +476,7 @@ function StairPartsDiagram({
   const COLOR_KICK = "#16a34a" // 蹴込＝緑
   const COLOR_RISER = "#dc2626" // 蹴上＝赤
   // ローカル座標系（図解用の任意スケール）。蹴上の寸法線を段鼻側（左）に出すため
-  // 左側に余白を広めに取っている。2026-07-26 蠣﨑さん指示: 文字・入力欄を拡大したぶん
-  // 上下の余白も広げた（topY を下げて上余白を確保・VBH を伸ばして下余白を確保）
+  // 左側に余白を広めに取っている。文字・入力欄を大きくしたぶん上下の余白も広げてある
   const noseX = 150 // 段鼻（踏面の手前端）
   const backX = 310 // 踏面の奥端
   const setbackX = 182 // 蹴込み板の位置（段鼻から蹴込ぶん奥）
@@ -433,146 +487,103 @@ function StairPartsDiagram({
   const VBW = 340
   const VBH = 324
 
-  /** 引出線の先＝図の余白に置く「色付きラベル＋1mm単位の入力欄」（2026-07-26 拡大） */
-  const InlineInput = ({
-    x,
-    y,
-    w,
-    labelText,
-    color,
-    value,
-    onChange,
-    onCommit,
-    ariaLabel,
-  }: {
-    x: number
-    y: number
-    w: number
-    labelText: string
-    color: string
-    value: number
-    onChange: (v: number) => void
-    onCommit: () => void
-    ariaLabel: string
-  }) => (
-    <foreignObject x={x - w / 2} y={y} width={w} height={58}>
-      <div className="flex flex-col items-center leading-none gap-1.5">
-        <span className="text-[16px] font-bold" style={{ color }}>
-          {labelText}
-        </span>
-        <div className="flex items-center gap-1">
-          <input
-            type="number"
-            inputMode="numeric"
-            step={1}
-            value={value}
-            onChange={(e) => onChange(Number(e.target.value))}
-            onBlur={onCommit}
-            aria-label={ariaLabel}
-            className="w-16 h-9 border-2 rounded-md text-center text-[16px] font-medium bg-white focus:outline-none"
-            style={{ borderColor: color }}
-          />
-          <span className="text-[13px] text-muted-foreground">mm</span>
-        </div>
-      </div>
-    </foreignObject>
-  )
+  // 入力欄を置く位置（引出線の先＝段の絵に重ならない余白）
+  const posTread: DiagramFieldPos = { x: (noseX + backX) / 2, y: 0 }
+  const posKick: DiagramFieldPos = { x: (noseX + setbackX) / 2, y: botY + 22 }
+  const posRiser: DiagramFieldPos = { x: 52, y: (topY + botY) / 2 - 29 }
+
+  const fields = [
+    {
+      key: "tread",
+      pos: posTread,
+      label: "踏面",
+      color: COLOR_TREAD,
+      value: tread,
+      onChange: setTread,
+      onCommit: () => setTread(treadEff),
+    },
+    {
+      key: "kick",
+      pos: posKick,
+      label: "蹴込",
+      color: COLOR_KICK,
+      value: kick,
+      onChange: setKick,
+      onCommit: () => setKick(kickEff),
+    },
+    {
+      key: "riser",
+      pos: posRiser,
+      label: "蹴上",
+      color: COLOR_RISER,
+      value: riser,
+      onChange: setRiser,
+      onCommit: () => setRiser(riserEff),
+    },
+  ]
 
   return (
-    <svg
-      viewBox={`0 0 ${VBW} ${VBH}`}
-      className="w-full h-auto max-w-[340px] mx-auto"
-      style={{ overflow: "visible" }}
-    >
-      {/* 蹴込の入力欄は viewBox の下端をわずかに超えて置いているため、SVG 既定の
-          overflow:hidden だと下端が見切れる。overflow:visible で解除する */}
-      {/* 段の断面（L字形。段鼻の下にオーバーハングした蹴込みを表現） */}
-      <path
-        d={`M ${noseX} ${topY} L ${backX} ${topY} L ${backX} ${botY} L ${setbackX} ${botY} L ${setbackX} ${midY} L ${noseX} ${midY} Z`}
-        fill="#fff"
-        stroke={COLOR_BAR}
-        strokeWidth="2.5"
-        strokeLinejoin="round"
-      />
+    // 蹴込の入力欄は SVG の下端より少し下に出るので、その分の余白を確保しておく
+    // （確保しないと下に続く用語説明と詰まって見える）
+    <div className="relative w-full max-w-[340px] mx-auto pb-3">
+      <svg viewBox={`0 0 ${VBW} ${VBH}`} className="w-full h-auto block">
+        {/* 段の断面（L字形。段鼻の下にオーバーハングした蹴込みを表現） */}
+        <path
+          d={`M ${noseX} ${topY} L ${backX} ${topY} L ${backX} ${botY} L ${setbackX} ${botY} L ${setbackX} ${midY} L ${noseX} ${midY} Z`}
+          fill="#fff"
+          stroke={COLOR_BAR}
+          strokeWidth="2.5"
+          strokeLinejoin="round"
+        />
 
-      {/* 段鼻: ドット＋引出線で左上へ離したラベル（踏面の寸法線と重ならない位置） */}
-      <circle cx={noseX} cy={topY} r={4} fill="#b8860b" />
-      <line x1={noseX} y1={topY} x2={noseX - 50} y2={topY - 38} stroke="#b8860b" strokeWidth="1.5" strokeDasharray="2 2" />
-      <text x={noseX - 54} y={topY - 44} textAnchor="middle" fontSize="15" fontWeight="700" fill="#b8860b">
-        段鼻
-      </text>
+        {/* 段鼻: ドット＋引出線で左上へ離したラベル（踏面の寸法線と重ならない位置） */}
+        <circle cx={noseX} cy={topY} r={4} fill="#b8860b" />
+        <line x1={noseX} y1={topY} x2={noseX - 50} y2={topY - 38} stroke="#b8860b" strokeWidth="1.5" strokeDasharray="2 2" />
+        <text x={noseX - 54} y={topY - 44} textAnchor="middle" fontSize="15" fontWeight="700" fill="#b8860b">
+          段鼻
+        </text>
 
-      {/* 踏面（青）: 寸法線＋引出線で図の上余白へ離した入力欄 */}
-      <DoubleArrow x1={noseX} y1={topY - 16} x2={backX} y2={topY - 16} color={COLOR_TREAD} />
-      <line
-        x1={(noseX + backX) / 2}
-        y1={topY - 16}
-        x2={(noseX + backX) / 2}
-        y2={52}
-        stroke={COLOR_TREAD}
-        strokeWidth="1.5"
-        strokeDasharray="2 2"
-      />
-      <InlineInput
-        x={(noseX + backX) / 2}
-        y={0}
-        w={104}
-        labelText="踏面"
-        color={COLOR_TREAD}
-        value={tread}
-        onChange={setTread}
-        onCommit={() => setTread(treadEff)}
-        ariaLabel="踏面"
-      />
+        {/* 踏面（青）: 寸法線＋入力欄への引出線 */}
+        <DoubleArrow x1={noseX} y1={topY - 16} x2={backX} y2={topY - 16} color={COLOR_TREAD} />
+        <line x1={posTread.x} y1={topY - 16} x2={posTread.x} y2={52} stroke={COLOR_TREAD} strokeWidth="1.5" strokeDasharray="2 2" />
 
-      {/* 蹴込（緑）: 寸法線＋引出線で図の下余白へ離した入力欄 */}
-      <DoubleArrow x1={noseX} y1={midY + 11} x2={setbackX} y2={midY + 11} color={COLOR_KICK} width={2.5} />
-      <line
-        x1={(noseX + setbackX) / 2}
-        y1={midY + 11}
-        x2={(noseX + setbackX) / 2}
-        y2={botY + 20}
-        stroke={COLOR_KICK}
-        strokeWidth="1.5"
-        strokeDasharray="2 2"
-      />
-      <InlineInput
-        x={(noseX + setbackX) / 2}
-        y={botY + 22}
-        w={104}
-        labelText="蹴込"
-        color={COLOR_KICK}
-        value={kick}
-        onChange={setKick}
-        onCommit={() => setKick(kickEff)}
-        ariaLabel="蹴込"
-      />
+        {/* 蹴込（緑）: 寸法線＋入力欄への引出線 */}
+        <DoubleArrow x1={noseX} y1={midY + 11} x2={setbackX} y2={midY + 11} color={COLOR_KICK} width={2.5} />
+        <line x1={posKick.x} y1={midY + 11} x2={posKick.x} y2={botY + 20} stroke={COLOR_KICK} strokeWidth="1.5" strokeDasharray="2 2" />
 
-      {/* 蹴上（赤）: 段鼻側（左）に寸法線＋引出線で図の左余白へ離した入力欄。
-          入力欄（幅104）を viewBox の左端（x=0）に収め、その右に寸法線を置く
-          （2026-07-26 入力欄拡大にともない寸法線の x を 100→118 へ調整） */}
-      <DoubleArrow x1={118} y1={topY} x2={118} y2={botY} color={COLOR_RISER} />
-      <line
-        x1={118}
-        y1={(topY + botY) / 2}
-        x2={106}
-        y2={(topY + botY) / 2}
-        stroke={COLOR_RISER}
-        strokeWidth="1.5"
-        strokeDasharray="2 2"
-      />
-      <InlineInput
-        x={52}
-        y={(topY + botY) / 2 - 29}
-        w={104}
-        labelText="蹴上"
-        color={COLOR_RISER}
-        value={riser}
-        onChange={setRiser}
-        onCommit={() => setRiser(riserEff)}
-        ariaLabel="蹴上"
-      />
-    </svg>
+        {/* 蹴上（赤）: 段鼻側（左）に寸法線＋入力欄への引出線 */}
+        <DoubleArrow x1={118} y1={topY} x2={118} y2={botY} color={COLOR_RISER} />
+        <line x1={118} y1={(topY + botY) / 2} x2={106} y2={(topY + botY) / 2} stroke={COLOR_RISER} strokeWidth="1.5" strokeDasharray="2 2" />
+      </svg>
+
+      {/* 入力欄（SVG に重ねた通常の HTML）。viewBox 座標を % に直して配置する */}
+      {fields.map((f) => (
+        <div
+          key={f.key}
+          className="absolute flex flex-col items-center gap-1.5 leading-none"
+          style={{
+            left: `${(f.pos.x / VBW) * 100}%`,
+            top: `${(f.pos.y / VBH) * 100}%`,
+            transform: "translateX(-50%)",
+          }}
+        >
+          <span className="text-[16px] font-bold" style={{ color: f.color }}>
+            {f.label}
+          </span>
+          <div className="flex items-center gap-1">
+            <NumberInput
+              value={f.value}
+              onChange={f.onChange}
+              onCommit={f.onCommit}
+              ariaLabel={f.label}
+              className="w-16 h-9 border-2 rounded-md text-center text-[16px] font-medium bg-white focus:outline-none"
+              style={{ borderColor: f.color }}
+            />
+            <span className="text-[13px] text-muted-foreground">mm</span>
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }
 
@@ -1630,16 +1641,11 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
               </span>
             </span>
             <div className="flex items-center gap-1">
-              <input
-                type="number"
-                inputMode="numeric"
-                min={DIAG_MIN}
-                max={DIAG_MAX}
-                step={10}
+              <NumberInput
                 value={noseDiag}
-                onChange={(e) => setNoseDiagDirect(Number(e.target.value))}
-                onBlur={(e) => setNoseDiagDirect(clamp(Number(e.target.value), DIAG_MIN, DIAG_MAX))}
-                aria-label="1段目と最上段の段鼻の距離（mm）"
+                onChange={setNoseDiagDirect}
+                onCommit={() => setNoseDiagDirect(clamp(noseDiag, DIAG_MIN, DIAG_MAX))}
+                ariaLabel="1段目と最上段の段鼻の距離（mm）"
                 className="w-20 h-8 border border-border rounded-md text-center text-[14px] bg-white focus:outline-none focus:border-gold"
               />
               <span className="text-[12px] text-muted-foreground">mm</span>
