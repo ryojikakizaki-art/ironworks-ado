@@ -421,18 +421,19 @@ function StairPartsDiagram({
   const COLOR_KICK = "#16a34a" // 蹴込＝緑
   const COLOR_RISER = "#dc2626" // 蹴上＝赤
   // ローカル座標系（図解用の任意スケール）。蹴上の寸法線を段鼻側（左）に出すため
-  // 左側に余白を広めに取っている
+  // 左側に余白を広めに取っている。2026-07-26 蠣﨑さん指示: 文字・入力欄を拡大したぶん
+  // 上下の余白も広げた（topY を下げて上余白を確保・VBH を伸ばして下余白を確保）
   const noseX = 150 // 段鼻（踏面の手前端）
   const backX = 310 // 踏面の奥端
   const setbackX = 182 // 蹴込み板の位置（段鼻から蹴込ぶん奥）
-  const topY = 76 // 踏面の上面
+  const topY = 90 // 踏面の上面
   const treadThick = 18 // 踏面の板厚（見た目用）
   const midY = topY + treadThick
-  const botY = 220 // 蹴込み板の下端
+  const botY = 234 // 蹴込み板の下端
   const VBW = 340
-  const VBH = 264
+  const VBH = 324
 
-  /** 引出線の先＝図の余白に置く「色付きラベル＋1mm単位の入力欄」 */
+  /** 引出線の先＝図の余白に置く「色付きラベル＋1mm単位の入力欄」（2026-07-26 拡大） */
   const InlineInput = ({
     x,
     y,
@@ -454,12 +455,12 @@ function StairPartsDiagram({
     onCommit: () => void
     ariaLabel: string
   }) => (
-    <foreignObject x={x - w / 2} y={y} width={w} height={40}>
-      <div className="flex flex-col items-center leading-none gap-1">
-        <span className="text-[12px] font-bold" style={{ color }}>
+    <foreignObject x={x - w / 2} y={y} width={w} height={58}>
+      <div className="flex flex-col items-center leading-none gap-1.5">
+        <span className="text-[16px] font-bold" style={{ color }}>
           {labelText}
         </span>
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-1">
           <input
             type="number"
             inputMode="numeric"
@@ -468,10 +469,10 @@ function StairPartsDiagram({
             onChange={(e) => onChange(Number(e.target.value))}
             onBlur={onCommit}
             aria-label={ariaLabel}
-            className="w-11 h-6 border rounded text-center text-[11px] bg-white focus:outline-none"
+            className="w-16 h-9 border-2 rounded-md text-center text-[16px] font-medium bg-white focus:outline-none"
             style={{ borderColor: color }}
           />
-          <span className="text-[9px] text-muted-foreground">mm</span>
+          <span className="text-[13px] text-muted-foreground">mm</span>
         </div>
       </div>
     </foreignObject>
@@ -495,9 +496,9 @@ function StairPartsDiagram({
       />
 
       {/* 段鼻: ドット＋引出線で左上へ離したラベル（踏面の寸法線と重ならない位置） */}
-      <circle cx={noseX} cy={topY} r={3.5} fill="#b8860b" />
-      <line x1={noseX} y1={topY} x2={noseX - 48} y2={topY - 34} stroke="#b8860b" strokeWidth="1" strokeDasharray="2 2" />
-      <text x={noseX - 52} y={topY - 40} textAnchor="middle" fontSize="12" fontWeight="700" fill="#b8860b">
+      <circle cx={noseX} cy={topY} r={4} fill="#b8860b" />
+      <line x1={noseX} y1={topY} x2={noseX - 50} y2={topY - 38} stroke="#b8860b" strokeWidth="1.5" strokeDasharray="2 2" />
+      <text x={noseX - 54} y={topY - 44} textAnchor="middle" fontSize="15" fontWeight="700" fill="#b8860b">
         段鼻
       </text>
 
@@ -507,15 +508,15 @@ function StairPartsDiagram({
         x1={(noseX + backX) / 2}
         y1={topY - 16}
         x2={(noseX + backX) / 2}
-        y2={4}
+        y2={52}
         stroke={COLOR_TREAD}
-        strokeWidth="1"
+        strokeWidth="1.5"
         strokeDasharray="2 2"
       />
       <InlineInput
         x={(noseX + backX) / 2}
         y={0}
-        w={80}
+        w={104}
         labelText="踏面"
         color={COLOR_TREAD}
         value={tread}
@@ -530,15 +531,15 @@ function StairPartsDiagram({
         x1={(noseX + setbackX) / 2}
         y1={midY + 11}
         x2={(noseX + setbackX) / 2}
-        y2={botY + 14}
+        y2={botY + 20}
         stroke={COLOR_KICK}
-        strokeWidth="1"
+        strokeWidth="1.5"
         strokeDasharray="2 2"
       />
       <InlineInput
         x={(noseX + setbackX) / 2}
-        y={botY + 16}
-        w={80}
+        y={botY + 22}
+        w={104}
         labelText="蹴込"
         color={COLOR_KICK}
         value={kick}
@@ -548,22 +549,22 @@ function StairPartsDiagram({
       />
 
       {/* 蹴上（赤）: 段鼻側（左）に寸法線＋引出線で図の左余白へ離した入力欄。
-          入力欄（幅80）は寸法線の左に置くため、寸法線の x はその右端より
-          右へ離す（入力欄と重ならないよう寸法線 x=100・入力欄中心 x=40＝右端80） */}
-      <DoubleArrow x1={100} y1={topY} x2={100} y2={botY} color={COLOR_RISER} />
+          入力欄（幅104）を viewBox の左端（x=0）に収め、その右に寸法線を置く
+          （2026-07-26 入力欄拡大にともない寸法線の x を 100→118 へ調整） */}
+      <DoubleArrow x1={118} y1={topY} x2={118} y2={botY} color={COLOR_RISER} />
       <line
-        x1={100}
+        x1={118}
         y1={(topY + botY) / 2}
-        x2={84}
+        x2={106}
         y2={(topY + botY) / 2}
         stroke={COLOR_RISER}
-        strokeWidth="1"
+        strokeWidth="1.5"
         strokeDasharray="2 2"
       />
       <InlineInput
-        x={40}
-        y={(topY + botY) / 2 - 20}
-        w={80}
+        x={52}
+        y={(topY + botY) / 2 - 29}
+        w={104}
         labelText="蹴上"
         color={COLOR_RISER}
         value={riser}
