@@ -96,14 +96,17 @@ export async function POST(request: NextRequest) {
     const toAddress     = process.env.CONTACT_TO_EMAIL || 'ado@tantetuzest.com';
 
     const notifyHtml = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light">
 <style>body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f9f9f9;color:#333;margin:0;padding:0;}
 .wrap{max-width:600px;margin:40px auto;background:#fff;border:1px solid #e0e0e0;}
 .header{background:#0e0e0e;color:#f5f5f5;padding:24px 32px;}
 .header h1{font-size:13px;letter-spacing:0.3em;text-transform:uppercase;margin:0;font-weight:400;}
 .header span{color:#c8a96e;}.body{padding:32px;}
-.row{border-bottom:1px solid #eee;padding:12px 0;display:flex;gap:16px;}
-.row:last-child{border-bottom:none;}.label{color:#888;font-size:12px;min-width:140px;padding-top:2px;}
-.value{font-size:14px;color:#222;flex:1;}
+.row{border-bottom:1px solid #eee;padding:12px 0;}
+.row:last-child{border-bottom:none;}
+.label{display:block;color:#888;font-size:11px;letter-spacing:.04em;margin-bottom:4px;}
+.value{display:block;font-size:15px;line-height:1.6;color:#222;}
 .msg{background:#f9f9f9;border-left:3px solid #c8a96e;padding:16px 20px;margin-top:8px;font-size:14px;line-height:1.8;white-space:pre-wrap;}
 .footer{background:#f5f5f5;border-top:1px solid #e0e0e0;padding:16px 32px;font-size:11px;color:#999;}</style>
 </head><body><div class="wrap">
@@ -120,6 +123,8 @@ ${attachments.length > 0 ? `<div class="row"><span class="label">添付ファイ
 </div></body></html>`;
 
     const autoReplyHtml = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light">
 <style>body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f9f9f9;color:#333;margin:0;padding:0;}
 .wrap{max-width:600px;margin:40px auto;background:#fff;border:1px solid #e0e0e0;}
 .header{background:#0e0e0e;color:#f5f5f5;padding:24px 32px;}

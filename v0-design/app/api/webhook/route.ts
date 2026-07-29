@@ -188,6 +188,8 @@ async function sendOrderConfirmationEmail(session: Stripe.Checkout.Session) {
   const fromAddress = process.env.CONTACT_FROM || 'IRONWORKS ado <noreply@tantetuzest.com>';
 
   const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light">
 <style>body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f9f9f9;color:#333;margin:0;padding:0;}
 .wrap{max-width:600px;margin:40px auto;background:#fff;border:1px solid #e0e0e0;}
 .header{background:#0e0e0e;color:#f5f5f5;padding:24px 32px;}
@@ -197,10 +199,10 @@ async function sendOrderConfirmationEmail(session: Stripe.Checkout.Session) {
 .section-title{font-size:12px;letter-spacing:0.2em;color:#888;text-transform:uppercase;margin:24px 0 12px;}
 .summary{background:#f9f9f9;border-left:3px solid #c8a96e;padding:16px 20px;font-size:13px;color:#555;}
 .summary p{margin:4px 0;}
-.row{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #f0f0f0;}
+.row{padding:9px 0;border-bottom:1px solid #f0f0f0;}
 .row:last-child{border-bottom:none;}
-.label{color:#888;font-size:12px;min-width:130px;}
-.value{color:#222;font-size:13px;flex:1;}
+.label{display:block;color:#888;font-size:11px;letter-spacing:.04em;margin-bottom:4px;}
+.value{display:block;color:#222;font-size:15px;line-height:1.6;}
 .total{font-size:18px;color:#0e0e0e;font-weight:600;text-align:right;padding:16px 0;border-top:2px solid #0e0e0e;margin-top:12px;}
 .footer{background:#0e0e0e;padding:20px 32px;text-align:center;}
 .footer p{font-size:11px;color:#999;letter-spacing:0.1em;margin:0 0 6px;line-height:1.8;}
@@ -313,6 +315,8 @@ async function sendSimpleOrderEmail(session: Stripe.Checkout.Session) {
     : 'クリックポストは投函配達のため、お届け日時のご指定はできません。発送後 2〜3 日でお届け予定です。';
 
   const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light">
 <style>body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f9f9f9;color:#333;margin:0;padding:0;}
 .wrap{max-width:600px;margin:40px auto;background:#fff;border:1px solid #e0e0e0;}
 .header{background:#0e0e0e;color:#f5f5f5;padding:24px 32px;}
@@ -321,10 +325,10 @@ async function sendSimpleOrderEmail(session: Stripe.Checkout.Session) {
 .body p{margin:0 0 16px;}.divider{border:none;border-top:1px solid #e0e0e0;margin:24px 0;}
 .section-title{font-size:12px;letter-spacing:0.2em;color:#888;text-transform:uppercase;margin:24px 0 12px;}
 .summary{background:#f9f9f9;border-left:3px solid #c8a96e;padding:16px 20px;font-size:13px;color:#555;}
-.row{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #f0f0f0;}
+.row{padding:9px 0;border-bottom:1px solid #f0f0f0;}
 .row:last-child{border-bottom:none;}
-.label{color:#888;font-size:12px;min-width:130px;}
-.value{color:#222;font-size:13px;flex:1;}
+.label{display:block;color:#888;font-size:11px;letter-spacing:.04em;margin-bottom:4px;}
+.value{display:block;color:#222;font-size:15px;line-height:1.6;}
 .total{font-size:18px;color:#0e0e0e;font-weight:600;text-align:right;padding:16px 0;border-top:2px solid #0e0e0e;margin-top:12px;}
 .footer{background:#0e0e0e;padding:20px 32px;text-align:center;}
 .footer p{font-size:11px;color:#999;letter-spacing:0.1em;margin:0 0 6px;line-height:1.8;}
@@ -496,6 +500,8 @@ export async function sendWorkshopEmail(session: Stripe.Checkout.Session, isSimp
   const fromAddress = process.env.CONTACT_FROM || 'IRONWORKS ado <noreply@tantetuzest.com>';
 
   const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light">
 <style>body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f3f4f6;color:#333;margin:0;padding:0;}
 .wrap{max-width:600px;margin:32px auto;background:#fff;border:1px solid #e5e7eb;}
 .header{background:#0e0e0e;color:#f5f5f5;padding:22px 32px;}
@@ -505,10 +511,10 @@ export async function sendWorkshopEmail(session: Stripe.Checkout.Session, isSimp
 .body p{margin:0 0 16px;}
 .section-title{font-size:12px;letter-spacing:0.15em;color:#888;margin:22px 0 10px;}
 .summary{background:#f3f4f6;border-left:3px solid #c8a96e;padding:12px 20px;font-size:13px;color:#555;}
-.row{display:flex;gap:12px;padding:7px 0;border-bottom:1px solid #e5e7eb;}
+.row{padding:8px 0;border-bottom:1px solid #e5e7eb;}
 .row:last-child{border-bottom:none;}
-.label{color:#888;font-size:12px;min-width:96px;}
-.value{color:#222;font-size:13px;flex:1;}
+.label{display:block;color:#888;font-size:11px;letter-spacing:.04em;margin-bottom:4px;}
+.value{display:block;color:#222;font-size:15px;line-height:1.6;}
 .total{font-size:17px;color:#0e0e0e;font-weight:600;text-align:right;padding:14px 4px 2px;}
 .btn-wrap{text-align:center;margin:24px 0 4px;}
 .btn{display:inline-block;background:#0e0e0e;color:#f5f5f5;text-decoration:none;
