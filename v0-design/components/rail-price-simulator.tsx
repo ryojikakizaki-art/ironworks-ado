@@ -173,7 +173,12 @@ const stdHeight = (steps: number) => steps * STD_RISER
 // ミニ図解の viewBox / 配色（inline-rail-simulator.tsx と揃える）。
 // 注記テキストは縮小時に小さくなりすぎるため SVG 内には置かず、HTML 側に出す
 const VB_W = 500
-const VB_H = 340
+// 側面図の viewBox 高さ。2026-07-29 蠣﨑さん指示（案2）で 340 → 480 に。
+// 階段の側面図は内容がほぼ正方形（既定 14段で 3,760mm × 3,600mm ≒ 1.04:1）なのに
+// viewBox が 1.47:1 の横長だったため、縮尺は常に高さで頭打ちになり、横幅は
+// 半分（52%）しか使われず図全体が小さく＝手すりも細く見えていた。
+// 内容の比率に近づけることで、実寸比・寸法値を一切変えずに図だけを大きくする。
+const VB_H = 480
 // 回り階段の平面図（上から見た図）は縦長になりやすいため viewBox を別に持つ
 const VB_PLAN_H = 470
 const COLOR_BAR = "#333"
@@ -185,8 +190,20 @@ const COLOR_STAIR_FILL = "#ffffff"
 const COLOR_STAIR_LINE = "#c2c6cd"
 
 // レール本体の描画太さ (viewBox 単位)。見やすさのため実寸 22φ より太く誇張する。
-// 2026-07-16 蠣﨑さん指示: エンドの切り口太さと揃うよう 5 → 3.5 に細く
+// 2026-07-16 蠣﨑さん指示: エンドの切り口太さと揃うよう 5 → 3.5 に細く。
+// 平面図（回り階段）用。平面図には唐草アートを描かない（テキストラベルのみ）ので
+// 固定値のままでよい
 const RAIL_STROKE = 3.5
+/**
+ * 側面図の手すり線の太さ (viewBox 単位)。
+ * 2026-07-29 蠣﨑さん指摘「手すりとエンドの接続部の太さがあっていない」の修正。
+ * 唐草アートは図の縮尺に連動して拡縮する（EndDecoration の s）ため、切り口の太さは
+ * BAR_DIAMETER_MM × scale × SIZE_FACTOR になる。一方これまでの手すり線は viewBox 固定の
+ * 3.5 だったので、段数＝縮尺によって太さ関係が逆転していた
+ * （実測: 6段でエンドが1.15倍太い → 15段で0.60倍＝40%細い）。
+ * 手すりもエンドとまったく同じ式で太さを出すことで、どの段数でも接続部が一致する。
+ */
+const railStrokeAt = (scale: number) => BAR_DIAMETER_MM * scale * END_ART_SIZE_FACTOR
 // 座金（丸座金）の実寸半径 (mm)・支柱の実寸長さ (mm)。座金は実際の大きさに合わせて
 // 小さく描く（2026-07-22 蠣﨑さん指示: 座金を実際通りに小さく・色は黒に）
 const WASHER_R_MM = 22
@@ -1234,7 +1251,11 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
     const padL = 16
     const padR = 52
     const padTop = 34
-    const padBottom = 78
+    // 縮尺が高さで頭打ちになるとき oy = VB_H - padBottom になり、「全長 約○○mm」の
+    // ラベルはその 89 下（= VB_H + 11）に来るため、これまで viewBox 外にはみ出して
+    // overflow:hidden で切れていた（実測 16.6px 欠け）。ラベルの descender ぶんまで
+    // 収まるよう 78 → 100 に広げる
+    const padBottom = 100
     const wAll = x3 - x0 + margin * 2
     const hAll = yt
     const scale = Math.min((VB_W - padL - padR) / wAll, (VB_H - padTop - padBottom) / hAll)
@@ -2079,8 +2100,8 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
               <circle cx={z.cx} cy={z.cy} r={z.r} fill={COLOR_BAR} />
             </g>
           ))}
-          <path d={svg.rail} fill="none" stroke={COLOR_BAR} strokeWidth={RAIL_STROKE} strokeLinecap="round" />
-          {/* エンド（唐草 Type A/B・選択に連動。実物写真トレースのシルエット） */}
+          <path d={svg.rail} fill="none" stroke={COLOR_BAR} strokeWidth={railStrokeAt(svg.scale)} strokeLinecap="round" />
+          {/* エンド（唐草 Type A/B/C・選択に連動。実物写真トレースのシルエット） */}
           <EndDecoration id={endBottom} x={svg.endBottomAt.x} y={svg.endBottomAt.y} outward={-1} scale={svg.scale} railAngleDeg={svg.endBottomAt.angleDeg} />
           <EndDecoration id={endTop} x={svg.endTopAt.x} y={svg.endTopAt.y} outward={1} scale={svg.scale} railAngleDeg={svg.endTopAt.angleDeg} />
         </svg>
