@@ -465,6 +465,30 @@ DRAWING_PRODUCTS.tsuchime = {
   includedZakin: 2,
 }
 
+// European: L600〜800mmの範囲内は一律料金（範囲外は別途相談）。
+// 2点とも同額の priceTable にすることで、範囲内のどの長さでも lookupPriceFromTable が
+// 常に同じ価格を返す（線形補間の性質を利用したフラット価格の実現）。
+export const EUROPEAN_PRICE_TABLE: PricePoint[] = [
+  { mm: 600, price: 110000 },
+  { mm: 800, price: 110000 },
+]
+
+DRAWING_PRODUCTS.european = {
+  slug: "european",
+  nameJa: "European ヨーロピアン",
+  drawingCode: "IW-EUR",
+  material: "無垢丸鉄 22φ",
+  finish: "ハンマー鍛造仕上げ（ブラック）",
+  category: "fixed",
+  basePrice: 110000,
+  stdLengthMm: 600,
+  maxMm: 800,
+  includedZakin: 2,
+  // defaultCount 固定のため座金本数は常に2（自動加算なし）。minLengthMm で長さ入力の下限を600mmに。
+  zakinRule: { defaultCount: 2, endMinMm: 50, maxSpanMm: 900, minLengthMm: 600 },
+  priceTable: EUROPEAN_PRICE_TABLE,
+}
+
 export function getDrawingProduct(slug: string): DrawingProductConfig | null {
   return DRAWING_PRODUCTS[slug] ?? null
 }

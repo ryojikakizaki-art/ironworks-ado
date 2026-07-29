@@ -542,6 +542,52 @@ const DISPLAY: Record<string, ProductDisplay> = {
       "32885ce3e0d0478adb50.jpg",
     ],
   },
+  european: {
+    slug: "european",
+    nameEn: "European",
+    nameJaShort: "ヨーロピアン",
+    breadcrumbCategory: "ロートアイアン・縦型",
+    subtitle: "無垢丸鉄 φ22mm ハンマー鍛造仕上げ（ブラック）",
+    shortDescription: "ヨーロッパの古い邸宅を思わせる、優美な渦巻き装飾を纏った縦型ロートアイアン手すり",
+    longDescription:
+      "ヨーロッパの古い邸宅を思わせる、優美な渦巻き装飾を纏った縦型手すり。無垢の丸鉄をハンマーで一本一本鍛え、表面に手仕事ならではの陰影を刻みました。\n\n仕上がりの美しさ、使いやすさにこだわり、目立たない細かな部分も手をぬかず長く愛用していただけるように丁寧に制作しております。IRONWORKS adoは、傷や錆が鉄の味わいと謳った不誠実なものづくりはいたしません。\n\n手すりは毎日手に触れ、安全のために付けるもの。握りやすく安心して掴める強度を考え、22φのしっかりした太さで作っています。上下の渦巻きは装飾であると同時に、手が滑り抜けるのを防ぐ役割も果たします。\n\n住まいの玄関やアプローチに、ヨーロピアンな佇まいを添えたい方に。角やひっかかる危ない箇所がないよう丁寧に仕上げておりますので小さなお子様がいるご家庭でも安心してお使いできます。\n\nこれから毎日お使いいただく方の心豊かな暮らしを思い制作しております。",
+    specs: [
+      { label: "タイプ", value: "丸棒 22φ（無垢鉄）" },
+      { label: "素材", value: "鉄" },
+      { label: "製法", value: "ハンマー鍛造（手打ち）" },
+      { label: "仕上げ", value: "ハンマー鍛造仕上げ（ブラック）" },
+      { label: "サイズ", value: "L600〜800mm（この範囲内は一律料金）※ 範囲外の長さは要相談" },
+      { label: "備考", value: "全てハンドメイドのため多少の誤差あり" },
+      { label: "納期", value: "ご注文後10営業日" },
+    ],
+    featureBullets: [
+      { icon: "Hammer", title: "ハンマー鍛造", desc: "職人が無垢の丸鉄を一本一本ハンマーで鍛え上げます" },
+      { icon: "Paintbrush", title: "ブラック仕上げ", desc: "ハンマー鍛造仕上げで深みのあるブラックに" },
+      { icon: "Ruler", title: "渦巻きエンド", desc: "上下の渦巻きが装飾と同時に手の滑り抜けを防止" },
+      { icon: "Wrench", title: "L600〜800mm一律料金", desc: "範囲内なら追加料金なし。範囲外は別途ご相談" },
+    ],
+    galleryIds: [
+      "/images/products/european/01.jpg",
+      "/images/products/european/02.jpg",
+      "/images/products/european/03.jpg",
+      "/images/products/european/04.jpg",
+      "/images/products/european/05.jpg",
+      "/images/products/european/06.jpg",
+      "/images/products/european/07.jpg",
+      "/images/products/european/08.jpg",
+      "/images/products/european/09.jpg",
+      "/images/products/european/10.jpg",
+      "/images/products/european/11.jpg",
+      "/images/products/european/12.jpg",
+      "/images/products/european/13.jpg",
+      // Fabrice と共通の工房紹介カット（梱包・仕上げ方法・エリアマップ・掲載記事）
+      "88b8ad5b989e4a346b95.jpg",
+      "6a6bc52f849ae138c62e.jpg",
+      "e36e3f21333cd34bd462.jpg",
+      "89ff8d603abd3da872ba.jpg",
+      "b477b98660ff30599f0a.jpg",
+    ],
+  },
 }
 
 export function getProductDisplay(slug: string): ProductDisplay | null {

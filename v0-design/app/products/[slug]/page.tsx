@@ -289,6 +289,10 @@ export default function ProductDetailPage() {
 
   // 価格の目安ブロック用: 固定長商品は例示なし、可変長は std から +0.5m 刻みで最大 3 例
   const isFixedLength = product.drawing.category === "fixed"
+  // "fixed" カテゴリだが単一長ではなく範囲を持つ商品（例: European L600〜800mm 範囲内一律料金）。
+  // stdLengthMm/maxMm が異なる場合のみ長さ入力欄を出す。priceTable の全点が同額なので
+  // 範囲内のどの値を選んでも lookupPriceFromTable は常に同じ価格を返す。
+  const isRangedFixed = isFixedLength && product.drawing.stdLengthMm !== product.drawing.maxMm
   const priceGuideLengths = isFixedLength
     ? []
     : [
@@ -452,7 +456,7 @@ export default function ProductDetailPage() {
           ...(prices.shippingTax > 0 ? [{ label: "送料消費税（10%）", amount: prices.shippingTax }] : []),
         ]
       : [
-          { label: `基本料金（〜${product.drawing.stdLengthMm}mm）`, amount: prices.basePrice },
+          { label: isRangedFixed ? `基本料金（L${product.drawing.stdLengthMm}〜${product.drawing.maxMm}mm 一律）` : `基本料金（〜${product.drawing.stdLengthMm}mm）`, amount: prices.basePrice },
           ...(prices.addon > 0 ? [{ label: "長さ追加料金", note: `+${length - product.drawing.stdLengthMm}mm × ¥${PRICE_PER_MM}`, amount: prices.addon }] : []),
           ...(prices.addZakin > 0 ? [{ label: "追加座金料金", note: `${prices.zakinCount - INCLUDED_ZAKIN}個 × ¥${ZAKIN_PRICE.toLocaleString()}`, amount: prices.addZakin }] : []),
           ...(prices.surcharge > 0 ? [{ label: "長尺割増", note: `${length}mm`, amount: prices.surcharge }] : []),
@@ -746,7 +750,9 @@ export default function ProductDetailPage() {
                   <span className="text-[13px] text-muted-foreground">本体価格・税込</span>
                 </div>
                 <p className="mt-2 text-[13px] md:text-[14px] text-muted-foreground leading-relaxed">
-                  {isFixedLength
+                  {isRangedFixed
+                    ? `L${product.drawing.stdLengthMm}〜${product.drawing.maxMm}mmの範囲内は一律料金です。範囲外の長さは別途ご相談ください。`
+                    : isFixedLength
                     ? `${product.drawing.stdLengthMm}mm 固定サイズの一点物です。`
                     : `〜${formatMeters(product.drawing.stdLengthMm)} まで一律。長さに応じて価格が変わります。`}
                 </p>
@@ -879,14 +885,150 @@ export default function ProductDetailPage() {
                     )}
                     {product.drawing.category === "fixed" ? (
                       <>
-                        <div className="flex items-center gap-4">
-                          <div className="flex-1 px-4 py-4 bg-white border border-gold/20 text-[14px] text-foreground">
-                            高さ {product.drawing.stdLengthMm}mm 固定サイズ
-                            <span className="text-[11px] text-muted-foreground ml-2">
-                              （長さ調整不可）
-                            </span>
+                        {isRangedFixed ? (
+                          <>
+                            <p className="text-[13px] text-muted-foreground">
+                              <span className="font-medium text-foreground">
+                                L{minLength}〜{maxLength}mmの範囲内は一律 ¥{BASE_PRICE.toLocaleString()}
+                              </span>
+                              <span className="ml-2 text-[12px] opacity-75">（範囲外は要相談）</span>
+                            </p>
+                            {!isMultiOrder && (
+                              <div className="flex items-center gap-4">
+                                <div className="relative flex-1">
+                                  <input
+                                    type="range"
+                                    min={minLength}
+                                    max={maxLength}
+                                    step={1}
+                                    value={length}
+                                    onChange={(e) => {
+                                      const v = Number(e.target.value)
+                                      setLength(v)
+                                      setLengthInput(String(v))
+                                    }}
+                                    style={{
+                                      ["--ado-range-fill" as string]: `${Math.max(0, Math.min(100, ((length - minLength) / (maxLength - minLength)) * 100))}%`,
+                                    }}
+                                    className="ado-range-thumb w-full h-2 rounded-full cursor-pointer"
+                                  />
+                                  <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+                                    <span>{minLength}mm</span>
+                                    <span>{maxLength}mm</span>
+                                  </div>
+                                </div>
+                                <div className="relative">
+                                  <input
+                                    type="number"
+                                    min={minLength}
+                                    max={maxLength}
+                                    step={1}
+                                    value={lengthInput}
+                                    onFocus={(e) => e.currentTarget.select()}
+                                    onChange={(e) => {
+                                      const raw = e.target.value
+                                      setLengthInput(raw)
+                                      if (raw === "") return
+                                      const n = Number(raw)
+                                      if (Number.isFinite(n) && n >= minLength && n <= maxLength) {
+                                        setLength(n)
+                                      }
+                                    }}
+                                    onBlur={() => {
+                                      if (lengthInput === "") {
+                                        setLengthInput(String(length))
+                                        return
+                                      }
+                                      const n = Number(lengthInput)
+                                      if (!Number.isFinite(n)) {
+                                        setLengthInput(String(length))
+                                        return
+                                      }
+                                      const clamped = Math.min(maxLength, Math.max(minLength, Math.round(n)))
+                                      setLength(clamped)
+                                      setLengthInput(String(clamped))
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") {
+                                        e.currentTarget.blur()
+                                      }
+                                    }}
+                                    className="w-28 h-12 bg-gold/10 border-2 border-gold text-center font-mono text-lg text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
+                                  />
+                                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">
+                                    mm
+                                  </span>
+                                </div>
+                              </div>
+                            )}
+                            {isMultiOrder && (
+                              <div className="space-y-3">
+                                <p className="text-[12px] text-muted-foreground">
+                                  本数を変更するには上の「本数」を増減してください。各本ごとに違う長さを入力できます（範囲 {minLength}〜{maxLength}mm）。
+                                </p>
+                                {lengths.map((L, i) => (
+                                  <div key={i} className="flex items-center gap-3 border border-gold/20 bg-card rounded-md p-3">
+                                    <span className="font-serif text-[15px] font-medium text-foreground min-w-[64px]">
+                                      {i + 1}本目
+                                    </span>
+                                    <div className="relative flex-1">
+                                      <input
+                                        type="number"
+                                        min={minLength}
+                                        max={maxLength}
+                                        step={1}
+                                        value={lengthInputs[i] ?? String(L)}
+                                        onFocus={(e) => e.currentTarget.select()}
+                                        onChange={(e) => {
+                                          const raw = e.target.value
+                                          updateLengthInputAt(i, raw)
+                                          if (raw === "") return
+                                          const n = Number(raw)
+                                          if (Number.isFinite(n) && n >= minLength && n <= maxLength) {
+                                            updateLengthAt(i, n)
+                                          }
+                                        }}
+                                        onBlur={() => {
+                                          const raw = lengthInputs[i] ?? ""
+                                          if (raw === "") {
+                                            updateLengthInputAt(i, String(L))
+                                            return
+                                          }
+                                          const n = Number(raw)
+                                          if (!Number.isFinite(n)) {
+                                            updateLengthInputAt(i, String(L))
+                                            return
+                                          }
+                                          const clamped = Math.min(maxLength, Math.max(minLength, Math.round(n)))
+                                          updateLengthAt(i, clamped)
+                                          updateLengthInputAt(i, String(clamped))
+                                        }}
+                                        onKeyDown={(e) => {
+                                          if (e.key === "Enter") {
+                                            e.currentTarget.blur()
+                                          }
+                                        }}
+                                        className="w-full h-12 bg-gold/10 border-2 border-gold text-center font-mono text-lg text-foreground rounded-md focus:outline-none focus:ring-2 focus:ring-gold"
+                                      />
+                                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[12px] text-muted-foreground">
+                                        mm
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div className="flex items-center gap-4">
+                            <div className="flex-1 px-4 py-4 bg-white border border-gold/20 text-[14px] text-foreground">
+                              高さ {product.drawing.stdLengthMm}mm 固定サイズ
+                              <span className="text-[11px] text-muted-foreground ml-2">
+                                （長さ調整不可）
+                              </span>
+                            </div>
                           </div>
-                        </div>
+                        )}
                         {/* Scroll 16/19/22 のみ向き選択 (左右で価格変更なし) */}
                         {hasOrientation && (
                           <div className="mt-3 border border-gold/20 bg-card p-4">
@@ -1330,7 +1472,9 @@ export default function ProductDetailPage() {
                         <>
                           <div className="flex justify-between text-[15px]">
                             <span className="text-muted-foreground">
-                              基本料金（〜{product.drawing.stdLengthMm}mm）
+                              {isRangedFixed
+                                ? `基本料金（L${product.drawing.stdLengthMm}〜${product.drawing.maxMm}mm 一律）`
+                                : `基本料金（〜${product.drawing.stdLengthMm}mm）`}
                             </span>
                             <span className="font-mono">¥{prices.basePrice.toLocaleString()}</span>
                           </div>
