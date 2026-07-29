@@ -65,6 +65,8 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
   { cat: "handrail_v", label: "ロートアイアン・縦型", name: "Scroll スクロール 22φ", sub: "80cm 無垢鉄 火造り鍛造", price: 60000, priceFrom: true, img: "d09c9426e8510d2ca152", href: "/products/scroll22" },
   { cat: "handrail_v", label: "ロートアイアン・縦型", name: "Fabrice ファブリス", sub: "80cm 無垢鉄 火造り鍛造", price: 100000, priceFrom: true, badge: "Artisan", img: "66a699b295bcdb8f3598", href: "/products/fabrice" },
   { cat: "handrail_v", label: "ロートアイアン・縦型", name: "鎚目 TSUCHIME", sub: "80cm 無垢鉄 火造り鍛造", price: 70000, priceFrom: true, badge: "Artisan", img: "569af3ee76a1999863e7", href: "/products/tsuchime" },
+  // European: 画像未アップロードのためプレースホルダーID（蠣﨑さん CDN 差し替え待ち）
+  { cat: "handrail_v", label: "ロートアイアン・縦型", name: "European ヨーロピアン", sub: "L600〜800mm 無垢鉄 ハンマー鍛造", price: 110000, priceFrom: true, badge: "Artisan", img: "PLACEHOLDER_UPLOAD_PENDING", href: "/products/european" },
 
   // アプローチ (3 商品)
   { cat: "approach", label: "アプローチ手すり", name: "Simple -black-", sub: "フラットバー マットブラック", price: 0, img: "579e79e794eed28d9ac7", href: "/products/simple-black" },

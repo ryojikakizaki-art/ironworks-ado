@@ -274,6 +274,29 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       "/images/products/elisabeth/05.jpg",
     ],
   },
+  european: {
+    slug: "european",
+    nameEn: "European",
+    nameJa: "ヨーロピアン",
+    category: "ロートアイアン手すり",
+    subtitle: "無垢丸鉄 φ22mm ハンマー鍛造仕上げ（ブラック）",
+    shortDescription: "ヨーロッパの古い邸宅を思わせる、優美な渦巻き装飾を纏った縦型ロートアイアン手すり",
+    longDescription:
+      "ヨーロッパの古い邸宅を思わせる、優美な渦巻き装飾を纏った縦型手すり。無垢の丸鉄をハンマーで一本一本鍛え、表面に手仕事ならではの陰影を刻みました。\n\n仕上がりの美しさ、使いやすさにこだわり、目立たない細かな部分も手をぬかず長く愛用していただけるように丁寧に制作しております。IRONWORKS adoは、傷や錆が鉄の味わいと謳った不誠実なものづくりはいたしません。\n\n手すりは毎日手に触れ、安全のために付けるもの。握りやすく安心して掴める強度を考え、22φのしっかりした太さで作っています。上下の渦巻きは装飾であると同時に、手が滑り抜けるのを防ぐ役割も果たします。\n\n住まいの玄関やアプローチに、ヨーロピアンな佇まいを添えたい方に。角やひっかかる危ない箇所がないよう丁寧に仕上げておりますので小さなお子様がいるご家庭でも安心してお使いできます。\n\nこれから毎日お使いいただく方の心豊かな暮らしを思い制作しております。",
+    specs: [
+      { label: "タイプ", value: "丸棒 22φ（無垢鉄）" },
+      { label: "素材", value: "鉄" },
+      { label: "仕上げ", value: "ハンマー鍛造仕上げ（ブラック）" },
+      { label: "標準寸法", value: "L600〜800mm（この範囲内は一律料金）※ 範囲外の長さは要相談" },
+      { label: "納期", value: "ご注文後10営業日" },
+    ],
+    // TODO(蠣﨑さん): Cloudflare Images 未アップロードのためプレースホルダーID。実写真差し替え後に本番掲載可。
+    images: ["PLACEHOLDER_UPLOAD_PENDING"],
+    basePrice: 110000,
+    priceFrom: true,
+    priceNote: "L600〜800mmの範囲内は一律料金です。範囲外の長さは別途ご相談ください。",
+    badge: "Artisan",
+  },
   clemence: {
     slug: "clemence",
     nameEn: "Clémence",
