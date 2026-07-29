@@ -15,6 +15,7 @@ import {
   CLAIRE_PRICE_TABLE,
   MARCEL_PRICE_TABLE,
   EMILE_PRICE_TABLE,
+  EUROPEAN_PRICE_TABLE,
   lookupPriceFromTable,
   type PricePoint,
 } from '@/lib/drawing-modal/products';
@@ -61,6 +62,10 @@ const ALEXANDRE_RULE: ZakinRule = {
   defaultCount: 2, endMinMm: 50, maxSpanMm: 1500, minLengthMm: 500,
   addWasherAboveMm: 2499,
 };
+// European — L600〜800mmの範囲内は一律料金。defaultCount 固定のため座金は常に2本。
+const EUROPEAN_RULE: ZakinRule = {
+  defaultCount: 2, endMinMm: 50, maxSpanMm: 900, minLengthMm: 600,
+};
 
 export const PRODUCTS: Record<string, Product> = {
   rene:       { name: 'René ルネ',               type: '横型', basePrice: 36500, stdLengthMm: 1500, maxMm: 5000, finish: 'マットブラック', includedZakin: 3, priceTable: RENE_PRICE_TABLE },
@@ -76,6 +81,7 @@ export const PRODUCTS: Record<string, Product> = {
   scroll22:   { name: 'Scroll スクロール 22φ',    type: '縦型', basePrice: 60000, stdLengthMm: 800,  maxMm: 800,  finish: 'ミツロウ仕上げ', includedZakin: 2 },
   fabrice:    { name: 'Fabrice ファブリス',        type: '縦型', basePrice: 100000, stdLengthMm: 800, maxMm: 800,  finish: '無垢鉄 火造り鍛造', includedZakin: 2 },
   tsuchime:   { name: '鎚目 TSUCHIME',            type: '縦型', basePrice: 70000, stdLengthMm: 800,  maxMm: 800,  finish: '手打ち鎚目仕上げ', includedZakin: 2 },
+  european:   { name: 'European ヨーロピアン',     type: '縦型', basePrice: 110000, stdLengthMm: 600, maxMm: 800, finish: 'ハンマー鍛造仕上げ（ブラック）', includedZakin: 2, zakinRule: EUROPEAN_RULE, priceTable: EUROPEAN_PRICE_TABLE },
 };
 
 // ── 共通価格パラメータ（mm単位）──
