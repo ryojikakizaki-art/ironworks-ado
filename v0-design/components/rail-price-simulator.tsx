@@ -10,7 +10,7 @@
 // - 手すりの長さ＝1段目と最上段の段鼻の直線距離＋両端の水平部。水平部は
 //   下段・上段それぞれ入力で指定でき（既定 各200mm）、全長が確定できる
 //   （2026-07-19 蠣﨑さん指示）
-// - エンド（唐草形状 Type A / B）は下側（登り始め）・上側（登り終わり）で
+// - エンド（唐草形状 Type A / B / C）は下側（登り始め）・上側（登り終わり）で
 //   それぞれ実物写真サムネイルから選択でき、図中の手すり端の形も連動して変わる
 // - 座金数は横型座金ルール（端100mm・最大ピッチ850mm ＝ calcZakin）で
 //   自動算出し、「価格について」の公開価格表と同じ算出基準になる
@@ -61,9 +61,11 @@ const BAR_DIAMETER_MM = 22
 const END_ART_SIZE_FACTOR = 1.6
 // 唐草を実寸比率(×SIZE_FACTOR)で描いたときの、ネック切り口からループ先端までの
 // 水平張り出し量 (mm)。トレース由来の一定値でブラウザ実測で微調整（s = BAR_DIAMETER_MM/
-// barPx × scale × SIZE_FACTOR で描くと×1.0 で A≒170mm・B≒182mm）。エンド部の入力値
+// barPx × scale × SIZE_FACTOR で描くと×1.0 で B≒170mm・C≒182mm）。エンド部の入力値
 // （段鼻からループ先端まで）に対しレール直線部の終点＝取付ネックをこの分内側へ置く
-const END_CURL_REACH_MM: Record<string, number> = { A: 170, B: 182 }
+// 2026-07-29 エンド3種化: 旧 A→B・旧 B→C に繰り下げ、新しい渦巻きエンドが A。
+// 新 A は幾何値 viewW×(22/barPx) = 337×22/47 ≒ 158mm を初期値にしてプレビュー実測で確認
+const END_CURL_REACH_MM: Record<string, number> = { A: 158, B: 170, C: 182 }
 const END_CURL_REACH_MM_FALLBACK = 170
 // 唐草の最大張り出し量（上側エンドを常に水平に保つための下限計算に使う）
 const MAX_END_REACH_MM = Math.max(...Object.values(END_CURL_REACH_MM)) * END_ART_SIZE_FACTOR
@@ -194,15 +196,16 @@ const POST_MM = 90
 // スムーズに繋がるよう浅く
 const END_TILT_BOTTOM_DEG = 5
 const END_TILT_TOP_DEG = 1.5
-// 2026-07-16 蠣﨑さん指摘: 上段では A はもう少し下向きに。
-// 2026-07-19 蠣﨑さん指示: B は手すりに綺麗につながるよう接続角度を修正
-// （レール端は水平・B 再生成アートのネック接線も水平。先端の持ち上げは
+// 2026-07-16 蠣﨑さん指摘: 上段では（旧 A＝現 B）はもう少し下向きに。
+// 2026-07-19 蠣﨑さん指示: （旧 B＝現 C）は手すりに綺麗につながるよう接続角度を修正
+// （レール端は水平・C 再生成アートのネック接線も水平。先端の持ち上げは
 //   アート側の曲げワープで表現＝elisabeth-end-art.ts 参照）。下段は 0、
 //   上段はプレビュー確認で「もう少し上げる」指摘 → -5（負＝先端が上がる向き）
-const END_TILT_TOP_DEG_BY_ID: Record<string, number> = { A: 9, B: -5 }
-const END_TILT_BOTTOM_DEG_BY_ID: Record<string, number> = { B: 0 }
-// エンド装飾の微調整倍率（実寸比率に対する補正・通常 1）。A/B で個別に効かせられる
-const END_ART_EXTRA_SCALE_BY_ID: Record<string, number> = { A: 1, B: 1 }
+// 2026-07-29 エンド3種化に伴い、既存の調整値をそのまま B / C へ繰り下げ。
+const END_TILT_TOP_DEG_BY_ID: Record<string, number> = { B: 9, C: -5 }
+const END_TILT_BOTTOM_DEG_BY_ID: Record<string, number> = { C: 0 }
+// エンド装飾の微調整倍率（実寸比率に対する補正・通常 1）。A/B/C で個別に効かせられる
+const END_ART_EXTRA_SCALE_BY_ID: Record<string, number> = { A: 1, B: 1, C: 1 }
 // レール本体の曲線プロファイル。蠣﨑さんの言語化仕様（2026-07-16）:
 // 「登り始めは少しきつめに上がり、その後山なりに緩やかに曲がり、
 //   中央座金を中心として下弓なりになり、上がりきり付近でエンド部が
@@ -227,8 +230,8 @@ const SAMPLE_MM = 25
 // ある id はそちらを優先し、未トレースの id のみこの簡易カールで描く。
 // ローカル座標（0,0 が手すり端・外向き = +x）。下側エンドは scale(-1,1) で反転
 const END_PATHS: Record<string, string> = {
-  A: "M 0 0 C 9 -1 18 -6 21 -12 C 23 -17 19 -21 14 -19 C 9 -17 8 -11 12 -8 C 15 -5.5 20 -5 24 -7",
-  B: "M 0 0 C 7 1 12 5 13 11 C 14 18 9 22 4 20 C 0 18 0.5 13 4.5 12.5 C 7 12.2 8.5 14 8 16",
+  B: "M 0 0 C 9 -1 18 -6 21 -12 C 23 -17 19 -21 14 -19 C 9 -17 8 -11 12 -8 C 15 -5.5 20 -5 24 -7",
+  C: "M 0 0 C 7 1 12 5 13 11 C 14 18 9 22 4 20 C 0 18 0.5 13 4.5 12.5 C 7 12.2 8.5 14 8 16",
 }
 
 /**
@@ -286,7 +289,7 @@ function EndDecoration({
   return (
     <g transform={`translate(${x} ${y}) scale(${outward} 1)`}>
       <path
-        d={END_PATHS[id] ?? END_PATHS.A}
+        d={END_PATHS[id] ?? END_PATHS.B}
         fill="none"
         stroke={COLOR_BAR}
         strokeWidth="3.5"
@@ -2470,13 +2473,16 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
         ))}
       </div>
 
-      {/* エンド形状（唐草 Type A/B・下側と上側で個別に選択。価格は同一） */}
+      {/* エンド形状（唐草 Type A/B/C・下側と上側で個別に選択。価格は同一） */}
       {endOptions.length > 0 && (
         <div className="mb-4">
           <p className="text-[13px] text-muted-foreground mb-2">
-            エンド形状 唐草（両端 {config.endCount} 個・A / B どちらも同価格）
+            エンド形状 唐草（両端 {config.endCount} 個・{endOptions.map((o) => o.id).join(" / ")} どれも同価格）
           </p>
-          <div className="grid grid-cols-2 gap-3">
+          {/* 2026-07-29 エンド3種化: モバイルで下側/上側を横に並べたままだと
+              サムネイル1枚が約50pxまで縮んで形が判別できないため、モバイルは
+              縦積み（1列）にして各サムネイルの大きさを確保する */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {(
               [
                 { key: "bottom", label: "下側（登り始め）", value: endBottom, set: setEndBottom },
@@ -2484,8 +2490,8 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
               ] as const
             ).map((side) => (
               <div key={side.key}>
-                <p className="text-[12px] text-foreground font-medium mb-1.5">{side.label}</p>
-                <div className="grid grid-cols-2 gap-2">
+                <p className="text-[13px] text-foreground font-medium mb-1.5">{side.label}</p>
+                <div className="grid grid-cols-3 gap-2">
                   {endOptions.map((opt) => (
                     <button
                       key={opt.id}
@@ -2506,7 +2512,7 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
                         />
                       </span>
                       <span
-                        className={`block text-[12px] py-1 font-medium ${
+                        className={`block text-[13px] py-1 font-medium ${
                           side.value === opt.id ? "text-foreground bg-gold/10" : "text-muted-foreground"
                         }`}
                       >
