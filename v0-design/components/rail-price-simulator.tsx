@@ -1249,13 +1249,19 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
     // 余白（数値ラベルは小さいので入力マスぶんの大きな余白は不要）。
     // 右 = 高さ寸法線＋数値、下 = 幅寸法線＋全長の入れ子寸法線＋数値、上 = 上側エンド寸法
     const padL = 16
-    const padR = 52
-    const padTop = 34
-    // 縮尺が高さで頭打ちになるとき oy = VB_H - padBottom になり、「全長 約○○mm」の
-    // ラベルはその 89 下（= VB_H + 11）に来るため、これまで viewBox 外にはみ出して
-    // overflow:hidden で切れていた（実測 16.6px 欠け）。ラベルの descender ぶんまで
-    // 収まるよう 78 → 100 に広げる
-    const padBottom = 100
+    // 右余白は「高さ」の寸法線＋数値ラベルぶん。図が大きくなって階段の右端が右へ寄った
+    // ため、52 のままだとラベル（textAnchor=start で約60単位ぶん右へ伸びる）が
+    // viewBox からはみ出して切れる。寸法線16 + 5 + ラベル約60 + 余裕
+    const padR = 88
+    // 上余白は「全長」の寸法線が手すり上端より上へせり出すぶんを見込む。
+    // 手すりをなぞる折れ線なので、せり出しは勾配によらず TOTAL_OFF(26) +
+    // 補助線の伸ばし代(5) = 31 で頭打ち。余裕を見て 38
+    const padTop = 38
+    // 2026-07-29: 全長寸法を図の下から手すり脇のアライン寸法へ移したので、
+    // 図の下にあるのは幅の寸法線（補助線の下端 = Y(0)+25）だけになった。
+    // かつては全長ラベルが VB_H+11 に置かれて overflow:hidden で切れていたが
+    // （実測 16.6px 欠け）、移設で解消したため下余白も詰められる
+    const padBottom = 34
     const wAll = x3 - x0 + margin * 2
     const hAll = yt
     const scale = Math.min((VB_W - padL - padR) / wAll, (VB_H - padTop - padBottom) / hAll)
@@ -1432,27 +1438,74 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
       labelX: (X(x0) + X(x1)) / 2,
       labelY: dimRBy + 13,
     }
-    // 上側のエンド部（RT）: 段鼻 x2〜x3。手すりのすぐ上に寸法線を添える
-    const dimRTy = Y(yt) - 14
+    // 上側のエンド部（RT）: 段鼻 x2〜x3。手すりの「下」に寸法線を添える。
+    // 2026-07-29: 全長のアライン寸法を手すりの左上に出すため、上側エンド寸法は
+    // 手すりの下（2階の床との間の空きスペース）へ移した。下側エンド寸法も手すりの
+    // 下にあるので、上下で位置が揃って読みやすくもなる。
+    // 唐草エンドは切り口から下へ約 (viewH - attachY) × s ぶら下がるので、
+    // それをかわす距離を空ける
+    const dimRTy = Y(yt) + 30
     const dimRT = {
       line: { x1: X(x2), x2: X(x3), y: dimRTy },
-      ext1: { x: X(x2), y1: Y(yt), y2: dimRTy - 4 },
-      ext2: { x: X(x3), y1: Y(yt), y2: dimRTy - 4 },
+      ext1: { x: X(x2), y1: Y(yt), y2: dimRTy + 4 },
+      ext2: { x: X(x3), y1: Y(yt), y2: dimRTy + 4 },
       labelX: (X(x2) + X(x3)) / 2,
-      labelY: dimRTy - 6,
+      labelY: dimRTy + 13,
     }
 
-    // 手すり全長（入れ子の外側寸法）: 幅の寸法線のさらに下に、下側エンドの先端〜
-    // 上側エンドの先端の全体を囲む形で表示する。線の見た目の長さは水平投影（斜め区間
-    // は実際はもっと長い）だが、ラベルには実際の全長 L を表示する（2026-07-22
-    // 蠣﨑さん指示: 階段全長の並びに寸法線を出してほしいとの指摘）
-    const dimTotalY = dimWy + 54
+    // 手すり全長: 下側エンドの先端 〜 上側エンドの先端 を結ぶアライン寸法。
+    // 2026-07-29 蠣﨑さん指示「手すり全長は手すり（階段の傾斜角度）に対して平行に、
+    // かつエンドの端〜端で記されなければなりません」。
+    // 従来は図の下に水平線で引いていたため、斜めに架かる手すりの長さを水平投影で
+    // 示すことになり、線の見た目の長さ（水平距離）とラベルの値（実長）が大きく
+    // 食い違っていた。先端どうしを結ぶ向きに引き直し、ラベルも同じ角度に回す。
+    // 手すりそのもの（下の水平部 → 勾配部 → 上の水平部）を左上へ平行移動した
+    // 折れ線として引く。単一の直線では「勾配に平行」と「先端〜先端」を同時に
+    // 満たせない（両端が水平なので先端どうしを結ぶ弦は勾配より寝る。勾配に平行な
+    // 直線へ先端を投影すると、今度は手すりよりはるかに上へせり出す）。
+    // 手すりの形をそのままなぞれば、勾配部は階段の傾斜角度に平行・端は先端どうし・
+    // かつ折れ線の実長がラベルの全長 L と一致する（従来の水平投影は約22%短かった）
+    const tipB = { x: X(x0), y: Y(yb) } // 下側エンドの先端
+    const tipT = { x: X(x3), y: Y(yt) } // 上側エンドの先端
+    const kneeB = { x: X(x1), y: Y(yb) } // 1段目の段鼻の上（水平部→勾配部）
+    const kneeT = { x: X(x2), y: Y(yt) } // 最上段の段鼻の上（勾配部→水平部）
+    const TOTAL_OFF = 26 // 手すりから寸法線を離す距離 (viewBox)
+    const TOTAL_EXT = 5 // 補助線の伸ばし代
+    // 勾配部の法線（左上向き）。画面座標は y 下向きなので (uy, -ux) が左上を向く
+    const kdx = kneeT.x - kneeB.x
+    const kdy = kneeT.y - kneeB.y
+    const kdl = Math.hypot(kdx, kdy) || 1
+    const sux = kdx / kdl
+    const suy = kdy / kdl
+    const snx = suy
+    const sny = -sux
+    // 水平部のオフセット線は y 一定。勾配部のオフセット線との交点で折れ点を求める
+    const offYb = tipB.y - TOTAL_OFF
+    const offYt = tipT.y - TOTAL_OFF
+    const q1x = kneeB.x + snx * TOTAL_OFF
+    const q1y = kneeB.y + sny * TOTAL_OFF
+    const q2x = kneeT.x + snx * TOTAL_OFF
+    const q2y = kneeT.y + sny * TOTAL_OFF
+    // 勾配部は必ず y が単調（H > riser）なので 0 除算にはならないが念のため保護
+    const dyq = q2y - q1y || -1
+    const xAtY = (yy: number) => q1x + ((yy - q1y) / dyq) * (q2x - q1x)
+    const tp = [
+      { x: tipB.x, y: offYb },
+      { x: xAtY(offYb), y: offYb },
+      { x: xAtY(offYt), y: offYt },
+      { x: tipT.x, y: offYt },
+    ]
     const dimTotal = {
-      line: { x1: X(x0), x2: X(x3), y: dimTotalY },
-      ext1: { x: X(x0), y1: Y(0), y2: dimTotalY + 5 },
-      ext2: { x: X(x3), y1: Y(0), y2: dimTotalY + 5 },
-      labelX: (X(x0) + X(x3)) / 2,
-      labelY: dimTotalY + 15,
+      path: `M ${tp[0].x} ${tp[0].y} L ${tp[1].x} ${tp[1].y} L ${tp[2].x} ${tp[2].y} L ${tp[3].x} ${tp[3].y}`,
+      ext1: { x1: tipB.x, y1: tipB.y, x2: tipB.x, y2: offYb - TOTAL_EXT },
+      ext2: { x1: tipT.x, y1: tipT.y, x2: tipT.x, y2: offYt - TOTAL_EXT },
+      // 端の目盛りは端の水平部に直交＝縦
+      tick1: { x: tp[0].x, y: tp[0].y },
+      tick2: { x: tp[3].x, y: tp[3].y },
+      // ラベルは勾配部の中央に、線と同じ角度で載せる（白フチが線を隠すので重なってよい）
+      labelX: (tp[1].x + tp[2].x) / 2,
+      labelY: (tp[1].y + tp[2].y) / 2,
+      angleDeg: (Math.atan2(suy, sux) * 180) / Math.PI,
     }
 
     return { stair, rail, endBottomAt, endTopAt, zakin, stepNums, dimW, dimH, dimRB, dimRT, dimTotal, scale }
@@ -2067,13 +2120,14 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
             <line x1={svg.dimRT.line.x1} y1={svg.dimRT.line.y - 4} x2={svg.dimRT.line.x1} y2={svg.dimRT.line.y + 4} />
             <line x1={svg.dimRT.line.x2} y1={svg.dimRT.line.y - 4} x2={svg.dimRT.line.x2} y2={svg.dimRT.line.y + 4} />
           </g>
-          {/* 寸法線: 手すり全長（幅の寸法線の下に入れ子で表示。下側エンド先端〜上側エンド先端） */}
+          {/* 寸法線: 手すり全長（下側エンド先端〜上側エンド先端を結ぶアライン寸法。
+              手すりの傾きに平行に引く） */}
           <g stroke={COLOR_DIM} strokeWidth="1">
-            <line x1={svg.dimTotal.ext1.x} y1={svg.dimTotal.ext1.y1} x2={svg.dimTotal.ext1.x} y2={svg.dimTotal.ext1.y2} strokeDasharray="3 3" />
-            <line x1={svg.dimTotal.ext2.x} y1={svg.dimTotal.ext2.y1} x2={svg.dimTotal.ext2.x} y2={svg.dimTotal.ext2.y2} strokeDasharray="3 3" />
-            <line x1={svg.dimTotal.line.x1} y1={svg.dimTotal.line.y} x2={svg.dimTotal.line.x2} y2={svg.dimTotal.line.y} />
-            <line x1={svg.dimTotal.line.x1} y1={svg.dimTotal.line.y - 4} x2={svg.dimTotal.line.x1} y2={svg.dimTotal.line.y + 4} />
-            <line x1={svg.dimTotal.line.x2} y1={svg.dimTotal.line.y - 4} x2={svg.dimTotal.line.x2} y2={svg.dimTotal.line.y + 4} />
+            <line x1={svg.dimTotal.ext1.x1} y1={svg.dimTotal.ext1.y1} x2={svg.dimTotal.ext1.x2} y2={svg.dimTotal.ext1.y2} strokeDasharray="3 3" />
+            <line x1={svg.dimTotal.ext2.x1} y1={svg.dimTotal.ext2.y1} x2={svg.dimTotal.ext2.x2} y2={svg.dimTotal.ext2.y2} strokeDasharray="3 3" />
+            <path d={svg.dimTotal.path} fill="none" />
+            <line x1={svg.dimTotal.tick1.x} y1={svg.dimTotal.tick1.y - 4} x2={svg.dimTotal.tick1.x} y2={svg.dimTotal.tick1.y + 4} />
+            <line x1={svg.dimTotal.tick2.x} y1={svg.dimTotal.tick2.y - 4} x2={svg.dimTotal.tick2.x} y2={svg.dimTotal.tick2.y + 4} />
           </g>
           {/* 寸法の数値ラベル（読み取り専用・編集は図の下のコントロール）。
               背景に白フチ（paint-order stroke）を付けて壁・階段の上でも読めるように */}
@@ -2090,7 +2144,15 @@ export function RailPriceSimulator({ config, queryType, onQueryChange, hideFulls
             <text x={svg.dimRT.labelX} y={svg.dimRT.labelY} textAnchor="middle" fontSize="12" fontWeight="600">
               上側 {RT.toLocaleString()}
             </text>
-            <text x={svg.dimTotal.labelX} y={svg.dimTotal.labelY} textAnchor="middle" fontSize="11.5" fontWeight="700">
+            <text
+              x={svg.dimTotal.labelX}
+              y={svg.dimTotal.labelY}
+              textAnchor="middle"
+              dominantBaseline="middle"
+              fontSize="11.5"
+              fontWeight="700"
+              transform={`rotate(${svg.dimTotal.angleDeg} ${svg.dimTotal.labelX} ${svg.dimTotal.labelY})`}
+            >
               全長 約{L.toLocaleString()}mm
             </text>
           </g>
