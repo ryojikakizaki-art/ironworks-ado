@@ -41,12 +41,12 @@ export function getProductStructuredData(slug: string): Record<string, unknown> 
   if (display) {
     name = `${display.nameEn} ${display.nameJaShort}`.trim()
     description = display.longDescription.split("\n\n")[0]
-    images = display.galleryIds.slice(0, 5).map(imgUrl)
+    images = display.galleryIds.slice(0, 10).map(imgUrl)
     category = display.breadcrumbCategory
   } else if (simple) {
     name = `${simple.nameEn} ${simple.nameJa}`.trim()
     description = simple.longDescription.split("\n\n")[0]
-    images = simple.images.slice(0, 5).map(imgUrl)
+    images = simple.images.slice(0, 10).map(imgUrl)
     price = simple.basePrice
     category = simple.category
   }
