@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { LEDGER_SHEET_ID } from '@/lib/order-ledger';
+// カート注文（複数商品まとめ買い）の metadata 復元。product_type='cart' の注文でのみ使う。
+import { decodeCartMetadata, cartSummaryLabel, type DecodedCartLine } from '@/lib/cart/metadata';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -266,6 +268,117 @@ ${isRush ? `<div class="row"><span class="label">特急割増</span><span class=
   console.log('[webhook] Order confirmation email sent to', email);
 }
 
+/**
+ * カート注文（複数商品まとめ買い）のお客様宛 確認メール。
+ * 単品注文の sendOrderConfirmationEmail と同じ体裁だが、商品欄が明細になる。
+ */
+async function sendCartOrderEmail(session: Stripe.Checkout.Session) {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    console.log('[webhook] RESEND_API_KEY not configured, skipping cart order email');
+    return;
+  }
+
+  const email = session.customer_details?.email;
+  if (!email) {
+    console.warn('[webhook] No customer email on session, skipping cart order email');
+    return;
+  }
+
+  const meta = session.metadata || {};
+  const name = session.customer_details?.name || 'お客様';
+  const lines = decodeCartMetadata(meta);
+  const isRush = meta.rush_delivery === 'true';
+  const deliveryLabel = meta.delivery_label || (isRush ? '特急配送（5営業日）' : '通常配送（10営業日）');
+  const rushYen = Number(meta.rush_surcharge_yen || 0);
+  const shippingYen = Number(meta.shipping_yen || 0);
+  const shippingTaxYen = Number(meta.shipping_tax_yen || 0);
+  const totalYen = Number(meta.total_yen || session.amount_total || 0);
+  const arrivalDate = meta.preferred_arrival_date || meta.arrival_estimate;
+
+  const fromAddress = process.env.CONTACT_FROM || 'IRONWORKS ado <noreply@tantetuzest.com>';
+
+  const itemRows = lines.map((l) => `
+<div class="row"><span class="label">${esc(l.label)}</span><span class="value">座金 ${l.zakinCount}個${
+    l.hasWasherType ? `・${esc(l.washerType)}タイプ` : ''
+  } / ${esc(l.finish)}　　¥${l.lineTotal.toLocaleString()}</span></div>`).join('');
+
+  const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light"><meta name="supported-color-schemes" content="light">
+<style>body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f9f9f9;color:#333;margin:0;padding:0;}
+.wrap{max-width:600px;margin:40px auto;background:#fff;border:1px solid #e0e0e0;}
+.header{background:#0e0e0e;color:#f5f5f5;padding:24px 32px;}
+.header h1{font-size:13px;letter-spacing:0.3em;text-transform:uppercase;margin:0;font-weight:400;}
+.header span{color:#c8a96e;}.body{padding:32px;font-size:14px;line-height:1.9;color:#444;}
+.body p{margin:0 0 16px;}.divider{border:none;border-top:1px solid #e0e0e0;margin:24px 0;}
+.section-title{font-size:12px;letter-spacing:0.2em;color:#888;text-transform:uppercase;margin:24px 0 12px;}
+.summary{background:#f9f9f9;border-left:3px solid #c8a96e;padding:16px 20px;font-size:13px;color:#555;}
+.summary p{margin:4px 0;}
+.row{padding:9px 0;border-bottom:1px solid #f0f0f0;}
+.row:last-child{border-bottom:none;}
+.label{display:block;color:#888;font-size:11px;letter-spacing:.04em;margin-bottom:4px;}
+.value{display:block;color:#222;font-size:15px;line-height:1.6;}
+.total{font-size:18px;color:#0e0e0e;font-weight:600;text-align:right;padding:16px 0;border-top:2px solid #0e0e0e;margin-top:12px;}
+.footer{background:#0e0e0e;padding:20px 32px;text-align:center;}
+.footer p{font-size:11px;color:#999;letter-spacing:0.1em;margin:0 0 6px;line-height:1.8;}
+.footer span{color:#c8a96e;}</style>
+</head><body><div class="wrap">
+<div class="header"><h1>IRONWORKS <span>ado</span> — ご注文ありがとうございます</h1></div>
+<div class="body">
+<p>${esc(name)} 様</p>
+<p>この度は IRONWORKS ado をご利用いただき、誠にありがとうございます。<br>下記の内容でご注文を承りました。制作完了まで今しばらくお待ちください。</p>
+
+<div class="section-title">ご注文内容（${lines.length}点）</div>
+<div class="summary">
+${itemRows}
+<div class="row"><span class="label">配送区分</span><span class="value">${esc(deliveryLabel)}</span></div>
+${isRush ? `<div class="row"><span class="label">特急割増</span><span class="value">¥${rushYen.toLocaleString()}</span></div>` : ''}
+<div class="row"><span class="label">送料</span><span class="value">¥${shippingYen.toLocaleString()}（税抜）＋消費税 ¥${shippingTaxYen.toLocaleString()}</span></div>
+<div class="total">合計: ¥${totalYen.toLocaleString()}（税込）</div>
+</div>
+
+<div class="section-title">制作・配送スケジュール</div>
+<div class="summary">
+<div class="row"><span class="label">制作開始</span><span class="value">${formatJpDate(meta.production_start)}</span></div>
+<div class="row"><span class="label">制作完了予定</span><span class="value">${formatJpDate(meta.production_complete)}</span></div>
+<div class="row"><span class="label">発送予定</span><span class="value">${formatJpDate(meta.shipping_date)}</span></div>
+<div class="row"><span class="label">お届け予定</span><span class="value">${formatJpDate(arrivalDate)}${meta.preferred_time_slot ? ` / ${esc(meta.preferred_time_slot)}` : ''}</span></div>
+</div>
+
+<hr class="divider">
+<p style="font-size:12px;color:#888;">
+適格請求書（領収書PDF）は別途 Stripe よりメールにてお送りいたします。<br>
+ご不明点はお気軽にお問い合わせください: <a href="mailto:ado@tantetuzest.com" style="color:#c8a96e;">ado@tantetuzest.com</a>
+</p>
+<p style="font-size:11px;color:#aaa;">注文番号: ${esc(session.id)}</p>
+</div>
+<div class="footer">
+<p>鍛鉄工房ZEST（蠣﨑 良治） / IRONWORKS <span>ado</span></p>
+<p>〒265-0052 千葉県千葉市若葉区和泉町239-2 / TEL 070-3817-0659</p>
+<p>適格請求書発行事業者登録番号: T7810771171765</p>
+</div>
+</div></body></html>`;
+
+  const res = await fetch('https://api.resend.com/emails', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      from: fromAddress,
+      to: [email],
+      subject: `【IRONWORKS ado】ご注文を承りました — ${cartSummaryLabel(lines)}`,
+      html,
+    }),
+  });
+
+  if (!res.ok) {
+    const e = await res.json().catch(() => ({}));
+    throw new Error((e as { message?: string }).message || 'cart order email failed');
+  }
+
+  console.log('[webhook] Cart order confirmation email sent to', email);
+}
+
 async function sendSimpleOrderEmail(session: Stripe.Checkout.Session) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
@@ -424,9 +537,47 @@ export async function sendWorkshopEmail(session: Stripe.Checkout.Session, isSimp
   const orderRows: Array<[string, string]> = [];
   const scheduleRows: Array<[string, string]> = [];
   let drawingUrl = '';
+  // カート注文は商品ごとに制作図が要るため複数リンクを持つ（単品注文は drawingUrl のまま）
+  const drawingLinks: Array<{ label: string; url: string }> = [];
   let productLabel = productName;
 
-  if (isSimple) {
+  const isCart = meta.product_type === 'cart';
+
+  if (isCart) {
+    const lines = decodeCartMetadata(meta);
+    productLabel = cartSummaryLabel(lines);
+    const isRush = meta.rush_delivery === 'true';
+    orderRows.push(['ご注文点数', `${lines.length}点 / 計${meta.cart_quantity || lines.length}本`]);
+    lines.forEach((l, i) => {
+      orderRows.push([
+        `${i + 1}. ${l.label}`,
+        `座金 ${l.zakinCount}個${l.hasWasherType ? ` / ${l.washerType}タイプ` : ''} / ${l.finish}${
+          l.angleDeg ? ` / 角度加工 ${l.angleDir === 'right' ? '右' : '左'}${l.angleDeg}°` : ''
+        }　　¥${l.lineTotal.toLocaleString()}`,
+      ]);
+    });
+    orderRows.push(['配送区分', isRush ? '特急配送（5営業日）' : '通常配送（10営業日）']);
+    orderRows.push(['送料', `¥${Number(meta.shipping_yen || 0).toLocaleString()}（税抜）／ ${meta.shipping_note || '—'}`]);
+    scheduleRows.push(['制作開始', formatJpDate(meta.production_start)]);
+    scheduleRows.push(['制作完了予定', formatJpDate(meta.production_complete)]);
+    scheduleRows.push(['発送予定', formatJpDate(meta.shipping_date)]);
+    scheduleRows.push(['お届け予定', formatJpDate(meta.preferred_arrival_date || meta.arrival_estimate)]);
+    // 長さ可変の手すりだけ商品ごとに /seizu 制作図リンクを付ける
+    for (const l of lines) {
+      if (!DRAWING_LINK_PRODUCTS.has(l.product)) continue;
+      const params = new URLSearchParams();
+      params.set('product', l.product);
+      params.set('lengths', Array(l.quantity).fill(l.lengthMm).join(','));
+      params.set('washer', l.washerType);
+      if (l.positions?.length) params.set('positions', l.positions.join(','));
+      if (l.angleDeg) {
+        params.set('angle', String(l.angleDeg));
+        params.set('dir', l.angleDir || 'left');
+      }
+      params.set('order', session.id);
+      drawingLinks.push({ label: l.label, url: `${SITE_ORIGIN}/seizu?${params.toString()}` });
+    }
+  } else if (isSimple) {
     const qty = Number(meta.quantity || 1);
     const unitYen = Number(meta.unit_yen || 0);
     const shippingMethod = String(meta.shipping_method || 'クリックポスト（送料込）');
@@ -546,6 +697,13 @@ ${drawingUrl
 <p class="note" style="text-align:center;margin-top:8px;">ブラウザで表示 → PDF保存 / 印刷できます。座金位置・角度はご注文時の設定で作図されます。</p>`
   : ''}
 
+${drawingLinks.length
+  ? `<div class="btn-wrap">${drawingLinks
+      .map((d) => `<a class="btn" style="margin:6px 0;" href="${esc(d.url)}">▶ 制作図を開く — ${esc(d.label)}</a><br>`)
+      .join('')}</div>
+<p class="note" style="text-align:center;margin-top:8px;">商品ごとに制作図があります。ブラウザで表示 → PDF保存 / 印刷できます。</p>`
+  : ''}
+
 <p class="note">
 注文番号: ${esc(session.id)}<br>
 ※ このメールは工房用の控えです。お客様には届きません。
@@ -560,7 +718,7 @@ ${drawingUrl
     body: JSON.stringify({
       from: fromAddress,
       to: [WORKSHOP_EMAIL],
-      subject: `【受注${drawingUrl ? '・制作図' : ''}】${productLabel} — ${recipientName}様`,
+      subject: `【受注${drawingUrl || drawingLinks.length ? '・制作図' : ''}】${isCart ? 'カート ' : ''}${productLabel} — ${recipientName}様`,
       html,
     }),
   });
@@ -636,6 +794,73 @@ async function createCalendarEvents(session: Stripe.Checkout.Session) {
   }));
 
   console.log('[webhook] Created ' + events.length + ' calendar events for ' + productLabel);
+}
+
+/**
+ * カート注文のカレンダー登録。手すり単品と同じ 4 イベント（制作開始 / 完了 / 発送 / 到着）を
+ * 1 注文につき 1 セットだけ作る。制作物の内訳は description に明細で入れる。
+ */
+async function createCartCalendarEvents(session: Stripe.Checkout.Session) {
+  if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY || !process.env.GOOGLE_CALENDAR_ID) {
+    console.log('[webhook] Google Calendar not configured, skipping');
+    return;
+  }
+
+  const { google } = await import('googleapis');
+  const meta = session.metadata || {};
+  const email = session.customer_details?.email || '不明';
+  const lines = decodeCartMetadata(meta);
+  const label = cartSummaryLabel(lines);
+  const rushLabel = meta.rush_delivery === 'true' ? '【特急】' : '';
+
+  // 配送先のみを使う（請求先にはフォールバックしない）
+  const { name: shipName, address: addr } = getShippingRecipient(session);
+
+  const auth = new google.auth.GoogleAuth({
+    credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY),
+    scopes: ['https://www.googleapis.com/auth/calendar'],
+  });
+  const calendar = google.calendar({ version: 'v3', auth });
+
+  const description = [
+    `カート注文（${lines.length}点 / 計${meta.cart_quantity || lines.length}本）`,
+    '',
+    ...lines.map((l, i) =>
+      `${i + 1}. ${l.label} — 座金${l.zakinCount}個${l.hasWasherType ? `・${l.washerType}タイプ` : ''} / ${l.finish}${
+        l.angleDeg ? ` / 角度${l.angleDir === 'right' ? '右' : '左'}${l.angleDeg}°` : ''
+      }`,
+    ),
+    '',
+    `合計: ¥${Number(meta.total_yen || 0).toLocaleString()}`,
+    meta.rush_delivery === 'true' ? `特急割増: ¥${Number(meta.rush_surcharge_yen || 0).toLocaleString()}` : '',
+    `送料: ${meta.shipping_note || '—'}`,
+    `お客様: ${shipName || session.customer_details?.name || '—'} <${email}>`,
+    `お届け先: ${formatShippingAddress(addr)}`,
+    meta.preferred_arrival_date ? `到着希望日: ${meta.preferred_arrival_date} ${meta.preferred_time_slot || '指定なし'}` : '',
+    `\nStripe Session: ${session.id}`,
+  ].filter(Boolean).join('\n');
+
+  const events = [
+    { summary: `${rushLabel}制作開始 — ${label}`, date: meta.production_start },
+    { summary: `${rushLabel}制作完了予定 — ${label}`, date: meta.production_complete },
+    { summary: `${rushLabel}発送予定 — ${label}`, date: meta.shipping_date },
+    { summary: `${rushLabel}到着予定 — ${label}`, date: meta.preferred_arrival_date || meta.arrival_estimate },
+  ];
+
+  await Promise.all(events.map((ev) => {
+    if (!ev.date) return Promise.resolve();
+    return calendar.events.insert({
+      calendarId: process.env.GOOGLE_CALENDAR_ID,
+      requestBody: {
+        summary: ev.summary,
+        description,
+        start: { date: ev.date },
+        end: { date: ev.date },
+      },
+    });
+  }));
+
+  console.log('[webhook] Created cart calendar events for', session.id);
 }
 
 async function createSimpleCalendarEvent(session: Stripe.Checkout.Session) {
@@ -714,14 +939,28 @@ async function prependOrderToLedger(session: Stripe.Checkout.Session) {
 
   const orderDate = new Date((session.created ?? Math.floor(Date.now() / 1000)) * 1000)
     .toLocaleDateString('ja-JP', { timeZone: 'Asia/Tokyo', year: 'numeric', month: '2-digit', day: '2-digit' });
-  const productName = String(meta.product_label || meta.product_name || meta.product || 'ご注文商品');
+  // カート注文は 1 注文 = 1 行にまとめ、商品欄に全商品を並べる（2026-07-31 蠣﨑さん確定）。
+  // 行を分けると金額の按分が必要になり、集計・納品書・発送通知（いずれも 1 行前提）が崩れるため。
+  const isCart = meta.product_type === 'cart';
+  const cartLines = isCart ? decodeCartMetadata(meta) : [];
+
+  const productName = isCart
+    ? cartLines.map((l) => l.label).join(' ／ ')
+    : String(meta.product_label || meta.product_name || meta.product || 'ご注文商品');
   // spec_text があればそれを正とする（階段手摺 Laurent 等、座金・長さ以外の仕様を持つ商品用）
-  const spec = meta.spec_text
-    ? meta.spec_text
-    : isSimple
-      ? `数量 ${meta.quantity || 1}`
-      : [lengthsInfo.full, meta.zakin_count ? `座金${meta.zakin_count}個` : '', meta.washer_type ? `座金${meta.washer_type}タイプ` : '', meta.color || '', meta.rush_delivery === 'true' ? '特急' : '']
-          .filter(Boolean).join(' / ');
+  const spec = isCart
+    ? [
+        ...cartLines.map((l) =>
+          `${l.productName}: 座金${l.zakinCount}個${l.hasWasherType ? `（${l.washerType}タイプ）` : ''} / ${l.finish}`,
+        ),
+        meta.rush_delivery === 'true' ? '特急' : '',
+      ].filter(Boolean).join(' / ')
+    : meta.spec_text
+      ? meta.spec_text
+      : isSimple
+        ? `数量 ${meta.quantity || 1}`
+        : [lengthsInfo.full, meta.zakin_count ? `座金${meta.zakin_count}個` : '', meta.washer_type ? `座金${meta.washer_type}タイプ` : '', meta.color || '', meta.rush_delivery === 'true' ? '特急' : '']
+            .filter(Boolean).join(' / ');
 
   const row = [
     orderDate,                                                        // 受注日
@@ -798,14 +1037,17 @@ export async function POST(request: NextRequest) {
     const session = event.data.object as Stripe.Checkout.Session;
     const meta = session.metadata || {};
     const isSimpleProduct = meta.product_type === 'simple';
+    const isCartOrder = meta.product_type === 'cart';
     console.log(
       '[webhook] checkout.session.completed for',
       meta.product_name,
-      isSimpleProduct ? '[SimpleProduct]' : '[手すり]'
+      isCartOrder ? `[カート ${meta.cart_lines}点]` : isSimpleProduct ? '[SimpleProduct]' : '[手すり]'
     );
 
     try {
-      if (isSimpleProduct) {
+      if (isCartOrder) {
+        await createCartCalendarEvents(session);
+      } else if (isSimpleProduct) {
         await createSimpleCalendarEvent(session);
       } else {
         await createCalendarEvents(session);
@@ -817,7 +1059,9 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      if (isSimpleProduct) {
+      if (isCartOrder) {
+        await sendCartOrderEmail(session);
+      } else if (isSimpleProduct) {
         await sendSimpleOrderEmail(session);
       } else {
         await sendOrderConfirmationEmail(session);

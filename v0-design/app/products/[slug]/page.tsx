@@ -28,7 +28,9 @@ import { calcShipping, getShippingRange, type ProductType } from "@/lib/shipping
 import { getEarliestArrival } from "@/lib/business-days"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
 import { lookupPriceFromTable, type DrawingProductConfig } from "@/lib/drawing-modal/products"
-import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench, Camera, Copy, FileDown, Truck } from "lucide-react"
+import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench, Camera, Copy, FileDown, Truck, ShoppingBag } from "lucide-react"
+import { useCart } from "@/lib/cart/store"
+import { CART_MAX_QUANTITY } from "@/lib/cart/types"
 import { fireGtagEvent } from "@/lib/gtag"
 import { TOTAL_VOICE_COUNT } from "@/lib/testimonials"
 import { ReviewVoiceIcon } from "@/components/ui/review-voice-icon"
@@ -195,6 +197,9 @@ export default function ProductDetailPage() {
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
   // 銀行振込での注文モーダル
   const [bankOrderOpen, setBankOrderOpen] = useState(false)
+  // カート（複数商品まとめ買い）
+  const { add: addToCart, count: cartCount, remaining: cartRemaining } = useCart()
+  const [cartAdded, setCartAdded] = useState(false)
   const prefectureRef = useRef<HTMLDivElement | null>(null)
   // モバイル スティッキー合計バー（2026-06-12 監査 B群⑪）:
   // 計算機を過ぎたら表示し、合計・購入エリアが見えている間は隠す
@@ -515,6 +520,48 @@ export default function ProductDetailPage() {
       items: [{ item_id: slug, item_name: product.nameEn, quantity }],
     })
     setBankOrderOpen(true)
+  }
+
+  // カートに追加（複数商品まとめ買い）。
+  // 同じ長さの本はまとめて 1 行にする。座金位置・角度は 1 本注文のときだけ引き継ぐ
+  // （多本は本ごとに自動配置のため。checkout / bank-order と同じ扱い）。
+  const handleAddToCart = () => {
+    const grouped = new Map<number, number>()
+    for (const L of lengths) grouped.set(L, (grouped.get(L) ?? 0) + 1)
+
+    let allAdded = true
+    for (const [itemLength, itemQty] of grouped) {
+      const added = addToCart({
+        product: slug,
+        lengthMm: itemLength,
+        quantity: itemQty,
+        washerType,
+        ...(supportsColor ? { color } : {}),
+        ...(hasOrientation ? { orientation } : {}),
+        ...(isMultiOrder
+          ? {}
+          : {
+              positions: zakin.positions,
+              zakinCustom: zakin.customMode,
+              angleDeg: zakin.angleDeg,
+              angleDir: zakin.angleDir,
+            }),
+      })
+      if (!added) allAdded = false
+    }
+
+    if (!allAdded) {
+      setCheckoutError(`カートは合計 ${CART_MAX_QUANTITY} 本までです。入りきらない分は追加できませんでした。`)
+      return
+    }
+    setCheckoutError(null)
+    setCartAdded(true)
+    window.setTimeout(() => setCartAdded(false), 2500)
+    fireGtagEvent("add_to_cart", {
+      currency: "JPY",
+      value: prices.subtotal,
+      items: [{ item_id: slug, item_name: product.nameEn, quantity: lengths.length }],
+    })
   }
 
   // Stripe Checkout 遷移
@@ -1713,6 +1760,40 @@ export default function ProductDetailPage() {
                             >
                               銀行振込で注文する
                             </PrimaryCTA>
+                          </div>
+
+                          {/* ほかの手すりとまとめ買い — カートに追加（既存の 2 ボタンはそのまま） */}
+                          <div className="pt-2 space-y-2">
+                            <div className="flex justify-center">
+                              <button
+                                type="button"
+                                onClick={handleAddToCart}
+                                disabled={cartRemaining === 0}
+                                className={`flex w-full max-w-[340px] items-center justify-center gap-2 py-4 border-2 rounded-md text-[15px] font-semibold transition-colors ${
+                                  cartRemaining === 0
+                                    ? "border-border text-muted-foreground cursor-not-allowed"
+                                    : cartAdded
+                                    ? "border-gold bg-gold/10 text-gold"
+                                    : "border-gold/50 bg-gold/[0.05] text-gold hover:border-gold hover:bg-gold/10"
+                                }`}
+                              >
+                                {cartAdded ? (
+                                  <><Check className="w-4 h-4 shrink-0" />カートに追加しました</>
+                                ) : (
+                                  <><ShoppingBag className="w-4 h-4 shrink-0" />カートに追加（ほかの手すりとまとめ買い）</>
+                                )}
+                              </button>
+                            </div>
+                            <p className="text-center text-[13px] text-muted-foreground leading-relaxed">
+                              {cartCount > 0 ? (
+                                <>
+                                  カートに <span className="text-foreground font-medium">{cartCount}本</span> 入っています ──
+                                  <Link href="/cart" className="text-gold underline ml-1">カートを見る</Link>
+                                </>
+                              ) : (
+                                <>複数本を一度のお支払いでまとめると、同梱できる分だけ送料が抑えられます。</>
+                              )}
+                            </p>
                           </div>
                         </div>
                       )}

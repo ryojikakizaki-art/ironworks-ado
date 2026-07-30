@@ -15,6 +15,8 @@ import {
 } from '@/lib/drawing-modal/clemence-svg';
 import { writeOrderRow } from '@/lib/order-ledger';
 import { BANK_ACCOUNT } from '@/lib/bank-account';
+// カート（複数商品まとめ買い）の価格・送料の正本（カートページ・カード決済と共有）。
+import { sanitizeCart, calcCartPricing } from '@/lib/cart/pricing';
 
 const clampNum = (v: unknown, lo: number, hi: number) =>
   Math.min(Math.max(Math.round(Number(v)) || lo, lo), hi);
@@ -37,6 +39,9 @@ export const runtime = 'nodejs';
  */
 
 type Body = {
+  // カート注文（複数商品まとめ買い）: cart=true のとき items を正として扱う
+  cart?: boolean;
+  items?: unknown[];
   // 商品仕様（/api/checkout と同じ）
   product?: string;
   lengths?: unknown[];
@@ -118,7 +123,33 @@ export async function POST(request: NextRequest) {
   let specParts: string[];
   let totalYen: number;
 
-  if (productKey === LAURENT.slug) {
+  if (body.cart === true) {
+    // カート（複数商品まとめ買い）: 価格・送料は lib/cart/pricing.ts で再計算（カード決済と共有）。
+    // 送料は全商品の長さをまとめて梱包判定するため、同梱できた分だけ単品×複数注文より安くなる。
+    const items = sanitizeCart(body.items);
+    if (items.length === 0) {
+      return NextResponse.json({ ok: false, error: 'カートに商品がありません' }, { status: 400 });
+    }
+    const rushDelivery = !!body.rushDelivery;
+    const pricing = calcCartPricing(items, prefecture, rushDelivery);
+    if (pricing.shippingInquiry) {
+      return NextResponse.json({
+        ok: false,
+        error: pricing.shippingInquiryReason || '配送条件により別途お見積もりが必要です',
+      }, { status: 400 });
+    }
+    totalYen = pricing.total;
+    // 受注台帳は 1 注文 = 1 行。商品欄に全商品を並べる（2026-07-31 蠣﨑さん確定）。
+    productLabel = pricing.lines
+      .map((l) => `${l.label}${l.item.quantity > 1 ? ` × ${l.item.quantity}本` : ''}`)
+      .join(' ／ ');
+    specParts = [
+      ...pricing.lines.map((l) =>
+        `${l.product.name}: 座金${l.zakinCount}個${l.product.zakinRule ? `（${l.item.washerType}タイプ）` : ''} / ${l.item.color === 'white' ? 'マットホワイト' : l.product.finish}`,
+      ),
+      rushDelivery ? '特急配送（5営業日）' : '通常配送（10営業日）',
+    ];
+  } else if (productKey === LAURENT.slug) {
     // Laurent（階段手摺・段数ベース価格）: 正本 lib/products/stair-pricing.ts で再計算。
     // 全長 3,500mm 超は parseStairOrderBody 側で inquiry エラーになる。
     const parsed = parseStairOrderBody(body as Record<string, unknown>);
