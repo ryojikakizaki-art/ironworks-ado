@@ -35,7 +35,7 @@ const SIMPLE_PRODUCTS = SIMPLE_HREFS.map((href) => {
 export default function SimpleCategoryPage() {
   return (
     <>
-      <Header />
+      <Header hasHero />
 
       <main className="bg-background text-foreground">
         {/* HERO — スプリットレイアウト: 上に写真をフルブリードで、下にテキストを別ブロックで配置。

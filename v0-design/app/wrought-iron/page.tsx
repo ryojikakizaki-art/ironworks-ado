@@ -63,7 +63,7 @@ const COMPARISON = [
 export default function WroughtIronPage() {
   return (
     <>
-      <Header />
+      <Header hasHero />
       <main className="bg-background text-foreground">
         {/* HERO — スクロール意匠のクローズアップを主役に */}
         <section className="relative h-[72vh] min-h-[520px] w-full overflow-hidden">

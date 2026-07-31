@@ -11,15 +11,29 @@ type NavItem =
   | { label: string; href: string; children?: undefined }
   | { label: string; href?: undefined; children: NavChild[] }
 
-export function Header({ forceDark = false }: { forceDark?: boolean } = {}) {
-  // ヒーローエリア（高さ100vh）の上にいるかどうか。背景が暗いので文字色を白に。
-  // forceDark: /kaigo のように明るいヒーローを持つページで白ロゴが埋没するのを防ぐ
-  const [overHeroRaw, setOverHero] = useState(true)
+export function Header({
+  forceDark = false,
+  hasHero = false,
+}: { forceDark?: boolean; hasHero?: boolean } = {}) {
+  // 暗いヒーロー写真の上にいる間だけ白ロゴ（ado_logo_W）＋白文字にする。
+  //
+  // 既定は false = 黒ロゴ（ado_logo_K）。これは安全側の既定値で、
+  // ヒーローを持たない白背景のページ（/faq /price /products など大多数）で
+  // 白ロゴ・白ナビが白地に描画されて「ヘッダーが真っ白で見えない」状態になるのを防ぐ。
+  // 新しいページで hasHero を書き忘れても、最悪「白地に黒ロゴ＝読める」で済む。
+  //
+  // hasHero:   暗い全画面ヒーローを持つページだけ true を渡す
+  //            （/ トップ, /about, /categories/antique, /categories/simple, /wrought-iron）
+  //            true のときだけスクロール監視を行い、ヒーローを抜けたら黒ロゴへ切り替える。
+  // forceDark: 明るいヒーローで白ロゴが埋没するページの打ち消し用（/kaigo など）。hasHero より優先。
+  const [overHeroRaw, setOverHero] = useState(hasHero)
   const overHero = forceDark ? false : overHeroRaw
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
 
   useEffect(() => {
+    // ヒーローを持たないページはスクロールしても常に黒ロゴなので監視不要
+    if (!hasHero) return
     const handleScroll = () => {
       const y = window.scrollY
       const vh = window.innerHeight
@@ -29,7 +43,7 @@ export function Header({ forceDark = false }: { forceDark?: boolean } = {}) {
     handleScroll()
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [hasHero])
 
   const navItems: NavItem[] = [
     { label: "製品一覧", href: "/#lineup" },
