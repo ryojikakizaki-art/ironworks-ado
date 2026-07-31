@@ -107,3 +107,35 @@ export function getRelatedProducts(slug: string, count = 3): CatalogProduct[] {
   if (!self) return []
   return CATALOG_PRODUCTS.filter((p) => p.cat === self.cat && p.href !== selfHref).slice(0, count)
 }
+
+/**
+ * Scroll スクロールシリーズ（16φ/19φ/22φ）の太さバリエーション一覧。
+ * 初めて訪れた人は太さの感覚がつかめないため、商品ページ上部で
+ * 他の太さと見比べられるようにする（関連商品セクションとは別枠）。
+ */
+export const THICKNESS_VARIANT_GROUPS: { slug: string; diameter: string; blurb: string }[][] = [
+  [
+    { slug: "scroll16", diameter: "16φ", blurb: "さりげなく、繊細な佇まい" },
+    { slug: "scroll19", diameter: "19φ", blurb: "ズシッと、安心感のある太さ" },
+    { slug: "scroll22", diameter: "22φ", blurb: "しっかり握れる、圧倒的な存在感" },
+  ],
+]
+
+export interface ThicknessVariant {
+  slug: string
+  diameter: string
+  blurb: string
+  isSelf: boolean
+  product: CatalogProduct
+}
+
+export function getThicknessSiblings(slug: string): ThicknessVariant[] {
+  const group = THICKNESS_VARIANT_GROUPS.find((g) => g.some((v) => v.slug === slug))
+  if (!group) return []
+  return group
+    .map((v) => {
+      const product = CATALOG_PRODUCTS.find((p) => p.href === `/products/${v.slug}`)
+      return product ? { ...v, isSelf: v.slug === slug, product } : null
+    })
+    .filter((v): v is ThicknessVariant => v !== null)
+}
