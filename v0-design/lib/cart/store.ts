@@ -16,7 +16,7 @@
 
 import { useCallback, useSyncExternalStore } from 'react'
 import { CART_MAX_QUANTITY, type CartItem } from './types'
-import { sanitizeCart } from './pricing'
+import { sanitizeCart, sanitizeCartItem } from './pricing'
 
 const STORAGE_KEY = 'ado-cart-v1'
 
@@ -79,6 +79,28 @@ function getServerSnapshot(): CartItem[] {
   return EMPTY
 }
 
+/**
+ * 2 行が「同じ仕様」か判定する（id・数量は見ない）。
+ * 「カートに追加」を押したあと「購入手続きへ」を押しても二重に入らないよう、
+ * 同一仕様の再追加を検出するために使う。
+ *
+ * ⚠ 必ず sanitizeCartItem を通した値どうしで比較すること。
+ * 保存時は sanitize で positions / angleDeg などが落ちるため、生の入力と
+ * 保存済みの行を直接比べると同一仕様でも不一致になる。
+ */
+function isSameConfig(a: Omit<CartItem, 'id'>, b: CartItem): boolean {
+  return (
+    a.product === b.product &&
+    a.lengthMm === b.lengthMm &&
+    a.washerType === b.washerType &&
+    (a.color ?? 'black') === (b.color ?? 'black') &&
+    (a.orientation ?? 'left') === (b.orientation ?? 'left') &&
+    (a.angleDeg ?? 0) === (b.angleDeg ?? 0) &&
+    (a.angleDir ?? 'left') === (b.angleDir ?? 'left') &&
+    (a.positions ?? []).join(',') === (b.positions ?? []).join(',')
+  )
+}
+
 export interface UseCartResult {
   items: CartItem[]
   /** カート内の合計本数 */
@@ -87,6 +109,10 @@ export interface UseCartResult {
   remaining: number
   /** 追加した場合 true、上限で追加できなかった場合 false */
   add: (item: Omit<CartItem, 'id'>) => boolean
+  /** すでに同じ仕様が入っていれば何もしない追加（購入手続きへ用） */
+  addIfAbsent: (item: Omit<CartItem, 'id'>) => boolean
+  /** 同じ仕様が既にカートにあるか */
+  hasConfig: (item: Omit<CartItem, 'id'>) => boolean
   remove: (id: string) => void
   setQuantity: (id: string, quantity: number) => void
   clear: () => void
@@ -98,18 +124,47 @@ export function useCart(): UseCartResult {
   const remaining = Math.max(0, CART_MAX_QUANTITY - count)
 
   const add = useCallback((item: Omit<CartItem, 'id'>) => {
+    // 保存後の形に揃えてから既存行と突き合わせる（isSameConfig の注記参照）
+    const normalized = sanitizeCartItem({ ...item, id: 'pending' })
+    if (!normalized) return false
+
     const current = getSnapshot()
     const used = current.reduce((s, i) => s + i.quantity, 0)
     const room = CART_MAX_QUANTITY - used
     if (room <= 0) return false
-    const next: CartItem = {
-      ...item,
-      quantity: Math.min(item.quantity, room),
-      id: `${item.product}-${item.lengthMm}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    const addQty = Math.min(normalized.quantity, room)
+
+    // 同じ仕様が既にあれば行を増やさず本数だけ足す
+    // （「カートに追加」を 2 回押して同じ商品が 2 行に並ぶのを防ぐ）。
+    const existing = current.find((i) => isSameConfig(normalized, i))
+    if (existing) {
+      persist(current.map((i) => (i.id === existing.id ? { ...i, quantity: i.quantity + addQty } : i)))
+      return addQty === normalized.quantity
     }
-    persist(sanitizeCart([...current, next]))
-    return true
+
+    persist(sanitizeCart([
+      ...current,
+      {
+        ...normalized,
+        quantity: addQty,
+        id: `${normalized.product}-${normalized.lengthMm}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      },
+    ]))
+    return addQty === normalized.quantity
   }, [])
+
+  const hasConfig = useCallback((item: Omit<CartItem, 'id'>) => {
+    const normalized = sanitizeCartItem({ ...item, id: 'pending' })
+    if (!normalized) return false
+    return getSnapshot().some((i) => isSameConfig(normalized, i))
+  }, [])
+
+  // 「購入手続きへ」用。すでに同じ仕様が入っていれば数量を増やさずそのまま通す
+  // （「カートに追加」→「購入手続きへ」と続けて押しても二重にならない）。
+  const addIfAbsent = useCallback((item: Omit<CartItem, 'id'>) => {
+    if (hasConfig(item)) return true
+    return add(item)
+  }, [add, hasConfig])
 
   const remove = useCallback((id: string) => {
     persist(getSnapshot().filter((i) => i.id !== id))
@@ -126,7 +181,7 @@ export function useCart(): UseCartResult {
     persist([])
   }, [])
 
-  return { items, count, remaining, add, remove, setQuantity, clear }
+  return { items, count, remaining, add, addIfAbsent, hasConfig, remove, setQuantity, clear }
 }
 
 /** 決済完了後にカートを空にする（/thanks から呼ぶ） */

@@ -1,7 +1,8 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { Suspense, useMemo, useState } from "react"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { ChevronDown, Check, Trash2, ShoppingBag, Truck } from "lucide-react"
 import { AnimatePresence, motion } from "framer-motion"
 import { Header } from "@/components/header"
@@ -26,11 +27,18 @@ const prefectures = [
   "熊本県", "大分県", "宮崎県", "鹿児島県", "沖縄県",
 ]
 
-export default function CartPage() {
+function CartContent() {
+  // 商品ページの「購入手続きへ」から引き継いだ配送先・配送区分（選び直しの手間を省く）
+  const searchParams = useSearchParams()
+  const initialPrefecture = searchParams.get("pref") || ""
+  const initialRush = searchParams.get("rush") === "1"
+
   const { items, count, remove, setQuantity } = useCart()
-  const [prefecture, setPrefecture] = useState("")
+  const [prefecture, setPrefecture] = useState(
+    prefectures.includes(initialPrefecture) ? initialPrefecture : "",
+  )
   const [isPrefectureOpen, setIsPrefectureOpen] = useState(false)
-  const [deliveryType, setDeliveryType] = useState<"normal" | "express">("normal")
+  const [deliveryType, setDeliveryType] = useState<"normal" | "express">(initialRush ? "express" : "normal")
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
@@ -446,5 +454,25 @@ export default function CartPage() {
 
       <Footer />
     </>
+  )
+}
+
+/**
+ * useSearchParams（商品ページから引き継ぐ配送先・配送区分）は Suspense 境界が要る。
+ * フォールバックはヘッダーだけの素の枠にして、レイアウトのガタつきを避ける。
+ */
+export default function CartPage() {
+  return (
+    <Suspense
+      fallback={
+        <>
+          <Header forceDark />
+          <main className="pt-20 lg:pt-24 pb-20 bg-background min-h-screen" />
+          <Footer />
+        </>
+      }
+    >
+      <CartContent />
+    </Suspense>
   )
 }
