@@ -16,7 +16,7 @@ import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants
 import { getProductFull, galleryUrl, type FeatureIconName } from "@/lib/products/display"
 import { getSimpleProduct } from "@/lib/products/simple"
 import { StairProductPage } from "@/components/stair-product-page"
-import { getRelatedProducts } from "@/lib/products/catalog"
+import { getRelatedProducts, getThicknessSiblings } from "@/lib/products/catalog"
 import { getProductStructuredData } from "@/lib/products/structured-data"
 import { SimpleProductPage } from "@/components/simple-product-page"
 import { FinishCommitment } from "@/components/finish-commitment"
@@ -788,6 +788,65 @@ export default function ProductDetailPage() {
                   分かります。
                 </p>
               </div>
+
+              {/* 太さで選ぶ — Scroll シリーズ(16φ/19φ/22φ)のみ表示。検索等で1太さに直接来た
+                  初見の人が太さ感覚をつかめるよう、価格の直後という早い位置で他の太さへ誘導する。
+                  対象外の商品は siblings が空配列になり何も表示しない。 */}
+              {(() => {
+                const siblings = getThicknessSiblings(slug)
+                if (siblings.length === 0) return null
+                return (
+                  <div className="rounded-lg border border-gold/20 bg-card p-5 sm:p-6">
+                    <p className="mb-1 text-[12px] tracking-[0.2em] text-gold font-semibold">
+                      太さで選ぶ
+                    </p>
+                    <p className="mb-4 text-[13px] md:text-[14px] text-muted-foreground leading-relaxed">
+                      同じ意匠で、太さは3種類。握り心地・存在感の違いをご覧ください。
+                    </p>
+                    <div className="grid grid-cols-3 gap-2 sm:gap-4">
+                      {siblings.map((v) => {
+                        const card = (
+                          <>
+                            <div
+                              className={`aspect-square rounded-md overflow-hidden relative mb-2 ${
+                                v.isSelf ? "ring-2 ring-gold" : "ring-1 ring-border"
+                              }`}
+                            >
+                              <Image
+                                src={galleryUrl(`${v.product.img}.jpg`)}
+                                alt={v.product.name}
+                                fill
+                                className={`object-cover ${!v.isSelf ? "group-hover:scale-105 transition-transform duration-500" : ""}`}
+                              />
+                            </div>
+                            <p className="font-serif text-[16px] md:text-[18px] text-foreground">
+                              {v.diameter}
+                            </p>
+                            <p className="text-[13px] text-muted-foreground leading-snug">
+                              {v.blurb}
+                            </p>
+                            <p className="mt-1 text-[13px] text-muted-foreground">
+                              {priceLabel(v.product.price, v.product.priceFrom)}
+                            </p>
+                            {v.isSelf && (
+                              <p className="mt-1 text-[12px] text-gold font-semibold">この商品</p>
+                            )}
+                          </>
+                        )
+                        return v.isSelf ? (
+                          <div key={v.slug} className="text-center">
+                            {card}
+                          </div>
+                        ) : (
+                          <Link key={v.slug} href={v.product.href} className="group block text-center">
+                            {card}
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })()}
 
               {/* 介護保険のご案内（図面フロー商品は全て手すり） */}
               <KaigoNotice />
