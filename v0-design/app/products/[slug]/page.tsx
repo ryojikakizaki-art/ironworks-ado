@@ -515,6 +515,16 @@ export default function ProductDetailPage() {
     })
   }
 
+  // 価格の目安ボックス横のクイック追加ボタン。配送先が未選択のまま追加すると
+  // 送料未確定のままカートに入ってしまうため、未選択時は追加せず配送先選択欄へ誘導する。
+  const handleQuickAddToCart = () => {
+    if (!prefecture) {
+      prefectureRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+      return
+    }
+    handleAddToCart()
+  }
+
   // 購入手続きへ: いまの仕様をカートに入れて /cart へ。
   // 支払い方法（クレジットカード / 銀行振込）は /cart で選んでいただく。
   // 「カートに追加」を押したあとに押しても二重に入らないよう addIfAbsent を使う。
@@ -730,12 +740,28 @@ export default function ProductDetailPage() {
                 <p className="mb-2 text-[12px] tracking-[0.2em] text-gold font-semibold">
                   価格の目安
                 </p>
-                <div className="flex items-baseline gap-2 flex-wrap">
-                  <span className="font-serif text-3xl lg:text-4xl text-foreground">
-                    ¥{BASE_PRICE.toLocaleString()}
-                    {!isFixedLength && <span className="text-2xl lg:text-3xl">〜</span>}
-                  </span>
-                  <span className="text-[13px] text-muted-foreground">本体価格・税込</span>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-baseline gap-2 flex-wrap">
+                    <span className="font-serif text-3xl lg:text-4xl text-foreground">
+                      ¥{BASE_PRICE.toLocaleString()}
+                      {!isFixedLength && <span className="text-2xl lg:text-3xl">〜</span>}
+                    </span>
+                    <span className="text-[13px] text-muted-foreground">本体価格・税込</span>
+                  </div>
+                  {!prices.shippingInquiry && (
+                    <PrimaryCTA
+                      type="button"
+                      onClick={handleQuickAddToCart}
+                      disabled={cartRemaining === 0}
+                      variant="purchase"
+                      size="sm"
+                      withArrow={false}
+                      icon={cartAdded ? <Check className="w-4 h-4 shrink-0" /> : <ShoppingBag className="w-4 h-4 shrink-0" />}
+                      className="font-sans shrink-0"
+                    >
+                      {cartAdded ? "追加しました" : "カートに追加"}
+                    </PrimaryCTA>
+                  )}
                 </div>
                 <p className="mt-2 text-[13px] md:text-[14px] text-muted-foreground leading-relaxed">
                   {isRangedFixed
