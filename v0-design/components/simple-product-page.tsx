@@ -1074,7 +1074,7 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
                                 withArrow
                                 className="font-sans w-full max-w-[340px]"
                               >
-                                銀行振込で注文する
+                                銀行振込で購入する
                               </PrimaryCTA>
                             </div>
                           </div>

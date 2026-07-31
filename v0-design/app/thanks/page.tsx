@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
+import { clearCartStorage } from "@/lib/cart/store"
 
 type GtagFn = (...args: unknown[]) => void
 declare global {
@@ -92,6 +93,10 @@ function ThanksContent() {
   useEffect(() => {
     if (!data || data.payment_status !== "paid" || cvFiredRef.current) return
     cvFiredRef.current = true
+
+    // カート注文の決済が完了したらカートを空にする。
+    // 単品購入では触らない（カートに入れたまま単品を買うケースがあるため）。
+    if (data.metadata?.product_type === "cart") clearCartStorage()
 
     const value = data.amount_total ?? 0
     const currency = (data.currency || "JPY").toUpperCase()

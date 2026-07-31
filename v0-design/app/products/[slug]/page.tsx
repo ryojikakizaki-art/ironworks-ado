@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useCallback, useRef, useEffect, useMemo } from "react"
-import { useParams, useSearchParams } from "next/navigation"
+import { useParams, useSearchParams, useRouter } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
@@ -19,8 +19,6 @@ import { StairProductPage } from "@/components/stair-product-page"
 import { getRelatedProducts } from "@/lib/products/catalog"
 import { getProductStructuredData } from "@/lib/products/structured-data"
 import { SimpleProductPage } from "@/components/simple-product-page"
-import { EmbeddedCheckoutModal } from "@/components/checkout/embedded-checkout-modal"
-import { BankOrderModal } from "@/components/checkout/bank-order-modal"
 import { FinishCommitment } from "@/components/finish-commitment"
 import { KaigoNotice } from "@/components/kaigo-notice"
 import { ProductFaq } from "@/components/product-faq"
@@ -28,7 +26,9 @@ import { calcShipping, getShippingRange, type ProductType } from "@/lib/shipping
 import { getEarliestArrival } from "@/lib/business-days"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
 import { lookupPriceFromTable, type DrawingProductConfig } from "@/lib/drawing-modal/products"
-import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench, Camera, Copy, FileDown, Truck } from "lucide-react"
+import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench, Camera, Copy, FileDown, Truck, ShoppingBag } from "lucide-react"
+import { useCart } from "@/lib/cart/store"
+import { CART_MAX_QUANTITY } from "@/lib/cart/types"
 import { fireGtagEvent } from "@/lib/gtag"
 import { TOTAL_VOICE_COUNT } from "@/lib/testimonials"
 import { ReviewVoiceIcon } from "@/components/ui/review-voice-icon"
@@ -189,12 +189,11 @@ export default function ProductDetailPage() {
   const [orientation, setOrientation] = useState<"right" | "left">(
     hasOrientation && restoredQuote.orientation ? restoredQuote.orientation : "left"
   )
-  const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
-  // Embedded Checkout: clientSecret が入ったらモーダルが開く
-  const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
-  // 銀行振込での注文モーダル
-  const [bankOrderOpen, setBankOrderOpen] = useState(false)
+  // カート（複数商品まとめ買い）。決済（カード / 銀行振込の選択）は /cart で行う。
+  const router = useRouter()
+  const { add: addToCart, addIfAbsent: addToCartIfAbsent, count: cartCount, remaining: cartRemaining } = useCart()
+  const [cartAdded, setCartAdded] = useState(false)
   const prefectureRef = useRef<HTMLDivElement | null>(null)
   // モバイル スティッキー合計バー（2026-06-12 監査 B群⑪）:
   // 計算機を過ぎたら表示し、合計・購入エリアが見えている間は隠す
@@ -410,33 +409,7 @@ export default function ProductDetailPage() {
   // ヒーロー画像はスワイプ+矢印で切替・サムネタップでヒーローに反映する方式に移行。
 
 
-  // カード決済 (/api/checkout) と銀行振込 (/api/bank-order) で共有する注文ペイロード。
-  // 両フローで完全に同じ入力をサーバへ送ることで、価格計算のズレを構造的に防ぐ。
-  const orderPayload = {
-    product: slug,
-    // 多本対応 (PR #2): lengths 配列を主、lengthMm + quantity は後方互換
-    lengths,
-    lengthMm: length,
-    quantity,
-    rushDelivery: deliveryType === "express",
-    prefecture,
-    washerType,
-    ...(supportsColor ? { color } : {}),
-    // 単品注文のみ お客様が指定した座金位置・カスタム有無・角度を同送する。
-    // positions/angle は制作図の再現に、zakinCustom/angleDeg は座金本数・角度料金の課金に使う。
-    // 多本注文は本ごとに長さが異なり座金は自動配置のため送らない。
-    ...(isMultiOrder
-      ? {}
-      : {
-          positions: zakin.positions,
-          zakinCustom: zakin.customMode,
-          angleDeg: zakin.angleDeg,
-          angleDir: zakin.angleDir,
-        }),
-    ...(hasOrientation ? { orientation } : {}),
-  }
-
-  // 注文内訳（カード決済・銀行振込モーダルで共用）
+  // 注文内訳（見積書 PDF で使用。決済は /cart 側で行う）
   const checkoutSummary = {
     productName: isMultiOrder
       ? `${product.nameEn} ${product.nameJaShort} 壁付け手すり ${lengths.length}本（複数長さ）${hasOrientation ? `（${orientation === "left" ? "左向き" : "右向き"}）` : ""}`
@@ -498,60 +471,75 @@ export default function ProductDetailPage() {
   const quoteIssueDate = new Date().toLocaleDateString("ja-JP", { year: "numeric", month: "long", day: "numeric" })
   const handlePrintQuote = () => window.print()
 
-  // 銀行振込ボタン: 都道府県チェックのみ行い、注文フォームモーダルを開く
-  const handleBankOrder = () => {
-    if (prices.shippingInquiry) return
-    if (!prefecture) {
-      setCheckoutError("配送先都道府県を選択してください")
-      prefectureRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
-      setIsPrefectureOpen(true)
-      return
-    }
-    setCheckoutError(null)
-    fireGtagEvent("begin_checkout", {
-      currency: "JPY",
-      value: prices.total,
-      checkout_method: "bank",
-      items: [{ item_id: slug, item_name: product.nameEn, quantity }],
-    })
-    setBankOrderOpen(true)
+  // いま画面で組み立てている仕様をカート 1 行分の形にする。
+  // 同じ長さの本はまとめて 1 行。座金位置・角度は 1 本注文のときだけ引き継ぐ
+  // （多本は本ごとに自動配置のため。checkout / bank-order と同じ扱い）。
+  const buildCartLines = () => {
+    const grouped = new Map<number, number>()
+    for (const L of lengths) grouped.set(L, (grouped.get(L) ?? 0) + 1)
+    return Array.from(grouped, ([itemLength, itemQty]) => ({
+      product: slug,
+      lengthMm: itemLength,
+      quantity: itemQty,
+      washerType,
+      ...(supportsColor ? { color } : {}),
+      ...(hasOrientation ? { orientation } : {}),
+      ...(isMultiOrder
+        ? {}
+        : {
+            positions: zakin.positions,
+            zakinCustom: zakin.customMode,
+            angleDeg: zakin.angleDeg,
+            angleDir: zakin.angleDir,
+          }),
+    }))
   }
 
-  // Stripe Checkout 遷移
-  const handleCheckout = async () => {
-    if (prices.shippingInquiry || isCheckingOut) return
-    if (!prefecture) {
-      setCheckoutError("配送先都道府県を選択してください")
-      prefectureRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
-      setIsPrefectureOpen(true)
+  // カートに追加（ページに留まり、他の商品も選べる）
+  const handleAddToCart = () => {
+    let allAdded = true
+    for (const line of buildCartLines()) {
+      if (!addToCart(line)) allAdded = false
+    }
+    if (!allAdded) {
+      setCheckoutError(`カートは合計 ${CART_MAX_QUANTITY} 本までです。入りきらない分は追加できませんでした。`)
       return
     }
     setCheckoutError(null)
-    setIsCheckingOut(true)
+    setCartAdded(true)
+    window.setTimeout(() => setCartAdded(false), 2500)
+    fireGtagEvent("add_to_cart", {
+      currency: "JPY",
+      value: prices.subtotal,
+      items: [{ item_id: slug, item_name: product.nameEn, quantity: lengths.length }],
+    })
+  }
+
+  // 購入手続きへ: いまの仕様をカートに入れて /cart へ。
+  // 支払い方法（クレジットカード / 銀行振込）は /cart で選んでいただく。
+  // 「カートに追加」を押したあとに押しても二重に入らないよう addIfAbsent を使う。
+  const handleProceedToCheckout = () => {
+    if (prices.shippingInquiry) return
+    let allAdded = true
+    for (const line of buildCartLines()) {
+      if (!addToCartIfAbsent(line)) allAdded = false
+    }
+    if (!allAdded) {
+      setCheckoutError(`カートは合計 ${CART_MAX_QUANTITY} 本までです。カートを見て調整してください。`)
+      return
+    }
+    setCheckoutError(null)
     fireGtagEvent("begin_checkout", {
       currency: "JPY",
       value: prices.total,
-      checkout_method: "card",
-      items: [{ item_id: slug, item_name: product.nameEn, quantity }],
+      items: [{ item_id: slug, item_name: product.nameEn, quantity: lengths.length }],
     })
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderPayload),
-      })
-      const data = await res.json()
-      if (!res.ok || !data?.clientSecret) {
-        setCheckoutError(data?.error ?? "購入手続きを開始できませんでした")
-        setIsCheckingOut(false)
-        return
-      }
-      setCheckoutClientSecret(data.clientSecret)
-      setIsCheckingOut(false)
-    } catch {
-      setCheckoutError("ネットワークエラーが発生しました。時間をおいて再度お試しください")
-      setIsCheckingOut(false)
-    }
+    // 商品ページで選んだ配送先・配送区分をカートへ引き継ぎ、選び直しの手間をなくす
+    const params = new URLSearchParams()
+    if (prefecture) params.set("pref", prefecture)
+    if (deliveryType === "express" && expressAllowed) params.set("rush", "1")
+    const query = params.toString()
+    router.push(query ? `/cart?${query}` : "/cart")
   }
 
   // Delivery date calculation
@@ -1689,31 +1677,46 @@ export default function ProductDetailPage() {
                         )
                       ) : (
                         <div className="space-y-3">
-                          <div className="flex justify-center">
-                            <PrimaryCTA
-                              onClick={handleCheckout}
-                              disabled={isCheckingOut}
-                              variant="purchase"
-                              size="lg"
-                              withArrow
-                              className={`font-sans w-full max-w-[340px] ${isCheckingOut ? "cursor-wait" : ""}`}
-                            >
-                              {isCheckingOut ? "購入ページへ移動中…" : "クレジットカードで購入"}
-                            </PrimaryCTA>
-                          </div>
-                          {/* 銀行振込での注文 — クレジットカードと同形状・濃いグレー（白抜き・ゴシック太字） */}
+                          {/* カートに追加 — ページに留まり、ほかの手すりも選べる */}
                           <div className="flex justify-center">
                             <PrimaryCTA
                               type="button"
-                              onClick={handleBankOrder}
+                              onClick={handleAddToCart}
+                              disabled={cartRemaining === 0}
+                              variant="purchase"
+                              size="lg"
+                              withArrow={false}
+                              icon={cartAdded ? <Check className="w-4 h-4 shrink-0" /> : <ShoppingBag className="w-4 h-4 shrink-0" />}
+                              className="font-sans w-full max-w-[340px]"
+                            >
+                              {cartAdded ? "カートに追加しました" : "カートに追加"}
+                            </PrimaryCTA>
+                          </div>
+
+                          {/* 購入手続きへ — /cart でクレジットカード / 銀行振込を選んで決済 */}
+                          <div className="flex justify-center">
+                            <PrimaryCTA
+                              type="button"
+                              onClick={handleProceedToCheckout}
                               variant="purchase-steel"
                               size="lg"
                               withArrow
                               className="font-sans w-full max-w-[340px]"
                             >
-                              銀行振込で注文する
+                              購入手続きへ
                             </PrimaryCTA>
                           </div>
+
+                          <p className="text-center text-[13px] text-muted-foreground leading-relaxed">
+                            {cartCount > 0 ? (
+                              <>
+                                カートに <span className="text-foreground font-medium">{cartCount}本</span> 入っています ──
+                                <Link href="/cart" className="text-gold underline ml-1">カートを見る</Link>
+                              </>
+                            ) : (
+                              <>お支払い方法（クレジットカード / 銀行振込）は次のページでお選びいただけます。</>
+                            )}
+                          </p>
                         </div>
                       )}
 
@@ -1868,20 +1871,6 @@ export default function ProductDetailPage() {
         washerType={washerType}
         color={color}
         lengths={isMultiOrder ? lengths : undefined}
-      />
-
-      <EmbeddedCheckoutModal
-        open={!!checkoutClientSecret}
-        clientSecret={checkoutClientSecret}
-        onClose={() => setCheckoutClientSecret(null)}
-        summary={checkoutSummary}
-      />
-
-      <BankOrderModal
-        open={bankOrderOpen}
-        onClose={() => setBankOrderOpen(false)}
-        orderPayload={orderPayload}
-        summary={checkoutSummary}
       />
 
       {/* 見積書 PDF 化（タスク1第2段階・2026-07-02）。画面には表示せず印刷/PDF保存時のみ表示。

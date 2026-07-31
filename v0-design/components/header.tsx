@@ -4,7 +4,8 @@ import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import Image from "next/image"
-import { Menu, X, ChevronDown } from "lucide-react"
+import { Menu, X, ChevronDown, ShoppingBag } from "lucide-react"
+import { useCart } from "@/lib/cart/store"
 
 type NavChild = { label: string; href: string; sub?: string }
 type NavItem =
@@ -30,6 +31,9 @@ export function Header({
   const overHero = forceDark ? false : overHeroRaw
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  // カートに 1 本以上入っている時だけアイコンを出す。空の時に「0」を常時表示すると
+  // 壊れている印象を与えるため、2026-06-12 に一度撤去した経緯がある。
+  const { count: cartCount } = useCart()
 
   useEffect(() => {
     // ヒーローを持たないページはスクロールしても常に黒ロゴなので監視不要
@@ -178,8 +182,24 @@ export function Header({
 
             {/* Right Actions */}
             <div className="flex items-center gap-3">
-              {/* カートアイコンは撤去（2026-06-12）。カート機能が無いのに常時
-                  「0」表示・クリック無反応で、壊れている印象を与えていたため。 */}
+              {/* カートアイコン — 中身がある時だけ表示する。
+                  2026-06-12 に一度撤去したのは「カート機能が無いのに常時 0 表示・
+                  クリック無反応」だったため。カート機能の新設に伴い、
+                  0 件では出さない形で復活させている。 */}
+              {cartCount > 0 && (
+                <Link
+                  href="/cart"
+                  aria-label={`カート（${cartCount}本）`}
+                  className={`relative p-2 rounded-full transition-all duration-300 ${
+                    overHero ? "text-white hover:bg-white/10" : "text-dark hover:bg-muted"
+                  }`}
+                >
+                  <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 flex items-center justify-center rounded-full bg-gold text-white text-[11px] font-bold leading-none">
+                    {cartCount}
+                  </span>
+                </Link>
+              )}
 
               {/* Hamburger Menu */}
               <button
