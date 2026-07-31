@@ -530,6 +530,66 @@ export const SIMPLE_PRODUCTS: Record<string, SimpleProduct> = {
       "fb5509d9f03af204c23a.jpg",
     ],
   },
+  gaston: {
+    slug: "gaston",
+    nameEn: "Gaston",
+    nameJa: "ガストン",
+    category: "横型手すり",
+    subtitle: "壁付け手すり・横型 極太丸棒 鎚目",
+    shortDescription: "無垢鉄を叩き出した極太32φ丸棒の鍛造階段手すり",
+    // 価格・サイズは仕様確定前のため 0 円 = 要見積もり扱い（isQuoteOnly）。
+    // 実際に金額をお支払いいただける状態ではないため、購入導線は一切出さない。
+    longDescription:
+      "Gaston（ガストン）は、ゲルマン語由来の古いフランス語名で「客をもてなす者」「力強く勇敢な者」を意味します。極太の丸棒が持つ頼もしい存在感と、お客様やご家族をしっかり出迎え、護るという想いを込めた名前です。\n\n無垢の丸鉄を職人がハンマーで一本一本叩き出し、鎚目の凹凸が光を受けるたびに表情を変える、力強く重厚な仕上がりです。一般的な手すりよりも太い丸棒を採用することで、握った瞬間にわかる圧倒的な安心感を実現しました。\n\n仕上がりの美しさ、使いやすさにこだわり、目立たない細かな部分も手をぬかず、長く愛用していただけるよう丁寧に制作しております。IRONWORKS ado は、傷や錆を「鉄の味わい」と謳うような不誠実なものづくりはいたしません。\n\n住まいづくりの中で手すりはこだわる優先度が低いものかもしれませんが、『丁寧に作られた』アイアン手すりのある空間は全体を引き締め、毎日を上質で豊かにしてくれます。角やひっかかる危ない箇所がないよう丁寧に仕上げておりますので、小さなお子様がいるご家庭でも安心してお使いいただけます。\n\n現在、サイズ・価格を調整中です。詳細が決まり次第、順次公開してまいります。ご希望のサイズ感などございましたら、お気軽にご相談ください。",
+    specs: [
+      { label: "タイプ", value: "丸棒 32φ（無垢鉄・極太）" },
+      { label: "素材", value: "鉄" },
+      { label: "仕上げ", value: "ハンマー鍛造 鎚目仕上げ" },
+      { label: "標準長さ", value: "0.0m〜0.0m（サイズ確定中）" },
+      { label: "参考価格", value: "¥00,000〜（価格確定中）" },
+    ],
+    images: [
+      "/images/products/gaston/01.jpg",
+      "/images/products/gaston/02.jpg",
+      "/images/products/gaston/03.jpg",
+      "/images/products/gaston/04.jpg",
+      "/images/products/gaston/05.jpg",
+      "/images/products/gaston/06.jpg",
+      "/images/products/gaston/07.jpg",
+      "/images/products/gaston/08.jpg",
+      "/images/products/gaston/09.jpg",
+      "/images/products/gaston/10.jpg",
+      "/images/products/gaston/11.jpg",
+      "/images/products/gaston/12.jpg",
+      "/images/products/gaston/13.jpg",
+      "/images/products/gaston/14.jpg",
+    ],
+    basePrice: 0,
+    priceNote: "サイズ・価格は現在調整中です。確定次第、順次公開いたします。",
+    primaryCtaLabel: "価格・サイズ確定中｜お問い合わせください",
+    primaryCtaSub: "ご希望のサイズ感やご予算感などあれば、お気軽にご相談ください。",
+    badge: "Coming Soon",
+    featureBullets: [
+      { icon: "Hammer", title: "無垢鉄を叩き出す", desc: "職人がハンマーで一本一本鍛え上げた力強い質感" },
+      { icon: "Paintbrush", title: "鎚目の陰影", desc: "光を受けるたびに表情を変える手仕事ならではの凹凸" },
+      { icon: "Ruler", title: "極太32φ", desc: "他にはない圧倒的な太さで握った瞬間から違う安心感" },
+      { icon: "Wrench", title: "取付簡単", desc: "付属の金具で簡単に取り付け可能（詳細は確定次第公開）" },
+    ],
+    faq: [
+      {
+        q: "価格・サイズはいつ頃決まりますか？",
+        a: "現在、仕様の最終調整を行っております。決まり次第、このページで価格・サイズを公開いたします。お急ぎの方はお問い合わせよりご相談ください。",
+      },
+      {
+        q: "強度は十分ですか？",
+        a: "32φという通常の手すりより太い無垢丸鉄をハンマー鍛造しているため、しっかりとした強度を確保できる設計です。詳細な仕様は確定次第公開いたします。",
+      },
+      {
+        q: "サイズオーダーはできますか？",
+        a: "階段の形状に合わせたオーダーメイド対応を予定しております。ご希望のサイズ感がございましたら、お気軽にお問い合わせください。",
+      },
+    ],
+  },
   tsuta: {
     slug: "tsuta",
     nameEn: "Tsuta",
