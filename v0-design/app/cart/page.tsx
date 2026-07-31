@@ -429,7 +429,7 @@ function CartContent() {
                       withArrow
                       className="font-sans w-full"
                     >
-                      銀行振込で注文する
+                      銀行振込で購入する
                     </PrimaryCTA>
                   </div>
                 )}
