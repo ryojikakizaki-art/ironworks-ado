@@ -94,7 +94,7 @@ const galleryImages = [
 export default function AboutPage() {
   return (
     <>
-      <Header />
+      <Header hasHero />
       <main className="bg-background">
         {/* ── HERO（C アシメ型）──
             左 60% に映像 / 右 40% にテキストを「並べる」エディトリアル構成。

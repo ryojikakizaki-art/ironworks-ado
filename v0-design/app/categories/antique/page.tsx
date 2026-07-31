@@ -52,7 +52,7 @@ const CRAFTS = [
 export default function AntiqueCategoryPage() {
   return (
     <>
-      <Header />
+      <Header hasHero />
 
       {/* 背景はサイト共通 background。文字は dark。アンティークは "warm" な印象なのでセクションごとに ivory アクセントを差す */}
       <main className="bg-background text-foreground">

@@ -21,7 +21,7 @@ import { BackToTop } from "@/components/back-to-top"
 export default function HomePage() {
   return (
     <main className="relative bg-white">
-      <Header />
+      <Header hasHero />
 
       {/* ── ヒーロー（100vh、中央に ado ロゴ、下部にカテゴリードック） ── */}
       <div id="hero">
