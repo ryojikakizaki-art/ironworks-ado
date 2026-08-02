@@ -33,6 +33,7 @@ import { fireGtagEvent } from "@/lib/gtag"
 import { TOTAL_VOICE_COUNT } from "@/lib/testimonials"
 import { ReviewVoiceIcon } from "@/components/ui/review-voice-icon"
 import { encodeQuoteState, decodeQuoteState, copyToClipboard } from "@/lib/products/quote-share"
+import { calcGastonJointCount, GASTON_JOINT_FEE_PER_UNIT, GASTON_JOINT_INQUIRY_ABOVE_MM, GASTON_CRATE_FEE_PER_UNIT } from "@/lib/products/order-pricing"
 
 // productImages / specs は商品ごとに display.ts から取得
 
@@ -243,6 +244,18 @@ export default function ProductDetailPage() {
     }
   })
 
+  // zakinCustomizable === false（Gaston）は <ZakinEditor> を描画しないため、通常そこが
+  // 担っている「長さ変更時に座金を自動再配置する」effect が動かない。SIMULATOR の
+  // 表示だけ古い本数・位置のまま固まってしまうため、ここで同じ再配置を代替する
+  // （2026-08-02 蠣﨑さん指定: 座金位置・角度の編集不可対応）。
+  useEffect(() => {
+    if (product.drawing.zakinCustomizable !== false) return
+    const count = calcZakin(length, zakinRule)
+    const positions = getZakinPositions(length, count, zakinRule)
+    setZakin(prev => ({ ...prev, positions }))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [length, product.drawing.zakinCustomizable])
+
   // ファネル計測: 計算機の初回操作（長さ・本数・座金のいずれか）を 1 ページビューあたり 1 回だけ送る。
   // 注意: ZakinEditor はマウント時と長さ変更時に onChange で zakin を「同値の新オブジェクト」に
   // 書き直すため（zakin-editor.tsx の再配置 effect）、参照比較や「マウント skip」では誤発火する。
@@ -331,7 +344,11 @@ export default function ProductDetailPage() {
         ? Math.max(0, zakinCount - autoZakinCount) * ZAKIN_PRICE
         : Math.max(0, zakinCount - INCLUDED_ZAKIN) * ZAKIN_PRICE
       const angleCost = (!isMultiOrder && zakin.angleDeg > 0) ? zakinCount * ANGLE_PRICE : 0
-      const blackUnitPrice = BASE_PRICE + addon + addZakin + surcharge + angleCost
+      // ジョイント代 (Gaston専用・必須自動加算)。5000mm(上限)は要問い合わせ扱いのため 0 のまま
+      // （送料が同じ長さ帯を要問合せとして扱うため実際の決済には進めない）。
+      const jointCount = product.drawing.jointFeeEnabled ? calcGastonJointCount(L) : 0
+      const jointFee = jointCount * GASTON_JOINT_FEE_PER_UNIT
+      const blackUnitPrice = BASE_PRICE + addon + addZakin + surcharge + angleCost + jointFee
       // 白仕上げ (colorOptions を持つ商品のみ・2026-07-05 Alexandre 追加): 合計 +15%。
       // 0.1 が二進で正確に表せない浮動小数点の罠を避けるため百分率の整数で計算 (Laurent と同じ手法)。
       const unitPrice = supportsColor && color === "white"
@@ -344,6 +361,8 @@ export default function ProductDetailPage() {
         addZakin,
         surcharge: Math.round(surcharge),
         angleCost,
+        jointCount,
+        jointFee,
         colorSurcharge,
         unitPrice: Math.round(unitPrice),
         zakinCount,
@@ -353,7 +372,12 @@ export default function ProductDetailPage() {
     const expressAddon = deliveryType === "express" && lengths.length <= 3 ? Math.round(subtotal * RUSH_RATE) : 0
     // 送料: 梱包ごとに最長サイズで rate 計算 → 合算 (多本注文の正確な送料)
     const shippingResult = calcShipping(lengths, prefecture, productType)
-    const shipping = shippingResult.shipping
+    // Gaston専用: 木枠梱包代を本数分定額で加算。配送先未選択・要問い合わせ時は
+    // 送料自体が確定しないため加算しない（手動見積もりに含める）
+    const gastonCrateFee = product.drawing.jointFeeEnabled && !shippingResult.inquiry && prefecture
+      ? lengths.length * GASTON_CRATE_FEE_PER_UNIT
+      : 0
+    const shipping = shippingResult.shipping + gastonCrateFee
     const shippingTax = Math.round(shipping * 0.1)
     const total = subtotal + expressAddon + shipping + shippingTax
     // 単一商品互換用 (qty=1 では first item の値が直接表示される)
@@ -365,11 +389,14 @@ export default function ProductDetailPage() {
       addZakin: first?.addZakin ?? 0,
       surcharge: first?.surcharge ?? 0,
       angleCost: first?.angleCost ?? 0,
+      jointCount: first?.jointCount ?? 0,
+      jointFee: first?.jointFee ?? 0,
       colorSurcharge: first?.colorSurcharge ?? 0,
       unitPrice: first?.unitPrice ?? 0,
       subtotal,
       expressAddon,
       shipping,
+      gastonCrateFee,
       shippingTax,
       shippingNote: shippingResult.note,
       shippingInquiry: shippingResult.inquiry,
@@ -379,7 +406,7 @@ export default function ProductDetailPage() {
       total,
       zakinCount: first?.zakinCount ?? 0,
     }
-  }, [lengths, isMultiOrder, deliveryType, prefecture, zakin, productType, STD_LENGTH, PRICE_PER_MM, BASE_PRICE, INCLUDED_ZAKIN, zakinRule, PRICE_TABLE, supportsColor, color])
+  }, [lengths, isMultiOrder, deliveryType, prefecture, zakin, productType, STD_LENGTH, PRICE_PER_MM, BASE_PRICE, INCLUDED_ZAKIN, zakinRule, PRICE_TABLE, supportsColor, color, product.drawing.jointFeeEnabled])
 
   const prices = calculatePrice()
 
@@ -425,7 +452,7 @@ export default function ProductDetailPage() {
           })),
           { label: "本体小計", amount: prices.subtotal, emphasize: true },
           ...(prices.expressAddon > 0 ? [{ label: "特急割増（+20%）", amount: prices.expressAddon }] : []),
-          ...(prices.shipping > 0 ? [{ label: `送料（佐川急便・${prefecture}・税抜）`, amount: prices.shipping }] : []),
+          ...(prices.shipping > 0 ? [{ label: `送料（佐川急便・${prefecture}・税抜）${prices.gastonCrateFee > 0 ? "・木枠代込み" : ""}`, amount: prices.shipping }] : []),
           ...(prices.shippingTax > 0 ? [{ label: "送料消費税（10%）", amount: prices.shippingTax }] : []),
         ]
       : [
@@ -434,10 +461,11 @@ export default function ProductDetailPage() {
           ...(prices.addZakin > 0 ? [{ label: "追加座金料金", note: `${prices.zakinCount - INCLUDED_ZAKIN}個 × ¥${ZAKIN_PRICE.toLocaleString()}`, amount: prices.addZakin }] : []),
           ...(prices.surcharge > 0 ? [{ label: "長尺割増", note: `${length}mm`, amount: prices.surcharge }] : []),
           ...(prices.angleCost > 0 ? [{ label: "角度加工料金", note: `${prices.zakinCount}個 × ¥${ANGLE_PRICE.toLocaleString()}`, amount: prices.angleCost }] : []),
+          ...(prices.jointFee > 0 ? [{ label: "ジョイント代", note: `${prices.jointCount}箇所 × ¥${GASTON_JOINT_FEE_PER_UNIT.toLocaleString()}`, amount: prices.jointFee }] : []),
           ...(prices.colorSurcharge > 0 ? [{ label: "白仕上げ（+15%）", amount: prices.colorSurcharge }] : []),
           ...(quantity > 1 ? [{ label: `数量 × ${quantity}`, amount: prices.subtotal, emphasize: true }] : []),
           ...(prices.expressAddon > 0 ? [{ label: "特急割増（+20%）", amount: prices.expressAddon }] : []),
-          ...(prices.shipping > 0 ? [{ label: `送料（佐川急便・${prefecture}・税抜）`, amount: prices.shipping }] : []),
+          ...(prices.shipping > 0 ? [{ label: `送料（佐川急便・${prefecture}・税抜）${prices.gastonCrateFee > 0 ? "・木枠代込み" : ""}`, amount: prices.shipping }] : []),
           ...(prices.shippingTax > 0 ? [{ label: "送料消費税（10%）", amount: prices.shippingTax }] : []),
         ],
     totalLabel: "合計（税込）",
@@ -1148,6 +1176,22 @@ export default function ProductDetailPage() {
                               : `（超過分は 1mm あたり ¥${PRICE_PER_MM}）`}
                           </span>
                         </p>
+                        {/* ジョイント推奨/必須の注記 (Gaston専用・必須自動加算)。
+                            2.5m以上は現場での取り付けが重すぎるため分割ジョイントが必須になる
+                            （2026-08-02 蠣﨑さん指定）。5000mm(上限)はジョイント込みで
+                            現場条件の確認が要るため要問い合わせに誘導する。 */}
+                        {product.drawing.jointFeeEnabled && !isMultiOrder && (
+                          length >= GASTON_JOINT_INQUIRY_ABOVE_MM ? (
+                            <p className="text-[12px] text-amber-700 bg-amber-50/60 border border-amber-200 rounded px-3 py-2 leading-relaxed">
+                              ⚠ {GASTON_JOINT_INQUIRY_ABOVE_MM / 1000}m以上はジョイントを含め現場条件の確認が必要なため、別途お問い合わせください。
+                            </p>
+                          ) : calcGastonJointCount(length) > 0 ? (
+                            <p className="text-[12px] text-amber-700 bg-amber-50/60 border border-amber-200 rounded px-3 py-2 leading-relaxed">
+                              ⚠ {(length / 1000).toLocaleString()}mは現場での取り付けが重すぎるため、ジョイント
+                              {calcGastonJointCount(length)}箇所を必須で加算します（+¥{(calcGastonJointCount(length) * GASTON_JOINT_FEE_PER_UNIT).toLocaleString()}）。
+                            </p>
+                          ) : null
+                        )}
                         {/* 単本モード: スライダー + 数値入力 (qty=1) */}
                         {!isMultiOrder && (
                           <div className="flex items-center gap-4">
@@ -1356,13 +1400,21 @@ export default function ProductDetailPage() {
                         {/* 座金の位置調整（シミュレーター＋エディタ）は任意操作のため、
                             初見の情報量を抑える目的で details に格納し初期は畳む。
                             制作図プレビューは Step4（確認して購入）へ移動。
-                            多本注文時は per-item でカスタマイズ不可なので非表示 (PR #2 制約) */}
+                            多本注文時は per-item でカスタマイズ不可なので非表示 (PR #2 制約)。
+                            zakinCustomizable === false（Gaston）は編集 UI を出さず、
+                            自動配置の確認のみ（2026-08-02 蠣﨑さん指定）。 */}
                         {!isMultiOrder && (
                         <details className="group mt-3 border border-gold/20 rounded-md overflow-hidden">
                           <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between hover:bg-gold/[0.03] transition-colors">
                             <span className="text-[14px] font-medium tracking-wider text-foreground">
-                              座金（取り付け金具）の位置{product.drawing.category === "vertical" ? "" : "・角度"}を調整する
-                              <span className="text-muted-foreground font-normal">（任意）</span>
+                              {product.drawing.zakinCustomizable === false ? (
+                                "座金（取り付け金具）の自動配置を確認する"
+                              ) : (
+                                <>
+                                  座金（取り付け金具）の位置{product.drawing.category === "vertical" ? "" : "・角度"}を調整する
+                                  <span className="text-muted-foreground font-normal">（任意）</span>
+                                </>
+                              )}
                             </span>
                             <span className="text-gold text-lg leading-none transition-transform group-open:rotate-45">＋</span>
                           </summary>
@@ -1371,30 +1423,48 @@ export default function ProductDetailPage() {
                               category={product.drawing.category === "vertical" ? "vertical" : "horizontal"}
                               className="mb-4"
                             />
-                            <InlineRailSimulator
-                              product={product.drawing}
-                              lengthMm={length}
-                              positions={zakin.positions}
-                              angleDeg={zakin.angleDeg}
-                              angleDir={zakin.angleDir}
-                              zakinRule={zakinRule}
-                              onPositionsChange={(positions) =>
-                                setZakin({ ...zakin, positions, customMode: true })
-                              }
-                            />
-                            <p className="md:hidden mt-2 px-1 text-[12px] text-muted-foreground leading-relaxed">
-                              📱 スマホではドラッグ調整はできません。下の数値入力で各座金の位置を調整してください。
-                            </p>
-                            <ZakinEditor
-                              lengthMm={length}
-                              state={zakin}
-                              onChange={setZakin}
-                              zakinRule={zakinRule}
-                              disableAngle={product.drawing.category === "vertical"}
-                              maxCount={product.drawing.category === "vertical" ? 3 : 20}
-                              embedded
-                              className="mt-3"
-                            />
+                            {product.drawing.zakinCustomizable === false ? (
+                              <>
+                                <InlineRailSimulator
+                                  product={product.drawing}
+                                  lengthMm={length}
+                                  positions={zakin.positions}
+                                  angleDeg={zakin.angleDeg}
+                                  angleDir={zakin.angleDir}
+                                  zakinRule={zakinRule}
+                                />
+                                <p className="mt-2 px-1 text-[12px] text-muted-foreground leading-relaxed">
+                                  極太32φは取り付け精度確保のため、座金の位置・角度は自動配置に固定しております。
+                                </p>
+                              </>
+                            ) : (
+                              <>
+                                <InlineRailSimulator
+                                  product={product.drawing}
+                                  lengthMm={length}
+                                  positions={zakin.positions}
+                                  angleDeg={zakin.angleDeg}
+                                  angleDir={zakin.angleDir}
+                                  zakinRule={zakinRule}
+                                  onPositionsChange={(positions) =>
+                                    setZakin({ ...zakin, positions, customMode: true })
+                                  }
+                                />
+                                <p className="md:hidden mt-2 px-1 text-[12px] text-muted-foreground leading-relaxed">
+                                  📱 スマホではドラッグ調整はできません。下の数値入力で各座金の位置を調整してください。
+                                </p>
+                                <ZakinEditor
+                                  lengthMm={length}
+                                  state={zakin}
+                                  onChange={setZakin}
+                                  zakinRule={zakinRule}
+                                  disableAngle={product.drawing.category === "vertical"}
+                                  maxCount={product.drawing.category === "vertical" ? 3 : 20}
+                                  embedded
+                                  className="mt-3"
+                                />
+                              </>
+                            )}
                           </div>
                         </details>
                         )}
@@ -1585,6 +1655,14 @@ export default function ProductDetailPage() {
                               <span className="font-mono">+¥{prices.angleCost.toLocaleString()}</span>
                             </div>
                           )}
+                          {prices.jointFee > 0 && (
+                            <div className="flex justify-between text-[15px]">
+                              <span className="text-muted-foreground">
+                                ジョイント代（{prices.jointCount}箇所 × ¥{GASTON_JOINT_FEE_PER_UNIT.toLocaleString()}）
+                              </span>
+                              <span className="font-mono">+¥{prices.jointFee.toLocaleString()}</span>
+                            </div>
+                          )}
                           {prices.colorSurcharge > 0 && (
                             <div className="flex justify-between text-[15px]">
                               <span className="text-muted-foreground">白仕上げ（+15%）</span>
@@ -1626,13 +1704,20 @@ export default function ProductDetailPage() {
                       {prices.shipping > 0 && !prices.shippingInquiry && (
                         <div className="pt-2 border-t border-border/60 space-y-1">
                           <div className="flex justify-between text-[15px]">
-                            <span className="text-muted-foreground">送料（{prefecture}・佐川急便・税抜）</span>
+                            <span className="text-muted-foreground">
+                              送料（{prefecture}・佐川急便・税抜）{prices.gastonCrateFee > 0 ? "・木枠代込み" : ""}
+                            </span>
                             <span className="font-mono">+¥{prices.shipping.toLocaleString()}</span>
                           </div>
                           <div className="flex justify-between text-[15px]">
                             <span className="text-muted-foreground">送料消費税（10%）</span>
                             <span className="font-mono">+¥{prices.shippingTax.toLocaleString()}</span>
                           </div>
+                          {prices.gastonCrateFee > 0 && (
+                            <p className="text-[12px] text-muted-foreground">
+                              うち木枠梱包代 ¥{prices.gastonCrateFee.toLocaleString()}（極太32φは木枠発送のため）
+                            </p>
+                          )}
                           {prices.shippingNote && (
                             <p className="text-[12px] text-muted-foreground">{prices.shippingNote}</p>
                           )}
