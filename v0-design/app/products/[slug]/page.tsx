@@ -716,12 +716,19 @@ export default function ProductDetailPage() {
                 </span>
               </div>
 
-              {/* Product Name + 短い補足（長文は価格・仕上げの後へ移動） */}
+              {/* Product Name + 短い補足（長文は価格・仕上げの後へ移動）
+                  英語と日本語は 2 行に分ける。1 行に並べるとスマホ幅（375px）で
+                  「Alexandre アレクサ／ンドル」のようにカタカナが語中で分断されるため。
+                  2 行の行間は詰めて（leading-[1.05] + mt-1）名前ひとかたまりに見せ、
+                  下の説明文との間は mt-5 でしっかり空ける。 */}
               <div>
-                <h1 className="font-serif text-4xl lg:text-5xl text-foreground mb-3 leading-tight">
-                  {product.nameEn} {product.nameJaShort}
+                <h1 className="font-serif text-4xl lg:text-5xl text-foreground leading-[1.05]">
+                  {product.nameEn}
                 </h1>
-                <p className="text-[16px] text-muted-foreground leading-relaxed">
+                <p className="font-serif text-lg lg:text-xl text-muted-foreground leading-tight mt-1">
+                  {product.nameJaShort}
+                </p>
+                <p className="text-[16px] text-muted-foreground leading-relaxed mt-5">
                   {product.shortDescription}
                 </p>
                 {/* 用途ライン — 広告検索語句の最多が「玄関/階段 手すり おしゃれ」のため
