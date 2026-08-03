@@ -167,7 +167,10 @@ export default function SimpleCategoryPage() {
                   variants={{ hidden: { opacity: 0, y: 16 }, visible: { opacity: 1, y: 0 } }}
                 >
                   <Link href={p.href} className="group block">
-                    <div className="relative aspect-[4/5] overflow-hidden bg-secondary">
+                    {/* 商品画像は正方形。縦長（4/5）だと object-cover で左右が切れ、
+                        画像内の文字（「1.5mまで一律」等）が欠けるため。
+                        アンティーク・クラシック側と揃えている。 */}
+                    <div className="relative aspect-square overflow-hidden bg-secondary">
                       <Image
                         src={galleryUrl(`${p.img}.jpg`)}
                         alt={p.name}
