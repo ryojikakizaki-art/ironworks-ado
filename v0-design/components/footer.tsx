@@ -11,10 +11,15 @@ const footerLinks = {
   products: {
     title: "製品",
     links: [
-      { label: "横型手すり", href: "/#lineup" },
-      { label: "縦型手すり", href: "/#lineup" },
-      { label: "ロートアイアン", href: "/#lineup" },
-      { label: "階段・フェンス", href: "/#lineup" },
+      // いずれも /#lineup を指すリンク切れだったため実在の行き先へ。
+      // 横型/縦型は /products の ?cat= で絞り込める（カテゴリと1対1で対応）。
+      // 「ロートアイアン」は横型・縦型にまたがる様式名でカテゴリと1対1にならないため、
+      // ロートアイアン商品を集めた /categories/antique へ。
+      // 「階段・フェンス」は stair と fence の2カテゴリにまたがるため絞り込まず全件へ。
+      { label: "横型手すり", href: "/products?cat=handrail_h" },
+      { label: "縦型手すり", href: "/products?cat=handrail_v" },
+      { label: "ロートアイアン", href: "/categories/antique" },
+      { label: "階段・フェンス", href: "/products" },
     ],
   },
   support: {
