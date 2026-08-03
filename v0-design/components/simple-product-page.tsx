@@ -728,14 +728,22 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
 
           {/* ── 右：商品情報 ── */}
           <div>
-            <p className="text-xs tracking-[0.3em] text-muted-foreground uppercase mb-3">
-              {product.category}
-            </p>
-            <h1 className="font-serif text-3xl md:text-4xl text-dark mb-2">
+            {/* カテゴリラベル — 図面フローページ（René 等）と同じ金のバー付き表記に統一 */}
+            <div className="flex items-center gap-3 mb-7">
+              <div className="w-1 h-7 bg-gold rounded-full" />
+              <span className="text-[14px] tracking-wide text-muted-foreground">
+                {product.category}
+              </span>
+            </div>
+            {/* 商品名 — 英語（大）＋日本語（小・明朝）の 2 行。
+                行間を詰めて名前ひとかたまりに見せ、下の仕様行との間は空ける。 */}
+            <h1 className="font-serif text-4xl lg:text-5xl text-foreground leading-[1.05]">
               {product.nameEn}
             </h1>
-            <p className="text-lg text-muted-foreground mb-1">{product.nameJa}</p>
-            <p className="text-sm text-muted-foreground mb-6">{product.subtitle}</p>
+            <p className="font-serif text-lg lg:text-xl text-muted-foreground leading-tight mt-1">
+              {product.nameJa}
+            </p>
+            <p className="text-sm text-muted-foreground mt-5 mb-6">{product.subtitle}</p>
 
             {/* 用途ライン（手すりカテゴリのみ・広告検索語句に合わせた語彙） */}
             {isHandrail && (

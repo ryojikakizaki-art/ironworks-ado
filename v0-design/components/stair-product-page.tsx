@@ -511,9 +511,13 @@ export function StairProductPage() {
               </div>
 
               <div>
-                <h1 className="font-serif text-4xl lg:text-5xl text-foreground mb-3 leading-tight">
-                  Laurent ローラン
+                {/* 商品名は英語（大）＋日本語（小・明朝）の 2 行。他の商品ページと統一 */}
+                <h1 className="font-serif text-4xl lg:text-5xl text-foreground leading-[1.05]">
+                  Laurent
                 </h1>
+                <p className="font-serif text-lg lg:text-xl text-muted-foreground leading-tight mt-1 mb-5">
+                  ローラン
+                </p>
                 {/* 横桟なし／ありの参考価格。サムネイル選択（shownImage）に連動して即座に切り替わる */}
                 <div className="mb-3 flex flex-wrap items-baseline gap-x-5 gap-y-1">
                   <span className="text-[12px] tracking-wide text-muted-foreground">
