@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
 import Image from "next/image"
@@ -31,6 +31,11 @@ export function Header({
   const overHero = forceDark ? false : overHeroRaw
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
+  // Hide on Scroll: 下スクロールでヘッダーを隠し、上スクロールで戻す。
+  const [hideHeader, setHideHeader] = useState(false)
+  // ページ先頭を離れているか。離れている間だけヘッダーに半透明の白帯を敷き、
+  // 背後の本文とロゴ・メニューが重なって読みにくくなるのを防ぐ。
+  const [scrolledPastTop, setScrolledPastTop] = useState(false)
   // カートに 1 本以上入っている時だけアイコンを出す。空の時に「0」を常時表示すると
   // 壊れている印象を与えるため、2026-06-12 に一度撤去した経緯がある。
   const { count: cartCount } = useCart()
@@ -49,6 +54,47 @@ export function Header({
     return () => window.removeEventListener("scroll", handleScroll)
   }, [hasHero])
 
+  // メニュー／ドロップダウンの開閉状態。スクロール監視の中から参照するが、
+  // これを useEffect の依存配列に入れると開閉のたびに監視を貼り直すことになり、
+  // 閉じた判定を取りこぼした時に監視が復帰せず「常に表示」で固まる。
+  // そのため ref に持たせ、監視自体はマウント時に一度だけ貼る。
+  const menuOpenRef = useRef(false)
+  menuOpenRef.current = isMobileMenuOpen || openDropdown !== null
+
+  // Hide on Scroll のスクロール監視（マウント時に一度だけ登録）
+  useEffect(() => {
+    let lastY = window.scrollY
+    // 指の微細な揺れや慣性スクロールの揺り戻しでチラつかせないための下限
+    const MIN_DELTA = 8
+    // 最上部付近では常に表示する（ページ先頭でヘッダーが無い状態を作らない）
+    const TOP_ZONE = 80
+    const handleScroll = () => {
+      const y = window.scrollY
+      // 帯の出し入れは「先頭にいるか」だけで決まるので、
+      // 下の微小移動フィルタ（MIN_DELTA）より先に判定する。
+      setScrolledPastTop(y > TOP_ZONE)
+      const delta = y - lastY
+      if (Math.abs(delta) < MIN_DELTA) return
+      lastY = y
+      // メニューを開いている間は隠さない（開いたまま隠れると操作不能になるため）
+      if (menuOpenRef.current) return
+      if (y <= TOP_ZONE) {
+        setHideHeader(false)
+        return
+      }
+      setHideHeader(delta > 0)
+    }
+    // 途中位置で読み込まれた場合（アンカーリンク・リロード）にも帯を正しく反映する
+    handleScroll()
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
+  // メニューを開いたら、隠れていても必ず表示に戻す
+  useEffect(() => {
+    if (isMobileMenuOpen || openDropdown) setHideHeader(false)
+  }, [isMobileMenuOpen, openDropdown])
+
   const navItems: NavItem[] = [
     { label: "製品一覧", href: "/#lineup" },
     {
@@ -66,11 +112,26 @@ export function Header({
 
   return (
     <>
+      {/* Hide on Scroll のスライドは、この外側ラッパーの CSS transition が担当する。
+          内側 motion.header の入場アニメーション（framer-motion の y）と同じ要素で
+          transform を奪い合うと入場が発火しなくなるため、レイヤーを分けている。
+          -translate-y-full はセーフエリア込みの実高ぶん動くので、ノッチ端末でも隠しきれる。 */}
+      <div
+        className={`fixed top-0 left-0 right-0 z-40 transition-transform duration-300 ease-out ${
+          hideHeader ? "-translate-y-full" : "translate-y-0"
+        }`}
+      >
       <motion.header
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.6, ease: "easeOut", delay: 0.2 }}
-        className="fixed top-0 left-0 right-0 z-40 bg-transparent pointer-events-auto transition-colors duration-500 [padding-top:env(safe-area-inset-top)]"
+        // 半透明の白帯は「先頭を離れている」かつ「暗いヒーローの上にいない」ときだけ。
+        // ヒーロー上（overHero）はロゴ・文字が白なので、白帯を敷くと埋没して見えなくなる。
+        className={`pointer-events-auto transition-colors duration-300 [padding-top:env(safe-area-inset-top)] ${
+          scrolledPastTop && !overHero
+            ? "bg-white/85 backdrop-blur-md shadow-sm"
+            : "bg-transparent"
+        }`}
       >
         <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
           <div className="flex items-center justify-between h-16 lg:h-20">
@@ -218,6 +279,7 @@ export function Header({
           </div>
         </div>
       </motion.header>
+      </div>
 
       {/* Mobile/Full Menu */}
       <AnimatePresence>
