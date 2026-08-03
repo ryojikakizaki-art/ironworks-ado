@@ -95,7 +95,8 @@ export function CtaBanner() {
             お問い合わせ
           </PrimaryCTA>
 
-          <PrimaryCTA href="/#lineup" variant="ghost-light" size="lg" withArrow={false}>
+          {/* /#lineup はリンク切れだったため /products へ */}
+          <PrimaryCTA href="/products" variant="ghost-light" size="lg" withArrow={false}>
             製品を見る
           </PrimaryCTA>
         </motion.div>

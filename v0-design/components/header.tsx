@@ -96,7 +96,9 @@ export function Header({
   }, [isMobileMenuOpen, openDropdown])
 
   const navItems: NavItem[] = [
-    { label: "製品一覧", href: "/#lineup" },
+    // /#lineup は LineupSection がトップページから外された際に参照先を失い、
+    // 押しても何も起きないリンク切れになっていた。全商品が並ぶ /products へ向ける。
+    { label: "製品一覧", href: "/products" },
     {
       label: "カテゴリ",
       children: [
