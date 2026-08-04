@@ -134,8 +134,11 @@ export default function HandrailGuidePage() {
             </div>
             <div className="relative w-full md:w-[320px] aspect-[4/3] overflow-hidden rounded-xl bg-secondary">
               <Image
-                src="/images/hero/dscf6699.jpg"
-                alt="鎚目仕上げのアイアン手すりを握る手元"
+                // 旧 dscf6699 はトップのヒーロースライドショーと同じ写真だった。
+                // 見出し「毎日、手が触れるものだから。」に合わせ、手が触れる質感が
+                // 分かる鎚目のクローズアップへ。
+                src="/images/products/elisabeth/04.jpg"
+                alt="鎚目仕上げのロートアイアン手すりの表面"
                 fill
                 priority
                 sizes="(max-width: 768px) 100vw, 320px"
@@ -161,13 +164,15 @@ export default function HandrailGuidePage() {
             <div className="grid md:grid-cols-2 gap-6 md:gap-8">
               {/* 横型 */}
               <div className="rounded-xl border border-border bg-white overflow-hidden">
-                <div className="relative aspect-[16/9] bg-secondary">
+                <div className="relative aspect-[4/3] bg-secondary">
                   <Image
                     src="/images/gallery/case-1.jpg"
                     alt="コンクリート壁の廻り階段に取り付けた白い壁付け横型手すり"
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-cover object-[50%_30%]"
+                    // 写真下部（80%以降）に紺色の床が写り込むため 48% 未満に抑える。
+                    // 42% で階段の踊り場が中心に来て、紺色は入らない。
+                    className="object-cover object-[50%_42%]"
                   />
                 </div>
                 <div className="p-6 md:p-7">
@@ -182,10 +187,14 @@ export default function HandrailGuidePage() {
 
               {/* 縦型 */}
               <div className="rounded-xl border border-border bg-white overflow-hidden">
-                <div className="relative aspect-[16/9] bg-secondary">
+                <div className="relative aspect-[4/3] bg-secondary">
                   <Image
-                    src="/images/gallery/catherine-top.jpg"
-                    alt="玄関の壁に取り付けた縦型アイアン手すり"
+                    // 旧 catherine-top は商品名や太さが焼き込まれた販促バナーで、
+                    // 隣の「横型」が素の施工写真なのに対して不揃いだった。
+                    // 文字入りでない・垂直に設置された縦手すりの施工写真を
+                    // 蠣﨑さんからご提供いただき差し替え（2026-08-04）。
+                    src="/images/gallery/vertical-entrance.jpg"
+                    alt="壁に垂直に取り付けた鎚目仕上げの縦型アイアン手すり"
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover"
