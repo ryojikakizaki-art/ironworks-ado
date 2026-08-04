@@ -15,24 +15,26 @@ const ENTRANCES = [
     title: "手すり",
     area: "全国配送",
     description: "横型・縦型の壁付け手すり。ご注文からお届けまでオンラインで完結。",
-    img: "/images/hero/dscf6699.jpg",
-    alt: "鎚目仕上げのアイアン手すりを握る手元",
+    // ヒーローのスライドショーと同じ写真を避ける（旧 dscf6699 は重複していた）
+    img: "/images/hero/dscf6234.jpg",
+    alt: "マットホワイト仕上げの壁付けアイアン手すり",
     href: "/handrail",
   },
   {
     title: "ロートアイアン・装飾",
     area: "全国配送",
     description: "鎚目・Scroll など、鍛冶職人が手打ちで仕上げる鍛鉄の世界。",
-    img: "/images/hero/dscf1995.jpg",
-    alt: "吹き抜けに施工した曲線縦桟のロートアイアン手すり",
+    // 旧 dscf1995 はヒーローと重複し、かつ直線的で「装飾」が伝わりにくかった
+    img: "/images/gallery/case-5.jpg",
+    alt: "階段の左右に対で取り付けた渦巻き装飾のロートアイアン手すり",
     href: "/wrought-iron",
   },
   {
     title: "施工（千葉エリア）",
     area: "工事込み",
     description: "階段・門扉・フェンスなど、製作から取付工事までお任せください。",
-    img: "/images/hero/loft-staircase.jpg",
-    alt: "スケルトン階段のあるリビング空間",
+    img: "/images/gallery/case-2.jpg",
+    alt: "ベランダ手すり・外階段まで手がけた住宅の外観",
     href: "/construction",
   },
 ]
