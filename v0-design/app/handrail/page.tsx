@@ -164,16 +164,15 @@ export default function HandrailGuidePage() {
             <div className="grid md:grid-cols-2 gap-6 md:gap-8">
               {/* 横型 */}
               <div className="rounded-xl border border-border bg-white overflow-hidden">
-                <div className="relative aspect-[16/9] bg-secondary">
+                <div className="relative aspect-[4/3] bg-secondary">
                   <Image
-                    // 階段に沿って長く渡す「横型」の説明に合わせ、両側の壁を
-                    // 上まで走る施工写真へ（旧 case-1 は階段を見下ろす構図で
-                    // 手すりが細く白く、横型の特徴が伝わりにくかった）。
-                    src="/images/products/elisabeth/01.jpg"
-                    alt="階段の両側の壁に沿って取り付けた黒いアイアン横型手すり"
+                    src="/images/gallery/case-1.jpg"
+                    alt="コンクリート壁の廻り階段に取り付けた白い壁付け横型手すり"
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-cover object-[50%_40%]"
+                    // 写真下部（80%以降）に紺色の床が写り込むため 48% 未満に抑える。
+                    // 42% で階段の踊り場が中心に来て、紺色は入らない。
+                    className="object-cover object-[50%_42%]"
                   />
                 </div>
                 <div className="p-6 md:p-7">
@@ -188,14 +187,14 @@ export default function HandrailGuidePage() {
 
               {/* 縦型 */}
               <div className="rounded-xl border border-border bg-white overflow-hidden">
-                <div className="relative aspect-[16/9] bg-secondary">
+                <div className="relative aspect-[4/3] bg-secondary">
                   <Image
                     // 旧 catherine-top は商品名や太さが焼き込まれた販促バナーで、
                     // 隣の「横型」が素の施工写真なのに対して不揃いだった。
-                    // 玄関ドア脇に垂直に設置した Antoine（縦型ロング）の施工写真へ。
-                    // 文字入りでない・縦向きに設置されている写真を優先（蠣﨑さん指定）。
-                    src={galleryUrl("27028bc72ffa6bf103d8.jpg")}
-                    alt="玄関ドア脇の壁に垂直に取り付けた縦型アイアン手すり"
+                    // 文字入りでない・垂直に設置された縦手すりの施工写真を
+                    // 蠣﨑さんからご提供いただき差し替え（2026-08-04）。
+                    src="/images/gallery/vertical-entrance.jpg"
+                    alt="壁に垂直に取り付けた鎚目仕上げの縦型アイアン手すり"
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover"
