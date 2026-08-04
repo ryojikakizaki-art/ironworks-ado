@@ -43,7 +43,29 @@ export interface Product {
   // 白仕上げの選択を許可する商品のみ true（2026-07-05 Alexandre 追加。合計 +15%）。
   // René/Claire・Claude/Catherine のような黒白別商品ではなく、1 ページ内トグルで色を選ぶ方式。
   colorOptions?: boolean;
+  // false の商品は座金の位置・角度をお客様が指定できない（未指定=true=従来通り指定可）。
+  // Gaston（極太32φ）専用: 現場での取り付け精度確保のため自動配置のみに固定
+  // （2026-08-02 蠣﨑さん指定）。sanitizeCartItem 側で position/angle 申告を無視する。
+  zakinCustomizable?: boolean;
+  // true の商品は 2.5m 以上でジョイント代を自動加算する（Gaston 専用）。
+  jointFeeEnabled?: boolean;
 }
+
+// Gaston専用: 極太32φは2.5m以上になると現場での取り付けが重すぎるため、分割
+// ジョイントを推奨（必須・自動加算）。2500〜3999mm=1箇所・4000〜4999mm=2箇所。
+// 5000mm（上限）はジョイント込みで現場条件の確認が要るため自動計算せず
+// 要問い合わせとする（2026-08-02 蠣﨑さん指定）。
+export const GASTON_JOINT_FEE_PER_UNIT = 20000;
+export const GASTON_JOINT_INQUIRY_ABOVE_MM = 5000;
+export function calcGastonJointCount(L_mm: number): number {
+  if (L_mm >= GASTON_JOINT_INQUIRY_ABOVE_MM) return 0;
+  if (L_mm >= 4000) return 2;
+  if (L_mm >= 2500) return 1;
+  return 0;
+}
+// Gaston専用: 極太32φは発送時に木枠梱包が必要なため、通常の送料計算に加えて
+// 1本あたり定額で加算する（2026-08-02 蠣﨑さん指定）。
+export const GASTON_CRATE_FEE_PER_UNIT = 10000;
 
 // 白仕上げの割増率。0.1 が二進で正確に表せず 392,000×1.15 = 450,799.99… になる
 // 浮動小数点の罠があるため、Laurent（stair-pricing.ts）と同じく百分率の整数で持つ。
@@ -72,6 +94,8 @@ export const PRODUCTS: Record<string, Product> = {
   claire:     { name: 'Claire クレール',          type: '横型', basePrice: 42000, stdLengthMm: 1500, maxMm: 5000, finish: 'マットホワイト', includedZakin: 3, priceTable: CLAIRE_PRICE_TABLE },
   emile:      { name: 'Émile エミール',           type: '横型', basePrice: 45800, stdLengthMm: 1500, maxMm: 5000, finish: '鎚目仕上げ 銀古美', includedZakin: 3, priceTable: EMILE_PRICE_TABLE },
   marcel:     { name: 'Marcel マルセル',          type: '横型', basePrice: 36000, stdLengthMm: 1500, maxMm: 5000, finish: 'マットブラック', includedZakin: 3, priceTable: MARCEL_PRICE_TABLE },
+  // 1500mm ¥150,000 / 3500mm ¥400,000（2026-08-02 蠣﨑さん指定）から逆算した pricePerMm。詳細は drawing-modal/products.ts 参照
+  gaston:     { name: 'Gaston ガストン',          type: '横型', basePrice: 150000, stdLengthMm: 1500, maxMm: 5000, finish: 'ハンマー鍛造 鎚目仕上げ', includedZakin: 2, zakinRule: { endMinMm: 250, maxSpanMm: 1000 }, pricePerMm: 70.3125, zakinCustomizable: false, jointFeeEnabled: true },
   alexandre:  { name: 'Alexandre アレクサンドル', type: '縦型', basePrice: 32000, stdLengthMm: 1000, maxMm: 3000, finish: 'マットブラック', includedZakin: 3, zakinRule: ALEXANDRE_RULE, pricePerMm: 30, colorOptions: true },
   catherine:  { name: 'Catherine カトリーヌ',     type: '縦型', basePrice: 34500, stdLengthMm: 1000, maxMm: 1500, finish: 'マットホワイト', includedZakin: 3, zakinRule: VERTICAL_STANDARD_RULE },
   claude:     { name: 'Claude クロード',          type: '縦型', basePrice: 30000, stdLengthMm: 1000, maxMm: 1500, finish: 'マットブラック', includedZakin: 3, zakinRule: VERTICAL_STANDARD_RULE },
@@ -140,11 +164,15 @@ export function calcPrice(
     : Math.max(0, zakin - prod.includedZakin) * ZAKIN_PRICE;
   // 角度加工料金: 座金1箇所あたり ANGLE_PRICE (単品・横型のみ。商品ページ準拠)。
   const angleCost = opts?.angleDeg && opts.angleDeg > 0 ? zakin * ANGLE_PRICE : 0;
-  const blackTotal = prod.basePrice + addon + addZakin + surcharge + angleCost;
+  // ジョイント代 (Gaston専用・必須自動加算)。5000mm(上限)は要問い合わせ扱いのため 0 のまま
+  // （calcShipping が同じ長さ帯を "3,501mm以上は要問合せ" として扱うため実際の決済には進めない）。
+  const jointCount = prod.jointFeeEnabled ? calcGastonJointCount(L_mm) : 0;
+  const jointFee = jointCount * GASTON_JOINT_FEE_PER_UNIT;
+  const blackTotal = prod.basePrice + addon + addZakin + surcharge + angleCost + jointFee;
   // 白仕上げ (colorOptions を持つ商品のみ・2026-07-05 Alexandre 追加): 合計 +15%。
   const total = prod.colorOptions && opts?.color === 'white'
     ? Math.floor((blackTotal * WHITE_RATE_PERCENT) / 100)
     : blackTotal;
   const colorSurcharge = total - blackTotal;
-  return { addon, surcharge, addZakin, angleCost, colorSurcharge, zakin, total };
+  return { addon, surcharge, addZakin, angleCost, jointCount, jointFee, colorSurcharge, zakin, total };
 }

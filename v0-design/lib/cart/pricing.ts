@@ -10,7 +10,7 @@
  * 本体価格は変わらず、まとめ買いで安くなるのは同梱による送料のみ）。
  */
 
-import { PRODUCTS, calcPrice, calcZakin, RUSH_RATE, type Product } from '@/lib/products/order-pricing'
+import { PRODUCTS, calcPrice, calcZakin, RUSH_RATE, GASTON_CRATE_FEE_PER_UNIT, type Product } from '@/lib/products/order-pricing'
 import { calcShipping } from '@/lib/shipping/sagawa'
 import { CART_MAX_QUANTITY, isCartEligible, minLengthFor, type CartItem } from './types'
 
@@ -78,7 +78,9 @@ export function sanitizeCartItem(raw: unknown): CartItem | null {
 
   // 座金位置・角度は 1 本注文でのみ商品ページから指定できる。
   // 2 本以上は本ごとに自動配置のため受け取らない（単品 checkout と同じ扱い）。
-  const isSingle = quantity === 1
+  // zakinCustomizable === false の商品（Gaston）は申告値を無視し常に自動配置にする
+  // （商品ページの編集 UI 自体を非表示にしているが、直接 API を叩かれた場合の防御も兼ねる）。
+  const isSingle = quantity === 1 && prod.zakinCustomizable !== false
   const positions: number[] = isSingle && Array.isArray(r.positions)
     ? (r.positions as unknown[])
         .map((v) => Math.round(Number(v)))
@@ -172,7 +174,13 @@ export function calcCartPricing(
   }
 
   const shippingResult = calcShipping(lengths, prefecture, 'yokogata')
-  const shipping = shippingResult.inquiry ? 0 : shippingResult.shipping
+  // Gaston（極太32φ）は木枠梱包が必要なため、本数分の定額を送料に加算する
+  // （2026-08-02 蠣﨑さん指定）。配送先未選択・要問い合わせ時は送料自体が確定しないため
+  // 加算しない（手動見積もりに含める）。
+  const gastonCrateFee = shippingResult.inquiry || !prefecture
+    ? 0
+    : lines.reduce((s, l) => s + (l.item.product === 'gaston' ? l.item.quantity * GASTON_CRATE_FEE_PER_UNIT : 0), 0)
+  const shipping = shippingResult.inquiry ? 0 : shippingResult.shipping + gastonCrateFee
   const shippingTax = Math.round(shipping * 0.1)
 
   return {

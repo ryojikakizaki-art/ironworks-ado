@@ -106,6 +106,11 @@ export interface DrawingProductConfig {
   priceTable?: PricePoint[]
   // 白仕上げの選択を許可する商品のみ true（2026-07-05 Alexandre 追加。合計 +15%）。
   colorOptions?: boolean
+  // false の商品は座金の位置・角度をお客様が指定できない（未指定=true=従来通り指定可）。
+  // Gaston（極太32φ）専用: 商品ページの編集 UI を非表示にする（2026-08-02 蠣﨑さん指定）。
+  zakinCustomizable?: boolean
+  // true の商品は 2.5m 以上でジョイント代を自動加算する（Gaston 専用）。
+  jointFeeEnabled?: boolean
 }
 
 // 長さ L_mm に対する本体価格をテーブルから線形補間で取得。
@@ -137,6 +142,12 @@ const FLAT_9x32: RailShape = {
   width: 32,
   height: 9,
   totalProjection: 56,
+}
+
+const ROUND_32: RailShape = {
+  type: "round",
+  diameter: 32,
+  totalProjection: 72,
 }
 
 // 横型 4 商品の長さ別価格テーブル (2026-05-18 改定・STORES era 方式復活)。
@@ -244,6 +255,33 @@ export const DRAWING_PRODUCTS: Record<string, DrawingProductConfig> = {
     maxMm: 5000,
     includedZakin: 3,
     priceTable: EMILE_PRICE_TABLE,
+  },
+  gaston: {
+    slug: "gaston",
+    nameJa: "Gaston 横型手すり",
+    drawingCode: "IW-GAS",
+    material: "無垢丸鉄 32φ",
+    finish: "ハンマー鍛造 鎚目仕上げ",
+    category: "horizontal",
+    shape: ROUND_32,
+    basePrice: 150000,
+    stdLengthMm: 1500,
+    maxMm: 5000,
+    includedZakin: 2,
+    // 極太32φは他の横型4商品（端100mm・最大ピッチ850mm）より座金間隔を広く取れる
+    // （2026-08-02 蠣﨑さん指定: 端250mmスタート・最大ピッチ1000mm）
+    zakinRule: { endMinMm: 250, maxSpanMm: 1000 },
+    // 1500mm ¥150,000 / 3500mm ¥400,000（2026-08-02 蠣﨑さん指定・当初3000mm案は
+    // 高すぎるとの指摘で3500mmに変更）になるよう逆算した加算単価。3500mm では
+    // 自動座金4本（込み2本超過分 ¥7,000）＋2m超サーチャージ(1.2^((L-2000)/500))を
+    // 含めてちょうど ¥400,000 になる値。
+    pricePerMm: 70.3125,
+    // 極太32φは現場での取り付け精度確保のため座金位置・角度の編集を不可にする
+    // （2026-08-02 蠣﨑さん指定）
+    zakinCustomizable: false,
+    // 2.5m以上はジョイント代を自動加算（詳細は order-pricing.ts の
+    // calcGastonJointCount / GASTON_JOINT_FEE_PER_UNIT を参照）
+    jointFeeEnabled: true,
   },
 }
 

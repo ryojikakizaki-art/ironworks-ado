@@ -46,6 +46,7 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
   { cat: "handrail_h", label: "壁付け手すり・横型", name: "Claire クレール", sub: "25φ マットホワイト", price: 42000, priceFrom: true, img: "0a0c0c78f9f636cca733", href: "/products/claire" },
   { cat: "handrail_h", label: "壁付け手すり・横型", name: "Marcel マルセル", sub: "フラットバー マットブラック", price: 36000, priceFrom: true, img: "939d0690971c550c1dd9", href: "/products/marcel" },
   { cat: "handrail_h", label: "壁付け手すり・横型", name: "Émile エミール", sub: "フラットバー 鎚目 銀古美仕上げ", price: 45800, priceFrom: true, img: "fa95f550baa05216d291", href: "/products/emile" },
+  { cat: "handrail_h", label: "壁付け手すり・横型", name: "Gaston ガストン", sub: "極太32φ丸棒 鎚目仕上げ", price: 150000, priceFrom: true, img: "/images/products/gaston/01", href: "/products/gaston" },
 
   // 横型ロートアイアン (2 商品 — 外部)
   // Élisabeth は 1m から発注可能な価格レンジ商品。フィード価格と一覧カードは最小単価 ¥36,000 で揃え、
