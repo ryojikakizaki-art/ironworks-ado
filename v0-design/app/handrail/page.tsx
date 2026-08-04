@@ -134,8 +134,11 @@ export default function HandrailGuidePage() {
             </div>
             <div className="relative w-full md:w-[320px] aspect-[4/3] overflow-hidden rounded-xl bg-secondary">
               <Image
-                src="/images/hero/dscf6699.jpg"
-                alt="鎚目仕上げのアイアン手すりを握る手元"
+                // 旧 dscf6699 はトップのヒーロースライドショーと同じ写真だった。
+                // 見出し「毎日、手が触れるものだから。」に合わせ、手が触れる質感が
+                // 分かる鎚目のクローズアップへ。
+                src="/images/products/elisabeth/04.jpg"
+                alt="鎚目仕上げのロートアイアン手すりの表面"
                 fill
                 priority
                 sizes="(max-width: 768px) 100vw, 320px"
@@ -163,11 +166,14 @@ export default function HandrailGuidePage() {
               <div className="rounded-xl border border-border bg-white overflow-hidden">
                 <div className="relative aspect-[16/9] bg-secondary">
                   <Image
-                    src="/images/gallery/case-1.jpg"
-                    alt="コンクリート壁の廻り階段に取り付けた白い壁付け横型手すり"
+                    // 階段に沿って長く渡す「横型」の説明に合わせ、両側の壁を
+                    // 上まで走る施工写真へ（旧 case-1 は階段を見下ろす構図で
+                    // 手すりが細く白く、横型の特徴が伝わりにくかった）。
+                    src="/images/products/elisabeth/01.jpg"
+                    alt="階段の両側の壁に沿って取り付けた黒いアイアン横型手すり"
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"
-                    className="object-cover object-[50%_30%]"
+                    className="object-cover object-[50%_40%]"
                   />
                 </div>
                 <div className="p-6 md:p-7">
@@ -184,8 +190,12 @@ export default function HandrailGuidePage() {
               <div className="rounded-xl border border-border bg-white overflow-hidden">
                 <div className="relative aspect-[16/9] bg-secondary">
                   <Image
-                    src="/images/gallery/catherine-top.jpg"
-                    alt="玄関の壁に取り付けた縦型アイアン手すり"
+                    // 旧 catherine-top は商品名や太さが焼き込まれた販促バナーで、
+                    // 隣の「横型」が素の施工写真なのに対して不揃いだった。
+                    // 玄関ドア脇に垂直に設置した Antoine（縦型ロング）の施工写真へ。
+                    // 文字入りでない・縦向きに設置されている写真を優先（蠣﨑さん指定）。
+                    src={galleryUrl("27028bc72ffa6bf103d8.jpg")}
+                    alt="玄関ドア脇の壁に垂直に取り付けた縦型アイアン手すり"
                     fill
                     sizes="(max-width: 768px) 100vw, 50vw"
                     className="object-cover"
