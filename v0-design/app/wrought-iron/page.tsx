@@ -6,7 +6,6 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
 import { CATALOG_PRODUCTS } from "@/lib/products/catalog"
-import { galleryUrl } from "@/lib/products/display"
 
 const SITE_URL = "https://ado.tantetuzest.com"
 
@@ -31,16 +30,19 @@ const MOTIFS = [
   {
     href: "/products/scroll22",
     title: "Scroll｜唐草",
+    img: "/images/wrought-iron/motif-scroll.jpg",
     desc: "鉄の先端を熱して細く延ばし、渦巻き状に巻き上げる古典意匠。ヨーロッパの門扉や教会の金物に受け継がれてきた、ロートアイアンの象徴です。",
   },
   {
     href: "/products/tsuchime",
     title: "鎚目",
+    img: "/images/wrought-iron/motif-tsuchime.jpg",
     desc: "表面を打ち残しなくハンマーで叩き上げた跡。光を受けるたび表情が変わり、鉄は叩かれることで素材としての強さも増します。",
   },
   {
     href: "/products/elisabeth",
     title: "アール・ヌーヴォー曲線",
+    img: "/images/wrought-iron/motif-curve.jpg",
     desc: "植物の茎のようにしなやかな曲線。型に頼らず、職人が火加減と鎚の力だけで起こすラインは、二本と同じものがありません。",
   },
 ] as const
@@ -185,9 +187,9 @@ export default function WroughtIronPage() {
             <div className="grid md:grid-cols-3 gap-8 md:gap-6 lg:gap-8">
               {motifProducts.map((m) => (
                 <Link key={m.href} href={m.href} className="group block">
-                  <div className="relative aspect-[4/5] overflow-hidden rounded-xl bg-secondary">
+                  <div className="relative aspect-square overflow-hidden rounded-xl bg-secondary">
                     <Image
-                      src={galleryUrl(`${m.product.img}.jpg`)}
+                      src={m.img}
                       alt={`${m.title} — ${m.product.name}`}
                       fill
                       sizes="(max-width: 768px) 100vw, 33vw"
@@ -226,14 +228,14 @@ export default function WroughtIronPage() {
               className="group block relative aspect-[21/9] overflow-hidden rounded-2xl bg-secondary"
             >
               <Image
-                src="/images/products/elisabeth/02.jpg"
-                alt="Élisabeth ロートアイアン手すりの階段施工事例"
+                src="/images/wrought-iron/collection-hammered.jpg"
+                alt="鎚目を打ち込んだロートアイアン手すりの先端"
                 fill
                 sizes="(max-width: 900px) 100vw, 900px"
                 className="object-cover transition-transform duration-700 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-6 md:p-8 text-left">
+              <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/10 to-transparent" />
+              <div className="absolute inset-x-0 top-0 p-6 md:p-8 text-left">
                 <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Antique &amp; Classical</p>
                 <p className="font-serif text-white text-[22px] md:text-[28px]">
                   アンティーク・クラシック 全 11 商品
