@@ -232,7 +232,7 @@ export default function WroughtIronPage() {
                 alt="鎚目を打ち込んだロートアイアン手すりの先端"
                 fill
                 sizes="(max-width: 900px) 100vw, 900px"
-                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                className="object-cover object-top transition-transform duration-700 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/10 to-transparent" />
               <div className="absolute inset-x-0 top-0 p-6 md:p-8 text-left">
