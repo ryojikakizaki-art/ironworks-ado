@@ -6,35 +6,6 @@ import Image from "next/image"
 import { ArrowRight, Play, X, Volume2, VolumeX } from "lucide-react"
 import { InstagramCard } from "@/components/instagram-card"
 
-const CDN = "https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7"
-
-const blogPosts = [
-  {
-    id: 1,
-    title: "階段・廊下の手すりの取り付け方",
-    excerpt: "手すりの高さ・位置・取り付け方法を詳しく解説。DIYでも安心の施工ガイド。",
-    image: `${CDN}/579e79e794eed28d9ac7.jpg/fit=cover,w=600,h=450`,
-    category: "施工ガイド",
-    date: "2025.12.10",
-  },
-  {
-    id: 2,
-    title: "ペットと暮らす家の手すり選び",
-    excerpt: "ペットの安全を守りながら、インテリアにも馴染むアイアン手すりの選び方。",
-    image: `${CDN}/720c42cc222961d0c4f7.jpg/fit=cover,w=600,h=450`,
-    category: "暮らしのヒント",
-    date: "2025.11.20",
-  },
-  {
-    id: 3,
-    title: "アイアン手すりの魅力と選び方",
-    excerpt: "素材の特徴から施工事例まで。アイアン手すりを検討中の方へ。",
-    image: `${CDN}/d0f5f0e83d40a4d29044.jpg/fit=cover,w=600,h=450`,
-    category: "選び方ガイド",
-    date: "2025.10.15",
-  },
-]
-
 export function BlogSection() {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
@@ -77,7 +48,7 @@ export function BlogSection() {
               transition={{ duration: 0.6 }}
               className="inline-block text-xs tracking-[0.3em] text-muted-foreground uppercase mb-4"
             >
-              Blog
+              Media
             </motion.span>
             <motion.h2
               initial={{ opacity: 0, y: 20 }}
@@ -85,7 +56,7 @@ export function BlogSection() {
               transition={{ duration: 0.6, delay: 0.1 }}
               className="font-serif text-3xl md:text-4xl text-dark"
             >
-              お知らせ・コラム
+              動画・Instagram
             </motion.h2>
           </div>
         </div>
