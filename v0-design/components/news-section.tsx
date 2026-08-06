@@ -44,7 +44,7 @@ export function NewsSection() {
               initial={{ opacity: 0, x: 60 }}
               animate={isInView ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.5, delay: 0.2 + index * 0.15 }}
-              className="group flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-6 py-5 hover:bg-secondary/50 -mx-4 px-4 rounded-lg transition-colors duration-300"
+              className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-6 py-5"
             >
               {/* Date */}
               <div className="flex items-center gap-2 flex-shrink-0">
@@ -66,12 +66,9 @@ export function NewsSection() {
               </div>
 
               {/* Title */}
-              <p className="flex-1 text-[14px] text-dark leading-relaxed group-hover:text-gold transition-colors duration-300">
+              <p className="flex-1 text-[14px] text-dark leading-relaxed">
                 {item.title}
               </p>
-
-              {/* Arrow */}
-              <ArrowRight className="hidden sm:block w-4 h-4 text-muted-foreground/30 group-hover:text-gold group-hover:translate-x-1 transition-all duration-300 flex-shrink-0 mt-0.5" />
             </motion.div>
           ))}
         </div>
