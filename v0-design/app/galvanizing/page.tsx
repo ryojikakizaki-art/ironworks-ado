@@ -972,7 +972,7 @@ export default function GalvanizingPage() {
             {/* Left: Text */}
             <div className="lg:col-span-6 px-5 lg:px-12 py-14 lg:py-24 flex flex-col justify-center">
               <p className="text-[11px] tracking-[0.5em] uppercase text-gold mb-6">Why Galvanizing?</p>
-              <h1 className="font-sans font-black leading-tight mb-6 tracking-tight">
+              <h1 className="font-serif font-light leading-tight mb-6 tracking-tight">
                 <span className="block text-3xl sm:text-4xl lg:text-5xl text-foreground mb-2">
                   あなたの暮らしを、
                 </span>
@@ -1026,7 +1026,7 @@ export default function GalvanizingPage() {
                 return (
                   <div key={s.label} className="text-center md:text-left">
                     <div className="flex items-baseline justify-center md:justify-start gap-1">
-                      <span className={`font-sans font-black text-gold leading-none ${isWord ? "text-3xl lg:text-4xl" : "text-5xl lg:text-6xl"}`}>
+                      <span className={`font-serif text-gold leading-none ${isWord ? "text-3xl lg:text-4xl" : "text-5xl lg:text-6xl"}`}>
                         {s.value}
                       </span>
                       <span className="text-[14px] lg:text-base text-gold/80 font-semibold">{s.unit}</span>
@@ -1043,21 +1043,21 @@ export default function GalvanizingPage() {
         {/* ════════════ Sub-hero centered statement ════════════ */}
         <section className="relative max-w-[880px] mx-auto px-5 lg:px-8 py-20 lg:py-32 text-center overflow-hidden">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] max-w-[600px] aspect-square rounded-full bg-gold/[0.05] pointer-events-none" />
-          <p className="relative font-sans font-bold text-xl sm:text-2xl lg:text-4xl leading-[1.75] lg:leading-[1.7] text-foreground tracking-tight">
+          <p className="relative font-serif text-xl sm:text-2xl lg:text-4xl leading-[1.75] lg:leading-[1.7] text-foreground">
             屋外でも、塩害でも、紫外線でも、
             <br />
             錆びない手すりを。
           </p>
           <div className="relative mt-8 lg:mt-10 flex flex-col items-center gap-5">
             {/* マーカー風アンダーライン（薄ゴールド、少し斜め） */}
-            <span className="relative inline-block font-bold text-lg sm:text-xl lg:text-2xl text-foreground">
+            <span className="relative inline-block font-serif text-lg sm:text-xl lg:text-2xl text-foreground">
               <span className="absolute inset-x-0 bottom-0 h-[0.5em] bg-gold/40 -skew-x-3 -z-0" aria-hidden="true" />
               <span className="relative z-10">
                 <span className="text-gold">メッキ ＋ 塗装</span>の二重防錆で
               </span>
             </span>
-            <p className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground leading-[1.5]">
-              <span className="font-black text-gold text-5xl sm:text-6xl lg:text-7xl align-middle leading-none">10 年以上</span>
+            <p className="text-lg sm:text-xl lg:text-2xl font-serif text-foreground leading-[1.5]">
+              <span className="font-serif text-gold text-5xl sm:text-6xl lg:text-7xl align-middle leading-none">10 年以上</span>
               <span className="ml-1.5">の安心を、お届け。</span>
             </p>
           </div>
@@ -1108,7 +1108,7 @@ export default function GalvanizingPage() {
               </div>
             </aside>
             <div className="lg:col-span-9 scroll-mt-24 min-w-0">
-              <h3 className="font-sans font-black text-2xl sm:text-3xl lg:text-4xl text-foreground mb-8 leading-[1.3] tracking-tight">
+              <h3 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-foreground mb-8 leading-[1.3]">
                 亜鉛が鉄と<span className="text-gold">化学結合</span>し、<br className="hidden lg:block" />
                 犠牲防食で守り続ける。
               </h3>
@@ -1155,7 +1155,7 @@ export default function GalvanizingPage() {
               </div>
             </aside>
             <div className="lg:col-span-9 scroll-mt-24 min-w-0">
-              <h3 className="font-sans font-black text-2xl sm:text-3xl lg:text-4xl text-foreground mb-8 leading-[1.3] tracking-tight">
+              <h3 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-foreground mb-8 leading-[1.3]">
                 製作からお届けまで、<br className="hidden lg:block" />
                 すべて<span className="relative inline-block">
                   <span className="absolute inset-x-0 bottom-0 h-[0.45em] bg-gold/40 -skew-x-3 -z-0" aria-hidden="true" />
@@ -1174,13 +1174,13 @@ export default function GalvanizingPage() {
                     <div className="col-span-2 lg:col-span-2 flex items-start justify-center lg:justify-start pt-1">
                       <div className="flex flex-col items-center gap-1.5">
                         <div className="w-11 h-11 lg:w-14 lg:h-14 rounded-full bg-gold/15 border-2 border-gold flex items-center justify-center">
-                          <span className="font-sans font-black text-gold text-lg lg:text-xl leading-none">{s.no}</span>
+                          <span className="font-serif text-gold text-lg lg:text-xl leading-none">{s.no}</span>
                         </div>
                         <span className="text-[9px] lg:text-[10px] tracking-[0.25em] font-bold text-gold/70">STEP</span>
                       </div>
                     </div>
                     <div className="col-span-7 lg:col-span-7">
-                      <h4 className="font-sans font-bold text-lg lg:text-2xl text-foreground mb-2 leading-snug">{s.title}</h4>
+                      <h4 className="font-serif text-lg lg:text-2xl text-foreground mb-2 leading-snug">{s.title}</h4>
                       <p className="text-[14px] lg:text-[15px] leading-[1.85] text-muted-foreground">{s.desc}</p>
                     </div>
                     <div className="col-span-3 lg:col-span-3 flex items-center justify-end">
@@ -1370,7 +1370,7 @@ export default function GalvanizingPage() {
               </div>
             </aside>
             <div className="lg:col-span-9 scroll-mt-24 min-w-0">
-              <h3 className="font-sans font-black text-2xl sm:text-3xl lg:text-4xl text-foreground mb-8 leading-[1.3] tracking-tight">
+              <h3 className="font-serif text-2xl sm:text-3xl lg:text-4xl text-foreground mb-8 leading-[1.3]">
                 塗装のみでは屋外で <span className="text-foreground/60">1〜3 年</span>。<br className="hidden lg:block" />
                 メッキ ＋ 塗装で <span className="text-gold text-3xl sm:text-4xl lg:text-5xl">10 年以上</span>。
               </h3>
@@ -1492,13 +1492,13 @@ export default function GalvanizingPage() {
                   >
                     <div className="col-span-3 lg:col-span-2 flex items-start justify-center lg:justify-start">
                       <div className="w-12 h-12 lg:w-14 lg:h-14 rounded-full bg-gold/10 border-2 border-gold flex items-center justify-center shrink-0">
-                        <span className="font-sans font-black text-lg lg:text-xl text-gold leading-none">
+                        <span className="font-serif text-gold text-lg lg:text-xl leading-none">
                           {String(i + 1).padStart(2, "0")}
                         </span>
                       </div>
                     </div>
                     <div className="col-span-9 lg:col-span-10">
-                      <h3 className="font-sans font-bold text-xl lg:text-3xl text-foreground mb-3 leading-snug tracking-tight">
+                      <h3 className="font-serif text-xl lg:text-3xl text-foreground mb-3 leading-snug">
                         {s.title}
                       </h3>
                       <p className="text-[14px] lg:text-[15px] leading-[1.85] text-foreground/80">
