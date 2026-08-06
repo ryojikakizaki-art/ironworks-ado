@@ -128,8 +128,8 @@ export default function ConstructionPage() {
             </div>
             <div className="relative w-full md:w-[320px] aspect-[4/3] overflow-hidden rounded-xl bg-secondary">
               <Image
-                src="/images/hero/loft-staircase.jpg"
-                alt="スケルトン階段のあるリビング空間"
+                src="/images/hero/construction-install.jpg"
+                alt="階段の壁にロートアイアン手すりを取り付ける職人"
                 fill
                 priority
                 sizes="(max-width: 768px) 100vw, 320px"
