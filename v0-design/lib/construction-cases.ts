@@ -28,10 +28,10 @@ export const CONSTRUCTION_CASES: ConstructionCase[] = [
     href: "/products/claire",
   },
   {
-    src: "/images/voices/review-photo-hiroshima-panel.jpg",
+    src: "/images/voices/review-photo-hiroshima-single.jpg",
     alt: "広島県のお客様宅の玄関に取り付けた黒い縦手すり",
-    w: 480,
-    h: 660,
+    w: 1201,
+    h: 1600,
     caption: "玄関に取り付けた、黒い縦型の壁付け手すり",
     prefecture: "広島県",
     href: "/reviews",
