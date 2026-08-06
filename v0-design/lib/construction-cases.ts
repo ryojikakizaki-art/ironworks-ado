@@ -1,5 +1,7 @@
 export type ConstructionCase = {
   src: string
+  /** グリッドのサムネイル用。指定がなければ src を使う（合成写真など、サムネは一部だけ見せたい場合に使用） */
+  thumbSrc?: string
   alt: string
   w: number
   h: number
@@ -8,7 +10,7 @@ export type ConstructionCase = {
   href?: string
 }
 
-// 施工事例 — 商品ページへのリンク(href)は商品が確認できたものだけ追記する（未確認のうちは書かない）
+// 施工事例 — href は蠣﨑さん確認済みのものだけ（未確認のうちは書かない）
 export const CONSTRUCTION_CASES: ConstructionCase[] = [
   {
     src: "/images/gallery/case-5.jpg",
@@ -16,6 +18,7 @@ export const CONSTRUCTION_CASES: ConstructionCase[] = [
     w: 900,
     h: 1600,
     caption: "白壁の階段に、渦巻き装飾の壁付け手すり",
+    href: "https://www.instagram.com/p/DSUmc2AE7sT/",
   },
   {
     src: "/images/gallery/case-1.jpg",
@@ -23,14 +26,17 @@ export const CONSTRUCTION_CASES: ConstructionCase[] = [
     w: 941,
     h: 1150,
     caption: "コンクリートの廻り階段に、白い壁付け手すり",
+    href: "/products/claire",
   },
   {
     src: "/images/voices/review-photo-hiroshima.jpg",
+    thumbSrc: "/images/voices/review-photo-hiroshima-panel.jpg",
     alt: "広島県のお客様宅の玄関に取り付けた黒い縦手すり",
     w: 996,
     h: 660,
     caption: "玄関に取り付けた、黒い縦型の壁付け手すり",
     prefecture: "広島県",
+    href: "/reviews",
   },
   {
     src: "/images/gallery/case-3.jpg",
@@ -46,6 +52,7 @@ export const CONSTRUCTION_CASES: ConstructionCase[] = [
     h: 611,
     caption: "介護保険を使った、L字型の据え置き手すり",
     prefecture: "茨城県",
+    href: "https://www.instagram.com/p/DAwxhI_TaTw/",
   },
   {
     src: "/images/gallery/case-2.jpg",
@@ -53,6 +60,7 @@ export const CONSTRUCTION_CASES: ConstructionCase[] = [
     w: 900,
     h: 1600,
     caption: "コンクリート外階段に、黒いアプローチ手すり",
+    href: "https://www.instagram.com/p/DW-f15Hk37U/",
   },
   {
     src: "/images/gallery/case-4.jpg",
@@ -60,5 +68,13 @@ export const CONSTRUCTION_CASES: ConstructionCase[] = [
     w: 740,
     h: 1600,
     caption: "バルコニーに、黒いアイアン手すり",
+    href: "https://www.instagram.com/p/DW2mqJnk8D1/",
   },
 ]
+
+export function caseLinkLabel(href: string): string {
+  if (href.startsWith("/products/")) return "この商品を見る"
+  if (href === "/reviews") return "お客様の声を見る"
+  if (href.startsWith("http")) return "Instagramで見る"
+  return "詳しく見る"
+}

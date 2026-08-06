@@ -4,11 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight, X } from "lucide-react"
-import type { ConstructionCase } from "@/lib/construction-cases"
+import { caseLinkLabel, type ConstructionCase } from "@/lib/construction-cases"
 
 // タップで拡大表示できる施工事例ギャラリー。
 // 商品ページの旧Lightbox（2026-05-12廃止・モバイルで黒バック+×だけで不便）の反省を踏まえ、
 // 背景タップで閉じる・スワイプで前後移動・現在位置表示を備える。
+// サムネイルは aspect-[4/5] に揃えた整列グリッド（拡大表示時は元画像をそのまま見せる）。
 export function CaseLightboxGallery({ cases }: { cases: ConstructionCase[] }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const touchStartX = useRef<number | null>(null)
@@ -43,47 +44,49 @@ export function CaseLightboxGallery({ cases }: { cases: ConstructionCase[] }) {
 
   return (
     <>
-      <div className="columns-2 md:columns-3 gap-3 md:gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
         {cases.map((c, i) => {
-          const card = (
-            <div className="group relative overflow-hidden rounded-xl bg-secondary">
-              <Image
-                src={c.src}
-                alt={c.alt}
-                width={c.w}
-                height={c.h}
-                sizes="(max-width: 768px) 50vw, 33vw"
-                className="w-full h-auto transition-transform duration-700 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-3 md:p-4">
-                {c.prefecture && (
-                  <p className="text-[9px] md:text-[10px] tracking-[0.3em] uppercase text-gold mb-1">
-                    {c.prefecture}
-                  </p>
-                )}
-                <p className="text-[12px] md:text-[13px] text-white leading-snug">{c.caption}</p>
-              </div>
-            </div>
-          )
+          const isExternal = c.href?.startsWith("http")
           return (
-            <figure key={c.src} className="break-inside-avoid mb-3 md:mb-4">
+            <figure key={c.src}>
               <button
                 type="button"
                 onClick={() => setActiveIndex(i)}
-                className="block w-full text-left"
+                className="group relative block w-full aspect-[4/5] overflow-hidden rounded-xl bg-secondary text-left"
                 aria-label={`${c.alt}を拡大表示`}
               >
-                {card}
+                <Image
+                  src={c.thumbSrc ?? c.src}
+                  alt={c.alt}
+                  fill
+                  sizes="(max-width: 768px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                <div className="absolute inset-x-0 bottom-0 p-3 md:p-4">
+                  {c.prefecture && (
+                    <p className="text-[9px] md:text-[10px] tracking-[0.3em] uppercase text-gold mb-1">
+                      {c.prefecture}
+                    </p>
+                  )}
+                  <p className="text-[12px] md:text-[13px] text-white leading-snug">{c.caption}</p>
+                </div>
               </button>
-              {c.href && (
-                <Link
-                  href={c.href}
-                  className="mt-1.5 inline-flex px-0.5 text-[11px] text-gold hover:underline"
-                >
-                  この商品を見る
-                </Link>
-              )}
+              {c.href &&
+                (isExternal ? (
+                  <a
+                    href={c.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1.5 inline-flex px-0.5 text-[11px] text-gold hover:underline"
+                  >
+                    {caseLinkLabel(c.href)}
+                  </a>
+                ) : (
+                  <Link href={c.href} className="mt-1.5 inline-flex px-0.5 text-[11px] text-gold hover:underline">
+                    {caseLinkLabel(c.href)}
+                  </Link>
+                ))}
             </figure>
           )
         })}
