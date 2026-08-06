@@ -1,7 +1,5 @@
 export type ConstructionCase = {
   src: string
-  /** グリッドのサムネイル用。指定がなければ src を使う（合成写真など、サムネは一部だけ見せたい場合に使用） */
-  thumbSrc?: string
   alt: string
   w: number
   h: number
@@ -11,6 +9,7 @@ export type ConstructionCase = {
 }
 
 // 施工事例 — href は蠣﨑さん確認済みのものだけ（未確認のうちは書かない）
+// href があるものは画像タップでそのままリンク先へ。ないものはタップで拡大表示。
 export const CONSTRUCTION_CASES: ConstructionCase[] = [
   {
     src: "/images/gallery/case-5.jpg",
@@ -29,10 +28,9 @@ export const CONSTRUCTION_CASES: ConstructionCase[] = [
     href: "/products/claire",
   },
   {
-    src: "/images/voices/review-photo-hiroshima.jpg",
-    thumbSrc: "/images/voices/review-photo-hiroshima-panel.jpg",
+    src: "/images/voices/review-photo-hiroshima-panel.jpg",
     alt: "広島県のお客様宅の玄関に取り付けた黒い縦手すり",
-    w: 996,
+    w: 480,
     h: 660,
     caption: "玄関に取り付けた、黒い縦型の壁付け手すり",
     prefecture: "広島県",
@@ -71,10 +69,3 @@ export const CONSTRUCTION_CASES: ConstructionCase[] = [
     href: "https://www.instagram.com/p/DW2mqJnk8D1/",
   },
 ]
-
-export function caseLinkLabel(href: string): string {
-  if (href.startsWith("/products/")) return "この商品を見る"
-  if (href === "/reviews") return "お客様の声を見る"
-  if (href.startsWith("http")) return "Instagramで見る"
-  return "詳しく見る"
-}
