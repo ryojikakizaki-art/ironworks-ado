@@ -122,6 +122,9 @@ export async function POST(request: NextRequest) {
   let productLabel: string;
   let specParts: string[];
   let totalYen: number;
+  // 送料（税抜・税額）。納品書で商品代と送料を分けて表示するため、台帳の P/Q 列に記帳する。
+  let shippingYen = 0;
+  let shippingTaxYen = 0;
 
   if (body.cart === true) {
     // カート（複数商品まとめ買い）: 価格・送料は lib/cart/pricing.ts で再計算（カード決済と共有）。
@@ -139,6 +142,8 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
     totalYen = pricing.total;
+    shippingYen = pricing.shipping;
+    shippingTaxYen = pricing.shippingTax;
     // 受注台帳は 1 注文 = 1 行。商品欄に全商品を並べる（2026-07-31 蠣﨑さん確定）。
     productLabel = pricing.lines
       .map((l) => `${l.label}${l.item.quantity > 1 ? ` × ${l.item.quantity}本` : ''}`)
@@ -165,6 +170,8 @@ export async function POST(request: NextRequest) {
     }
     const stairShippingTax = Math.round(stairShipping.shipping * 0.1);
     totalYen = stairOrder.price.total + stairShipping.shipping + stairShippingTax;
+    shippingYen = stairShipping.shipping;
+    shippingTaxYen = stairShippingTax;
     productLabel = stairOrder.productLabel;
     specParts = [...stairOrder.specParts, `通常配送（${LAURENT.deliveryBusinessDays}営業日）`];
   } else if (productKey === 'clemence') {
@@ -187,8 +194,8 @@ export async function POST(request: NextRequest) {
     const extensionPrice = calcExtensionPrice(ext);
     const subtotal = CLEMENCE_BASE_PRICE + extensionPrice;
     const rushSurcharge = rushDelivery ? Math.round(subtotal * RUSH_RATE) : 0;
-    const shippingYen = clemenceShipping.shipping;
-    const shippingTaxYen = Math.round(shippingYen * 0.1);
+    shippingYen = clemenceShipping.shipping;
+    shippingTaxYen = Math.round(shippingYen * 0.1);
     totalYen = subtotal + rushSurcharge + shippingYen + shippingTaxYen;
 
     const extLabel = ext > 0 ? `・③延長+${ext}mm` : '';
@@ -264,8 +271,8 @@ export async function POST(request: NextRequest) {
       error: shippingResult.inquiryReason || '配送条件により別途お見積もりが必要です',
     }, { status: 400 });
   }
-  const shippingYen = shippingResult.shipping;
-  const shippingTaxYen = Math.round(shippingYen * 0.1);
+  shippingYen = shippingResult.shipping;
+  shippingTaxYen = Math.round(shippingYen * 0.1);
   totalYen = itemsSubtotal + rushSurcharge + shippingYen + shippingTaxYen;
 
   // ── 表示用ラベル ──
@@ -305,13 +312,14 @@ export async function POST(request: NextRequest) {
       .filter(Boolean).join(' / '),                          // L メモ
   ];
 
+  const shipping = shippingYen > 0 || shippingTaxYen > 0 ? { yen: shippingYen, taxYen: shippingTaxYen } : undefined;
   try {
-    const status = await writeOrderRow(orderRef, row);
+    const status = await writeOrderRow(orderRef, row, shipping);
     if (status === 'duplicate') {
       // 注文番号衝突（ほぼ起きない）。番号を採り直して 1 回だけ再試行。
       const retryRef = makeOrderRef();
       row[10] = retryRef;
-      await writeOrderRow(retryRef, row);
+      await writeOrderRow(retryRef, row, shipping);
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
