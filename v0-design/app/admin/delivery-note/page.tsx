@@ -33,6 +33,10 @@ type OrderDetail = {
   orderRef: string;
   note: string;
   status: string;
+  shippingYen: number;
+  shippingTaxYen: number;
+  productSubtotalYen: number;
+  productTaxYen: number;
 };
 
 const yen = (n: number): string => `¥${n.toLocaleString('ja-JP')}`;
@@ -92,6 +96,10 @@ const DEMO_ORDERS: Record<string, OrderDetail> = {
     orderRef: 'cs_live_b1EFAkgij7kMBfDgJ6BolywH52tPZUQWXMvAz6AKD4KW6iOODvXNQx3xLT',
     note: '',
     status: '',
+    shippingYen: 3350,
+    shippingTaxYen: 335,
+    productSubtotalYen: 40909,
+    productTaxYen: 4091,
   },
   '3': {
     row: 3,
@@ -110,6 +118,10 @@ const DEMO_ORDERS: Record<string, OrderDetail> = {
     orderRef: 'cs_live_b1OhgaqY8ZmT4PLHlFguUzMu2tYjaSCy9cAxJImH9PIJG3TU7vW143Lm3k',
     note: '',
     status: '',
+    shippingYen: 1400,
+    shippingTaxYen: 140,
+    productSubtotalYen: 33182,
+    productTaxYen: 3318,
   },
 };
 
@@ -385,14 +397,27 @@ function DeliveryNoteInner() {
                     </td>
                     <td className="border border-gray-300 px-2 py-2 text-right font-mono text-gray-900 align-top">1</td>
                     <td className="border border-gray-300 px-2 py-2 text-right font-mono text-gray-900 align-top">
-                      {yen(order.subtotalYen)}
+                      {yen(order.shippingYen > 0 ? order.productSubtotalYen : order.subtotalYen)}
                     </td>
                     <td className="border border-gray-300 px-2 py-2 text-right font-mono text-gray-900 align-top">
-                      {yen(order.subtotalYen)}
+                      {yen(order.shippingYen > 0 ? order.productSubtotalYen : order.subtotalYen)}
                     </td>
                   </tr>
-                  {/* 空行を 3 行入れて A4 に体裁を合わせる */}
-                  {[0, 1, 2].map((i) => (
+                  {/* 送料が別建ての注文のみ、商品と分けて明細行に出す */}
+                  {order.shippingYen > 0 && (
+                    <tr>
+                      <td className="border border-gray-300 px-2 py-2 align-top text-gray-900">送料</td>
+                      <td className="border border-gray-300 px-2 py-2 text-right font-mono text-gray-900 align-top">1</td>
+                      <td className="border border-gray-300 px-2 py-2 text-right font-mono text-gray-900 align-top">
+                        {yen(order.shippingYen)}
+                      </td>
+                      <td className="border border-gray-300 px-2 py-2 text-right font-mono text-gray-900 align-top">
+                        {yen(order.shippingYen)}
+                      </td>
+                    </tr>
+                  )}
+                  {/* 空行を入れて A4 に体裁を合わせる（送料行がある分、空行を 1 行減らす） */}
+                  {(order.shippingYen > 0 ? [0, 1] : [0, 1, 2]).map((i) => (
                     <tr key={i}>
                       <td className="h-7 border border-gray-300 px-2"></td>
                       <td className="border border-gray-300 px-2"></td>

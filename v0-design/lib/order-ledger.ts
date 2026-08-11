@@ -10,6 +10,9 @@
  * webhook は本番稼働中のため触らず独自実装のまま残している。
  *
  * 列順 A〜L: 受注日 / 区分 / 顧客名 / 都道府県 / 住所 / メール / 電話 / 商品 / 仕様 / 金額 / 注文番号 / メモ
+ * M/N 列は商品カテゴリ自動分類（数式・触らない）、O 列は対応状況。
+ * P/Q 列（任意）: 送料（税抜） / 送料消費税。納品書で商品代と送料を分けて表示するために
+ * 2026-08 追加。送料が別建てでない受注（現地施工・現金など）は空欄のままでよい。
  */
 
 /**
@@ -28,10 +31,12 @@ export const LEDGER_SHEET_ID = '1-8yr9fW-JDtS_FpCicoZ5-xDD2Y9Bwro4hhovPvRFJc';
  *
  * @param orderKey K 列に入れる一意の注文番号（重複判定キー）
  * @param row      A〜L の 12 要素の文字列配列
+ * @param shipping 送料（税抜）・送料消費税（任意）。指定時は P/Q 列に書き込む。
  */
 export async function writeOrderRow(
   orderKey: string,
   row: string[],
+  shipping?: { yen: number; taxYen: number },
 ): Promise<'created' | 'duplicate'> {
   const sheetId = LEDGER_SHEET_ID;
   const keyJson = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
@@ -73,6 +78,15 @@ export async function writeOrderRow(
     valueInputOption: 'RAW',
     requestBody: { values: [row] },
   });
+  // P/Q 列（送料税抜・送料消費税）は M〜O 列（数式・対応状況）を挟むため別リクエストで書く。
+  if (shipping && (shipping.yen > 0 || shipping.taxYen > 0)) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: sheetId,
+      range: 'P2:Q2',
+      valueInputOption: 'RAW',
+      requestBody: { values: [[String(Math.round(shipping.yen)), String(Math.round(shipping.taxYen))]] },
+    });
+  }
   return 'created';
 }
 
