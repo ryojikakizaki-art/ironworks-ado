@@ -10,7 +10,7 @@ import { CATALOG_PRODUCTS } from "@/lib/products/catalog"
 import { galleryUrl } from "@/lib/products/display"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
 
-// シンプル手すり LP に並べる商品（12点）
+// シンプル手すり LP に並べる商品（13点）
 const SIMPLE_HREFS = [
   "/products/rene",        // Best Seller・25φ 横型 ブラック
   "/products/claire",      // 25φ 横型 ホワイト
@@ -22,6 +22,7 @@ const SIMPLE_HREFS = [
   "/products/simple-black",
   "/products/simple-white",
   "/products/barn-door",
+  "/products/laurent",       // フラットバー 9×38 階段手摺
   "/products/stair-straight",
   "/products/fence-zigzag",
 ] as const
@@ -67,7 +68,7 @@ export default function SimpleCategoryPage() {
                 引き算の美しさ。
               </h1>
               <p className="mt-6 max-w-xl text-[14px] md:text-[16px] leading-loose text-foreground/75">
-                25φ STKM パイプ材＋2 液ウレタン塗装。モダンでミニマル、定番アイアン手すり 12 種。
+                25φ STKM パイプ材＋2 液ウレタン塗装。モダンでミニマル、定番アイアン手すり 13 種。
               </p>
             </div>
           </div>
@@ -147,7 +148,7 @@ export default function SimpleCategoryPage() {
             <div className="text-center mb-16 md:mb-20">
               <p className="text-[10px] tracking-[0.4em] uppercase text-foreground/50 mb-4">Lineup</p>
               <h2 className="font-serif text-[26px] md:text-[36px] font-light leading-[1.5]">
-                シンプル手すり 12 商品
+                シンプル手すり 13 商品
               </h2>
               <p className="mt-6 text-[14px] md:text-[15px] text-foreground/65 leading-loose max-w-xl mx-auto">
                 ¥30,000〜の Claude から、Best Seller の René、太径 31.8φ の Alexandre まで。全商品オーダーサイズ対応。

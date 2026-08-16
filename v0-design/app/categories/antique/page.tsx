@@ -10,16 +10,18 @@ import { CATALOG_PRODUCTS } from "@/lib/products/catalog"
 import { galleryUrl } from "@/lib/products/display"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
 
-// アンティーク・クラシック手すり LP に並べる商品（11点）
+// アンティーク・クラシック手すり LP に並べる商品（13点）
 const ANTIQUE_HREFS = [
   "/products/elisabeth",
   "/products/clemence",
+  "/products/european",
   "/products/fabrice",
   "/products/tsuchime",
   "/products/scroll22",
   "/products/scroll19",
   "/products/scroll16",
   "/products/emile",
+  "/products/gaston",
   "/products/tsuta",
   "/products/arabesque",
   "/products/mengoshi",
@@ -82,7 +84,7 @@ export default function AntiqueCategoryPage() {
                 <span className="text-gold">住まいに格を。</span>
               </h1>
               <p className="mt-6 max-w-xl text-[14px] md:text-[16px] leading-loose text-foreground/75">
-                鍛冶職人が一本ずつ手打ちした、本物のロートアイアン手すり 11 種。
+                鍛冶職人が一本ずつ手打ちした、本物のロートアイアン手すり 13 種。
               </p>
             </div>
           </div>
@@ -148,7 +150,7 @@ export default function AntiqueCategoryPage() {
             <div className="text-center mb-16 md:mb-20">
               <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-4">Lineup</p>
               <h2 className="font-serif text-[26px] md:text-[36px] font-light leading-[1.5]">
-                アンティーク・クラシック 11 商品
+                アンティーク・クラシック 13 商品
               </h2>
               <p className="mt-6 text-[14px] md:text-[15px] text-foreground/65 leading-loose max-w-xl mx-auto">
                 ¥18,000 のスクロール 16φ から、職人手打ちの Élisabeth まで。全商品オーダーサイズ可。

@@ -221,7 +221,7 @@ export default function WroughtIronPage() {
             </h2>
             <p className="text-[14px] md:text-[15px] text-muted-foreground leading-loose max-w-xl mx-auto mb-12">
               手すり・面格子・門扉・ドアまで。¥18,000 の Scroll 16φ から職人手打ちの一点物まで、
-              全 11 商品をアンティーク・クラシックのページにまとめています。
+              全 13 商品をアンティーク・クラシックのページにまとめています。
             </p>
             <Link
               href="/categories/antique"
@@ -238,7 +238,7 @@ export default function WroughtIronPage() {
               <div className="absolute inset-x-0 top-0 p-6 md:p-8 text-left">
                 <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">Antique &amp; Classical</p>
                 <p className="font-serif text-white text-[22px] md:text-[28px]">
-                  アンティーク・クラシック 全 11 商品
+                  アンティーク・クラシック 全 13 商品
                 </p>
                 <span className="mt-2 inline-flex items-center gap-1.5 text-[13px] text-white/85">
                   一覧を見る
