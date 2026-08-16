@@ -68,4 +68,20 @@ export const CONSTRUCTION_CASES: ConstructionCase[] = [
     caption: "バルコニーに、黒いアイアン手すり",
     href: "https://www.instagram.com/p/DW2mqJnk8D1/",
   },
+  {
+    src: "/images/gallery/case-gate-arabesque.jpg",
+    alt: "白い廊下の間仕切りに取り付けたロートアイアンの室内門扉",
+    w: 614,
+    h: 768,
+    caption: "廊下の間仕切りに、ロートアイアンの室内門扉",
+    href: "https://www.instagram.com/p/DFxUI8rzaWW/",
+  },
+  {
+    src: "/images/gallery/case-skeleton-stairs.jpg",
+    alt: "リビングの吹き抜けに設置した鉄骨のスケルトン階段",
+    w: 720,
+    h: 900,
+    caption: "リビングの吹き抜けに、鉄骨のスケルトン階段",
+    href: "https://www.instagram.com/p/DDZaXC1zTQo/",
+  },
 ]
