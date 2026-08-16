@@ -34,6 +34,7 @@ type ManualOrderPayload = {
   total_yen?: number;      // J 金額（税込）
   order_ref?: string;      // K 注文番号（一意。見積書番号など。重複判定キー）
   note?: string;           // L メモ
+  shipping_yen?: number;   // P 送料（税抜・任意）。見積書に送料が別建てで明記されている場合のみ指定。
 };
 
 // 受注日を台帳の表記 YYYY/MM/DD に正規化する。
@@ -104,9 +105,12 @@ export async function POST(request: NextRequest) {
     String(payload.note || '').trim(),         // L メモ
   ];
 
+  const shippingYen = Number(payload.shipping_yen || 0);
+  const shipping = shippingYen > 0 ? { yen: shippingYen, taxYen: Math.round(shippingYen * 0.1) } : undefined;
+
   let status: 'created' | 'duplicate';
   try {
-    status = await writeOrderRow(orderRef, row);
+    status = await writeOrderRow(orderRef, row, shipping);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('[manual-order] Ledger error:', message);

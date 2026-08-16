@@ -921,6 +921,8 @@ async function createSimpleCalendarEvent(session: Stripe.Checkout.Session) {
  * 1 行目はヘッダー。新しい注文ほど上に来るよう、末尾追記ではなく 2 行目への挿入にしている。
  * ORDER_LEDGER_SHEET_ID 未設定なら何もしない（Calendar 連携と同じ任意機能扱い）。
  * 列順: 受注日 / 区分 / 顧客名 / 都道府県 / 住所 / メール / 電話 / 商品 / 仕様 / 金額 / 注文番号 / メモ
+ * 送料が別建ての注文（meta.shipping_yen あり）は P/Q 列に送料税抜・送料消費税も書き込む
+ * （納品書で商品代と送料を分けて表示するため。2026-08 追加）。
  */
 async function prependOrderToLedger(session: Stripe.Checkout.Session) {
   const sheetId = LEDGER_SHEET_ID;
@@ -1002,6 +1004,18 @@ async function prependOrderToLedger(session: Stripe.Checkout.Session) {
     valueInputOption: 'RAW',
     requestBody: { values: [row] },
   });
+
+  // P/Q 列（送料税抜・送料消費税）。M〜O 列（数式・対応状況）を挟むため別リクエストで書く。
+  const shippingYen = Number(meta.shipping_yen || 0);
+  const shippingTaxYen = Number(meta.shipping_tax_yen || 0);
+  if (shippingYen > 0 || shippingTaxYen > 0) {
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: sheetId,
+      range: 'P2:Q2',
+      valueInputOption: 'RAW',
+      requestBody: { values: [[String(Math.round(shippingYen)), String(Math.round(shippingTaxYen))]] },
+    });
+  }
 
   console.log('[webhook] Order ledger row inserted at row 2 for', session.id);
 }
