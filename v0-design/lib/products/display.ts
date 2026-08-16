@@ -76,6 +76,8 @@ const LOCAL_IMAGE_OVERRIDES: Record<string, string> = {
   "2d1043dcd7658a96e5f3.jpg": "/images/gallery/antoine-top.jpg",
   // Catherine: 旧画像の値段表記が古かったため ¥34,500 表記の正画像に差し替え
   "8775cfcb40298257834a.jpg": "/images/gallery/catherine-top.jpg",
+  // 鎚目: 板厚 10mm 表記の旧設計図を、12mm の最新版に差し替え
+  "d6a16b30872381554056.jpg": "/images/products/tsuchime/sekkeizu.jpg",
 }
 
 export function galleryUrl(id: string, variant: string = "public"): string {
@@ -556,11 +558,11 @@ const DISPLAY: Record<string, ProductDisplay> = {
     longDescription:
       "無垢鉄を火に入れ赤くなるまで熱し、西洋鍛冶師による「手」と「熟練の感覚」で叩き形成していきます。ロートアイアン（日本語で『鍛鉄』といいます）という技術で造られているからこそ生み出せる、美しく、力強く、あたたかみのある手すり。模造した量産品では出せない存在感があります。\n\n洋風住宅はもちろんのこと、和風建築にもよく合います。サイズオーダー可能です。\n\n住まいづくりの中で手すりはこだわる優先度が低いものかもしれませんが、『丁寧に作られた』アイアン手すりのある空間は全体を引き締め、毎日を上質で豊かにしてくれます。\n\n角やひっかかる危ない箇所がないよう丁寧に仕上げておりますので、小さなお子様がいるご家庭でも安心してお使いいただけます。これから毎日お使いいただく方の心豊かな暮らしを思い、制作しております。",
     specs: [
-      { label: "タイプ", value: "フラットバー（32×10mm）" },
+      { label: "タイプ", value: "フラットバー（32×12mm）" },
       { label: "素材", value: "鉄" },
       { label: "仕上げ", value: "錆止め吹付塗装 + 2液型ウレタン艶消し黒塗装" },
       { label: "製法", value: "火造り鍛造（手打ち鎚目）" },
-      { label: "サイズ", value: "L800 × D50 × W60mm / ブラケット座金 φ25×60mm" },
+      { label: "サイズ", value: "L800 × D52 × W60mm / ブラケット座金 φ25×60mm" },
       { label: "備考", value: "全てハンドメイドのため誤差あり / サイズオーダー可" },
       { label: "付属品", value: "取付用ビス M4×40mm（座金1箇所×2本）・タッチアップ剤（1液ウレタン）" },
     ],
