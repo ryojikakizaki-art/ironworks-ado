@@ -111,6 +111,12 @@ export interface DrawingProductConfig {
   zakinCustomizable?: boolean
   // true の商品は 2.5m 以上でジョイント代を自動加算する（Gaston 専用）。
   jointFeeEnabled?: boolean
+  // false の商品は座金タイプ A/B の選択欄を出さない（washerSpec のタイプで固定）。
+  // 鎚目は φ25×60mm の座金B のみで製作するため false（2026-08-17 蠣﨑さん指定）。
+  washerTypeSelectable?: boolean
+  // 座金の本数上限。未指定なら縦型3・横型20（従来通り）。
+  // 鎚目は 2 本のみで製作するため 2（2026-08-17 蠣﨑さん指定）。
+  maxZakinCount?: number
 }
 
 // 長さ L_mm に対する本体価格をテーブルから線形補間で取得。
@@ -490,17 +496,49 @@ DRAWING_PRODUCTS.fabrice = {
   includedZakin: 2,
 }
 
+// 鎚目: 全長を手打ちするため長さに比例して手間が増える。Claude と同じ縦型可変長だが、
+// 「std まで一律 + 超過分 pricePerMm」ではなく priceTable の線形補間で価格を出す。
+// アンカーは 600mm=¥60,000 / 1500mm=¥130,000（2026-08-16 蠣﨑さん指定）。
+// 100mm 刻みですべて千円単位の丸い数字になるよう、1mm 単価を 100→90→80→70 円と
+// 段階的に逓減させている。中間長は隣接2点の線形補間なので端数は出るが、
+// 100mm 刻みで選ぶ限り必ず丸い金額になる。
+export const TSUCHIME_PRICE_TABLE: PricePoint[] = [
+  { mm: 500, price: 50000 },
+  { mm: 600, price: 60000 },
+  { mm: 700, price: 69000 },
+  { mm: 800, price: 78000 },
+  { mm: 900, price: 86000 },
+  { mm: 1000, price: 94000 },
+  { mm: 1100, price: 102000 },
+  { mm: 1200, price: 109000 },
+  { mm: 1300, price: 116000 },
+  { mm: 1400, price: 123000 },
+  { mm: 1500, price: 130000 },
+]
+
 DRAWING_PRODUCTS.tsuchime = {
   slug: "tsuchime",
   nameJa: "鎚目 TSUCHIME",
   drawingCode: "IW-TCH",
   material: "純無垢鉄",
   finish: "手打ち鎚目仕上げ",
-  category: "fixed",
-  basePrice: 70000,
-  stdLengthMm: 800,
-  maxMm: 800,
+  category: "vertical",
+  basePrice: 50000,
+  stdLengthMm: 500,
+  maxMm: 1500,
   includedZakin: 2,
+  zakinRule: VERTICAL_STANDARD_RULE,
+  priceTable: TSUCHIME_PRICE_TABLE,
+  // 仕様書の「ブラケット座金 φ25×60mm」に合わせて座金Bで固定（支柱13φ）。
+  // washerSpec を持つ縦型商品は簡易 schematic ではなく CAD 精密図で制作図を描く。
+  washerSpec: WASHER_SPEC_B,
+  washerTypeSelectable: false,
+  maxZakinCount: 2,
+  titleBlock: {
+    productName: "TSUCHIME",
+    color: "マットブラック",
+    material: "無垢鉄 FB32×12",
+  },
 }
 
 // European: L600〜800mmの範囲内は一律料金（範囲外は別途相談）。

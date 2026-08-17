@@ -62,7 +62,7 @@ const FB_MITSUROU: FeatureBullet[] = [
 const FB_TSUCHIME: FeatureBullet[] = [
   { icon: "Hammer", title: "手打ち鎚目", desc: "職人の一打ち一打ちが生む、唯一無二の表情" },
   { icon: "Paintbrush", title: "火造り鍛造", desc: "伝統の火造り鍛造で無垢鉄を鍛え上げます" },
-  { icon: "Ruler", title: "固定サイズ", desc: "職人の逸品として決まった寸法でお届けします" },
+  { icon: "Ruler", title: "長さが選べる", desc: "L500〜1500mm の範囲でサイズオーダーできます" },
   { icon: "Wrench", title: "取付簡単", desc: "付属の金具で簡単に取り付け可能" },
 ]
 
@@ -76,8 +76,10 @@ const LOCAL_IMAGE_OVERRIDES: Record<string, string> = {
   "2d1043dcd7658a96e5f3.jpg": "/images/gallery/antoine-top.jpg",
   // Catherine: 旧画像の値段表記が古かったため ¥34,500 表記の正画像に差し替え
   "8775cfcb40298257834a.jpg": "/images/gallery/catherine-top.jpg",
-  // 鎚目: 板厚 10mm 表記の旧設計図を、12mm の最新版に差し替え
+  // 鎚目: 板厚 10mm 表記の旧設計図を、12mm・L500〜1500mm の最新版に差し替え
   "d6a16b30872381554056.jpg": "/images/products/tsuchime/sekkeizu.jpg",
+  // 鎚目: トップ画像を新ビジュアルに差し替え
+  "569af3ee76a1999863e7.jpg": "/images/products/tsuchime/top.jpg",
 }
 
 export function galleryUrl(id: string, variant: string = "public"): string {
@@ -562,7 +564,7 @@ const DISPLAY: Record<string, ProductDisplay> = {
       { label: "素材", value: "鉄" },
       { label: "仕上げ", value: "錆止め吹付塗装 + 2液型ウレタン艶消し黒塗装" },
       { label: "製法", value: "火造り鍛造（手打ち鎚目）" },
-      { label: "サイズ", value: "L800 × D52 × W60mm / ブラケット座金 φ25×60mm" },
+      { label: "サイズ", value: "L500〜1500mm（長さに応じて価格が変わります）× D52 × W60mm / ブラケット座金 φ25×60mm" },
       { label: "備考", value: "全てハンドメイドのため誤差あり / サイズオーダー可" },
       { label: "付属品", value: "取付用ビス M4×40mm（座金1箇所×2本）・タッチアップ剤（1液ウレタン）" },
     ],
