@@ -46,7 +46,7 @@ export interface QuotePriceResult {
 /**
  * 参考見積もり用の単価を返す。
  * - DRAWING_PRODUCTS 未登録の商品 (Élisabeth/Clémence) は null。
- * - 固定長商品 (Scroll/Fabrice/鎚目) は length 無視で basePrice を返す。
+ * - 固定長商品 (Scroll/Fabrice) は length 無視で basePrice を返す。
  * - 価格テーブル指定商品 (René/Claire/Marcel/Émile) はテーブル参照で線形補間。
  *   1.5m 以下はすべて basePrice (一律)。
  * - 縦型シリーズ (Claude/Catherine/Alexandre/Antoine) は stdLengthMm まで一律 basePrice、

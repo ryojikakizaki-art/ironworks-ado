@@ -49,6 +49,7 @@ const VERTICAL = [
   { slug: "catherine", name: "Catherine カトリーヌ", finish: "25φ・マットホワイト", stdLabel: "〜1m", maxM: 1.5 },
   { slug: "alexandre", name: "Alexandre アレクサンドル", finish: "31.8φ 太径・マットブラック", stdLabel: "〜1m", maxM: 3 },
   { slug: "antoine", name: "Antoine アントワーヌ", finish: "25φ ロング・マットブラック", stdLabel: "〜1.5m", maxM: 3 },
+  { slug: "tsuchime", name: "鎚目 TSUCHIME", finish: "フラットバー・手打ち鎚目", stdLabel: "0.5m〜", maxM: 1.5 },
 ]
 
 // 装飾・固定サイズ（一点物）
@@ -56,7 +57,6 @@ const FIXED = [
   { slug: "scroll16", name: "Scroll スクロール 16φ", size: "700mm", finish: "無垢鉄・ミツロウ仕上げ" },
   { slug: "scroll19", name: "Scroll スクロール 19φ", size: "700mm", finish: "無垢鉄・ミツロウ仕上げ" },
   { slug: "scroll22", name: "Scroll スクロール 22φ", size: "800mm", finish: "無垢鉄・ミツロウ仕上げ" },
-  { slug: "tsuchime", name: "鎚目 TSUCHIME", size: "800mm", finish: "手打ち鎚目仕上げ" },
   { slug: "fabrice", name: "Fabrice ファブリス", size: "800mm", finish: "無垢鉄・火造り鍛造" },
 ]
 

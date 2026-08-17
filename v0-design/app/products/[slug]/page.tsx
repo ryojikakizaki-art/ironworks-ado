@@ -1329,8 +1329,9 @@ export default function ProductDetailPage() {
                             </p>
                           </div>
                         )}
-                        {/* 座金タイプ選択 (縦型CAD精密図対応商品のみ) — 長さの直下に常時表示 */}
-                        {product.drawing.category === "vertical" && product.drawing.washerSpec && (
+                        {/* 座金タイプ選択 (縦型CAD精密図対応商品のみ) — 長さの直下に常時表示。
+                            washerTypeSelectable === false（鎚目）は座金タイプが1種のため選択欄を出さない。 */}
+                        {product.drawing.category === "vertical" && product.drawing.washerSpec && product.drawing.washerTypeSelectable !== false && (
                           <div className="mt-3 border border-gold/20 bg-card p-4">
                             <div className="flex items-center gap-3 mb-3">
                               <span className="font-serif text-[15px] font-medium text-foreground min-w-[80px]">座金タイプ</span>
@@ -1466,7 +1467,7 @@ export default function ProductDetailPage() {
                                   onChange={setZakin}
                                   zakinRule={zakinRule}
                                   disableAngle={product.drawing.category === "vertical"}
-                                  maxCount={product.drawing.category === "vertical" ? 3 : 20}
+                                  maxCount={product.drawing.maxZakinCount ?? (product.drawing.category === "vertical" ? 3 : 20)}
                                   embedded
                                   className="mt-3"
                                 />

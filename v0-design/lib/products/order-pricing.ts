@@ -16,6 +16,7 @@ import {
   MARCEL_PRICE_TABLE,
   EMILE_PRICE_TABLE,
   EUROPEAN_PRICE_TABLE,
+  TSUCHIME_PRICE_TABLE,
   lookupPriceFromTable,
   type PricePoint,
 } from '@/lib/drawing-modal/products';
@@ -104,7 +105,7 @@ export const PRODUCTS: Record<string, Product> = {
   scroll19:   { name: 'Scroll スクロール 19φ',    type: '縦型', basePrice: 32000, stdLengthMm: 700,  maxMm: 700,  finish: 'ミツロウ仕上げ', includedZakin: 2 },
   scroll22:   { name: 'Scroll スクロール 22φ',    type: '縦型', basePrice: 60000, stdLengthMm: 800,  maxMm: 800,  finish: 'ミツロウ仕上げ', includedZakin: 2 },
   fabrice:    { name: 'Fabrice ファブリス',        type: '縦型', basePrice: 100000, stdLengthMm: 800, maxMm: 800,  finish: '無垢鉄 火造り鍛造', includedZakin: 2 },
-  tsuchime:   { name: '鎚目 TSUCHIME',            type: '縦型', basePrice: 70000, stdLengthMm: 800,  maxMm: 800,  finish: '手打ち鎚目仕上げ', includedZakin: 2 },
+  tsuchime:   { name: '鎚目 TSUCHIME',            type: '縦型', basePrice: 50000, stdLengthMm: 500,  maxMm: 1500, finish: '手打ち鎚目仕上げ', includedZakin: 2, zakinRule: VERTICAL_STANDARD_RULE, priceTable: TSUCHIME_PRICE_TABLE },
   european:   { name: 'European ヨーロピアン',     type: '縦型', basePrice: 110000, stdLengthMm: 600, maxMm: 800, finish: 'ハンマー鍛造仕上げ（ブラック）', includedZakin: 2, zakinRule: EUROPEAN_RULE, priceTable: EUROPEAN_PRICE_TABLE },
 };
 
