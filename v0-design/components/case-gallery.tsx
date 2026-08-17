@@ -14,7 +14,7 @@ export function CaseGallery() {
       <div className="max-w-6xl mx-auto px-6">
         {/* Section Header */}
         <div className="text-center mb-12">
-          <span className="inline-block text-[11px] tracking-[0.25em] text-muted-foreground uppercase mb-3">
+          <span className="inline-block text-[11px] tracking-[0.25em] text-gold uppercase mb-3">
             Works
           </span>
           <h2 className="font-serif text-[28px] md:text-[32px] text-foreground">施工事例</h2>

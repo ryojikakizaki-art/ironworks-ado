@@ -46,7 +46,7 @@ export function BlogSection() {
               initial={{ opacity: 0, y: 20 }}
               animate={isInView ? { opacity: 1, y: 0 } : {}}
               transition={{ duration: 0.6 }}
-              className="inline-block text-xs tracking-[0.3em] text-muted-foreground uppercase mb-4"
+              className="inline-block text-xs tracking-[0.3em] text-gold uppercase mb-4"
             >
               Media
             </motion.span>

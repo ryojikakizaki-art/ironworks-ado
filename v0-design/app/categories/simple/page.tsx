@@ -60,7 +60,7 @@ export default function SimpleCategoryPage() {
           {/* 下半: テキストは独立ブロック・bg-background の上に上品に */}
           <div className="px-6 py-16 md:py-24 bg-background">
             <div className="max-w-[1100px] mx-auto">
-              <p className="text-[10px] md:text-[11px] tracking-[0.5em] uppercase text-foreground/55 mb-4 md:mb-6">
+              <p className="text-[10px] md:text-[11px] tracking-[0.5em] uppercase text-gold mb-4 md:mb-6">
                 Simple &amp; Modern
               </p>
               <h1 className="font-serif text-foreground text-[30px] md:text-[48px] lg:text-[60px] font-light leading-[1.25] tracking-tight">
@@ -77,7 +77,7 @@ export default function SimpleCategoryPage() {
         {/* INTRO */}
         <section className="px-6 py-24 md:py-32">
           <div className="max-w-[760px] mx-auto">
-            <p className="text-[10px] tracking-[0.4em] uppercase text-foreground/50 mb-6 text-center">About</p>
+            <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-6 text-center">About</p>
             <h2 className="font-serif text-center text-[26px] md:text-[36px] leading-[1.5] font-light mb-12 md:mb-16">
               暮らしの背景に、<br />
               静かに寄り添う。
@@ -111,7 +111,7 @@ export default function SimpleCategoryPage() {
         <section className="px-6 py-24 md:py-32 bg-[#faf8f4]">
           <div className="max-w-[1100px] mx-auto">
             <div className="text-center mb-16 md:mb-20">
-              <p className="text-[10px] tracking-[0.4em] uppercase text-foreground/50 mb-4">Material &amp; Make</p>
+              <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-4">Material &amp; Make</p>
               <h2 className="font-serif text-[26px] md:text-[36px] font-light leading-[1.5]">
                 3 つの基本仕様
               </h2>
@@ -146,7 +146,7 @@ export default function SimpleCategoryPage() {
         <section id="lineup" className="px-6 py-24 md:py-32 scroll-mt-24">
           <div className="max-w-[1300px] mx-auto">
             <div className="text-center mb-16 md:mb-20">
-              <p className="text-[10px] tracking-[0.4em] uppercase text-foreground/50 mb-4">Lineup</p>
+              <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-4">Lineup</p>
               <h2 className="font-serif text-[26px] md:text-[36px] font-light leading-[1.5]">
                 シンプル手すり 13 商品
               </h2>
@@ -209,7 +209,7 @@ export default function SimpleCategoryPage() {
         <section className="px-6 py-24 md:py-32 bg-[#faf8f4]">
           <div className="max-w-[900px] mx-auto">
             <div className="text-center mb-16 md:mb-20">
-              <p className="text-[10px] tracking-[0.4em] uppercase text-foreground/50 mb-4">Why 25φ</p>
+              <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-4">Why 25φ</p>
               <h2 className="font-serif text-[26px] md:text-[36px] font-light leading-[1.5]">
                 太さは、安全性と<br className="md:hidden" />握り心地を決める。
               </h2>
@@ -245,7 +245,7 @@ export default function SimpleCategoryPage() {
         {/* CTA */}
         <section className="px-6 py-24 md:py-32">
           <div className="max-w-[640px] mx-auto text-center">
-            <p className="text-[10px] tracking-[0.4em] uppercase text-foreground/50 mb-6">Order &amp; Inquiry</p>
+            <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-6">Order &amp; Inquiry</p>
             <h2 className="font-serif text-[26px] md:text-[36px] font-light leading-[1.4] mb-8">
               長さ・色・取付場所を<br />お知らせください
             </h2>
