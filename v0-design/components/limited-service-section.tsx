@@ -48,7 +48,7 @@ export function LimitedServiceSection() {
       <div className="max-w-5xl mx-auto px-6">
         {/* Section Header */}
         <div>
-          <span className="inline-block text-[11px] tracking-[0.25em] text-muted-foreground uppercase mb-2">
+          <span className="inline-block text-[11px] tracking-[0.25em] text-gold uppercase mb-2">
             Limited Service
           </span>
           <h2 className="font-serif text-[24px] md:text-[28px] text-foreground">

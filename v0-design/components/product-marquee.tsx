@@ -131,7 +131,7 @@ export function ProductMarquee() {
     <section className="py-16 md:py-20 bg-white border-t border-border">
       <div className="max-w-7xl mx-auto px-6 mb-8 flex items-end justify-between">
         <div>
-          <span className="inline-block text-[11px] tracking-[0.25em] text-muted-foreground uppercase mb-2">
+          <span className="inline-block text-[11px] tracking-[0.25em] text-gold uppercase mb-2">
             Line Up
           </span>
           <h2 className="font-serif text-[24px] md:text-[28px] text-foreground">製品一覧</h2>

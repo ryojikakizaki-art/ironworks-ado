@@ -22,7 +22,7 @@ export function NewsSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={isInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 0.5 }}
-            className="inline-block text-[11px] tracking-[0.25em] text-muted-foreground uppercase mb-3"
+            className="inline-block text-[11px] tracking-[0.25em] text-gold uppercase mb-3"
           >
             News
           </motion.span>
