@@ -61,29 +61,32 @@ export default function AntiqueCategoryPage() {
         {/* HERO — 写真を主役に。暗幕は最小限。 */}
         <section className="relative h-[92vh] min-h-[640px] w-full overflow-hidden">
           <Image
-            src="/images/products/elisabeth/02.jpg"
-            alt="Élisabeth ロートアイアン手すり 階段への施工事例"
+            src="/images/products/gaston/15.jpg"
+            alt="Gaston 極太32φ ロートアイアン手すり 階段への施工事例"
             fill
             priority
             sizes="100vw"
             className="object-cover"
           />
-          {/* ヘッダー視認性のための上部薄幕のみ */}
+          {/* ヘッダー視認性のための上部薄幕 */}
           <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/55 via-black/20 to-transparent" />
+          {/* テキスト側（左）を落として可読性を確保。写真の被写体（右側の階段）は隠さない */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/25 to-transparent" />
           {/* 下端は白フェードで本文セクションへ繋ぐ */}
           <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-background via-background/70 to-transparent" />
 
-          {/* HERO テキストは下端に上品に配置（写真を覆わない） */}
-          <div className="absolute inset-x-0 bottom-0 px-6 pb-16 md:pb-24 [padding-bottom:max(4rem,env(safe-area-inset-bottom))]">
-            <div className="max-w-[1100px] mx-auto">
-              <p className="text-[10px] md:text-[11px] tracking-[0.5em] uppercase text-gold mb-4 md:mb-6">
+          {/* HERO テキストは写真の暗部（左側）に配置。白フェードの上に置くと
+              ゴールドが白背景に埋没して読めないため、下端ではなく中央に置く。 */}
+          <div className="absolute inset-0 flex items-center px-6">
+            <div className="max-w-[1100px] w-full mx-auto">
+              <p className="text-[10px] md:text-[11px] tracking-[0.5em] uppercase text-gold-light mb-4 md:mb-6">
                 Antique &amp; Classical
               </p>
-              <h1 className="font-serif text-foreground text-[30px] md:text-[48px] lg:text-[64px] font-light leading-[1.25] tracking-tight">
+              <h1 className="font-serif text-white text-[30px] md:text-[48px] lg:text-[64px] font-light leading-[1.25] tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.5)]">
                 鍛造の凹凸と<br className="md:hidden" />装飾の意匠で<br />
-                <span className="text-gold">住まいに格を。</span>
+                <span className="text-gold-light">住まいに格を。</span>
               </h1>
-              <p className="mt-6 max-w-xl text-[14px] md:text-[16px] leading-loose text-foreground/75">
+              <p className="mt-6 max-w-xl text-[14px] md:text-[16px] leading-loose text-white/85">
                 鍛冶職人が一本ずつ手打ちした、本物のロートアイアン手すり 13 種。
               </p>
             </div>
