@@ -39,36 +39,58 @@ export default function SimpleCategoryPage() {
       <Header hasHero />
 
       <main className="bg-background text-foreground">
-        {/* HERO — スプリットレイアウト: 上に写真をフルブリードで、下にテキストを別ブロックで配置。
-            /antique のオーバーレイ型と差別化しつつ、写真とテキストの重なりを完全に解消する。
-            ヘッダー視認性のための上部薄幕のみ追加。 */}
-        <section className="relative">
-          {/* 上半: 写真フルブリード */}
-          <div className="relative h-[68vh] min-h-[480px] w-full overflow-hidden">
-            <Image
-              src={galleryUrl("d0f5f0e83d40a4d29044.jpg")}
-              alt="René シンプルアイアン手すり 25φ マットブラック 施工事例"
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover"
-            />
-            {/* ヘッダー視認性のための上部薄幕のみ */}
-            <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/55 via-black/20 to-transparent" />
-          </div>
+        {/* HERO — /antique と同じオーバーレイ型。写真の暗部に文字を重ね、下端は
+            白フェードで本文セクションへ繋ぐ。 */}
+        <section className="relative h-[92vh] min-h-[640px] w-full overflow-hidden">
+          {/* 元写真の上 22% を落として書き出し済み（手の最上端が画像の 41% に来る）。
+              縦位置を object-position で寄せる方法は画面の縦横比によって効かないため使わない。
+              横位置は、縦長のウィンドウで左右が切られたときに手の甲が残るよう左寄りにする
+              （手は画像の 0.7%〜37.9% にある）。ファイル名の -v2 はキャッシュ避け。 */}
+          <Image
+            src="/images/categories/simple-hero-black-v2.webp"
+            alt="René シンプルアイアン手すり 25φ マットブラックを握ったところ"
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-[30%_center] md:object-[12%_center]"
+          />
+          {/* ヘッダー視認性のための上部薄幕 */}
+          <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/55 via-black/20 to-transparent" />
+          {/* テキスト側（左）を落として可読性を確保 */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/55 via-black/20 to-transparent" />
+          {/* 下端は白フェードで本文セクションへ繋ぐ。
+              Tailwind の from/via/to は 0%/50%/100% の3点しか置けず、via の位置で
+              変化率が折れて横線に見えてしまう。多段の色停止でなだらかな曲線にする。 */}
+          <div
+            className="absolute inset-x-0 bottom-0 h-48"
+            style={{
+              backgroundImage: [
+                "linear-gradient(to top,",
+                "var(--background) 0%,",
+                "var(--background) 10%,",
+                "color-mix(in srgb, var(--background) 90%, transparent) 26%,",
+                "color-mix(in srgb, var(--background) 70%, transparent) 42%,",
+                "color-mix(in srgb, var(--background) 45%, transparent) 58%,",
+                "color-mix(in srgb, var(--background) 24%, transparent) 74%,",
+                "color-mix(in srgb, var(--background) 9%, transparent) 88%,",
+                "transparent 100%)",
+              ].join(" "),
+            }}
+          />
 
-          {/* 下半: テキストは独立ブロック・bg-background の上に上品に */}
-          <div className="px-6 py-16 md:py-24 bg-background">
-            <div className="max-w-[1100px] mx-auto">
-              <p className="text-[10px] md:text-[11px] tracking-[0.5em] uppercase text-gold mb-4 md:mb-6">
+          {/* 見出しは写真上部の平らな壁面へ。中央だと手すり・手と重なる。 */}
+          <div className="absolute inset-0 flex items-start px-6 pt-28 md:pt-32 lg:pt-36">
+            <div className="max-w-[1100px] w-full mx-auto">
+              <p className="text-[10px] md:text-[11px] tracking-[0.5em] uppercase text-gold-light mb-4 md:mb-6">
                 Simple &amp; Modern
               </p>
-              <h1 className="font-serif text-foreground text-[30px] md:text-[48px] lg:text-[60px] font-light leading-[1.25] tracking-tight">
-                直線でつくる、<br className="md:hidden" />
+              <h1 className="font-serif text-white text-[30px] md:text-[48px] lg:text-[60px] font-light leading-[1.25] tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.5)]">
+                直線でつくる、<br />
                 引き算の美しさ。
               </h1>
-              <p className="mt-6 max-w-xl text-[14px] md:text-[16px] leading-loose text-foreground/75">
-                25φ STKM パイプ材＋2 液ウレタン塗装。モダンでミニマル、定番アイアン手すり 13 種。
+              <p className="mt-6 max-w-xl text-[14px] md:text-[16px] leading-loose text-white/85 drop-shadow-[0_1px_8px_rgba(0,0,0,0.5)]">
+                25φ STKM パイプ材＋2 液ウレタン塗装。<br />
+                モダンでミニマル、定番アイアン手すり 13 種。
               </p>
             </div>
           </div>
@@ -98,9 +120,10 @@ export default function SimpleCategoryPage() {
 
         {/* WORK PHOTO — フルブリードの大きな写真 */}
         <section className="relative h-[60vh] min-h-[420px] w-full overflow-hidden">
+          {/* 座金が中央にあるので、スマホで左右が切れても構図が崩れない */}
           <Image
-            src={galleryUrl("8775cfcb40298257834a.jpg")}
-            alt="Catherine 縦型 25φ マットホワイト 施工事例"
+            src="/images/categories/simple-work-white.webp"
+            alt="Claire シンプルアイアン手すり 25φ マットホワイトのブラケット"
             fill
             sizes="100vw"
             className="object-cover"
