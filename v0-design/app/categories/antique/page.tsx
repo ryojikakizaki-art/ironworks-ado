@@ -73,11 +73,29 @@ export default function AntiqueCategoryPage() {
           {/* テキスト側（左）を落として可読性を確保。写真の被写体（右側の階段）は隠さない */}
           <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/25 to-transparent" />
           {/* 下端は白フェードで本文セクションへ繋ぐ */}
-          <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-background via-background/70 to-transparent" />
+          {/* Tailwind の from/via/to は 0%/50%/100% の3点しか置けず、via の位置で
+              変化率が折れて横線に見える。多段の色停止でなだらかな曲線にする（/simple と共通） */}
+          <div
+            className="absolute inset-x-0 bottom-0 h-48"
+            style={{
+              backgroundImage: [
+                "linear-gradient(to top,",
+                "var(--background) 0%,",
+                "var(--background) 10%,",
+                "color-mix(in srgb, var(--background) 90%, transparent) 26%,",
+                "color-mix(in srgb, var(--background) 70%, transparent) 42%,",
+                "color-mix(in srgb, var(--background) 45%, transparent) 58%,",
+                "color-mix(in srgb, var(--background) 24%, transparent) 74%,",
+                "color-mix(in srgb, var(--background) 9%, transparent) 88%,",
+                "transparent 100%)",
+              ].join(" "),
+            }}
+          />
 
           {/* HERO テキストは写真の暗部（左側）に配置。白フェードの上に置くと
-              ゴールドが白背景に埋没して読めないため、下端ではなく中央に置く。 */}
-          <div className="absolute inset-0 flex items-center px-6">
+              ゴールドが白背景に埋没して読めないため、下端には置かない。
+              中央だと上に空白が溜まって間延びするため、上寄せにする（/simple と共通）。 */}
+          <div className="absolute inset-0 flex items-start px-6 pt-28 md:pt-32 lg:pt-36">
             <div className="max-w-[1100px] w-full mx-auto">
               <p className="text-[10px] md:text-[11px] tracking-[0.5em] uppercase text-gold-light mb-4 md:mb-6">
                 Antique &amp; Classical
