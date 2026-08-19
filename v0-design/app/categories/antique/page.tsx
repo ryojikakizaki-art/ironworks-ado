@@ -61,7 +61,7 @@ export default function AntiqueCategoryPage() {
         {/* HERO — 写真を主役に。暗幕は最小限。 */}
         <section className="relative h-[92vh] min-h-[640px] w-full overflow-hidden">
           <Image
-            src="/images/products/gaston/15.jpg"
+            src="/images/products/gaston/15.webp"
             alt="Gaston 極太32φ ロートアイアン手すり 階段への施工事例"
             fill
             priority
@@ -83,7 +83,7 @@ export default function AntiqueCategoryPage() {
                 Antique &amp; Classical
               </p>
               <h1 className="font-serif text-white text-[30px] md:text-[48px] lg:text-[64px] font-light leading-[1.25] tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.5)]">
-                鍛造の凹凸と<br className="md:hidden" />装飾の意匠で<br />
+                鉄が描く曲線で<br />
                 <span className="text-gold-light">住まいに格を。</span>
               </h1>
               <p className="mt-6 max-w-xl text-[14px] md:text-[16px] leading-loose text-white/85">
@@ -116,14 +116,44 @@ export default function AntiqueCategoryPage() {
         </section>
 
         {/* WORK PHOTO — フルブリードの大きな写真で「実物」を見せる */}
-        <section className="relative h-[60vh] min-h-[420px] w-full overflow-hidden">
+        {/* 正方形の写真を横長の帯に流し込むため PC ほど上下が切れる。
+            画面が横長になるほど高さを増やして、切り取られる量を抑える。 */}
+        <section className="relative h-[60vh] min-h-[420px] md:h-[85vh] lg:h-[92vh] w-full overflow-hidden">
+          {/* ヒーロー（ガストン／室内・暗い）と対になるよう、別商品・屋外・明るい絵を置く。
+              直後の Craftsmanship 03「アートアイアン」への導入も兼ねる。 */}
+          {/* 既定の "public" variant は 768px で、全画面に引き伸ばすと粗くなる。
+              元データは 1600px あるので w=1600 を明示して取得する。 */}
           <Image
-            src="/images/products/elisabeth/03.jpg"
-            alt="Élisabeth ロートアイアン手すりのスクロール意匠クローズアップ"
+            src={galleryUrl("ca753a1c8defc7d08da0.jpg", "w=1600")}
+            alt="アプローチ手すり『蔦』 レンガ階段への施工事例"
             fill
             sizes="100vw"
             className="object-cover"
           />
+          {/* キャプションの可読性のための下端の薄幕 */}
+          <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/55 via-black/20 to-transparent" />
+          {/* 写真だけだと間延びするため、何の商品かを示すキャプションを添える */}
+          <div className="absolute inset-x-0 bottom-0 px-6 pb-10 md:pb-14">
+            <div className="max-w-[1300px] mx-auto">
+              <p className="text-[10px] md:text-[11px] tracking-[0.4em] uppercase text-gold-light mb-2 md:mb-3">
+                Art Iron
+              </p>
+              <Link href="/products/tsuta" className="group block">
+                <span className="block font-serif text-white text-[20px] md:text-[28px] font-light leading-tight drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+                  アプローチ手すり『蔦』
+                </span>
+                <span className="mt-2 md:mt-3 block max-w-xl text-[13px] md:text-[14px] leading-relaxed text-white/80 drop-shadow-[0_1px_8px_rgba(0,0,0,0.5)]">
+                  無垢の丸鉄を叩いて起こした蔦のモチーフ。<br />
+                  絡ませた蔓の一本一本まで手仕事で、<br />
+                  玄関アプローチに草花のような佇まいを添えます。
+                </span>
+                <span className="mt-3 md:mt-4 inline-flex items-center gap-1.5 text-[12px] md:text-[13px] tracking-wider text-white/75 group-hover:text-gold-light transition-colors">
+                  この商品を見る
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </span>
+              </Link>
+            </div>
+          </div>
         </section>
 
         {/* CRAFT — 3 つの仕上げを serif 見出しで上品に */}
