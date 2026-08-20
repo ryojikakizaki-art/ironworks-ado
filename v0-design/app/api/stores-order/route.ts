@@ -143,7 +143,7 @@ export async function POST(request: NextRequest) {
 
   let ledgerStatus: 'created' | 'duplicate';
   try {
-    ledgerStatus = await writeOrderRow(orderKey, row);
+    ledgerStatus = await writeOrderRow(orderKey, row, undefined, 'STORES');
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('[stores-order] Ledger error:', message);

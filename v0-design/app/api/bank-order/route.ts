@@ -314,12 +314,12 @@ export async function POST(request: NextRequest) {
 
   const shipping = shippingYen > 0 || shippingTaxYen > 0 ? { yen: shippingYen, taxYen: shippingTaxYen } : undefined;
   try {
-    const status = await writeOrderRow(orderRef, row, shipping);
+    const status = await writeOrderRow(orderRef, row, shipping, '銀行振込');
     if (status === 'duplicate') {
       // 注文番号衝突（ほぼ起きない）。番号を採り直して 1 回だけ再試行。
       const retryRef = makeOrderRef();
       row[10] = retryRef;
-      await writeOrderRow(retryRef, row, shipping);
+      await writeOrderRow(retryRef, row, shipping, '銀行振込');
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
