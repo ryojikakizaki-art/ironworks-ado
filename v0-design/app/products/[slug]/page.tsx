@@ -26,7 +26,7 @@ import { calcShipping, getShippingRange, type ProductType } from "@/lib/shipping
 import { getEarliestArrival } from "@/lib/business-days"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
 import { lookupPriceFromTable, type DrawingProductConfig } from "@/lib/drawing-modal/products"
-import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench, Camera, Copy, FileDown, Truck, ShoppingBag } from "lucide-react"
+import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench, Camera, Copy, FileDown, Truck, ShoppingBag, Phone } from "lucide-react"
 import { useCart } from "@/lib/cart/store"
 import { CART_MAX_QUANTITY } from "@/lib/cart/types"
 import { fireGtagEvent } from "@/lib/gtag"
@@ -925,7 +925,20 @@ export default function ProductDetailPage() {
                   >
                     フォームで相談する
                   </Link>
+                  {/* 電話で相談 — 商品ページには tel: リンクが1本も無く、
+                      LeadClickTracker の phone_click が構造的に発火しなかった（2026-08-24）。
+                      href は /contact と同じハイフン無し表記に揃える。 */}
+                  <a
+                    href="tel:07038170659"
+                    className="flex items-center justify-center gap-2 rounded-md border-2 border-gold/40 bg-white px-5 py-3 text-[14px] font-semibold text-foreground transition hover:border-gold hover:text-gold"
+                  >
+                    <Phone className="w-4 h-4 shrink-0" />
+                    電話で相談する
+                  </a>
                 </div>
+                <p className="mt-3 text-[13px] md:text-[14px] leading-relaxed text-muted-foreground">
+                  070-3817-0659（受付 9:00〜18:00／土日祝休）— 作業中は折り返しになる場合があります。
+                </p>
               </div>
 
               {/* Divider */}
