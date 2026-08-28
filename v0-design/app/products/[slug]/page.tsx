@@ -1429,6 +1429,7 @@ export default function ProductDetailPage() {
                           <div className="border-t border-gold/20 p-4">
                             <ZakinGuide
                               category={product.drawing.category === "vertical" ? "vertical" : "horizontal"}
+                              photoSrc={product.drawing.zakinGuidePhoto}
                               className="mb-4"
                             />
                             {product.drawing.zakinCustomizable === false ? (

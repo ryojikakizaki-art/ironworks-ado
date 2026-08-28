@@ -3,9 +3,13 @@
 import { useState } from "react"
 import { ShieldCheck } from "lucide-react"
 
+const DEFAULT_PHOTO = "/images/zakin-diagram.jpg"
+
 interface ZakinGuideProps {
   /** 横型なら階段の傾き（角度）にも触れる */
   category?: "horizontal" | "vertical"
+  /** 座金の説明写真。未指定なら共通の黒い手すりの写真 */
+  photoSrc?: string
   className?: string
 }
 
@@ -14,7 +18,7 @@ interface ZakinGuideProps {
  * 初見のお客様向けに「ほとんどの方は自動でOK」「座金とは何か」を
  * 小さな断面図と平易な言葉で伝える。
  */
-export function ZakinGuide({ category = "horizontal", className }: ZakinGuideProps) {
+export function ZakinGuide({ category = "horizontal", photoSrc = DEFAULT_PHOTO, className }: ZakinGuideProps) {
   return (
     <div className={className ?? ""}>
       {/* 安心コピー — まず「触らなくてOK」を伝える */}
@@ -30,7 +34,7 @@ export function ZakinGuide({ category = "horizontal", className }: ZakinGuidePro
 
       {/* 座金とは — 小さな断面図で一目で伝える */}
       <div className="mt-3 flex items-center gap-4 rounded-md bg-card border border-border px-4 py-3">
-        <ZakinDiagram />
+        <ZakinDiagram src={photoSrc} />
         <p className="text-[13px] leading-relaxed text-muted-foreground">
           <span className="text-foreground font-semibold">座金</span>
           <span className="text-foreground">（ざがね）</span>
@@ -43,12 +47,12 @@ export function ZakinGuide({ category = "horizontal", className }: ZakinGuidePro
 }
 
 /** 実物写真に引き出し線注釈を重ねた「手すり・支柱・座金」の取り付けイメージ */
-function ZakinDiagram() {
+function ZakinDiagram({ src }: { src: string }) {
   const [open, setOpen] = useState(false)
   return (
     <>
       <img
-        src="/images/zakin-diagram.jpg"
+        src={src}
         alt="手すりを支柱と座金で壁に固定する側面イメージ"
         className="w-[112px] h-auto shrink-0 rounded cursor-zoom-in"
         onClick={() => setOpen(true)}
@@ -59,7 +63,7 @@ function ZakinDiagram() {
           onClick={() => setOpen(false)}
         >
           <img
-            src="/images/zakin-diagram.jpg"
+            src={src}
             alt="手すりを支柱と座金で壁に固定する側面イメージ"
             className="max-w-[90vw] max-h-[90vh] object-contain rounded shadow-2xl"
             onClick={(e) => e.stopPropagation()}
