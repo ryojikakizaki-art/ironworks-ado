@@ -314,6 +314,7 @@ const VERTICAL_STANDARD_RULE: ZakinRule = {
 
 DRAWING_PRODUCTS.claude = {
   slug: "claude",
+  zakinGuidePhoto: "/images/zakin-diagram-black.jpg",
   nameJa: "Claude 縦型手すり",
   drawingCode: "IW-CLD",
   material: "STKM 25.4φ",
@@ -385,6 +386,7 @@ const ALEXANDRE_RULE: ZakinRule = {
 
 DRAWING_PRODUCTS.alexandre = {
   slug: "alexandre",
+  zakinGuidePhoto: "/images/zakin-diagram-black.jpg",
   nameJa: "Alexandre 縦型手すり",
   drawingCode: "IW-ALX",
   material: "STKM 31.8φ",
@@ -407,6 +409,7 @@ DRAWING_PRODUCTS.alexandre = {
 
 DRAWING_PRODUCTS.antoine = {
   slug: "antoine",
+  zakinGuidePhoto: "/images/zakin-diagram-black.jpg",
   nameJa: "Antoine 縦型ロング手すり",
   drawingCode: "IW-ANT",
   material: "STKM 25.4φ",
