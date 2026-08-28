@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { LEDGER_SHEET_ID } from '@/lib/order-ledger';
+import { writeOrderRow } from '@/lib/order-ledger';
 // カート注文（複数商品まとめ買い）の metadata 復元。product_type='cart' の注文でのみ使う。
 import { decodeCartMetadata, cartSummaryLabel, type DecodedCartLine } from '@/lib/cart/metadata';
 
@@ -919,19 +919,21 @@ async function createSimpleCalendarEvent(session: Stripe.Checkout.Session) {
 /**
  * 受注台帳（Google スプレッドシート）の 2 行目に注文を 1 行挿入する。
  * 1 行目はヘッダー。新しい注文ほど上に来るよう、末尾追記ではなく 2 行目への挿入にしている。
- * ORDER_LEDGER_SHEET_ID 未設定なら何もしない（Calendar 連携と同じ任意機能扱い）。
+ * GOOGLE_SERVICE_ACCOUNT_KEY 未設定なら何もしない（Calendar 連携と同じ任意機能扱い）。
  * 列順: 受注日 / 区分 / 顧客名 / 都道府県 / 住所 / メール / 電話 / 商品 / 仕様 / 金額 / 注文番号 / メモ
  * 送料が別建ての注文（meta.shipping_yen あり）は P/Q 列に送料税抜・送料消費税も書き込む
  * （納品書で商品代と送料を分けて表示するため。2026-08 追加）。
+ *
+ * 実際の書き込みは lib/order-ledger.ts の writeOrderRow に委譲する（2026-08 統合）。
+ * これにより Sheets API の一過性エラー再試行・失敗時の工房への通知・K 列の重複判定が
+ * 銀行振込 / STORES / 手動受注と共通になる。
  */
 async function prependOrderToLedger(session: Stripe.Checkout.Session) {
-  const sheetId = LEDGER_SHEET_ID;
   if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
     console.log('[webhook] Order ledger not configured, skipping');
     return;
   }
 
-  const { google } = await import('googleapis');
   const meta = session.metadata || {};
   const isSimple = meta.product_type === 'simple';
   const lengthsInfo = parseLengthsMeta(meta);
@@ -979,45 +981,16 @@ async function prependOrderToLedger(session: Stripe.Checkout.Session) {
     '',                                                               // メモ
   ];
 
-  const auth = new google.auth.GoogleAuth({
-    credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY),
-    scopes: ['https://www.googleapis.com/auth/spreadsheets'],
-  });
-  const sheets = google.sheets({ version: 'v4', auth });
-
-  // 1 行目（ヘッダー）の直下に空行を 1 行挿入してから書き込む = 新しい注文を常に一番上に。
-  // sheetId 0 = 先頭シート（受注台帳は単一シート運用のため固定で問題ない）。
-  await sheets.spreadsheets.batchUpdate({
-    spreadsheetId: sheetId,
-    requestBody: {
-      requests: [{
-        insertDimension: {
-          range: { sheetId: 0, dimension: 'ROWS', startIndex: 1, endIndex: 2 },
-          inheritFromBefore: false,
-        },
-      }],
-    },
-  });
-  await sheets.spreadsheets.values.update({
-    spreadsheetId: sheetId,
-    range: 'A2:L2',
-    valueInputOption: 'RAW',
-    requestBody: { values: [row] },
-  });
-
-  // P/Q 列（送料税抜・送料消費税）。M〜O 列（数式・対応状況）を挟むため別リクエストで書く。
+  // P/Q 列（送料税抜・送料消費税）。送料が別建ての注文のみ。
   const shippingYen = Number(meta.shipping_yen || 0);
   const shippingTaxYen = Number(meta.shipping_tax_yen || 0);
-  if (shippingYen > 0 || shippingTaxYen > 0) {
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: sheetId,
-      range: 'P2:Q2',
-      valueInputOption: 'RAW',
-      requestBody: { values: [[String(Math.round(shippingYen)), String(Math.round(shippingTaxYen))]] },
-    });
-  }
+  const shipping = shippingYen > 0 || shippingTaxYen > 0
+    ? { yen: shippingYen, taxYen: shippingTaxYen }
+    : undefined;
 
-  console.log('[webhook] Order ledger row inserted at row 2 for', session.id);
+  // K 列（Stripe セッション ID）で重複判定されるため、同じイベントが再送されても二重計上しない。
+  const status = await writeOrderRow(session.id, row, shipping, 'Stripeカード決済');
+  console.log(`[webhook] Order ledger ${status} for`, session.id);
 }
 
 export async function POST(request: NextRequest) {
@@ -1108,3 +1081,6 @@ export async function POST(request: NextRequest) {
 
 // Next.js App Router: webhook で raw body を使うため bodyParser を無効化
 export const runtime = 'nodejs';
+// カレンダー + メール 3 通 + 台帳書き込み（再試行込みで最大 3.2 秒）を 1 リクエストで行うため、
+// 既定の実行時間上限では足りない可能性がある。余裕を持って 60 秒にする。
+export const maxDuration = 60;

@@ -110,7 +110,7 @@ export async function POST(request: NextRequest) {
 
   let status: 'created' | 'duplicate';
   try {
-    status = await writeOrderRow(orderRef, row, shipping);
+    status = await writeOrderRow(orderRef, row, shipping, '手動受注');
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('[manual-order] Ledger error:', message);
