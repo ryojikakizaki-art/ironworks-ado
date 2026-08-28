@@ -117,6 +117,9 @@ export interface DrawingProductConfig {
   // 座金の本数上限。未指定なら縦型3・横型20（従来通り）。
   // 鎚目は 2 本のみで製作するため 2（2026-08-17 蠣﨑さん指定）。
   maxZakinCount?: number
+  // 座金ガイドの説明写真。未指定なら共通の黒い手すりの写真。
+  // 白仕上げの商品で写真の色を商品に合わせたいときだけ指定する（2026-08-28 Catherine から）。
+  zakinGuidePhoto?: string
 }
 
 // 長さ L_mm に対する本体価格をテーブルから線形補間で取得。
@@ -331,6 +334,7 @@ DRAWING_PRODUCTS.claude = {
 
 DRAWING_PRODUCTS.catherine = {
   slug: "catherine",
+  zakinGuidePhoto: "/images/zakin-diagram-white.jpg",
   nameJa: "Catherine 縦型手すり",
   drawingCode: "IW-CAT",
   material: "STKM 25.4φ",
