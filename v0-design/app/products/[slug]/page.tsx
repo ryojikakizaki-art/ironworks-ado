@@ -26,7 +26,7 @@ import { calcShipping, getShippingRange, type ProductType } from "@/lib/shipping
 import { getEarliestArrival } from "@/lib/business-days"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
 import { lookupPriceFromTable, type DrawingProductConfig } from "@/lib/drawing-modal/products"
-import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench, Camera, Copy, FileDown, Truck, ShoppingBag, Phone } from "lucide-react"
+import { ChevronLeft, ChevronRight, Play, Minus, Plus, ChevronDown, Check, Hammer, Paintbrush, Ruler, Wrench, Camera, Copy, FileDown, Truck, ShoppingBag, Phone, SlidersHorizontal } from "lucide-react"
 import { useCart } from "@/lib/cart/store"
 import { CART_MAX_QUANTITY } from "@/lib/cart/types"
 import { fireGtagEvent } from "@/lib/gtag"
@@ -1425,21 +1425,35 @@ export default function ProductDetailPage() {
                             zakinCustomizable === false（Gaston）は編集 UI を出さず、
                             自動配置の確認のみ（2026-08-02 蠣﨑さん指定）。 */}
                         {!isMultiOrder && (
-                        <details className="group mt-3 border border-gold/20 rounded-md overflow-hidden">
-                          <summary className="cursor-pointer list-none px-4 py-3 flex items-center justify-between hover:bg-gold/[0.03] transition-colors">
-                            <span className="text-[14px] font-medium tracking-wider text-foreground">
+                        <details className="group mt-3 border-2 border-gold/60 bg-gold/[0.06] rounded-md overflow-hidden">
+                          <summary className="cursor-pointer list-none px-4 py-4 flex items-center gap-3 hover:bg-gold/[0.11] transition-colors">
+                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold text-white">
+                              <SlidersHorizontal className="h-[18px] w-[18px]" />
+                            </span>
+                            <span className="flex-1 min-w-0">
                               {product.drawing.zakinCustomizable === false ? (
-                                "座金（取り付け金具）の自動配置を確認する"
+                                <>
+                                  <span className="block text-[15px] font-semibold tracking-wider text-foreground">
+                                    座金（取り付け金具）の自動配置を確認する
+                                  </span>
+                                  <span className="block text-[13px] text-muted-foreground mt-0.5">
+                                    どの位置に金具が付くかを図で見られます
+                                  </span>
+                                </>
                               ) : (
                                 <>
-                                  座金（取り付け金具）の位置{product.drawing.category === "vertical" ? "" : "・角度"}を調整する
-                                  <span className="text-muted-foreground font-normal">（任意）</span>
+                                  <span className="block text-[15px] font-semibold tracking-wider text-foreground">
+                                    座金（取り付け金具）の位置{product.drawing.category === "vertical" ? "" : "・角度"}を調整する
+                                  </span>
+                                  <span className="block text-[13px] text-muted-foreground mt-0.5">
+                                    壁の下地に合わせて動かせます（任意・座金数を増やさなければ追加料金なし）
+                                  </span>
                                 </>
                               )}
                             </span>
-                            <span className="text-gold text-lg leading-none transition-transform group-open:rotate-45">＋</span>
+                            <span className="text-gold text-2xl leading-none shrink-0 transition-transform group-open:rotate-45">＋</span>
                           </summary>
-                          <div className="border-t border-gold/20 p-4">
+                          <div className="border-t-2 border-gold/40 bg-card p-4">
                             <ZakinGuide
                               category={product.drawing.category === "vertical" ? "vertical" : "horizontal"}
                               className="mb-4"
@@ -1769,18 +1783,34 @@ export default function ProductDetailPage() {
                       </div>
                     )}
 
-                    {/* 制作図プレビュー — 合計金額の上で最終確認（fixed 商品は図面なし） */}
+                    {/* 制作図プレビュー — 合計金額の上で最終確認（fixed 商品は図面なし）。
+                        「見落とされて注文されてしまう」を防ぐため、案内文＋濃色 CTA で導線を強調
+                        （2026-09-03 蠣﨑さん指定）。 */}
                     {product.drawing.category !== "fixed" && (
-                      <button
-                        type="button"
-                        onClick={() => setIsDrawingOpen(true)}
-                        className="flex w-full items-center justify-center gap-2 py-4 border-2 border-gold/50 bg-gold/[0.05] text-gold text-[15px] font-semibold rounded-md hover:border-gold hover:bg-gold/10 transition-colors text-center"
-                      >
-                        <Ruler className="w-4 h-4 shrink-0" />
-                        {isMultiOrder
-                          ? `制作図プレビュー（${lengths.length} 本それぞれ確認できます）▸`
-                          : "制作図プレビューで最終確認 ▸"}
-                      </button>
+                      <div className="rounded-md border-2 border-dark/20 bg-secondary p-4 space-y-3">
+                        <div className="flex items-start gap-2.5">
+                          <Ruler className="w-5 h-5 shrink-0 text-gold mt-0.5" />
+                          <p className="text-[15px] leading-relaxed text-foreground">
+                            <span className="font-semibold">ご注文の前に、制作図で最終確認を。</span>
+                            <span className="block text-[13px] text-muted-foreground mt-1">
+                              いま入力された長さ・座金の位置が、そのまま職人の手元に渡る図面になります。
+                              印刷・PDF 保存もできます。
+                            </span>
+                          </p>
+                        </div>
+                        <PrimaryCTA
+                          type="button"
+                          onClick={() => setIsDrawingOpen(true)}
+                          variant="dark"
+                          size="md"
+                          icon={<Ruler className="w-4 h-4" />}
+                          className="w-full text-[15px] tracking-normal"
+                        >
+                          {isMultiOrder
+                            ? `制作図プレビュー（${lengths.length} 本それぞれ確認できます）`
+                            : "制作図プレビューで最終確認"}
+                        </PrimaryCTA>
+                      </div>
                     )}
 
                     {/* 見積もりを保存・共有・PDF化（タスク1・2026-07-02）
