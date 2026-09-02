@@ -194,11 +194,15 @@ export function ReneDrawingModal({
           <button className="dm-print-btn" onClick={() => window.print()}>
             PDF保存 / 印刷{isMulti ? `（${safeIdx + 1}本目のみ）` : ""}
           </button>
-          <span className="dm-note" style={{ margin: 0 }}>
-            {isMulti
-              ? "※ 各本の図面はタブで切替えてご確認ください。座金は自動配置です。"
-              : "※ 座金の数量・位置・角度は今後のアップデートで設定可能になります（現在は自動配置のみ）"}
-          </span>
+          {/* 単品注文では座金の数量・位置・角度は商品ページで設定でき、この図面にも反映される。
+              かつて「今後のアップデートで設定可能」という注記を出していたが実態と食い違い、
+              お客様に「調整できない」と誤解させるため削除した（2026-09-03 蠣﨑さん指定）。
+              多本注文は per-item のカスタマイズ不可なので、その場合のみ注記を残す。 */}
+          {isMulti && (
+            <span className="dm-note" style={{ margin: 0 }}>
+              ※ 各本の図面はタブで切替えてご確認ください。座金は自動配置です。
+            </span>
+          )}
         </div>
       </div>
     </div>

@@ -284,14 +284,14 @@ export function InlineRailSimulator({
         </text>
       </svg>
       <div className="text-[14px] font-medium text-foreground mt-2 leading-relaxed">
-        推奨座金数 {calcZakin(lengthMm, zakinRule)} 個（自動計算）
+        標準の座金数 {calcZakin(lengthMm, zakinRule)} 点（自動計算）
         {onPositionsChange && (
           <span className="ml-2 text-gold max-md:hidden">・座金をドラッグで位置調整できます</span>
         )}
         {(() => {
           const maxSpan = zakinRule?.maxSpanMm ?? (product.category === "horizontal" ? 850 : undefined)
           return maxSpan ? (
-            <span className="ml-2 text-muted-foreground">（最大推奨幅 {maxSpan}mm）</span>
+            <span className="ml-2 text-muted-foreground">（座金間の目安 {maxSpan}mm 以内）</span>
           ) : null
         })()}
       </div>

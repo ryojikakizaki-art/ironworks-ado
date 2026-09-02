@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { Minus, Plus, X, RotateCcw } from "lucide-react"
-import { calcZakin, getZakinPositions, END_DIST_MM, MAX_SPAN_MM, type ZakinRule } from "@/lib/drawing-modal/rene-constants"
+import { Minus, Plus, X, RotateCcw, Lightbulb } from "lucide-react"
+import { calcZakin, recommendedZakinCount, getZakinPositions, END_DIST_MM, MAX_SPAN_MM, type ZakinRule } from "@/lib/drawing-modal/rene-constants"
 
 export interface ZakinState {
   positions: number[] // mm
@@ -69,7 +69,15 @@ export function ZakinEditor({
     return m
   }, [state.positions, lengthMm])
 
-  const warning = maxSpan > ruleMaxSpan
+  // 「もう 1 点足すのがおすすめ」の長さか (Antoine: L>2400)。自動では増やさず案内だけする。
+  const autoCount = calcZakin(lengthMm, zakinRule)
+  const recommendCount = recommendedZakinCount(lengthMm, zakinRule)
+  const showRecommendation =
+    recommendCount > autoCount && state.positions.length < recommendCount
+
+  // 「おすすめ」案内を出している場合、同じことを黄色い警告で二重に言わない。
+  // 基本は 2 点なので、規定どおりの本数に対して警告を出すのは不適切（2026-09-03 蠣﨑さん指定）。
+  const warning = maxSpan > ruleMaxSpan && !showRecommendation
 
   const setCount = (count: number) => {
     const c = Math.max(2, Math.min(maxCount, count))
@@ -149,10 +157,31 @@ export function ZakinEditor({
                 <Plus className="w-4 h-4 mx-auto" />
               </button>
             </div>
-            <span className="text-[10px] text-muted-foreground ml-2">
-              推奨間隔 {ruleMaxSpan}mm 以内
+            <span className="text-[12px] text-muted-foreground ml-2">
+              {state.positions.length === autoCount ? "標準の本数です" : `標準は ${autoCount} 点`}
             </span>
           </div>
+
+          {/* 「3 点にするのがおすすめ」案内 — 警告ではなく前向きな提案として出す。
+              自動では増やさず、ワンタップで切り替えられるようにする（2026-09-03 蠣﨑さん指定）。 */}
+          {showRecommendation && (
+            <div className="flex flex-col gap-3 rounded-md border border-gold/40 bg-gold/[0.06] px-4 py-3 sm:flex-row sm:items-center">
+              <Lightbulb className="hidden h-5 w-5 shrink-0 text-gold sm:block" />
+              <p className="flex-1 text-[13px] leading-relaxed text-foreground">
+                <span className="font-semibold">この長さなら座金 {recommendCount} 点もおすすめです。</span>
+                {" "}
+                座金の間隔が {maxSpan}mm と、推奨の {ruleMaxSpan}mm より広くなります。
+                真ん中にもう 1 点足すと、たわみが出にくくなります（追加料金なし）。
+              </p>
+              <button
+                type="button"
+                onClick={() => setCount(recommendCount)}
+                className="shrink-0 rounded-md bg-gold px-4 py-2.5 text-[13px] font-semibold text-white shadow-sm transition-colors hover:bg-gold/90"
+              >
+                {recommendCount} 点にする
+              </button>
+            </div>
+          )}
 
           {/* Angle (縦型は非表示) */}
           {!disableAngle && (
@@ -265,14 +294,14 @@ export function ZakinEditor({
               <RotateCcw className="w-3 h-3" />
               自動配置に戻す
             </button>
-            <p className="text-[10px] text-muted-foreground leading-relaxed">
-              ※ 両端から {ruleEndMin}mm 以上の位置に配置してください
+            <p className="text-[12px] text-muted-foreground leading-relaxed">
+              ※ 両端から {ruleEndMin}mm 以上・座金の間隔は {ruleMaxSpan}mm 以内が目安です
             </p>
           </div>
 
           {/* Warning */}
           {warning && (
-            <div className="border border-yellow-500/40 bg-yellow-500/5 px-3 py-2 text-[11px] text-yellow-400">
+            <div className="border border-yellow-500/40 bg-yellow-500/5 px-3 py-2 text-[13px] text-yellow-600">
               ⚠ 座金間隔が {ruleMaxSpan}mm を超えています（最大 {maxSpan}mm）。強度にご注意ください。
             </div>
           )}

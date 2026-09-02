@@ -29,6 +29,9 @@ export interface ZakinRule {
   maxSpanMm: number;
   minLengthMm?: number;
   addWasherAboveMm?: number;
+  /** この長さを超えたら座金を 1 点足すことを「おすすめ」として案内する (自動では増やさない)。
+   *  価格計算には影響しない。UI 側の案内は components/drawing-modal/zakin-editor.tsx。 */
+  recommendExtraAboveMm?: number;
 }
 export interface Product {
   name: string;
@@ -77,8 +80,9 @@ const VERTICAL_STANDARD_RULE: ZakinRule = {
 };
 const ANTOINE_RULE: ZakinRule = {
   defaultCount: 2, endMinMm: 250, maxSpanMm: 1450, minLengthMm: 1500,
-  // L>2400 で座金 3 個に切替 (中央追加)
-  addWasherAboveMm: 2400,
+  // 2026-09-03: 2400 超の自動 3 点化を廃止し、常に 2 点を基本とする。
+  // 3 点は商品ページで「おすすめ」案内 → お客様が任意で選ぶ (drawing-modal/products.ts と同期)。
+  recommendExtraAboveMm: 2400,
 };
 // Alexandre (31.8φ 太径) — 500〜3000mm フルレンジ、L>=2500 で 3 個に切替
 const ALEXANDRE_RULE: ZakinRule = {

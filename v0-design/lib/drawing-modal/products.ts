@@ -439,9 +439,9 @@ DRAWING_PRODUCTS.antoine = {
   includedZakin: 4,
   pricePerMm: 30, // Claude(t2.3)より厚い素材(t3.2)のため割増レート
   // 座金ルール:
-  // - 基本 2 個、L>2400 で 3 個 (中央追加)
+  // - 常に 2 点が基本 (サムネイル・写真と同じ見え方に揃える)。3 点は任意選択。
   // - 端距離: anchors [1500→250, 2000→350, 2400→475] で線形補間、上限 475mm
-  // - 最大ピッチ 1450mm
+  // - 最大ピッチ 1450mm（超える長さでは 3 点を「おすすめ」として案内するだけ）
   zakinRule: {
     defaultCount: 2,
     endMinMm: 250,
@@ -454,7 +454,10 @@ DRAWING_PRODUCTS.antoine = {
     maxSpanMm: 1450,
     minLengthMm: 1500,
     maxLengthMm: 3000,
-    addWasherAboveMm: 2400, // L>2400 で 3 個配置
+    // 2026-09-03 蠣﨑さん指定: 2400 超で自動 3 点にするのをやめ、2 点のまま座金間を広く取る。
+    // 端 475mm 固定のため 2500mm→座金間 1550mm / 3000mm→2050mm と自然に広がる。
+    // 3 点は「おすすめ」として案内し、お客様がワンタップで選べるようにする。
+    recommendExtraAboveMm: 2400,
   },
   // Claude 同様の CAD 精密図を有効化 (座金A 標準)
   washerSpec: WASHER_SPEC_A,
