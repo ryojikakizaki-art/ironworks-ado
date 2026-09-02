@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react"
 import { Minus, Plus, X, RotateCcw, Lightbulb } from "lucide-react"
-import { calcZakin, recommendedZakinCount, getZakinPositions, END_DIST_MM, MAX_SPAN_MM, type ZakinRule } from "@/lib/drawing-modal/rene-constants"
+import { calcZakin, recommendedZakinCount, maxZakinGap, getZakinPositions, END_DIST_MM, MAX_SPAN_MM, type ZakinRule } from "@/lib/drawing-modal/rene-constants"
 
 export interface ZakinState {
   positions: number[] // mm
@@ -69,7 +69,12 @@ export function ZakinEditor({
     return m
   }, [state.positions, lengthMm])
 
-  // 「もう 1 点足すのがおすすめ」の長さか (Antoine: L>2400)。自動では増やさず案内だけする。
+  // 座金と座金の間隔 (両端の余りは含まない)。おすすめカードの表示に使う。
+  // 上の maxSpan は端も含む従来仕様で、⚠警告の判定にそのまま使い続ける。
+  const zakinGap = useMemo(() => maxZakinGap(state.positions), [state.positions])
+
+  // 「もう 1 点足すのがおすすめ」か（自動配置の座金間が推奨ピッチを超えるとき）。
+  // 自動では増やさず案内だけする。
   const autoCount = calcZakin(lengthMm, zakinRule)
   const recommendCount = recommendedZakinCount(lengthMm, zakinRule)
   const showRecommendation =
@@ -170,7 +175,7 @@ export function ZakinEditor({
               <p className="flex-1 text-[13px] leading-relaxed text-foreground">
                 <span className="font-semibold">この長さなら座金 {recommendCount} 点もおすすめです。</span>
                 {" "}
-                座金の間隔が {maxSpan}mm と、推奨の {ruleMaxSpan}mm より広くなります。
+                座金の間隔が {zakinGap}mm と、推奨の {ruleMaxSpan}mm より広くなります。
                 真ん中にもう 1 点足すと、たわみが出にくくなります（追加料金なし）。
               </p>
               <button

@@ -27,9 +27,12 @@ export interface ZakinRule {
   // ※ Antoine では 2026-09-03 に廃止（下記 recommendExtraAboveMm へ移行）。
   //   サムネイルが 2 点留めなのに 2400mm 超で勝手に 3 点になり、お客様が混乱していたため。
   addWasherAboveMm?: number
-  // この長さを超えたら座金を 1 点足すことを「おすすめ」として案内する (自動では増やさない)
-  // Antoine: 2400 超で 3 点をおすすめ。基本は 2 点のまま、3 点は任意選択。
-  recommendExtraAboveMm?: number
+  // 自動配置した座金と座金の間隔が maxSpanMm を超えるとき、座金を 1 点足すことを
+  // 「おすすめ」として案内する (自動では増やさない)。基本本数は defaultCount のまま。
+  // Antoine / Alexandre で使用。長さのしきい値ではなく実際の間隔で判定するのは、
+  // Alexandre のように端距離が段階式だと超過する長さ帯が飛び飛びになるため
+  // (2101〜2199 は超過・2200〜2300 は適正・2301 以降は超過)。
+  recommendExtraOverSpan?: boolean
 }
 
 // 既存 item/rene.html 互換の既定値
@@ -61,15 +64,26 @@ export function calcZakin(L_mm: number, rule?: ZakinRule): number {
 }
 
 /**
- * 自動配置の座金数に対して「もう 1 点足すことをおすすめする」長さかどうか。
- * 自動では増やさず、UI 側でお客様に任意選択を案内するためだけに使う (Antoine: L>2400)。
+ * 座金と座金の最大間隔 (mm)。両端の余り (壁端〜1 本目) は含まない。
+ * ZakinEditor の警告用 maxSpan は端も含む従来仕様なので、そちらとは別物。
+ */
+export function maxZakinGap(positions: number[]): number {
+  const sorted = [...positions].sort((a, b) => a - b)
+  let m = 0
+  for (let i = 1; i < sorted.length; i++) m = Math.max(m, sorted[i] - sorted[i - 1])
+  return m
+}
+
+/**
+ * 自動配置の座金数に対して「もう 1 点足すことをおすすめする」かどうか。
+ * 自動では増やさず、UI 側でお客様に任意選択を案内するためだけに使う。
+ * 判定は実際の座金間隔 > maxSpanMm（Antoine / Alexandre）。
  */
 export function recommendedZakinCount(L_mm: number, rule?: ZakinRule): number {
   const auto = calcZakin(L_mm, rule)
-  if (rule?.recommendExtraAboveMm !== undefined && L_mm > rule.recommendExtraAboveMm) {
-    return auto + 1
-  }
-  return auto
+  if (!rule?.recommendExtraOverSpan) return auto
+  const gap = maxZakinGap(getZakinPositions(L_mm, auto, rule))
+  return gap > maxSpan(rule) ? auto + 1 : auto
 }
 
 // steps の段階ルックアップ: L >= threshold を満たす最大 threshold の値を返す
