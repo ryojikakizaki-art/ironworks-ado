@@ -11,7 +11,7 @@
 // L と positions が変わってもリアルタイムに寸法・側面図が反映される。
 
 import type { DrawingProductConfig, WasherTypeId } from "./products"
-import { WASHER_SPEC_A, WASHER_SPEC_B } from "./products"
+import { WASHER_SPEC_A, WASHER_SPEC_B, getWasherPostDiameter } from "./products"
 import { FULL_DRAWING_SVG } from "./full-drawing-fragment"
 import { WASHER_A_DETAIL_SVG } from "./washer-detail-fragment"
 
@@ -168,7 +168,8 @@ export function buildVerticalCadDrawingSvg(
     detailSvg.appendChild(child.cloneNode(true))
   })
   if (washerType === "B") {
-    transformDetailToTypeB(detailSvg)
+    // 支柱径は商品ごと (既定 9φ / Alexandre・鎚目のみ 13φ)
+    transformDetailToTypeB(detailSvg, getWasherPostDiameter(product, "B"))
   }
   svg.appendChild(detailSvg)
 
@@ -271,7 +272,7 @@ function updateDynamicElements(
   svg.insertBefore(wallHatch, svg.firstChild)
 
   // 側面図 (バー・プレート・連結線) — 全座金位置を渡す。座金タイプで plate 高さが変わる
-  const sideView = buildSideView(barTopY, barBotY, washerYs, washerType)
+  const sideView = buildSideView(barTopY, barBotY, washerYs, washerType, getWasherPostDiameter(product, washerType))
   svg.appendChild(sideView)
 
   // 40mm 壁ギャップ寸法
@@ -378,7 +379,8 @@ function buildSideView(
   barTopY: number,
   barBotY: number,
   washerYs: number[],
-  washerType: WasherTypeId
+  washerType: WasherTypeId,
+  postDiameter: number
 ): SVGGElement {
   const g = document.createElementNS(SVG_NS, "g")
   g.setAttribute("data-role", "side-view")
@@ -394,8 +396,8 @@ function buildSideView(
 
   // 全座金位置のプレート側面 (A: 35mm × 4.5mm / B: 25mm × 4.5mm) + 支柱連結線
   const plateHalfH = (washerType === "B" ? WASHER_SPEC_B.plateHeight : WASHER_SPEC_A.plateHeight) / 2
-  // 支柱径 (A: 9φ / B: 13φ) の半径 — 側面図でプレート⇔バーをつなぐ 2 本の連結線間隔
-  const postR = (washerType === "B" ? WASHER_SPEC_B.postDiameter : WASHER_SPEC_A.postDiameter) / 2
+  // 支柱径の半径 — 側面図でプレート⇔バーをつなぐ 2 本の連結線間隔
+  const postR = postDiameter / 2
   for (const washerY of washerYs) {
     const platePts = [
       [SIDE_PLATE_X1, washerY + plateHalfH],
@@ -659,7 +661,7 @@ function mkPolygon(
 // ==========================================================
 // 座金B 変換: DXF抽出 A 版 (55×35) を B 仕様 (60×25) に変換
 // ==========================================================
-function transformDetailToTypeB(detailSvg: SVGSVGElement): void {
+function transformDetailToTypeB(detailSvg: SVGSVGElement, postDiameter: number): void {
   // paperspace 座金中心: (87.225, 21) DXF → Y反転 SVG = (87.225, -21)
   const cx = WASHER_A_CX
   const cyFlipped = -WASHER_A_CY
@@ -689,7 +691,7 @@ function transformDetailToTypeB(detailSvg: SVGSVGElement): void {
     const txt = t.textContent || ""
     if (txt === "55") t.textContent = String(WASHER_SPEC_B.plateWidth)
     else if (txt === "35") t.textContent = String(WASHER_SPEC_B.plateHeight)
-    else if (txt === "9φ") t.textContent = `${WASHER_SPEC_B.postDiameter}φ`
+    else if (txt === "9φ") t.textContent = `${postDiameter}φ`
     else if (txt === "座金A詳細図") t.textContent = "座金B詳細図"
   })
   // 55 寸法線 (楕円長径) と 35 寸法線 (楕円短径) の端点を新しい楕円に合わせる
@@ -740,18 +742,19 @@ function transformDetailToTypeB(detailSvg: SVGSVGElement): void {
   })
 
   // ------------------------------------------------------------
-  // 支柱径 9φ → 13φ (B): 上面図中央円 + 側面図支柱縦線 + 「9φ」引出し矢印
+  // 支柱径 (DXF の 9φ → 商品の支柱径): 上面図中央円 + 側面図支柱縦線 + 「9φ」引出し矢印
+  // 既定は 9φ のままなので、その場合この置換は実質すべて no-op になる。
   // ------------------------------------------------------------
-  const A_POST_R = WASHER_SPEC_A.postDiameter / 2   // 4.5
-  const B_POST_R = WASHER_SPEC_B.postDiameter / 2   // 6.5
+  const A_POST_R = WASHER_SPEC_A.postDiameter / 2   // 4.5 (DXF 原図の支柱半径)
+  const B_POST_R = postDiameter / 2                 // 既定 4.5 / Alexandre・鎚目 6.5
   const POST_CX = 87.671                             // 側面図支柱中心 x = (83.171 + 92.171) / 2
   const POST_LEFT_A = POST_CX - A_POST_R             // 83.171
   const POST_RIGHT_A = POST_CX + A_POST_R            // 92.171
-  const POST_LEFT_B = POST_CX - B_POST_R             // 81.171
-  const POST_RIGHT_B = POST_CX + B_POST_R            // 94.171
-  const POST_DX = POST_LEFT_B - POST_LEFT_A          // -2 (左端の移動量)
+  const POST_LEFT_B = POST_CX - B_POST_R             // 9φ:83.171 / 13φ:81.171
+  const POST_RIGHT_B = POST_CX + B_POST_R            // 9φ:92.171 / 13φ:94.171
+  const POST_DX = POST_LEFT_B - POST_LEFT_A          // 左端の移動量 (9φ なら 0)
 
-  // (a) 上面図中央円 (cx≈87.225, r=4.5) を r=6.5 へ
+  // (a) 上面図中央円 (cx≈87.225, r=4.5) を商品の支柱半径へ
   detailSvg.querySelectorAll("circle").forEach((c) => {
     const cxv = parseFloat(c.getAttribute("cx") || "0")
     const r = parseFloat(c.getAttribute("r") || "0")

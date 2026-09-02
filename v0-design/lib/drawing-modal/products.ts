@@ -51,11 +51,13 @@ export const WASHER_SPEC_A: WasherSpec = {
   wallGap: 40,
 }
 
-// 座金B: 幅広薄型 楕円 60×25mm (太径 31.8φ 用・支柱 13φ)
+// 座金B: 幅広薄型 楕円 60×25mm
+// 支柱は座金A と同じ 9φ が既定。太径バーの商品 (Alexandre 31.8φ / 鎚目 FB32×12) だけ
+// 商品側の washerBPostDiameter で 13φ に上書きする (2026-09-02 蠣﨑さん指示)。
 export const WASHER_SPEC_B: WasherSpec = {
   id: "B",
   label: "座金B",
-  postDiameter: 13,
+  postDiameter: 9,
   plateThickness: 4.5,
   plateWidth: 60,
   plateHeight: 25,
@@ -66,6 +68,16 @@ export const WASHER_SPEC_B: WasherSpec = {
 
 export function getWasherSpec(id: WasherTypeId): WasherSpec {
   return id === "B" ? WASHER_SPEC_B : WASHER_SPEC_A
+}
+
+// 座金の支柱径 (mm)。座金A は常に 9φ。座金B は既定 9φ で、
+// 太径バーの商品だけ washerBPostDiameter (Alexandre / 鎚目 = 13) で上書きする。
+export function getWasherPostDiameter(
+  product: Pick<DrawingProductConfig, "washerBPostDiameter">,
+  washerType: WasherTypeId
+): number {
+  if (washerType !== "B") return WASHER_SPEC_A.postDiameter
+  return product.washerBPostDiameter ?? WASHER_SPEC_B.postDiameter
 }
 
 // CAD精密図のタイトルブロック (縦型で使用)
@@ -117,6 +129,9 @@ export interface DrawingProductConfig {
   // 座金の本数上限。未指定なら縦型3・横型20（従来通り）。
   // 鎚目は 2 本のみで製作するため 2（2026-08-17 蠣﨑さん指定）。
   maxZakinCount?: number
+  // 座金B を選んだときの支柱径 mm。未指定なら 9φ（WASHER_SPEC_B の既定）。
+  // 太径バーの Alexandre(31.8φ) と鎚目(FB32×12) だけ 13 を指定する（2026-09-02 蠣﨑さん指示）。
+  washerBPostDiameter?: number
   // 座金ガイドの説明写真。未指定なら共通の黒い手すりの写真。
   // 白仕上げの商品で写真の色を商品に合わせたいときだけ指定する（2026-08-28 Catherine から）。
   zakinGuidePhoto?: string
@@ -399,6 +414,7 @@ DRAWING_PRODUCTS.alexandre = {
   pricePerMm: 30, // 31.8φ 太径は Antoine(t3.2) と同率
   zakinRule: ALEXANDRE_RULE,
   washerSpec: WASHER_SPEC_B, // 太径用に幅広薄型 60×25mm
+  washerBPostDiameter: 13, // 31.8φ の太径バーに合わせて支柱のみ 13φ（他商品の座金Bは 9φ）
   colorOptions: true, // 白仕上げ選択可（2026-07-05 追加・合計+15%）
   titleBlock: {
     productName: "Alexandre",
@@ -539,6 +555,7 @@ DRAWING_PRODUCTS.tsuchime = {
   // 仕様書の「ブラケット座金 φ25×60mm」に合わせて座金Bで固定（支柱13φ）。
   // washerSpec を持つ縦型商品は簡易 schematic ではなく CAD 精密図で制作図を描く。
   washerSpec: WASHER_SPEC_B,
+  washerBPostDiameter: 13, // 仕様書どおり支柱 13φ を維持（FB32×12 の太いバー）
   washerTypeSelectable: false,
   maxZakinCount: 2,
   titleBlock: {
