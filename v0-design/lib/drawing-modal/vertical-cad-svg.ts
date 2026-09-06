@@ -168,9 +168,11 @@ export function buildVerticalCadDrawingSvg(
     detailSvg.appendChild(child.cloneNode(true))
   })
   if (washerType === "B") {
-    // 支柱径は商品ごと (既定 9φ / Alexandre・鎚目のみ 13φ)
-    transformDetailToTypeB(detailSvg, getWasherPostDiameter(product, "B"))
+    transformDetailToTypeB(detailSvg)
   }
+  // 支柱径は商品・座金タイプごとに決まる (既定 9φ / Antoine は A・B とも 13φ)。
+  // DXF 原図が 9φ なので、9φ の商品では描き替えなしと同じ結果になる。
+  applyPostDiameterToDetail(detailSvg, getWasherPostDiameter(product, washerType))
   svg.appendChild(detailSvg)
 
   // (3) 動的要素: バー / 座金 / 側面図 / 寸法線 / 壁ハッチ
@@ -661,7 +663,7 @@ function mkPolygon(
 // ==========================================================
 // 座金B 変換: DXF抽出 A 版 (55×35) を B 仕様 (60×25) に変換
 // ==========================================================
-function transformDetailToTypeB(detailSvg: SVGSVGElement, postDiameter: number): void {
+function transformDetailToTypeB(detailSvg: SVGSVGElement): void {
   // paperspace 座金中心: (87.225, 21) DXF → Y反転 SVG = (87.225, -21)
   const cx = WASHER_A_CX
   const cyFlipped = -WASHER_A_CY
@@ -691,7 +693,6 @@ function transformDetailToTypeB(detailSvg: SVGSVGElement, postDiameter: number):
     const txt = t.textContent || ""
     if (txt === "55") t.textContent = String(WASHER_SPEC_B.plateWidth)
     else if (txt === "35") t.textContent = String(WASHER_SPEC_B.plateHeight)
-    else if (txt === "9φ") t.textContent = `${postDiameter}φ`
     else if (txt === "座金A詳細図") t.textContent = "座金B詳細図"
   })
   // 55 寸法線 (楕円長径) と 35 寸法線 (楕円短径) の端点を新しい楕円に合わせる
@@ -740,13 +741,18 @@ function transformDetailToTypeB(detailSvg: SVGSVGElement, postDiameter: number):
     })
     poly.setAttribute("points", newPts)
   })
+}
 
-  // ------------------------------------------------------------
-  // 支柱径 (DXF の 9φ → 商品の支柱径): 上面図中央円 + 側面図支柱縦線 + 「9φ」引出し矢印
-  // 既定は 9φ のままなので、その場合この置換は実質すべて no-op になる。
-  // ------------------------------------------------------------
+// ==========================================================
+// 支柱径の反映: DXF 原図に描かれている 9φ の支柱を商品の支柱径へ描き替える。
+// 座金A・B どちらの詳細図にも適用する (支柱 9φ の商品では全て no-op になる)。
+//   (a) 上面図の中央円 / (b) 側面図の支柱縦線 / (c)「9φ」引出し線・矢印・寸法テキスト
+// ==========================================================
+function applyPostDiameterToDetail(detailSvg: SVGSVGElement, postDiameter: number): void {
+  // DXF 原図と同じ 9φ なら描き替える必要がない (書き戻しで数値表記だけ変わるのを避ける)
+  if (postDiameter === WASHER_SPEC_A.postDiameter) return
   const A_POST_R = WASHER_SPEC_A.postDiameter / 2   // 4.5 (DXF 原図の支柱半径)
-  const B_POST_R = postDiameter / 2                 // 既定 4.5 / Alexandre・鎚目 6.5
+  const B_POST_R = postDiameter / 2                 // 9φ:4.5 / 13φ:6.5
   const POST_CX = 87.671                             // 側面図支柱中心 x = (83.171 + 92.171) / 2
   const POST_LEFT_A = POST_CX - A_POST_R             // 83.171
   const POST_RIGHT_A = POST_CX + A_POST_R            // 92.171
@@ -797,6 +803,12 @@ function transformDetailToTypeB(detailSvg: SVGSVGElement, postDiameter: number):
       return `${(parseFloat(xs) + POST_DX).toFixed(3)},${ys}`
     })
     poly.setAttribute("points", newPts)
+  })
+  // (d) 「9φ」寸法テキスト
+  detailSvg.querySelectorAll("text").forEach((t) => {
+    if ((t.textContent || "") === `${WASHER_SPEC_A.postDiameter}φ`) {
+      t.textContent = `${postDiameter}φ`
+    }
   })
 }
 

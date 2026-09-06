@@ -52,8 +52,7 @@ export const WASHER_SPEC_A: WasherSpec = {
 }
 
 // 座金B: 幅広薄型 楕円 60×25mm
-// 支柱は座金A と同じ 9φ が既定。太径バーの商品 (Alexandre 31.8φ / 鎚目 FB32×12) だけ
-// 商品側の washerBPostDiameter で 13φ に上書きする (2026-09-02 蠣﨑さん指示)。
+// 支柱は座金A と同じ 9φ が既定。太い商品だけ商品側の washerPostDiameter で 13φ に上書きする。
 export const WASHER_SPEC_B: WasherSpec = {
   id: "B",
   label: "座金B",
@@ -70,14 +69,13 @@ export function getWasherSpec(id: WasherTypeId): WasherSpec {
   return id === "B" ? WASHER_SPEC_B : WASHER_SPEC_A
 }
 
-// 座金の支柱径 (mm)。座金A は常に 9φ。座金B は既定 9φ で、
-// 太径バーの商品だけ washerBPostDiameter (Alexandre / 鎚目 = 13) で上書きする。
+// 座金の支柱径 (mm)。既定は座金A・B とも 9φ で、
+// 商品の washerPostDiameter に指定があるタイプだけその値を使う。
 export function getWasherPostDiameter(
-  product: Pick<DrawingProductConfig, "washerBPostDiameter">,
+  product: Pick<DrawingProductConfig, "washerPostDiameter">,
   washerType: WasherTypeId
 ): number {
-  if (washerType !== "B") return WASHER_SPEC_A.postDiameter
-  return product.washerBPostDiameter ?? WASHER_SPEC_B.postDiameter
+  return product.washerPostDiameter?.[washerType] ?? getWasherSpec(washerType).postDiameter
 }
 
 // CAD精密図のタイトルブロック (縦型で使用)
@@ -129,9 +127,10 @@ export interface DrawingProductConfig {
   // 座金の本数上限。未指定なら縦型3・横型20（従来通り）。
   // 鎚目は 2 本のみで製作するため 2（2026-08-17 蠣﨑さん指定）。
   maxZakinCount?: number
-  // 座金B を選んだときの支柱径 mm。未指定なら 9φ（WASHER_SPEC_B の既定）。
-  // 太径バーの Alexandre(31.8φ) と鎚目(FB32×12) だけ 13 を指定する（2026-09-02 蠣﨑さん指示）。
-  washerBPostDiameter?: number
+  // 座金支柱径 mm の商品別上書き。指定の無いタイプは既定の 9φ。
+  //   Antoine … 座金A・B とも 13φ（2026-09-06 蠣﨑さん指示）
+  //   Alexandre(31.8φ) / 鎚目(FB32×12) … 座金B のみ 13φ
+  washerPostDiameter?: Partial<Record<WasherTypeId, number>>
   // 座金ガイドの説明写真。未指定なら共通の黒い手すりの写真。
   // 白仕上げの商品で写真の色を商品に合わせたいときだけ指定する（2026-08-28 Catherine から）。
   zakinGuidePhoto?: string
@@ -419,7 +418,7 @@ DRAWING_PRODUCTS.alexandre = {
   pricePerMm: 30, // 31.8φ 太径は Antoine(t3.2) と同率
   zakinRule: ALEXANDRE_RULE,
   washerSpec: WASHER_SPEC_B, // 太径用に幅広薄型 60×25mm
-  washerBPostDiameter: 13, // 31.8φ の太径バーに合わせて支柱のみ 13φ（他商品の座金Bは 9φ）
+  washerPostDiameter: { B: 13 }, // 31.8φ の太径バーに合わせ座金Bの支柱のみ 13φ（座金A は 9φ）
   colorOptions: true, // 白仕上げ選択可（2026-07-05 追加・合計+15%）
   titleBlock: {
     productName: "Alexandre",
@@ -467,6 +466,9 @@ DRAWING_PRODUCTS.antoine = {
   },
   // Claude 同様の CAD 精密図を有効化 (座金A 標準)
   washerSpec: WASHER_SPEC_A,
+  // 支柱は座金A・B どちらを選んでも 13φ（2026-09-06 蠣﨑さん指示）。
+  // t3.2 の厚肉バーのため Claude/Catherine (9φ) より太い支柱で製作する。
+  washerPostDiameter: { A: 13, B: 13 },
   colorOptions: true, // 白仕上げ選択可（2026-07-08 追加・合計+15%）
   titleBlock: {
     productName: "Antoine",
@@ -564,7 +566,7 @@ DRAWING_PRODUCTS.tsuchime = {
   // 仕様書の「ブラケット座金 φ25×60mm」に合わせて座金Bで固定（支柱13φ）。
   // washerSpec を持つ縦型商品は簡易 schematic ではなく CAD 精密図で制作図を描く。
   washerSpec: WASHER_SPEC_B,
-  washerBPostDiameter: 13, // 仕様書どおり支柱 13φ を維持（FB32×12 の太いバー）
+  washerPostDiameter: { B: 13 }, // 仕様書どおり支柱 13φ（FB32×12 の太いバー）
   washerTypeSelectable: false,
   maxZakinCount: 2,
   titleBlock: {
