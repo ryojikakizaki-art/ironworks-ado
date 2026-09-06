@@ -128,8 +128,9 @@ export interface DrawingProductConfig {
   // 鎚目は 2 本のみで製作するため 2（2026-08-17 蠣﨑さん指定）。
   maxZakinCount?: number
   // 座金支柱径 mm の商品別上書き。指定の無いタイプは既定の 9φ。
-  //   Antoine … 座金A・B とも 13φ（2026-09-06 蠣﨑さん指示）
-  //   Alexandre(31.8φ) / 鎚目(FB32×12) … 座金B のみ 13φ
+  //   Antoine(t3.2) / Alexandre(31.8φ) … 座金A・B とも 13φ（2026-09-06 蠣﨑さん指示）
+  //   鎚目(FB32×12) … 座金B のみ 13φ（座金タイプ選択なし）
+  //   Claude / Catherine(t2.3) … 指定なし＝A・B とも 9φ
   washerPostDiameter?: Partial<Record<WasherTypeId, number>>
   // 座金ガイドの説明写真。未指定なら共通の黒い手すりの写真。
   // 白仕上げの商品で写真の色を商品に合わせたいときだけ指定する（2026-08-28 Catherine から）。
@@ -418,7 +419,9 @@ DRAWING_PRODUCTS.alexandre = {
   pricePerMm: 30, // 31.8φ 太径は Antoine(t3.2) と同率
   zakinRule: ALEXANDRE_RULE,
   washerSpec: WASHER_SPEC_B, // 太径用に幅広薄型 60×25mm
-  washerPostDiameter: { B: 13 }, // 31.8φ の太径バーに合わせ座金Bの支柱のみ 13φ（座金A は 9φ）
+  // 31.8φ の太径バーに合わせ、座金A・B どちらを選んでも支柱は 13φ
+  // （2026-09-06 蠣﨑さん指示。従来は座金B のみ 13φ だった）
+  washerPostDiameter: { A: 13, B: 13 },
   colorOptions: true, // 白仕上げ選択可（2026-07-05 追加・合計+15%）
   titleBlock: {
     productName: "Alexandre",
