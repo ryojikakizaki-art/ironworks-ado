@@ -1,13 +1,41 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import Link from "next/link"
-import { NEWS, shouldShowNewBadge } from "@/lib/news"
+import { ArrowRight, ArrowUpRight } from "lucide-react"
+import { NEWS, isExternalHref, newsCategory, shouldShowNewBadge, type NewsItem } from "@/lib/news"
 
 export const metadata = {
   title: "お知らせ｜IRONWORKS ado",
   description:
     "IRONWORKS ado からのお知らせ・新商品情報・価格改定・営業のご案内などをまとめています。",
   alternates: { canonical: "/news" },
+}
+
+/** 見出し。href があれば該当ページ（外部 URL は別タブ）へのリンクにする */
+function NewsTitle({ item }: { item: NewsItem }) {
+  const text = <span className="text-[15px] text-foreground leading-relaxed">{item.title}</span>
+  if (!item.href) return text
+  // 見出しは左、矢印は行の右端に固定（inline-flex だと矢印が 1 行目の末尾に来て読みにくい）
+  const cls =
+    "group flex items-start gap-3 text-[15px] text-foreground leading-relaxed hover:text-gold transition-colors"
+  if (isExternalHref(item.href)) {
+    return (
+      <a href={item.href} target="_blank" rel="noopener noreferrer" className={cls}>
+        <span className="flex-1 underline underline-offset-4 decoration-transparent group-hover:decoration-current transition-colors">
+          {item.title}
+        </span>
+        <ArrowUpRight className="w-4 h-4 mt-1 shrink-0" />
+      </a>
+    )
+  }
+  return (
+    <Link href={item.href} className={cls}>
+      <span className="flex-1 underline underline-offset-4 decoration-transparent group-hover:decoration-current transition-colors">
+        {item.title}
+      </span>
+      <ArrowRight className="w-4 h-4 mt-1 shrink-0 group-hover:translate-x-0.5 transition-transform" />
+    </Link>
+  )
 }
 
 export default function NewsPage() {
@@ -37,22 +65,23 @@ export default function NewsPage() {
                   key={`${item.date}-${i}`}
                   className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-6 py-5"
                 >
-                  <div className="flex items-center gap-2 flex-shrink-0 sm:w-32">
-                    <span className="text-[13px] text-muted-foreground tabular-nums">
+                  <div className="flex items-center gap-2 flex-shrink-0 sm:w-52">
+                    <span className="shrink-0 whitespace-nowrap px-2 py-0.5 bg-white border border-black/10 rounded text-[11px] tracking-wide text-muted-foreground">
+                      {newsCategory(item)}
+                    </span>
+                    <span className="shrink-0 text-[13px] text-muted-foreground tabular-nums">
                       {item.date}
                     </span>
                     {shouldShowNewBadge(item) && (
-                      <span className="px-2 py-0.5 bg-gold text-white text-[10px] rounded font-medium">
+                      <span className="shrink-0 px-2 py-0.5 bg-gold text-white text-[10px] rounded font-medium">
                         New
                       </span>
                     )}
                   </div>
                   <div className="flex-1">
-                    <p className="text-[14px] text-foreground leading-relaxed">
-                      {item.title}
-                    </p>
+                    <NewsTitle item={item} />
                     {item.body && (
-                      <p className="text-[13px] text-muted-foreground mt-2 leading-relaxed">
+                      <p className="text-[14px] text-muted-foreground mt-2 leading-relaxed">
                         {item.body}
                       </p>
                     )}

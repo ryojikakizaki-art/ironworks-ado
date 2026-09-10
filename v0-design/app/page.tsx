@@ -2,6 +2,7 @@
 
 import { Header } from "@/components/header"
 import { HeroSection } from "@/components/hero-section"
+import { NewsHighlights } from "@/components/news-highlights"
 import { ThreeEntrances } from "@/components/three-entrances"
 import { StatsSection } from "@/components/stats-section"
 import { TradeBanner } from "@/components/trade-banner"
@@ -12,7 +13,6 @@ import { CaseGallery } from "@/components/case-gallery"
 import { ProductMarquee } from "@/components/product-marquee"
 import { TestimonialsSection } from "@/components/testimonials-section"
 import { CraftsmanshipStorySection } from "@/components/craftsmanship-story-section"
-import { NewsSection } from "@/components/news-section"
 import { BlogSection } from "@/components/blog-section"
 import { CtaBanner } from "@/components/cta-banner"
 import { Footer } from "@/components/footer"
@@ -27,6 +27,9 @@ export default function HomePage() {
       <div id="hero">
         <HeroSection />
       </div>
+
+      {/* 最新のお知らせ（ヒーロー直下の帯・2026-09-10）— 新商品/SNS/お知らせの入口 */}
+      <NewsHighlights />
 
       {/* 3つの入口（手すり／ロートアイアン・装飾／施工）— タスク5-1 */}
       <ThreeEntrances />
@@ -44,7 +47,10 @@ export default function HomePage() {
       <StatsSection />
       <CraftsmanshipStorySection />
       <LimitedServiceSection />
-      <NewsSection />
+      {/* 下部の <NewsSection /> は 2026-09-10 に外した（ヒーロー直下の
+          <NewsHighlights /> と同じ内容が二重に出るため・蠣﨑さん指示）。
+          components/news-section.tsx は残してあるので、戻すときは
+          import と 1 行を足すだけでよい。 */}
       <BlogSection />
 
       {/* 全商品マーキー（旧ヒーロー下部から移動）— タスク5-1 */}

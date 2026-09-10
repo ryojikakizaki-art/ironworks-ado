@@ -4,7 +4,7 @@ import { motion, useInView } from "framer-motion"
 import { useRef } from "react"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
-import { NEWS, shouldShowNewBadge } from "@/lib/news"
+import { NEWS, isExternalHref, newsCategory, newsHeadline, shouldShowNewBadge } from "@/lib/news"
 
 // トップページでは最新 4 件のみ表示
 const news = NEWS.slice(0, 4)
@@ -47,8 +47,11 @@ export function NewsSection() {
               className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-6 py-5"
             >
               {/* Date */}
-              <div className="flex items-center gap-2 flex-shrink-0">
-                <span className="text-[13px] text-muted-foreground tabular-nums">
+              <div className="flex items-center gap-2 flex-shrink-0 sm:w-52">
+                <span className="shrink-0 whitespace-nowrap px-2 py-0.5 bg-white border border-black/10 rounded text-[11px] tracking-wide text-muted-foreground">
+                  {newsCategory(item)}
+                </span>
+                <span className="shrink-0 text-[13px] text-muted-foreground tabular-nums">
                   {item.date}
                 </span>
                 {shouldShowNewBadge(item) && (
@@ -58,17 +61,37 @@ export function NewsSection() {
                       opacity: [1, 0.8, 1]
                     }}
                     transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                    className="px-2 py-0.5 bg-gold text-white text-[10px] rounded font-medium"
+                    className="shrink-0 px-2 py-0.5 bg-gold text-white text-[10px] rounded font-medium"
                   >
                     New
                   </motion.span>
                 )}
               </div>
 
-              {/* Title */}
-              <p className="flex-1 text-[14px] text-dark leading-relaxed">
-                {item.title}
-              </p>
+              {/* Title — href があれば該当ページ（外部 URL は別タブ）へ飛ばす */}
+              {item.href ? (
+                isExternalHref(item.href) ? (
+                  <a
+                    href={item.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 text-[15px] text-dark leading-relaxed hover:text-gold transition-colors"
+                  >
+                    {newsHeadline(item)}
+                  </a>
+                ) : (
+                  <Link
+                    href={item.href}
+                    className="flex-1 text-[15px] text-dark leading-relaxed hover:text-gold transition-colors"
+                  >
+                    {newsHeadline(item)}
+                  </Link>
+                )
+              ) : (
+                <p className="flex-1 text-[15px] text-dark leading-relaxed">
+                  {newsHeadline(item)}
+                </p>
+              )}
             </motion.div>
           ))}
         </div>

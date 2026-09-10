@@ -8,6 +8,28 @@
 // - 3本まで同一梱包(×1), 4-6本は×2
 // - 沖縄 / 7本以上 / 3001mm以上 は要問合せ (inquiry モード)
 
+// ── 送料改定（2026-10-01 ご注文分より 1 梱包あたり +¥300） ──────────────
+//
+// 蠣﨑さん指示（2026-09-10）。SHIPPING_RATES は佐川急便の運賃表そのものなので
+// 書き換えず、「1 梱包あたりの上乗せ額」として別に持つ。改定日を過ぎると自動で
+// 切り替わるため、10/1 当日にデプロイし直す必要はない。
+// 告知記事: /news/shipping-revision-2026-10
+export const SHIPPING_SURCHARGE_YEN = 300
+
+/** 改定の発効時刻。JST 2026-10-01 00:00 = UTC 2026-09-30 15:00 */
+export const SHIPPING_REVISION_EPOCH_MS = Date.UTC(2026, 8, 30, 15, 0, 0)
+
+/**
+ * 1 梱包あたりの送料上乗せ額（改定前は 0）。
+ *
+ * 引数を省略すると「今」で判定する。サーバー（/api/checkout・/api/bank-order）では
+ * 決済時刻、ブラウザでは表示時刻で評価される。Date.now() は実行環境のタイムゾーンに
+ * よらず UTC エポック ms なので、JST 固定の発効時刻と直接比較して問題ない。
+ */
+export function shippingSurcharge(atMs: number = Date.now()): number {
+  return atMs >= SHIPPING_REVISION_EPOCH_MS ? SHIPPING_SURCHARGE_YEN : 0
+}
+
 export type ProductType = "yokogata" | "tategata" | "fixed"
 
 export const PREF_TO_REGION: Record<string, string> = {
@@ -95,12 +117,16 @@ function calcSingleBundleRate(
   region: Region,
   productType: ProductType
 ): { rate: number; note: string } | { inquiry: true; reason: string } {
+  // 改定後は全区分に同額を上乗せする（1,000mm 以下の一律枠・固定サイズ枠も含む）
+  const surcharge = shippingSurcharge()
   if (maxLengthMm <= 1000) {
-    return { rate: 1000, note: "1,000mm以下: 全国一律 ¥1,000" }
+    const rate = 1000 + surcharge
+    return { rate, note: `1,000mm以下: 全国一律 ¥${rate.toLocaleString()}` }
   }
   if (productType === "fixed") {
-    // 固定長装飾商品 (scroll等) は短いので一律 ¥1,000 で扱う
-    return { rate: 1000, note: "固定サイズ: 全国一律 ¥1,000" }
+    // 固定長装飾商品 (scroll等) は短いので一律 ¥1,000 (+改定分) で扱う
+    const rate = 1000 + surcharge
+    return { rate, note: `固定サイズ: 全国一律 ¥${rate.toLocaleString()}` }
   }
   // 縦型・横型ともに「長さ + 200mm」で発送サイズ区分を決定 (佐川急便3辺合計)
   const shipSize = maxLengthMm + 200
@@ -109,7 +135,7 @@ function calcSingleBundleRate(
     return { inquiry: true, reason: "このサイズは通常配送できません。別途お見積もりとなります" }
   }
   return {
-    rate: SHIPPING_RATES[bracket][region],
+    rate: SHIPPING_RATES[bracket][region] + surcharge,
     note: `発送サイズ ${shipSize}mm → ${bracket}サイズ`,
   }
 }
@@ -257,7 +283,7 @@ export function calcClemenceShipping(prefecture: string, extensionMm: number): S
     return { shipping: 0, rate: 0, bundles: 0, note: "配送先都道府県を選択してください", inquiry: false }
   }
   const bracket: SizeBracket = extensionMm > 0 ? 170 : 160
-  const rate = SHIPPING_RATES[bracket][region]
+  const rate = SHIPPING_RATES[bracket][region] + shippingSurcharge()
   return {
     shipping: rate,
     rate,
