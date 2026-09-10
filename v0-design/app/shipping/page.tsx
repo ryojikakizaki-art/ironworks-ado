@@ -32,6 +32,29 @@ export default function ShippingPage() {
 
         <div className="max-w-[800px] mx-auto px-4 lg:px-8 py-16">
           <div className="space-y-14">
+            {/* 送料改定のお知らせ（2026-10-01 ご注文分より +¥300）— 告知記事へ誘導 */}
+            <div className="rounded-lg border border-gold/40 bg-secondary p-5 md:p-6">
+              <div className="flex items-center gap-2.5 mb-2.5">
+                <span className="px-2 py-0.5 bg-gold text-white text-[11px] rounded font-medium">
+                  お知らせ
+                </span>
+                <span className="text-[13px] text-muted-foreground tabular-nums">2026.09.10</span>
+              </div>
+              <p className="font-serif text-[17px] md:text-[19px] text-foreground leading-snug mb-2.5">
+                2026年10月1日ご注文分より、送料を一律 300円 改定させていただきます
+              </p>
+              <p className="text-[14px] leading-[1.95] text-foreground/80">
+                運賃と梱包資材の値上がりを受け、1 梱包あたり一律 300 円（税抜）の改定をお願いいたします。
+                商品本体の価格は据え置きです。9月30日（水）までのご注文は現行の送料でお承りします。
+              </p>
+              <Link
+                href="/news/shipping-revision-2026-10"
+                className="inline-block mt-3 text-[14px] text-gold hover:underline underline-offset-4"
+              >
+                改定の詳細を見る →
+              </Link>
+            </div>
+
             {/* 配送方法 */}
             <section>
               <p className="text-[10px] tracking-[0.4em] uppercase text-gold mb-2">

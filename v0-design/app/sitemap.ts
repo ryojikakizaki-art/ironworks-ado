@@ -3,6 +3,7 @@ import { listProductSlugs } from '@/lib/products/display'
 import { SIMPLE_PRODUCT_SLUGS } from '@/lib/products/simple'
 import { STAIR_PRODUCT_SLUGS } from '@/lib/products/stair-pricing'
 import { COLUMN_ARTICLES } from '@/lib/column-data'
+import { NEWS_ARTICLES } from '@/lib/news'
 
 const SITE_URL = 'https://ado.tantetuzest.com'
 
@@ -58,5 +59,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }))
 
-  return [...staticEntries, ...productEntries, ...columnEntries]
+  const newsEntries: MetadataRoute.Sitemap = NEWS_ARTICLES.map((a) => ({
+    url: `${SITE_URL}/news/${a.slug}`,
+    lastModified: new Date(a.date.replaceAll('.', '-')),
+    changeFrequency: 'yearly',
+    priority: 0.5,
+  }))
+
+  return [...staticEntries, ...productEntries, ...columnEntries, ...newsEntries]
 }
