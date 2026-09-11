@@ -13,6 +13,9 @@ import { Building2, ArrowRight } from "lucide-react"
  *
  * 2026-07-02 修正: 「最短5日発送」は実際の標準納期（10営業日）と矛盾していたため
  * 「標準10営業日でお届け」に訂正。特急対応可能な旨を小さく添える。
+ *
+ * 2026-09-11 修正: 業者導線が弱いという指摘を受け、CTA を枠線のみの白抜きから
+ * ゴールド塗りつぶし・文字 14/15px に変更（アイコンバッジも塗りに）。
  */
 export function TradeBanner() {
   return (
@@ -42,7 +45,7 @@ export function TradeBanner() {
           className="mt-5 pt-5 border-t border-border group flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-6 text-left"
         >
           <div className="flex items-start md:items-center gap-3 md:gap-4">
-            <span className="shrink-0 inline-flex items-center justify-center w-9 h-9 md:w-10 md:h-10 rounded-full bg-gold/15 text-gold">
+            <span className="shrink-0 inline-flex items-center justify-center w-9 h-9 md:w-10 md:h-10 rounded-full bg-gold text-white">
               <Building2 className="w-4 h-4 md:w-[18px] md:h-[18px]" strokeWidth={1.5} />
             </span>
             <div>
@@ -57,7 +60,7 @@ export function TradeBanner() {
               </p>
             </div>
           </div>
-          <span className="self-end md:self-auto shrink-0 inline-flex items-center gap-2 px-4 py-2 md:px-5 md:py-2.5 rounded-full border border-foreground/30 text-foreground group-hover:border-gold group-hover:bg-gold group-hover:text-white transition-colors text-[12px] md:text-[13px] tracking-wide">
+          <span className="self-stretch md:self-auto shrink-0 inline-flex items-center justify-center gap-2 px-5 py-3 md:px-6 md:py-3 rounded-full border border-gold bg-gold text-white group-hover:bg-foreground group-hover:border-foreground transition-colors text-[14px] md:text-[15px] font-medium tracking-wide">
             業者様専用ページへ
             <ArrowRight className="w-4 h-4" />
           </span>
