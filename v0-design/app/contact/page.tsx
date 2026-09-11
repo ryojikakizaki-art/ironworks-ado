@@ -1,11 +1,12 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { TradeBanner } from "@/components/trade-banner"
+import { FileAttachField } from "@/components/file-attach-field"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
 import { LineIcon } from "@/components/ui/line-icon"
 import { Mail, FileText, Phone } from "lucide-react"
@@ -35,25 +36,8 @@ const PRODUCT_OPTIONS: { value: string; label: string }[] = [
   { value: "other", label: "その他・複数" },
 ]
 
-// ── ファイル添付制約 ──
-const MAX_FILES = 5
-const MAX_FILE_BYTES = 10 * 1024 * 1024 // 10MB / file
-const MAX_TOTAL_BYTES = 25 * 1024 * 1024 // 25MB total
-const ALLOWED_TYPES = [
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/heic",
-  "image/heif",
-  "application/pdf",
-]
-const ALLOWED_EXT_HINT = ".jpg, .jpeg, .png, .webp, .heic, .pdf"
-
-function formatBytes(b: number): string {
-  if (b < 1024) return `${b} B`
-  if (b < 1024 * 1024) return `${(b / 1024).toFixed(1)} KB`
-  return `${(b / 1024 / 1024).toFixed(1)} MB`
-}
+// 添付の上限・形式・画像の自動軽量化は components/file-attach-field.tsx に集約している
+// （Vercel Functions のリクエストボディ上限 4.5MB に収めるため実効 4MB）
 
 // ── ヒーロー横の指標 ──
 const stats = [
@@ -160,10 +144,8 @@ export default function ContactPage() {
     message: "",
   })
   const [files, setFiles] = useState<File[]>([])
-  const [fileError, setFileError] = useState("")
   const [status, setStatus] = useState<"idle" | "sending" | "error">("idle")
   const [errorMsg, setErrorMsg] = useState("")
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // 商品ページから ?product=&category= 付きで遷移してきた場合、
   // お問い合わせ種別とご興味のある商品を事前選択する。
@@ -281,50 +263,6 @@ export default function ContactPage() {
       message: prefillMessage || prev.message,
     }))
   }, [])
-
-  const totalBytes = files.reduce((acc, f) => acc + f.size, 0)
-
-  const handleFiles = (newFiles: FileList | null) => {
-    setFileError("")
-    if (!newFiles || newFiles.length === 0) return
-
-    const incoming = Array.from(newFiles)
-    let next = [...files]
-    let err = ""
-
-    for (const f of incoming) {
-      if (next.length >= MAX_FILES) {
-        err = `添付ファイルは最大 ${MAX_FILES} 件までです。`
-        break
-      }
-      const isImage = f.type.startsWith("image/")
-      const isPdf = f.type === "application/pdf"
-      if (!isImage && !isPdf && !ALLOWED_TYPES.includes(f.type)) {
-        err = `「${f.name}」はサポート外の形式です（${ALLOWED_EXT_HINT} のみ）`
-        continue
-      }
-      if (f.size > MAX_FILE_BYTES) {
-        err = `「${f.name}」は ${formatBytes(MAX_FILE_BYTES)} を超えています`
-        continue
-      }
-      const projectedTotal = next.reduce((a, x) => a + x.size, 0) + f.size
-      if (projectedTotal > MAX_TOTAL_BYTES) {
-        err = `合計サイズが ${formatBytes(MAX_TOTAL_BYTES)} を超えます`
-        break
-      }
-      next.push(f)
-    }
-
-    setFiles(next)
-    setFileError(err)
-    // Reset input so the same file can be re-selected if removed
-    if (fileInputRef.current) fileInputRef.current.value = ""
-  }
-
-  const removeFile = (index: number) => {
-    setFiles(files.filter((_, i) => i !== index))
-    setFileError("")
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -683,90 +621,14 @@ export default function ContactPage() {
                 </div>
 
                 {/* ファイル添付 */}
-                <div>
-                  <label className="flex items-baseline justify-between mb-3">
-                    <span className="text-[12px] tracking-[0.15em] text-foreground">ファイル添付</span>
-                    <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
-                      Optional
-                    </span>
-                  </label>
-                  <div
-                    onDragOver={(e) => {
-                      e.preventDefault()
-                      e.currentTarget.classList.add("border-gold")
-                    }}
-                    onDragLeave={(e) => e.currentTarget.classList.remove("border-gold")}
-                    onDrop={(e) => {
-                      e.preventDefault()
-                      e.currentTarget.classList.remove("border-gold")
-                      handleFiles(e.dataTransfer.files)
-                    }}
-                    className="border border-dashed border-border bg-card/30 rounded-md p-7 text-center transition-colors"
-                  >
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      multiple
-                      accept="image/*,.pdf,.heic"
-                      onChange={(e) => handleFiles(e.target.files)}
-                      className="hidden"
-                      id="contact-files"
-                    />
-                    <label
-                      htmlFor="contact-files"
-                      className="inline-block px-5 py-2 rounded-full border border-gold text-gold text-[11px] tracking-[0.2em] uppercase cursor-pointer hover:bg-gold hover:text-white transition-colors"
-                    >
-                      ファイルを選択
-                    </label>
-                    <p className="text-[11px] text-muted-foreground mt-3 leading-relaxed">
-                      ドラッグ&ドロップでも追加できます
-                      <br />
-                      画像（JPG / PNG / HEIC）または PDF / 1 ファイル{" "}
-                      {formatBytes(MAX_FILE_BYTES)} まで / 最大 {MAX_FILES} 件
-                    </p>
-                  </div>
-
-                  {/* ファイル一覧 */}
-                  {files.length > 0 && (
-                    <ul className="mt-4 space-y-2">
-                      {files.map((f, i) => (
-                        <li
-                          key={`${f.name}-${i}`}
-                          className="flex items-center gap-3 px-4 py-2.5 bg-card/40 border border-border rounded-md text-[13px]"
-                        >
-                          <span className="text-gold text-[10px] tracking-wider uppercase shrink-0">
-                            {f.type.startsWith("image/")
-                              ? "IMG"
-                              : f.type === "application/pdf"
-                              ? "PDF"
-                              : "FILE"}
-                          </span>
-                          <span className="flex-1 truncate text-foreground">{f.name}</span>
-                          <span className="text-muted-foreground text-[11px] shrink-0">
-                            {formatBytes(f.size)}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => removeFile(i)}
-                            className="text-muted-foreground hover:text-red-400 text-lg leading-none px-2 shrink-0"
-                            aria-label={`${f.name} を削除`}
-                          >
-                            ×
-                          </button>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-
-                  {files.length > 0 && (
-                    <p className="text-[11px] text-muted-foreground mt-3">
-                      合計 {files.length} 件 / {formatBytes(totalBytes)}（上限{" "}
-                      {formatBytes(MAX_TOTAL_BYTES)}）
-                    </p>
-                  )}
-
-                  {fileError && <p className="text-[12px] text-red-400 mt-2">{fileError}</p>}
-                </div>
+                <FileAttachField
+                  id="contact-files"
+                  files={files}
+                  onFilesChange={setFiles}
+                  label="ファイル添付"
+                  optionalLabel="任意"
+                  description="現場のお写真・図面（PDF）・手書きのスケッチをそのまま添付できます。スマートフォンからは撮影した写真をそのまま選べます。"
+                />
 
                 {status === "error" && <p className="text-[13px] text-red-400">{errorMsg}</p>}
 
