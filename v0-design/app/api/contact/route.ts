@@ -10,6 +10,8 @@ const categoryLabels: Record<string, string> = {
   product: '製品について', size: 'サイズ・採寸のご相談',
   custom: '特注・カスタムオーダー', order: 'ご注文・お届けについて', other: 'その他',
   review: 'お客様の声・レビュー投稿',
+  // /trade（業者様専用フォーム）からの送信。件名・本文に生の "trade" が出ていたため追加
+  trade: '業者様',
 };
 
 // カタログ全商品の slug → 表示名（フォーム側 PRODUCT_OPTIONS と同じ生成元）。
@@ -30,9 +32,13 @@ const productLabels: Record<string, string> = {
 };
 
 // ── 添付ファイル制約 ──
+// Vercel Functions のリクエストボディ上限は 4.5MB（超過で 413 FUNCTION_PAYLOAD_TOO_LARGE）。
+// 以前は 10MB/25MB を許可していたが、その手前で Vercel に弾かれるため実際には届かず、
+// 送信者には「送信に失敗しました」としか出ない状態だった。クライアント側
+// （components/file-attach-field.tsx）の実効上限 4MB に揃える。
 const MAX_FILES = 5;
-const MAX_FILE_BYTES = 10 * 1024 * 1024; // 10 MB / file
-const MAX_TOTAL_BYTES = 25 * 1024 * 1024; // 25 MB total
+const MAX_FILE_BYTES = 4 * 1024 * 1024; // 4 MB / file
+const MAX_TOTAL_BYTES = 4 * 1024 * 1024; // 4 MB total
 const ALLOWED_FILE_TYPES = new Set([
   'image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif',
   'application/pdf',
