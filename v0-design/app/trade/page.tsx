@@ -17,6 +17,7 @@ import {
   Banknote,
   Trash2,
 } from "lucide-react"
+import { FileAttachField } from "@/components/file-attach-field"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
@@ -181,6 +182,7 @@ export default function TradePage() {
   const [inquiryType, setInquiryType] = useState<string[]>([])
   const [deadline, setDeadline] = useState("")
   const [message, setMessage] = useState("")
+  const [files, setFiles] = useState<File[]>([])
   const [agreed, setAgreed] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
@@ -292,17 +294,20 @@ export default function TradePage() {
         message,
       ].join("\n")
 
+      // 添付ファイルを一緒に送るため multipart/form-data で送信する
+      // （/api/contact は multipart と JSON の両方を受け付ける）
+      const fd = new FormData()
+      fd.append("name", `${company} / ${contact}`)
+      fd.append("email", email)
+      fd.append("phone", phone)
+      fd.append("category", "trade")
+      fd.append("product", "trade")
+      fd.append("message", composed)
+      files.forEach((f) => fd.append("attachments", f))
+
       const res = await fetch("/api/contact", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: `${company} / ${contact}`,
-          email,
-          phone,
-          category: "trade",
-          product: "trade",
-          message: composed,
-        }),
+        body: fd,
       })
 
       if (!res.ok) {
@@ -493,7 +498,7 @@ export default function TradePage() {
                 業者様専用お問い合わせ
               </h2>
               <p className="text-[14px] leading-[1.95] text-muted-foreground max-w-[640px] mx-auto">
-                通常 1〜2 営業日以内に職人が直接ご返答します。図面・現場写真の添付は、まずこちらから送信後の返信メールに添付してください。
+                通常 1〜2 営業日以内に職人が直接ご返答します。図面（PDF）・現場写真はこのフォームからそのまま添付できます。
                 <br className="hidden md:inline" />
                 お支払いは銀行振込のみ・適格請求書（インボイス）対応です。
               </p>
@@ -824,10 +829,19 @@ export default function TradePage() {
                   onChange={(e) => setMessage(e.target.value)}
                   required
                   rows={7}
-                  placeholder="例: 玄関アプローチの手すり 2 連 (各 L=1.8m) を、12mm フラットバー鎚目仕上げで製作いただきたいです。図面ありますので返信メールに添付します。"
+                  placeholder="例: 玄関アプローチの手すり 2 連 (各 L=1.8m) を、12mm フラットバー鎚目仕上げで製作いただきたいです。図面は下の欄に添付しています。"
                   className="w-full px-4 py-3 border border-border rounded-md bg-background text-[14px] leading-[1.85] focus:outline-none focus:border-gold transition-colors resize-y"
                 />
               </div>
+
+              {/* 図面・写真の添付 */}
+              <FileAttachField
+                id="trade-attachments"
+                files={files}
+                onFilesChange={setFiles}
+                label="図面・現場写真の添付"
+                description="図面（PDF）・現場写真・スケッチをそのまま添付できます。手書きの走り書きでも構いません。"
+              />
 
               {/* 同意 */}
               <label className="flex items-start gap-3 text-[12px] text-muted-foreground leading-[1.85] cursor-pointer">

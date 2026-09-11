@@ -9,7 +9,7 @@ import { useCart } from "@/lib/cart/store"
 
 type NavChild = { label: string; href: string; sub?: string }
 type NavItem =
-  | { label: string; href: string; children?: undefined }
+  | { label: string; href: string; badge?: string; children?: undefined }
   | { label: string; href?: undefined; children: NavChild[] }
 
 export function Header({
@@ -110,6 +110,16 @@ export function Header({
     { label: "お客様の声", href: "/#testimonials" },
     { label: "介護保険", href: "/kaigo" },
     { label: "FAQ", href: "/faq" },
+  ]
+
+  // モバイルメニューでは「お問い合わせ」「業者様へ」も ABOUT などと同じ文字サイズ・
+  // 同じ並びで見せる。SUPPORT 枠の小さいリンク（13px・グレー）に置いていたため
+  // 「問い合わせ先が小さくて分かりにくい」という指摘が出ていた。
+  // デスクトップの中央ナビは既に項目が詰まっているので navItems 自体には足さない。
+  const mobileNavItems: NavItem[] = [
+    ...navItems,
+    { label: "お問い合わせ", href: "/contact" },
+    { label: "業者様へ", href: "/trade", badge: "工務店・設計事務所様" },
   ]
 
   return (
@@ -317,7 +327,7 @@ export function Header({
                 {/* Menu Content */}
                 <nav className="flex-1 overflow-y-auto">
                   <div className="py-4">
-                    {navItems.map((item, index) => (
+                    {mobileNavItems.map((item, index) => (
                       <motion.div
                         key={item.label}
                         initial={{ opacity: 0, x: 20 }}
@@ -349,7 +359,14 @@ export function Header({
                             className="flex items-center justify-between px-6 py-4 text-dark hover:bg-muted/50 transition-colors duration-200 group"
                             onClick={() => setIsMobileMenuOpen(false)}
                           >
-                            <span className="text-[15px] tracking-wide">{item.label}</span>
+                            <span className="flex items-baseline gap-2 min-w-0">
+                              <span className="text-[15px] tracking-wide shrink-0">{item.label}</span>
+                              {item.badge && (
+                                <span className="text-[10px] tracking-wide text-gold border border-gold/40 bg-gold/10 rounded-full px-2 py-0.5 shrink-0">
+                                  {item.badge}
+                                </span>
+                              )}
+                            </span>
                             <span className="text-muted-foreground group-hover:text-dark group-hover:translate-x-1 transition-all duration-200">
                               &rarr;
                             </span>
@@ -365,8 +382,6 @@ export function Header({
                       <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground">SUPPORT</span>
                     </div>
                     {[
-                      { label: "お問い合わせ", href: "/contact" },
-                      { label: "業者様へ", href: "/trade" },
                       { label: "ご挨拶", href: "/greeting" },
                       { label: "塗装について", href: "/paint" },
                       { label: "溶融亜鉛メッキについて", href: "/galvanizing" },
