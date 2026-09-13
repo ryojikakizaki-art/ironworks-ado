@@ -75,6 +75,29 @@ function formatMeters(mm: number): string {
   return `${mm / 1000}m`
 }
 
+// longDescription 内の「商品名」(colorSibling.label を全角鉤括弧で囲んだもの) を
+// 該当商品ページへのリンクに置き換える。該当箇所が無ければ通常のテキストのまま返す。
+function renderLongDescription(text: string, colorSibling?: { slug: string; label: string }) {
+  if (!colorSibling) return text
+  const marker = `「${colorSibling.label}」`
+  const idx = text.indexOf(marker)
+  if (idx === -1) return text
+  return (
+    <>
+      {text.slice(0, idx)}
+      「
+      <Link
+        href={`/products/${colorSibling.slug}`}
+        className="text-gold underline underline-offset-4 hover:text-gold/70 transition-colors"
+      >
+        {colorSibling.label}
+      </Link>
+      」
+      {text.slice(idx + marker.length)}
+    </>
+  )
+}
+
 export default function ProductDetailPage() {
   const routeParams = useParams<{ slug: string }>()
   const slug = routeParams?.slug ?? "rene"
@@ -893,7 +916,7 @@ export default function ProductDetailPage() {
               {/* 商品説明（長文）— 価格の目安・FINISHING の後に配置 */}
               <div>
                 <p className="text-[15px] leading-relaxed text-foreground whitespace-pre-line">
-                  {product.longDescription}
+                  {renderLongDescription(product.longDescription, product.colorSibling)}
                 </p>
               </div>
 
