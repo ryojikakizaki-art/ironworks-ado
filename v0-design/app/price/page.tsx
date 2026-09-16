@@ -5,6 +5,7 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { KaigoNotice } from "@/components/kaigo-notice"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
+import { StickyConsultBar } from "@/components/sticky-consult-bar"
 import { getQuoteUnitPrice } from "@/lib/products/quote-pricing"
 import { CATALOG_PRODUCTS } from "@/lib/products/catalog"
 import { galleryUrl } from "@/lib/products/display"
@@ -129,7 +130,48 @@ export default function PricePage() {
           </div>
         </div>
 
-        <div className="max-w-[1100px] mx-auto px-4 lg:px-8 mt-14 space-y-16">
+        {/* 相談導線 — 価格を調べに来た人が「取り付け込みでいくらか」を聞ける入口。
+            ここに並ぶのは本体価格なので、材工・現場合わせの特注は個別見積になる。
+            検索広告の「アイアン 手すり 価格／値段／安い」系がこのページに着地する。 */}
+        <div className="max-w-[1100px] mx-auto px-4 lg:px-8 mt-10 lg:mt-12">
+          <div
+            data-consult-block
+            className="rounded-xl border-2 border-gold/40 bg-gold/[0.04] p-5 lg:p-7"
+          >
+            <p className="font-serif text-[17px] lg:text-[20px] font-bold text-foreground">
+              取り付け込みの金額も出せます
+            </p>
+            <p className="mt-2 text-[13px] md:text-[14px] text-muted-foreground leading-relaxed">
+              ここに載せているのは本体価格です。取り付けや現場合わせの特注は、設置場所の写真を
+              1 枚いただければ職人がそのままお見積もりします。
+            </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <PrimaryCTA
+                href="https://lin.ee/Tnjukrf"
+                external
+                variant="line"
+                size="md"
+                withArrow={false}
+              >
+                LINE で写真を送る
+              </PrimaryCTA>
+              <PrimaryCTA href="tel:07038170659" variant="dark" size="md" withArrow={false}>
+                電話で相談する
+              </PrimaryCTA>
+              <PrimaryCTA href="/contact" variant="gold" size="md">
+                フォームで相談する
+              </PrimaryCTA>
+            </div>
+            <p className="mt-3.5 text-[13px] md:text-[14px] text-muted-foreground">
+              070-3817-0659（受付 9:00〜18:00／土日祝休）
+            </p>
+          </div>
+        </div>
+
+        <div
+          data-consult-zone
+          className="max-w-[1100px] mx-auto px-4 lg:px-8 mt-14 space-y-16"
+        >
           {/* 横型 */}
           <section>
             <SectionHeading
@@ -345,7 +387,7 @@ export default function PricePage() {
           </section>
 
           {/* CTA */}
-          <section className="text-center border-t border-border pt-12">
+          <section data-consult-block className="text-center border-t border-border pt-12">
             <p className="font-serif text-xl md:text-2xl text-foreground mb-2">
               正確な金額は、商品ページの計算機で。
             </p>
@@ -366,6 +408,9 @@ export default function PricePage() {
         </div>
       </main>
       <Footer />
+
+      {/* モバイル常駐の相談バー。価格表を読んでいる間だけ出す。 */}
+      <StickyConsultBar showWhile="[data-consult-zone]" hideWhile="[data-consult-block]" />
     </>
   )
 }
