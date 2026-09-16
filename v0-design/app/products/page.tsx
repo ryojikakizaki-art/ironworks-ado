@@ -10,6 +10,7 @@ import { CATALOG_PRODUCTS, CATEGORIES, type CategoryKey } from "@/lib/products/c
 import { galleryUrl } from "@/lib/products/display"
 import { ExternalLink } from "lucide-react"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
+import { StickyConsultBar } from "@/components/sticky-consult-bar"
 
 type FilterKey = CategoryKey | "all"
 
@@ -170,7 +171,10 @@ export default function ProductListPage() {
 
           {/* 相談導線 — 広告で来た人がスクロールせずに connect できるように上部へ置く。
               商品ページと同じく LINE / 電話 / フォームの 3 本立て。 */}
-          <div className="mt-8 lg:mt-10 rounded-xl border-2 border-gold/40 bg-gold/[0.04] p-5 lg:p-7">
+          <div
+            data-consult-block
+            className="mt-8 lg:mt-10 rounded-xl border-2 border-gold/40 bg-gold/[0.04] p-5 lg:p-7"
+          >
             <p className="font-serif text-[17px] lg:text-[20px] font-bold text-foreground">
               サイズも取り付けも、決める前に相談できます
             </p>
@@ -195,7 +199,11 @@ export default function ProductListPage() {
         </section>
 
         {/* Products grid — 6列ミニマル */}
-        <div ref={gridRef} className="max-w-[1400px] mx-auto px-4 lg:px-8 py-8 scroll-mt-20 lg:scroll-mt-24">
+        <div
+          ref={gridRef}
+          data-consult-zone
+          className="max-w-[1400px] mx-auto px-4 lg:px-8 py-8 scroll-mt-20 lg:scroll-mt-24"
+        >
           <motion.div
             className="grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-6 gap-3"
             layout
@@ -257,7 +265,10 @@ export default function ProductListPage() {
           </motion.div>
 
           {/* Custom CTA */}
-          <div className="mt-12 border border-border p-6 lg:p-8 bg-card rounded-xl grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-center">
+          <div
+            data-consult-block
+            className="mt-12 border border-border p-6 lg:p-8 bg-card rounded-xl grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-center"
+          >
             <div>
               <div className="text-base font-light mb-1">ご要望に合わせたカスタムオーダー</div>
               <p className="text-[12px] text-muted-foreground leading-relaxed">
@@ -271,6 +282,9 @@ export default function ProductListPage() {
         </div>
       </main>
       <Footer />
+
+      {/* モバイル常駐の相談バー。商品グリッドを見ている間だけ出す。 */}
+      <StickyConsultBar showWhile="[data-consult-zone]" hideWhile="[data-consult-block]" />
     </>
   )
 }
