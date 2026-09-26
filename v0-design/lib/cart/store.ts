@@ -15,7 +15,7 @@
  */
 
 import { useCallback, useSyncExternalStore } from 'react'
-import { CART_MAX_QUANTITY, type CartItem } from './types'
+import { CART_MAX_QUANTITY, isClemenceSlug, type CartItem } from './types'
 import { sanitizeCart, sanitizeCartItem } from './pricing'
 
 const STORAGE_KEY = 'ado-cart-v1'
@@ -97,8 +97,15 @@ function isSameConfig(a: Omit<CartItem, 'id'>, b: CartItem): boolean {
     (a.orientation ?? 'left') === (b.orientation ?? 'left') &&
     (a.angleDeg ?? 0) === (b.angleDeg ?? 0) &&
     (a.angleDir ?? 'left') === (b.angleDir ?? 'left') &&
-    (a.positions ?? []).join(',') === (b.positions ?? []).join(',')
+    (a.positions ?? []).join(',') === (b.positions ?? []).join(',') &&
+    clemenceKey(a) === clemenceKey(b)
   )
+}
+
+/** Clémence の寸法・ブラケット位置を比較用の 1 文字列にする（手すりは空文字） */
+function clemenceKey(i: Pick<CartItem, 'clemence'>): string {
+  const c = i.clemence
+  return c ? `${c.w},${c.h},${c.x2},${c.x3},${c.ext}` : ''
 }
 
 export interface UseCartResult {
@@ -131,6 +138,18 @@ export function useCart(): UseCartResult {
     const current = getSnapshot()
     const used = current.reduce((s, i) => s + i.quantity, 0)
     const room = CART_MAX_QUANTITY - used
+
+    // Clémence は L型固定梱包のためカート内 1 台まで（lib/cart/types.ts 参照）。
+    // すでに入っている場合は本数を増やさず、新しい寸法で置き換える
+    // （商品ページで寸法を変えて再追加したときに古い仕様が残らないようにする）。
+    if (isClemenceSlug(normalized.product)) {
+      const existingClemence = current.find((i) => isClemenceSlug(i.product))
+      if (existingClemence) {
+        persist(current.map((i) => (i.id === existingClemence.id ? { ...normalized, id: i.id } : i)))
+        return true
+      }
+    }
+
     if (room <= 0) return false
     const addQty = Math.min(normalized.quantity, room)
 

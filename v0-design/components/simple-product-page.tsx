@@ -23,6 +23,8 @@ import { ClemenceSpecPanel } from "@/components/clemence-spec-panel"
 import { calcClemenceShipping, PREF_TO_REGION } from "@/lib/shipping/sagawa"
 import { getEarliestArrival } from "@/lib/business-days"
 import { copyToClipboard } from "@/lib/products/quote-share"
+import { useCart } from "@/lib/cart/store"
+import { CART_MAX_QUANTITY } from "@/lib/cart/types"
 
 const PREFECTURES = Object.keys(PREF_TO_REGION)
 
@@ -421,6 +423,10 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
   const clemencePurchaseRef = useRef<HTMLDivElement | null>(null)
   const clemencePrefRef = useRef<HTMLDivElement | null>(null)
   const [clemenceLinkCopied, setClemenceLinkCopied] = useState(false)
+  const [clemenceCartAdded, setClemenceCartAdded] = useState(false)
+  const [clemenceCartError, setClemenceCartError] = useState<string | null>(null)
+  // 壁付け手すりとの合わせ買い用（Clémence のみ UI を出すが、hook は条件分岐できないため常に呼ぶ）
+  const { add: addToCart, count: cartCount } = useCart()
   // quote-pdf-root の Portal は document.body を参照するため、SSR では呼び出せない。
   // マウント後のみ true にして、初回サーバーレンダリングと初回クライアントレンダリングを
   // 一致させる（isClemencePurchase 自体は SSR でも true になるため直接ガードにはできない）。
@@ -482,6 +488,37 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
     totalLabel: "合計（税込）",
     totalAmount: clemenceTotal,
   }
+
+  // 壁付け手すりとの合わせ買い（カート）。Clémence は L型固定梱包のため送料は
+  // 別梱包で加算されるが、決済を 1 回にまとめられる（lib/cart/pricing.ts 参照）。
+  // 寸法を変えて再度押した場合はカート内の Clémence が新しい寸法に置き換わる。
+  const handleClemenceAddToCart = () => {
+    const added = addToCart({
+      product: "clemence",
+      // 壁付け手すり用の項目。Clémence では使わないため既定値を渡す
+      lengthMm: 0,
+      washerType: "A",
+      quantity: 1,
+      clemence: { w: clemenceW, h: clemenceH, x2: clemenceX2, x3: clemenceX3, ext: clemenceExt },
+    })
+    if (!added) {
+      setClemenceCartError(`カートは合計 ${CART_MAX_QUANTITY} 点までです。カートを見て調整してください。`)
+      return
+    }
+    setClemenceCartError(null)
+    setClemenceCartAdded(true)
+    window.setTimeout(() => setClemenceCartAdded(false), 2500)
+    fireGtagEvent("add_to_cart", {
+      currency: "JPY",
+      value: clemenceSubtotal,
+      items: [{ item_id: "clemence", item_name: product.nameEn, quantity: 1 }],
+    })
+  }
+
+  // 商品ページで選んだ配送先はカートへ引き継ぐ（選び直しの手間をなくす）
+  const clemenceCartHref = clemencePrefecture
+    ? `/cart?pref=${encodeURIComponent(clemencePrefecture)}${clemenceDelivery === "express" ? "&rush=1" : ""}`
+    : "/cart"
 
   // Step 表示用（René と同じ 01〜04 の完了判定）
   const clemenceStep2Done = clemencePrefecture !== ""
@@ -1084,6 +1121,42 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
                               >
                                 銀行振込で購入する
                               </PrimaryCTA>
+                            </div>
+
+                            {/* ── 壁付け手すりとの合わせ買い（カート）── */}
+                            <div className="pt-4 mt-1 border-t border-border/60 space-y-2.5">
+                              {clemenceCartError && (
+                                <div className="border-2 border-red-500/60 bg-red-50 rounded-md p-3 text-[13px] text-red-700">
+                                  {clemenceCartError}
+                                </div>
+                              )}
+                              <div className="flex justify-center">
+                                <PrimaryCTA
+                                  type="button"
+                                  onClick={handleClemenceAddToCart}
+                                  variant="outline"
+                                  size="lg"
+                                  withArrow={false}
+                                  icon={
+                                    clemenceCartAdded
+                                      ? <Check className="w-4 h-4 shrink-0" />
+                                      : <ShoppingBag className="w-4 h-4 shrink-0" />
+                                  }
+                                  className="font-sans w-full max-w-[340px]"
+                                >
+                                  {clemenceCartAdded ? "カートに追加しました" : "カートに追加"}
+                                </PrimaryCTA>
+                              </div>
+                              <p className="text-center text-[13px] text-muted-foreground leading-relaxed">
+                                {cartCount > 0 ? (
+                                  <>
+                                    カートに <span className="text-foreground font-medium">{cartCount}点</span> 入っています ──
+                                    <Link href={clemenceCartHref} className="text-gold underline ml-1">カートを見る</Link>
+                                  </>
+                                ) : (
+                                  <>壁付け手すり（ルネ・クロード など）と合わせて、1 回のお支払いにまとめられます。</>
+                                )}
+                              </p>
                             </div>
                           </div>
                         )}

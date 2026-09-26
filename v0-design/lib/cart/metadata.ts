@@ -12,20 +12,30 @@
  */
 
 import { PRODUCTS } from '@/lib/products/order-pricing'
-import type { CartPricing } from './pricing'
+import { CLEMENCE_DISPLAY, isClemenceSlug } from './types'
+import { clemenceLineLabel, clemenceSpecLabel, railSpecLabel, type CartPricing } from './pricing'
 
-/** metadata に載せる 1 行分の短縮表現 */
+/**
+ * metadata に載せる 1 行分の短縮表現。
+ * l/z/w は壁付け手すり、c* は Clémence のみ使う（どちらか一方しか入らない）。
+ */
 interface EncodedLine {
   p: string
-  l: number
+  l?: number
   q: number
-  z: number
-  w: 'A' | 'B'
+  z?: number
+  w?: 'A' | 'B'
   c?: 'black' | 'white'
   o?: 'left' | 'right'
   a?: number
   ad?: 'left' | 'right'
   pos?: string
+  /** Clémence: 全幅 / 高さ / ②③ブラケット位置 / ③側延長（mm） */
+  cw?: number
+  ch?: number
+  cx2?: number
+  cx3?: number
+  cext?: number
   y: number
 }
 
@@ -36,6 +46,21 @@ export function encodeCartMetadata(pricing: CartPricing): Record<string, string>
   }
   pricing.lines.forEach((line, i) => {
     const { item } = line
+    if (isClemenceSlug(item.product)) {
+      const c = item.clemence
+      const encodedClemence: EncodedLine = {
+        p: item.product,
+        q: item.quantity,
+        cw: c?.w ?? 0,
+        ch: c?.h ?? 0,
+        cx2: c?.x2 ?? 0,
+        cx3: c?.x3 ?? 0,
+        cext: c?.ext ?? 0,
+        y: line.unitPrice,
+      }
+      meta[`cart_item_${i + 1}`] = JSON.stringify(encodedClemence)
+      return
+    }
     const encoded: EncodedLine = {
       p: item.product,
       l: item.lengthMm,
@@ -74,6 +99,8 @@ export interface DecodedCartLine {
   hasWasherType: boolean
   /** メール・カレンダー・台帳で共通に使う表示名 */
   label: string
+  /** 座金・仕上げ等の仕様要約（lib/cart/pricing.ts の specLabel と同じ文字列） */
+  specLabel: string
 }
 
 /**
@@ -93,10 +120,39 @@ export function decodeCartMetadata(meta: Record<string, string>): DecodedCartLin
     } catch {
       continue
     }
-    const prod = PRODUCTS[e.p]
-    if (!prod) continue
     const quantity = Number(e.q) || 1
     const unitPrice = Number(e.y) || 0
+
+    // Clémence（L型トイレ手すり）は PRODUCTS に無い固定価格商品。
+    // 座金・長さの概念がないため専用の表示値を組み立てる。
+    if (isClemenceSlug(e.p)) {
+      const spec = {
+        w: Number(e.cw) || 0,
+        h: Number(e.ch) || 0,
+        x2: Number(e.cx2) || 0,
+        x3: Number(e.cx3) || 0,
+        ext: Number(e.cext) || 0,
+      }
+      lines.push({
+        product: e.p,
+        productName: CLEMENCE_DISPLAY.name,
+        productType: CLEMENCE_DISPLAY.variant,
+        finish: CLEMENCE_DISPLAY.finish,
+        lengthMm: 0,
+        quantity,
+        zakinCount: 0,
+        washerType: 'A',
+        unitPrice,
+        lineTotal: unitPrice * quantity,
+        hasWasherType: false,
+        label: clemenceLineLabel(spec),
+        specLabel: clemenceSpecLabel(spec),
+      })
+      continue
+    }
+
+    const prod = PRODUCTS[e.p]
+    if (!prod) continue
     const orientationLabel = e.o ? `（${e.o === 'left' ? '左向き' : '右向き'}）` : ''
     lines.push({
       product: e.p,
@@ -115,6 +171,14 @@ export function decodeCartMetadata(meta: Record<string, string>): DecodedCartLin
       lineTotal: unitPrice * quantity,
       hasWasherType: !!prod.zakinRule,
       label: `${prod.name} 壁付け手すり ${e.l}mm${orientationLabel}${quantity > 1 ? ` × ${quantity}本` : ''}`,
+      specLabel: railSpecLabel({
+        zakinCount: Number(e.z) || 0,
+        hasWasherType: !!prod.zakinRule,
+        washerType: e.w === 'B' ? 'B' : 'A',
+        angleDeg: e.a ? Number(e.a) : undefined,
+        angleDir: e.ad === 'right' ? 'right' : 'left',
+        finish: e.c === 'white' ? 'マットホワイト' : prod.finish,
+      }),
     })
   }
   return lines
