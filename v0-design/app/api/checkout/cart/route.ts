@@ -72,9 +72,7 @@ export async function POST(request: NextRequest) {
         currency: 'jpy' as const,
         product_data: {
           name: line.label,
-          description: `座金${line.zakinCount}個${line.item.washerType ? `（${line.item.washerType}タイプ）` : ''}${
-            line.item.angleDeg ? ` / 角度加工 ${line.item.angleDir === 'left' ? '左' : '右'}${line.item.angleDeg}°` : ''
-          } / ${line.product.finish}`,
+          description: line.specLabel,
         },
         unit_amount: line.unitPrice,
         tax_behavior: 'inclusive' as const,

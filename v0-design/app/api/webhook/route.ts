@@ -298,10 +298,10 @@ async function sendCartOrderEmail(session: Stripe.Checkout.Session) {
 
   const fromAddress = process.env.CONTACT_FROM || 'IRONWORKS ado <noreply@tantetuzest.com>';
 
+  // 仕様表記は lib/cart/pricing.ts の specLabel を正本にして、カート明細・決済画面・
+  // 受注台帳・各メールで同じ文字列になるようにする（Clémence は座金の概念がない）。
   const itemRows = lines.map((l) => `
-<div class="row"><span class="label">${esc(l.label)}</span><span class="value">座金 ${l.zakinCount}個${
-    l.hasWasherType ? `・${esc(l.washerType)}タイプ` : ''
-  } / ${esc(l.finish)}　　¥${l.lineTotal.toLocaleString()}</span></div>`).join('');
+<div class="row"><span class="label">${esc(l.label)}</span><span class="value">${esc(l.specLabel)}　　¥${l.lineTotal.toLocaleString()}</span></div>`).join('');
 
   const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -547,13 +547,11 @@ export async function sendWorkshopEmail(session: Stripe.Checkout.Session, isSimp
     const lines = decodeCartMetadata(meta);
     productLabel = cartSummaryLabel(lines);
     const isRush = meta.rush_delivery === 'true';
-    orderRows.push(['ご注文点数', `${lines.length}点 / 計${meta.cart_quantity || lines.length}本`]);
+    orderRows.push(['ご注文点数', `${lines.length}品目 / 計${meta.cart_quantity || lines.length}点`]);
     lines.forEach((l, i) => {
       orderRows.push([
         `${i + 1}. ${l.label}`,
-        `座金 ${l.zakinCount}個${l.hasWasherType ? ` / ${l.washerType}タイプ` : ''} / ${l.finish}${
-          l.angleDeg ? ` / 角度加工 ${l.angleDir === 'right' ? '右' : '左'}${l.angleDeg}°` : ''
-        }　　¥${l.lineTotal.toLocaleString()}`,
+        `${l.specLabel}　　¥${l.lineTotal.toLocaleString()}`,
       ]);
     });
     orderRows.push(['配送区分', isRush ? '特急配送（5営業日）' : '通常配送（10営業日）']);
@@ -823,13 +821,9 @@ async function createCartCalendarEvents(session: Stripe.Checkout.Session) {
   const calendar = google.calendar({ version: 'v3', auth });
 
   const description = [
-    `カート注文（${lines.length}点 / 計${meta.cart_quantity || lines.length}本）`,
+    `カート注文（${lines.length}品目 / 計${meta.cart_quantity || lines.length}点）`,
     '',
-    ...lines.map((l, i) =>
-      `${i + 1}. ${l.label} — 座金${l.zakinCount}個${l.hasWasherType ? `・${l.washerType}タイプ` : ''} / ${l.finish}${
-        l.angleDeg ? ` / 角度${l.angleDir === 'right' ? '右' : '左'}${l.angleDeg}°` : ''
-      }`,
-    ),
+    ...lines.map((l, i) => `${i + 1}. ${l.label} — ${l.specLabel}`),
     '',
     `合計: ¥${Number(meta.total_yen || 0).toLocaleString()}`,
     meta.rush_delivery === 'true' ? `特急割増: ¥${Number(meta.rush_surcharge_yen || 0).toLocaleString()}` : '',
@@ -954,9 +948,7 @@ async function prependOrderToLedger(session: Stripe.Checkout.Session) {
   // spec_text があればそれを正とする（階段手摺 Laurent 等、座金・長さ以外の仕様を持つ商品用）
   const spec = isCart
     ? [
-        ...cartLines.map((l) =>
-          `${l.productName}: 座金${l.zakinCount}個${l.hasWasherType ? `（${l.washerType}タイプ）` : ''} / ${l.finish}`,
-        ),
+        ...cartLines.map((l) => `${l.productName}: ${l.specLabel}`),
         meta.rush_delivery === 'true' ? '特急' : '',
       ].filter(Boolean).join(' / ')
     : meta.spec_text

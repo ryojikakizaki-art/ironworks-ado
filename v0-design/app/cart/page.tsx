@@ -12,7 +12,7 @@ import { EmbeddedCheckoutModal, type OrderSummary } from "@/components/checkout/
 import { BankOrderModal } from "@/components/checkout/bank-order-modal"
 import { useCart } from "@/lib/cart/store"
 import { calcCartPricing } from "@/lib/cart/pricing"
-import { CART_MAX_QUANTITY } from "@/lib/cart/types"
+import { CART_MAX_QUANTITY, isClemenceSlug } from "@/lib/cart/types"
 import { getProductDisplay } from "@/lib/products/display"
 import { getEarliestArrival } from "@/lib/business-days"
 import { fireGtagEvent } from "@/lib/gtag"
@@ -95,7 +95,7 @@ function CartContent() {
       checkout_method: "card",
       items: pricing.lines.map((l) => ({
         item_id: l.item.product,
-        item_name: l.product.name,
+        item_name: l.titleLabel,
         quantity: l.item.quantity,
       })),
     })
@@ -148,9 +148,9 @@ function CartContent() {
         <div className="max-w-[1000px] mx-auto px-4 lg:px-8">
           <h1 className="font-serif text-3xl lg:text-4xl text-foreground mb-2">カート</h1>
           <p className="text-[15px] text-muted-foreground mb-8">
-            壁付け手すりは最大 {CART_MAX_QUANTITY} 本まで、一度のお支払いでまとめてご注文いただけます。
+            壁付け手すり・Clémence（L型トイレ手すり）を合わせて最大 {CART_MAX_QUANTITY} 点まで、一度のお支払いでまとめてご注文いただけます。
             <br className="hidden sm:inline" />
-            同じ梱包に収まる分は送料がまとまるため、別々にご注文いただくより送料が抑えられます。
+            壁付け手すりは同じ梱包に収まる分だけ送料がまとまるため、別々にご注文いただくより送料が抑えられます。
           </p>
 
           {items.length === 0 ? (
@@ -172,6 +172,8 @@ function CartContent() {
               <div className="space-y-4">
                 {pricing.lines.map((line) => {
                   const display = getProductDisplay(line.item.product)
+                  // Clémence は L型固定梱包のためカート内 1 台まで（数量変更なし・lib/cart/types.ts 参照）
+                  const isClemence = isClemenceSlug(line.item.product)
                   return (
                     <div
                       key={line.item.id}
@@ -183,20 +185,13 @@ function CartContent() {
                             href={`/products/${line.item.product}`}
                             className="font-serif text-[19px] text-foreground hover:text-gold transition-colors"
                           >
-                            {display ? `${display.nameEn} ${display.nameJaShort}` : line.product.name}
+                            {display ? `${display.nameEn} ${display.nameJaShort}` : line.titleLabel}
                           </Link>
                           <p className="text-[14px] text-muted-foreground mt-1">
-                            壁付け手すり {line.item.lengthMm}mm
-                            {line.item.orientation ? `（${line.item.orientation === "left" ? "左向き" : "右向き"}）` : ""}
+                            {line.variantLabel}
                           </p>
                           <p className="text-[13px] text-muted-foreground mt-1.5 leading-relaxed">
-                            座金 {line.zakinCount}個
-                            {line.product.zakinRule ? `・${line.item.washerType}タイプ` : ""}
-                            {" / "}
-                            {line.item.color === "white" ? "マットホワイト" : line.product.finish}
-                            {line.item.angleDeg
-                              ? ` / 角度加工 ${line.item.angleDir === "right" ? "右" : "左"}${line.item.angleDeg}°`
-                              : ""}
+                            {line.specLabel}
                           </p>
                         </div>
                         <button
@@ -211,13 +206,13 @@ function CartContent() {
 
                       <div className="flex items-center justify-between gap-4 mt-4 pt-4 border-t border-border/60">
                         <div className="flex items-center gap-3">
-                          <span className="text-[13px] text-muted-foreground">本数</span>
+                          <span className="text-[13px] text-muted-foreground">{isClemence ? "台数" : "本数"}</span>
                           <div className="flex items-center border border-gold/30 rounded-md overflow-hidden">
                             <button
                               type="button"
                               onClick={() => setQuantity(line.item.id, line.item.quantity - 1)}
-                              disabled={line.item.quantity <= 1}
-                              aria-label="本数を減らす"
+                              disabled={isClemence || line.item.quantity <= 1}
+                              aria-label={isClemence ? "台数を減らす" : "本数を減らす"}
                               className="w-9 h-9 text-[16px] text-foreground hover:bg-muted disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
                             >
                               −
@@ -226,8 +221,8 @@ function CartContent() {
                             <button
                               type="button"
                               onClick={() => setQuantity(line.item.id, line.item.quantity + 1)}
-                              disabled={count >= CART_MAX_QUANTITY}
-                              aria-label="本数を増やす"
+                              disabled={isClemence || count >= CART_MAX_QUANTITY}
+                              aria-label={isClemence ? "台数を増やす" : "本数を増やす"}
                               className="w-9 h-9 text-[16px] text-foreground hover:bg-muted disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
                             >
                               ＋
@@ -245,13 +240,21 @@ function CartContent() {
                           </span>
                         </div>
                       </div>
+
+                      {isClemence && (
+                        <p className="text-[13px] text-muted-foreground leading-relaxed mt-3">
+                          L型に固定して梱包するため、カートでは 1 台までとなります ── 2 台以上をご希望の場合は
+                          <Link href="/contact?type=invoice" className="text-gold underline mx-1">お問い合わせ</Link>
+                          から承ります。送料も手すりとは別梱包での計算になります。
+                        </p>
+                      )}
                     </div>
                   )
                 })}
 
                 {count >= CART_MAX_QUANTITY && (
                   <p className="text-[13px] text-muted-foreground leading-relaxed">
-                    カートは {CART_MAX_QUANTITY} 本までです。7 本以上のご注文は
+                    カートは {CART_MAX_QUANTITY} 点までです。7 点以上のご注文は
                     <Link href="/contact?type=invoice" className="text-gold underline mx-1">お問い合わせ</Link>
                     から承ります（請求書振込）。
                   </p>
@@ -350,7 +353,7 @@ function CartContent() {
                 {/* 内訳 */}
                 <div className="bg-[#f3f4f6] rounded-md p-4 space-y-2">
                   <div className="flex justify-between text-[15px]">
-                    <span className="text-muted-foreground">本体小計（{count}本）</span>
+                    <span className="text-muted-foreground">本体小計（{count}点）</span>
                     <span className="font-mono">¥{pricing.itemsSubtotal.toLocaleString()}</span>
                   </div>
                   {pricing.rushSurcharge > 0 && (

@@ -149,9 +149,9 @@ export async function POST(request: NextRequest) {
       .map((l) => `${l.label}${l.item.quantity > 1 ? ` × ${l.item.quantity}本` : ''}`)
       .join(' ／ ');
     specParts = [
-      ...pricing.lines.map((l) =>
-        `${l.product.name}: 座金${l.zakinCount}個${l.product.zakinRule ? `（${l.item.washerType}タイプ）` : ''} / ${l.item.color === 'white' ? 'マットホワイト' : l.product.finish}`,
-      ),
+      // 仕様文字列は lib/cart/pricing.ts の specLabel を正本にして、
+      // カード決済・カート明細・受注台帳で同じ表記になるようにする。
+      ...pricing.lines.map((l) => `${l.titleLabel}: ${l.specLabel}`),
       rushDelivery ? '特急配送（5営業日）' : '通常配送（10営業日）',
     ];
   } else if (productKey === LAURENT.slug) {
