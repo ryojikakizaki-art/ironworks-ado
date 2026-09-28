@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { buildRoundRailDrawingSvg } from "@/lib/drawing-modal/rene-svg"
 import { buildVerticalRailDrawingSvg } from "@/lib/drawing-modal/vertical-svg"
 import { buildVerticalCadDrawingSvg } from "@/lib/drawing-modal/vertical-cad-svg"
@@ -60,6 +61,15 @@ export function ReneDrawingModal({
   const safeIdx = Math.min(selectedIdx, lengthsArray.length - 1)
   const currentLength = lengthsArray[safeIdx] ?? lengthMm
 
+  // 印刷（PDF保存）用のページ設定。SVG 生成後の viewBox から向きと出力寸法を決め、
+  // 図面 1 枚が A4 の用紙いっぱいに収まるようにする。縦型CAD精密図は長さによって
+  // 横向き/縦向きが切り替わる（vertical-cad-svg.ts の A4 向き自動切替）ため固定できない。
+  const [printPage, setPrintPage] = useState<{ orient: "landscape" | "portrait"; w: number; h: number } | null>(null)
+  // 印刷用 <style> は body 直下に Portal する（理由は下部の JSX コメント参照）。
+  // document を参照するため、マウント後のみ描画する。
+  const [isMounted, setIsMounted] = useState(false)
+  useEffect(() => setIsMounted(true), [])
+
   // モーダルが開いている間、bodyスクロールを止める
   useEffect(() => {
     if (open) {
@@ -72,6 +82,19 @@ export function ReneDrawingModal({
   // 多本時は currentLength に応じて自動計算 positions を使う (positionsProp は単本時のみ尊重)
   useEffect(() => {
     if (!open || !svgRef.current || !product) return
+    const svg = svgRef.current
+    // ビルダーが viewBox を上書きした後に、印刷用のページ向き・出力寸法を測る
+    const measurePrintPage = () => {
+      const vb = svg.getAttribute("viewBox")?.trim().split(/[\s,]+/).map(Number)
+      if (!vb || vb.length !== 4 || !(vb[2] > 0) || !(vb[3] > 0)) return
+      const aspect = vb[2] / vb[3]
+      const orient = aspect >= 1 ? "landscape" : "portrait"
+      const MARGIN_MM = 10
+      const boxW = (orient === "landscape" ? 297 : 210) - MARGIN_MM * 2
+      const boxH = (orient === "landscape" ? 210 : 297) - MARGIN_MM * 2
+      const w = Math.min(boxW, boxH * aspect)
+      setPrintPage({ orient, w, h: w / aspect })
+    }
     const positions = isMulti
       ? getZakinPositions(currentLength, calcZakin(currentLength, effectiveRule), effectiveRule)
       : (positionsProp ?? getZakinPositions(currentLength, calcZakin(currentLength, effectiveRule), effectiveRule))
@@ -107,6 +130,7 @@ export function ReneDrawingModal({
         product,
       })
     }
+    measurePrintPage()
   }, [open, currentLength, isMulti, product, positionsProp, angleDeg, angleDir, effectiveRule, washerType, color])
 
   if (!open) return null
@@ -187,6 +211,38 @@ export function ReneDrawingModal({
             ))}
           </div>
         )}
+        {/* 印刷（PDF保存）用のスタイル。body 直下へ Portal するのが要点:
+            商品ページは見積書PDF (.quote-pdf-root) の <style> を常時 DOM に置いており、その中の
+            `@page { size: A4 portrait; margin: 0 }` が JSX ツリー上このモーダルより後に来る。
+            同じ <style> をモーダル内に書くと後勝ちで負けて、図面が縦向き A4 の上半分だけに
+            刷られ、続きに見積書が流れ込む（2026-09-28 蠣﨑さん指摘）。Portal は body の末尾に
+            挿入されるため確実に後勝ちになり、図面 1 枚だけを正しい向きで出力できる。 */}
+        {isMounted &&
+          createPortal(
+            <style>{`
+              @media print {
+                /* 図面の印刷に見積書は入れない（1枚 = 図面だけ） */
+                .quote-pdf-root { display: none !important; }
+                /* 図面シート以外（タイトル・本数タブ・印刷ボタン行）は出さない。
+                   残すと余白ぶんだけ用紙からあふれて 2 ページ目に空白が出る。 */
+                .dm-overlay.open .dm-modal > *:not(.dm-svg-wrap) { display: none !important; }
+                .dm-overlay.open .dm-svg-wrap { margin: 0 !important; }
+              }
+              ${
+                printPage
+                  ? `@page { size: A4 ${printPage.orient}; margin: 10mm; }
+              @media print {
+                .dm-overlay.open .dm-svg-wrap svg#drawingSvg {
+                  width: ${printPage.w.toFixed(1)}mm;
+                  height: ${printPage.h.toFixed(1)}mm;
+                  margin: 0 auto;
+                }
+              }`
+                  : ""
+              }
+            `}</style>,
+            document.body,
+          )}
         <div className="dm-svg-wrap">
           <svg ref={svgRef} id="drawingSvg" viewBox={viewBox} />
         </div>

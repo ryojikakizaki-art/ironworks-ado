@@ -51,8 +51,20 @@ export function ClemenceDrawingModal({ open, onClose, drawing }: ClemenceDrawing
           ×
         </button>
         <div className="dm-title">設計図プレビュー ── Clémence クレマンス トイレ手すり</div>
-        {/* A4 横・余白 8.5mm で印刷すると図面シート(280×193mm)が実寸で出力され、表題欄の尺度が実際に合う */}
-        <style>{`@page { size: A4 landscape; margin: 8.5mm; }`}</style>
+        {/* A4 横・余白 8.5mm で印刷すると図面シート(280×193mm)が実寸で出力され、表題欄の尺度が実際に合う。
+            商品ページには見積書PDF (.quote-pdf-root) が常時 DOM にあり、そのままだと図面と一緒に
+            印刷されてしまう（縦向き用のため横向き用紙に流れて 4 ページになる・2026-09-28 蠣﨑さん指摘）。
+            図面の印刷は図面 1 枚だけにする。 */}
+        <style>{`
+          @page { size: A4 landscape; margin: 8.5mm; }
+          @media print {
+            .quote-pdf-root { display: none !important; }
+            /* 図面シート以外（タイトル・印刷ボタン行）は出さない。残すと余白ぶんだけ
+               用紙からあふれ、空白の 2 ページ目が付く。 */
+            .dm-overlay.open .dm-modal > *:not(.dm-svg-wrap) { display: none !important; }
+            .dm-overlay.open .dm-svg-wrap { margin: 0 !important; }
+          }
+        `}</style>
         <div className="dm-svg-wrap">
           <svg ref={svgRef} id="clemenceDrawingSvg" className="cad-sheet" viewBox="0 0 1120 772" />
         </div>
