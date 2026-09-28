@@ -4,6 +4,7 @@
 // rene / claire 等の丸パイプ (STKM φ25.4) 商品で共用
 
 import type { DrawingProductConfig } from "./products"
+import { pickScale, scaleLabel } from "./cad-sheet"
 
 export type AngleDir = "left" | "right"
 
@@ -138,8 +139,22 @@ export function buildRoundRailDrawingSvg(
     return t
   }
 
-  // 縮尺
+  // 縮尺（viewBox 単位 / 実寸 mm）
   const scale = barLen / L_mm
+
+  // 表題欄に載せる尺度は「実際に紙へ出る大きさ」と一致させる必要がある。
+  // このシートは viewBox 単位で描いており印刷サイズが決まっていなかったため、
+  // 従来は "1:20" 固定表記で実寸と合っていなかった（2026-09-28 蠣﨑さん指摘）。
+  // シート全体が表す実寸を A4横（余白8.5mm ＝ 280×193mm）に収まる JIS 標準尺度へ
+  // 割り付け、その尺度どおりの出力寸法を data 属性でモーダル（印刷CSS）へ渡す。
+  const PRINT_AVAIL_W_MM = 280
+  const PRINT_AVAIL_H_MM = 193
+  const sheetRealW = W / scale
+  const sheetRealH = H / scale
+  const printScale = pickScale(sheetRealW, sheetRealH, PRINT_AVAIL_W_MM, PRINT_AVAIL_H_MM)
+  svg.dataset.printWidthMm = (sheetRealW / printScale).toFixed(2)
+  svg.dataset.printHeightMm = (sheetRealH / printScale).toFixed(2)
+  svg.dataset.printMarginMm = "8.5"
 
   // メインバー厚み (丸パイプは直径、FBは高さ)
   const barThick =
@@ -475,7 +490,7 @@ export function buildRoundRailDrawingSvg(
     ["図番", `${product.drawingCode}-${L_mm}`, false],
     ["材質", product.material, false],
     ["仕上げ", product.finish, false],
-    ["尺度", "1:20", false],
+    ["尺度", scaleLabel(printScale), false],
     ["設計", "蠣﨑 良治", false],
     ["座金", zakinInfo, false],
   ]

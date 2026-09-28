@@ -64,7 +64,12 @@ export function ReneDrawingModal({
   // 印刷（PDF保存）用のページ設定。SVG 生成後の viewBox から向きと出力寸法を決め、
   // 図面 1 枚が A4 の用紙いっぱいに収まるようにする。縦型CAD精密図は長さによって
   // 横向き/縦向きが切り替わる（vertical-cad-svg.ts の A4 向き自動切替）ため固定できない。
-  const [printPage, setPrintPage] = useState<{ orient: "landscape" | "portrait"; w: number; h: number } | null>(null)
+  const [printPage, setPrintPage] = useState<{
+    orient: "landscape" | "portrait"
+    w: number
+    h: number
+    margin: number
+  } | null>(null)
   // 印刷用 <style> は body 直下に Portal する（理由は下部の JSX コメント参照）。
   // document を参照するため、マウント後のみ描画する。
   const [isMounted, setIsMounted] = useState(false)
@@ -83,17 +88,36 @@ export function ReneDrawingModal({
   useEffect(() => {
     if (!open || !svgRef.current || !product) return
     const svg = svgRef.current
+    // 前回ビルドの指定が残らないよう、測り直す前に消す
+    delete svg.dataset.printWidthMm
+    delete svg.dataset.printHeightMm
+    delete svg.dataset.printMarginMm
     // ビルダーが viewBox を上書きした後に、印刷用のページ向き・出力寸法を測る
     const measurePrintPage = () => {
+      // 表題欄に尺度を載せる図面（横型）は、ビルダーが JIS 標準尺度と、その尺度どおりに
+      // 出力するための実寸を data 属性で指定してくる。用紙に合わせて伸縮させると
+      // 表題欄の尺度と実際の印刷サイズがずれるため、指定をそのまま使う。
+      const specW = Number(svg.dataset.printWidthMm)
+      const specH = Number(svg.dataset.printHeightMm)
+      if (specW > 0 && specH > 0) {
+        setPrintPage({
+          orient: specW >= specH ? "landscape" : "portrait",
+          w: specW,
+          h: specH,
+          margin: Number(svg.dataset.printMarginMm) || 8.5,
+        })
+        return
+      }
+      // 尺度表記を持たない図面（縦型CAD精密図・旧縦型schematic）は用紙いっぱいに収める
       const vb = svg.getAttribute("viewBox")?.trim().split(/[\s,]+/).map(Number)
       if (!vb || vb.length !== 4 || !(vb[2] > 0) || !(vb[3] > 0)) return
       const aspect = vb[2] / vb[3]
       const orient = aspect >= 1 ? "landscape" : "portrait"
-      const MARGIN_MM = 10
+      const MARGIN_MM = 8.5
       const boxW = (orient === "landscape" ? 297 : 210) - MARGIN_MM * 2
       const boxH = (orient === "landscape" ? 210 : 297) - MARGIN_MM * 2
       const w = Math.min(boxW, boxH * aspect)
-      setPrintPage({ orient, w, h: w / aspect })
+      setPrintPage({ orient, w, h: w / aspect, margin: MARGIN_MM })
     }
     const positions = isMulti
       ? getZakinPositions(currentLength, calcZakin(currentLength, effectiveRule), effectiveRule)
@@ -230,7 +254,7 @@ export function ReneDrawingModal({
               }
               ${
                 printPage
-                  ? `@page { size: A4 ${printPage.orient}; margin: 10mm; }
+                  ? `@page { size: A4 ${printPage.orient}; margin: ${printPage.margin}mm; }
               @media print {
                 .dm-overlay.open .dm-svg-wrap svg#drawingSvg {
                   width: ${printPage.w.toFixed(1)}mm;
