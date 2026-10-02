@@ -4,6 +4,7 @@ import { getScheduleDates, formatDateISO } from '@/lib/business-days';
 import { getOrCreateConsumptionTaxRate } from '@/lib/stripe/tax-rate';
 import { sanitizeCart, calcCartPricing } from '@/lib/cart/pricing';
 import { encodeCartMetadata } from '@/lib/cart/metadata';
+import { sanitizeDeliveryRequest, shippingDateForPreferred } from '@/lib/delivery-request';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -50,10 +51,12 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
 
-    const preferredArrivalDate = String(body?.preferredArrivalDate || '');
-    const preferredTimeSlot = String(body?.preferredTimeSlot || '');
+    // お届け希望日時・備考（カート画面で任意入力）。区分外の時間帯・範囲外の日付は捨てる。
+    const deliveryRequest = sanitizeDeliveryRequest(body, { rush: rushDelivery, prefecture });
 
     const schedule = getScheduleDates(new Date(), rushDelivery);
+    // 希望日が先の場合は、それに合わせて発送する（制作スケジュールはそのまま）。
+    const shippingDate = shippingDateForPreferred(schedule.shippingDate, deliveryRequest.preferredArrivalDate, prefecture);
     const deliveryLabel = rushDelivery ? '特急配送 5営業日' : '通常配送 10営業日';
 
     const host = request.headers.get('host') || 'ironworks-ado.vercel.app';
@@ -136,11 +139,12 @@ export async function POST(request: NextRequest) {
         shipping_bundles:       String(pricing.shippingBundles),
         base_total_yen:         String(pricing.itemsSubtotal),
         total_yen:              String(pricing.total),
-        preferred_arrival_date: preferredArrivalDate,
-        preferred_time_slot:    preferredTimeSlot,
+        preferred_arrival_date: deliveryRequest.preferredArrivalDate,
+        preferred_time_slot:    deliveryRequest.preferredTimeSlot,
+        customer_note:          deliveryRequest.customerNote,
         production_start:       formatDateISO(schedule.productionStart),
         production_complete:    formatDateISO(schedule.productionComplete),
-        shipping_date:          formatDateISO(schedule.shippingDate),
+        shipping_date:          formatDateISO(shippingDate),
         arrival_estimate:       formatDateISO(schedule.arrivalDate),
       },
       locale: 'ja',

@@ -942,7 +942,7 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
                     </div>
                     <div className="absolute left-[21px] top-[68px] bottom-0 w-px bg-border" />
                     <div className="space-y-4">
-                      <h3 className="font-serif text-[22px] font-bold text-foreground tracking-tight">納品日・配送を選ぶ</h3>
+                      <h3 className="font-serif text-[22px] font-bold text-foreground tracking-tight">納期を選ぶ</h3>
                       <div className="flex gap-3">
                         <button
                           type="button"
@@ -967,6 +967,9 @@ export function SimpleProductPage({ product }: { product: SimpleProduct }) {
                       </div>
                       <p className="text-[14px] text-muted-foreground">
                         お届け予定日: <span className="text-foreground font-medium">{clemenceDeliveryDate}頃</span>
+                      </p>
+                      <p className="text-[13px] text-muted-foreground leading-relaxed">
+                        お届け日時のご指定・備考は、次のカート画面で入力できます。
                       </p>
                     </div>
                   </div>

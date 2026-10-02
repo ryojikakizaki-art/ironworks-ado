@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { writeOrderRow } from '@/lib/order-ledger';
 // カート注文（複数商品まとめ買い）の metadata 復元。product_type='cart' の注文でのみ使う。
 import { decodeCartMetadata, cartSummaryLabel, type DecodedCartLine } from '@/lib/cart/metadata';
+import { deliveryRequestFromMetadata, deliveryRequestMemo } from '@/lib/delivery-request';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -295,6 +296,7 @@ async function sendCartOrderEmail(session: Stripe.Checkout.Session) {
   const shippingTaxYen = Number(meta.shipping_tax_yen || 0);
   const totalYen = Number(meta.total_yen || session.amount_total || 0);
   const arrivalDate = meta.preferred_arrival_date || meta.arrival_estimate;
+  const customerNote = meta.customer_note || '';
 
   const fromAddress = process.env.CONTACT_FROM || 'IRONWORKS ado <noreply@tantetuzest.com>';
 
@@ -343,9 +345,12 @@ ${isRush ? `<div class="row"><span class="label">特急割増</span><span class=
 <div class="row"><span class="label">制作開始</span><span class="value">${formatJpDate(meta.production_start)}</span></div>
 <div class="row"><span class="label">制作完了予定</span><span class="value">${formatJpDate(meta.production_complete)}</span></div>
 <div class="row"><span class="label">発送予定</span><span class="value">${formatJpDate(meta.shipping_date)}</span></div>
-<div class="row"><span class="label">お届け予定</span><span class="value">${formatJpDate(arrivalDate)}${meta.preferred_time_slot ? ` / ${esc(meta.preferred_time_slot)}` : ''}</span></div>
+<div class="row"><span class="label">お届け予定${meta.preferred_arrival_date ? '（ご希望日）' : ''}</span><span class="value">${formatJpDate(arrivalDate)}${meta.preferred_time_slot ? ` / ${esc(meta.preferred_time_slot)}` : ''}</span></div>
 </div>
-
+${customerNote ? `
+<div class="section-title">備考</div>
+<div class="summary"><p>${esc(customerNote).replace(/\n/g, '<br>')}</p></div>
+` : ''}
 <hr class="divider">
 <p style="font-size:12px;color:#888;">
 適格請求書（領収書PDF）は別途 Stripe よりメールにてお送りいたします。<br>
@@ -559,7 +564,11 @@ export async function sendWorkshopEmail(session: Stripe.Checkout.Session, isSimp
     scheduleRows.push(['制作開始', formatJpDate(meta.production_start)]);
     scheduleRows.push(['制作完了予定', formatJpDate(meta.production_complete)]);
     scheduleRows.push(['発送予定', formatJpDate(meta.shipping_date)]);
-    scheduleRows.push(['お届け予定', formatJpDate(meta.preferred_arrival_date || meta.arrival_estimate)]);
+    scheduleRows.push([
+      meta.preferred_arrival_date ? 'お届け予定（お客様ご希望日）' : 'お届け予定',
+      formatJpDate(meta.preferred_arrival_date || meta.arrival_estimate),
+    ]);
+    if (meta.preferred_time_slot) scheduleRows.push(['時間帯指定', meta.preferred_time_slot]);
     // 長さ可変の手すりだけ商品ごとに /seizu 制作図リンクを付ける
     for (const l of lines) {
       if (!DRAWING_LINK_PRODUCTS.has(l.product)) continue;
@@ -646,6 +655,9 @@ export async function sendWorkshopEmail(session: Stripe.Checkout.Session, isSimp
       .map(([l, v]) => `<div class="row"><span class="label">${esc(l)}</span><span class="value">${esc(v)}</span></div>`)
       .join('');
 
+  // お客様の備考（カート画面で任意入力）。見落とさないよう独立セクションにする。
+  const customerNote = meta.customer_note || '';
+
   const fromAddress = process.env.CONTACT_FROM || 'IRONWORKS ado <noreply@tantetuzest.com>';
 
   const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">
@@ -686,7 +698,10 @@ ${renderRows(orderRows)}
 
 <div class="section-title">${isSimple ? '発送' : '制作・配送スケジュール'}</div>
 <div class="summary">${renderRows(scheduleRows)}</div>
-
+${customerNote ? `
+<div class="section-title">お客様の備考</div>
+<div class="summary"><div class="value">${esc(customerNote).replace(/\n/g, '<br>')}</div></div>
+` : ''}
 <div class="section-title">お客様情報</div>
 <div class="summary">${renderRows(customerRows)}</div>
 
@@ -830,7 +845,7 @@ async function createCartCalendarEvents(session: Stripe.Checkout.Session) {
     `送料: ${meta.shipping_note || '—'}`,
     `お客様: ${shipName || session.customer_details?.name || '—'} <${email}>`,
     `お届け先: ${formatShippingAddress(addr)}`,
-    meta.preferred_arrival_date ? `到着希望日: ${meta.preferred_arrival_date} ${meta.preferred_time_slot || '指定なし'}` : '',
+    deliveryRequestMemo(deliveryRequestFromMetadata(meta)),
     `\nStripe Session: ${session.id}`,
   ].filter(Boolean).join('\n');
 
@@ -970,7 +985,7 @@ async function prependOrderToLedger(session: Stripe.Checkout.Session) {
     spec,                                                             // 仕様
     String(meta.total_yen || session.amount_total || 0),              // 金額
     session.id,                                                       // 注文番号
-    '',                                                               // メモ
+    deliveryRequestMemo(deliveryRequestFromMetadata(meta)),           // メモ（お届け希望日時・備考）
   ];
 
   // P/Q 列（送料税抜・送料消費税）。送料が別建ての注文のみ。

@@ -173,6 +173,16 @@ export function BankOrderModal({ open, onClose, orderPayload, summary }: Props) 
                       ¥{summary.totalAmount.toLocaleString()}
                     </span>
                   </p>
+                  {summary.requests && summary.requests.length > 0 && (
+                    <dl className="mt-2 pt-2 border-t border-border space-y-1.5">
+                      {summary.requests.map((r) => (
+                        <div key={r.label}>
+                          <dt className="text-[12px] text-muted-foreground">{r.label}</dt>
+                          <dd className="text-[13px] text-foreground leading-relaxed whitespace-pre-wrap break-words">{r.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  )}
                 </div>
               )}
 
