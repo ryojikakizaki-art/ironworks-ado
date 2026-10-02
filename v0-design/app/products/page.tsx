@@ -152,6 +152,8 @@ export default function ProductListPage() {
                       alt={p.alt}
                       fill
                       sizes="(max-width: 640px) 40vw, 33vw"
+                      // 画面最上部のため LCP 要素になる。遅延読み込みにすると表示が遅れる
+                      loading="eager"
                       className={`object-cover ${p.imgPos ?? ""} transition-transform duration-500 group-hover:scale-[1.03]`}
                     />
                   </div>

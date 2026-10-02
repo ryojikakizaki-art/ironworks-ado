@@ -15,3 +15,5 @@ node_modules
 .next/
 .DS_Store
 tsconfig.tsbuildinfo
+# ビルド時に生成する画像の縮小版（scripts/gen-image-variants.mjs）
+/public/_v/

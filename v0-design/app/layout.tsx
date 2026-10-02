@@ -11,7 +11,11 @@ const ADS_ID = process.env.NEXT_PUBLIC_ADS_ID
 const notoSerifJP = Noto_Serif_JP({ 
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-serif-jp"
+  variable: "--font-serif-jp",
+  // 日本語フォントは文字範囲ごとに百数十ファイルへ分割される。先読み(preload)を有効にすると
+  // 全ファイルの <link rel="preload"> が出て 1 ページ 7.5MB・モバイル LCP 50 秒台になっていた
+  // （2026-09-27 Lighthouse 実測）。先読みを切ればページ内の文字の分だけが読み込まれる。
+  preload: false,
 });
 
 const inter = Inter({
@@ -24,12 +28,14 @@ const zenMaruGothic = Zen_Maru_Gothic({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
   variable: "--font-rounded",
+  preload: false, // Noto Serif JP と同じ理由で先読みしない
 });
 
 const zenKakuGothicNew = Zen_Kaku_Gothic_New({
   subsets: ["latin"],
   weight: ["400", "500", "700"],
   variable: "--font-rounded-body",
+  preload: false, // Noto Serif JP と同じ理由で先読みしない
 });
 
 // 制作中のためデフォルトで検索エンジンに非表示
