@@ -175,7 +175,7 @@ function CartContent() {
         <div className="max-w-[1000px] mx-auto px-4 lg:px-8">
           <h1 className="font-serif text-3xl lg:text-4xl text-foreground mb-2">カート</h1>
           <p className="text-[15px] text-muted-foreground mb-8">
-            壁付け手すり・Clémence（L型トイレ手すり）を合わせて最大 {CART_MAX_QUANTITY} 点まで、一度のお支払いでまとめてご注文いただけます。
+            壁付け手すりを合わせて最大 {CART_MAX_QUANTITY} 点まで、一度のお支払いでまとめてご注文いただけます。
             <br className="hidden sm:inline" />
             壁付け手すりは同じ梱包に収まる分だけ送料がまとまるため、別々にご注文いただくより送料が抑えられます。
           </p>
