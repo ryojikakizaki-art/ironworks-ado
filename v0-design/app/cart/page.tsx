@@ -404,7 +404,7 @@ function CartContent() {
                     </div>
                     {preferredDate && !effectiveDate && (
                       <p className="text-[13px] text-red-600 leading-relaxed mt-1.5">
-                        納期の変更で、選んでいた希望日が最短お届け予定日より前になりました。日付を選び直してください。
+                        納期・配送先の変更で、選んでいた希望日が最短お届け予定日より前になりました。日付を選び直してください。
                       </p>
                     )}
                   </div>
