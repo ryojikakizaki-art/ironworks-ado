@@ -38,6 +38,8 @@ export interface OrderSummary {
   lines: OrderSummaryLine[]
   totalLabel: string
   totalAmount: number
+  /** お届け希望日時・備考など、お客様が入力した要望（確認用に表示） */
+  requests?: Array<{ label: string; value: string }>
 }
 
 interface Props {
@@ -169,6 +171,17 @@ export function EmbeddedCheckoutModal({ clientSecret, open, onClose, summary }: 
                   ¥{summary.totalAmount.toLocaleString()}
                 </span>
               </div>
+
+              {summary.requests && summary.requests.length > 0 && (
+                <dl className="mt-5 pt-4 border-t border-border space-y-2.5">
+                  {summary.requests.map((r) => (
+                    <div key={r.label}>
+                      <dt className="text-[12px] text-muted-foreground">{r.label}</dt>
+                      <dd className="text-[13px] text-dark leading-relaxed whitespace-pre-wrap break-words">{r.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              )}
             </aside>
           )}
 

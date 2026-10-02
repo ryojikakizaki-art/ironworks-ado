@@ -17,6 +17,8 @@ import { writeOrderRow } from '@/lib/order-ledger';
 import { BANK_ACCOUNT } from '@/lib/bank-account';
 // カート（複数商品まとめ買い）の価格・送料の正本（カートページ・カード決済と共有）。
 import { sanitizeCart, calcCartPricing } from '@/lib/cart/pricing';
+// お届け希望日時・備考の検証と表記（カード決済・webhook と共有）。
+import { sanitizeDeliveryRequest, deliveryRequestMemo, formatDeliveryWish } from '@/lib/delivery-request';
 
 const clampNum = (v: unknown, lo: number, hi: number) =>
   Math.min(Math.max(Math.round(Number(v)) || lo, lo), hi);
@@ -71,6 +73,7 @@ type Body = {
   email?: string;
   preferredArrivalDate?: string;
   preferredTimeSlot?: string;
+  customerNote?: string;
 };
 
 function esc(s: unknown): string {
@@ -287,9 +290,10 @@ export async function POST(request: NextRequest) {
     finishLabel,
   ];
   } // ← 既存の壁付け手すりフローここまで
-  const arrivalNote = body.preferredArrivalDate
-    ? `到着希望 ${body.preferredArrivalDate} ${body.preferredTimeSlot || ''}`.trim()
-    : '';
+  // お届け希望日時・備考（カート画面で任意入力）。区分外の時間帯・範囲外の日付は捨てる。
+  const deliveryRequest = sanitizeDeliveryRequest(body, { rush: !!body.rushDelivery, prefecture });
+  const deliveryWish = formatDeliveryWish(deliveryRequest.preferredArrivalDate, deliveryRequest.preferredTimeSlot);
+  const arrivalNote = deliveryRequestMemo(deliveryRequest);
 
   const orderRef = makeOrderRef();
   const postalCode = String(body.postalCode || '').trim();
@@ -346,7 +350,9 @@ export async function POST(request: NextRequest) {
 <div class="row"><span class="label">ご注文番号</span><span class="value">${esc(orderRef)}</span></div>
 <div class="row"><span class="label">商品</span><span class="value">${esc(productLabel)}</span></div>
 <div class="row"><span class="label">仕様</span><span class="value">${esc(specParts.join(' / '))}</span></div>
-<div class="row"><span class="label">お支払い金額</span><span class="value" style="font-size:18px;font-weight:700;">¥${totalYen.toLocaleString()}（税込・送料込）</span></div>`;
+<div class="row"><span class="label">お支払い金額</span><span class="value" style="font-size:18px;font-weight:700;">¥${totalYen.toLocaleString()}（税込・送料込）</span></div>${deliveryWish ? `
+<div class="row"><span class="label">お届け希望日時</span><span class="value">${esc(deliveryWish)}</span></div>` : ''}${deliveryRequest.customerNote ? `
+<div class="row"><span class="label">備考</span><span class="value">${esc(deliveryRequest.customerNote).replace(/\n/g, '<br>')}</span></div>` : ''}`;
 
     const customerHtml = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><style>
 body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f3f4f6;color:#333;margin:0;padding:0;}
@@ -391,7 +397,8 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f3f4f6;color:#333
 <div class="row"><span class="label">送付先</span><span class="value">${esc(fullAddress)}</span></div>
 <div class="row"><span class="label">電話</span><span class="value">${esc(phone)}</span></div>
 <div class="row"><span class="label">メール</span><span class="value">${esc(email)}</span></div>
-${arrivalNote ? `<div class="row"><span class="label">到着希望</span><span class="value">${esc(arrivalNote)}</span></div>` : ''}
+${deliveryWish ? `<div class="row"><span class="label">お届け希望日時</span><span class="value">${esc(deliveryWish)}</span></div>` : ''}
+${deliveryRequest.customerNote ? `<div class="row"><span class="label">備考</span><span class="value">${esc(deliveryRequest.customerNote).replace(/\n/g, '<br>')}</span></div>` : ''}
 <div class="row"><span class="label">状態</span><span class="value">入金待ち（受注台帳に記帳済み）</span></div>
 </div></body></html>`;
 

@@ -14,7 +14,13 @@ import { useCart } from "@/lib/cart/store"
 import { calcCartPricing } from "@/lib/cart/pricing"
 import { CART_MAX_QUANTITY, isClemenceSlug } from "@/lib/cart/types"
 import { getProductDisplay } from "@/lib/products/display"
-import { getEarliestArrival } from "@/lib/business-days"
+import {
+  CUSTOMER_NOTE_MAX,
+  DELIVERY_TIME_SLOTS,
+  earliestArrivalFor,
+  formatDeliveryWish,
+  preferredDateOptions,
+} from "@/lib/delivery-request"
 import { fireGtagEvent } from "@/lib/gtag"
 
 const prefectures = [
@@ -43,6 +49,10 @@ function CartContent() {
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [checkoutClientSecret, setCheckoutClientSecret] = useState<string | null>(null)
   const [isBankOpen, setIsBankOpen] = useState(false)
+  // お届け希望日時・備考（任意）。カード決済・銀行振込のどちらにも同じ内容を渡す。
+  const [preferredDate, setPreferredDate] = useState("")
+  const [timeSlot, setTimeSlot] = useState("")
+  const [customerNote, setCustomerNote] = useState("")
 
   // 特急は 3 本まで（商品ページと同一ルール）
   const expressAllowed = count <= 3
@@ -53,11 +63,24 @@ function CartContent() {
     [items, prefecture, rushDelivery],
   )
 
+  // 希望日の選択肢は「最短お届け予定日」以降。納期（通常/特急）や配送先を変えて
+  // 最短日より前になった希望日は無効扱い（選択欄は「指定なし」に戻る）。
+  const dateOptions = useMemo(
+    () => preferredDateOptions(new Date(), rushDelivery, prefecture),
+    [rushDelivery, prefecture],
+  )
+  const effectiveDate = dateOptions.some((o) => o.value === preferredDate) ? preferredDate : ""
+  const deliveryWish = formatDeliveryWish(effectiveDate, timeSlot)
+  const trimmedNote = customerNote.trim()
+
   const orderPayload = {
     cart: true,
     items,
     prefecture,
     rushDelivery,
+    preferredArrivalDate: effectiveDate,
+    preferredTimeSlot: timeSlot,
+    customerNote: trimmedNote,
   }
 
   const summary: OrderSummary = {
@@ -75,9 +98,13 @@ function CartContent() {
     ],
     totalLabel: "合計（税込）",
     totalAmount: pricing.total,
+    requests: [
+      ...(deliveryWish ? [{ label: "お届け希望日時", value: deliveryWish }] : []),
+      ...(trimmedNote ? [{ label: "備考", value: trimmedNote }] : []),
+    ],
   }
 
-  const arrivalLabel = getEarliestArrival(new Date(), rushDelivery)
+  const arrivalLabel = earliestArrivalFor(new Date(), rushDelivery, prefecture)
     .toLocaleDateString("ja-JP", { month: "long", day: "numeric" })
 
   const handleCheckout = async () => {
@@ -148,7 +175,7 @@ function CartContent() {
         <div className="max-w-[1000px] mx-auto px-4 lg:px-8">
           <h1 className="font-serif text-3xl lg:text-4xl text-foreground mb-2">カート</h1>
           <p className="text-[15px] text-muted-foreground mb-8">
-            壁付け手すり・Clémence（L型トイレ手すり）を合わせて最大 {CART_MAX_QUANTITY} 点まで、一度のお支払いでまとめてご注文いただけます。
+            壁付け手すりを合わせて最大 {CART_MAX_QUANTITY} 点まで、一度のお支払いでまとめてご注文いただけます。
             <br className="hidden sm:inline" />
             壁付け手すりは同じ梱包に収まる分だけ送料がまとまるため、別々にご注文いただくより送料が抑えられます。
           </p>
@@ -314,7 +341,7 @@ function CartContent() {
                 </div>
 
                 <div className="space-y-3">
-                  <h2 className="font-serif text-[18px] font-bold text-foreground">納品日・配送</h2>
+                  <h2 className="font-serif text-[18px] font-bold text-foreground">納期</h2>
                   <div className="flex gap-3">
                     <button
                       onClick={() => setDeliveryType("normal")}
@@ -347,6 +374,81 @@ function CartContent() {
                   )}
                   <p className="text-[14px] text-muted-foreground">
                     お届け予定日: <span className="text-foreground font-medium">{arrivalLabel}頃</span>
+                  </p>
+                </div>
+
+                {/* お届け日時・備考（任意）── カード決済・銀行振込のどちらにも同じ内容が渡る */}
+                <div className="space-y-4">
+                  <h2 className="font-serif text-[18px] font-bold text-foreground">
+                    お届け日時・備考
+                    <span className="ml-2 text-[11px] font-sans font-medium text-muted-foreground align-middle tracking-wider">任意</span>
+                  </h2>
+
+                  <div>
+                    <label htmlFor="cart-preferred-date" className="block text-[14px] font-medium text-foreground mb-1.5">
+                      お届け希望日
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="cart-preferred-date"
+                        value={effectiveDate}
+                        onChange={(e) => setPreferredDate(e.target.value)}
+                        className="w-full h-12 pl-4 pr-10 appearance-none bg-white border-2 border-gold/30 rounded-md text-[16px] text-foreground focus:border-gold focus:outline-none transition-colors"
+                      >
+                        <option value="">指定なし（最短でお届け）</option>
+                        {dateOptions.map((o) => (
+                          <option key={o.value} value={o.value}>{o.label}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gold" />
+                    </div>
+                    {preferredDate && !effectiveDate && (
+                      <p className="text-[13px] text-red-600 leading-relaxed mt-1.5">
+                        納期・配送先の変更で、選んでいた希望日が最短お届け予定日より前になりました。日付を選び直してください。
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="cart-time-slot" className="block text-[14px] font-medium text-foreground mb-1.5">
+                      時間帯
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="cart-time-slot"
+                        value={timeSlot}
+                        onChange={(e) => setTimeSlot(e.target.value)}
+                        className="w-full h-12 pl-4 pr-10 appearance-none bg-white border-2 border-gold/30 rounded-md text-[16px] text-foreground focus:border-gold focus:outline-none transition-colors"
+                      >
+                        <option value="">指定なし</option>
+                        {DELIVERY_TIME_SLOTS.map((slot) => (
+                          <option key={slot} value={slot}>{slot}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gold" />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="cart-note" className="block text-[14px] font-medium text-foreground mb-1.5">
+                      備考
+                    </label>
+                    <textarea
+                      id="cart-note"
+                      value={customerNote}
+                      onChange={(e) => setCustomerNote(e.target.value)}
+                      maxLength={CUSTOMER_NOTE_MAX}
+                      rows={3}
+                      placeholder="例）平日の日中は不在がちです／取り付けについて相談したい など"
+                      className="w-full px-4 py-3 bg-white border-2 border-gold/30 rounded-md text-[16px] leading-relaxed text-foreground placeholder:text-muted-foreground/70 focus:border-gold focus:outline-none transition-colors resize-y"
+                    />
+                    <p className="text-right text-[12px] text-muted-foreground mt-1">
+                      {customerNote.length} / {CUSTOMER_NOTE_MAX}
+                    </p>
+                  </div>
+
+                  <p className="text-[13px] text-muted-foreground leading-relaxed">
+                    佐川急便でお届けします。ご希望の日時に添えない場合は、工房からメールでご相談します。
                   </p>
                 </div>
 
