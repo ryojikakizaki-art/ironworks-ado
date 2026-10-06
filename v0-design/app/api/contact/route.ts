@@ -6,6 +6,19 @@ function esc(str: string | undefined | null): string {
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
+// 相互リンク・リンク営業の定型文。該当したら通知・自動返信とも送らず成功扱いで終える
+// （エラーを返すと言い回しを変えて再送してくるため）。空白・全半角の揺れは正規化して判定。
+// 「管理番号: <UUID>」は ZEST フォームに届いた一斉送信テンプレートの共通末尾（2026-10）。
+// 業者の「相互紹介（お客様紹介）」は正当な相談があり得るので対象にしない。
+const LINK_SOLICITATION_PATTERNS = [
+  /相互リンク/, /リンク交換/, /被リンク/, /相互掲載/, /管理番号:?[0-9a-f]{8}-[0-9a-f]{4}-/i,
+];
+
+function isLinkSolicitation(...fields: string[]): boolean {
+  const text = fields.join('\n').normalize('NFKC').replace(/\s+/g, '');
+  return LINK_SOLICITATION_PATTERNS.some((re) => re.test(text));
+}
+
 const categoryLabels: Record<string, string> = {
   product: '製品について', size: 'サイズ・採寸のご相談',
   custom: '特注・カスタムオーダー', order: 'ご注文・お届けについて', other: 'その他',
@@ -94,6 +107,10 @@ export async function POST(request: NextRequest) {
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ error: 'メールアドレスの形式が正しくありません' }, { status: 400 });
+    }
+    if (isLinkSolicitation(name, message)) {
+      console.info('Contact API: link solicitation dropped', { email, category });
+      return NextResponse.json({ success: true });
     }
 
     const categoryLabel = categoryLabels[category] || category;
