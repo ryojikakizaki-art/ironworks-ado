@@ -1,5 +1,7 @@
 import { fileURLToPath } from "url"
 import { dirname } from "path"
+import { PHASE_PRODUCTION_BUILD } from "next/constants.js"
+import { generateImageVariants } from "./scripts/gen-image-variants.mjs"
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -15,7 +17,13 @@ const nextConfig = {
     // Vercel Image Optimization の月間枠超過で /_next/image が 402 を返し
       // 商品画像が一切表示されなくなる事故が発生したため最適化を停止。
       // Cloudflare Images 側で variant 配信されているので画質劣化はほぼ無い。
-    unoptimized: true,
+    // 代わりに public/images/ はビルド時に縮小版を自前生成し（scripts/gen-image-variants.mjs）、
+    // カスタムローダーが srcset でそれを指す。/_next/image は一切使わない。
+    loader: "custom",
+    loaderFile: "./lib/image-loader.ts",
+    // srcset に並ぶ幅。1200 を超える要求は原寸（長辺 1600px 基準）になる
+    deviceSizes: [640, 828, 1200, 1600],
+    imageSizes: [256, 384],
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 60 * 60 * 24 * 30,
     remotePatterns: [
@@ -76,4 +84,8 @@ const nextConfig = {
   },
 }
 
-export default nextConfig
+// next build の時だけ縮小版を作る（Vercel のビルドコマンド設定に左右されないよう config 読込時に実行）
+export default async function config(phase) {
+  if (phase === PHASE_PRODUCTION_BUILD) await generateImageVariants(__dirname)
+  return nextConfig
+}
