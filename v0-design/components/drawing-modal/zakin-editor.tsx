@@ -249,6 +249,7 @@ export function ZakinEditor({
                   </p>
                 </div>
               )}
+              {embedded && <AngleCompareImage />}
             </div>
           )}
 
@@ -313,6 +314,56 @@ export function ZakinEditor({
         </div>
       )}
     </div>
+  )
+}
+
+/** 角度加工あり／なしの見え方の比較（商品写真を階段の傾斜に合わせて加工したイメージ）。スマホは縦並び版を出す */
+function AngleCompareImage() {
+  const [open, setOpen] = useState(false)
+  const alt = "座金の支柱 角度加工なし（手すりに直角）と角度加工あり（垂直）の比較"
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="mt-3 flex w-full flex-col gap-2 rounded-md border border-border bg-secondary p-2 text-left cursor-zoom-in transition-colors hover:border-gold sm:flex-row sm:items-center sm:gap-3"
+      >
+        <img
+          src="/images/zakin-angle-compare.jpg"
+          alt={alt}
+          loading="lazy"
+          className="w-full sm:w-[150px] md:w-[180px] h-auto shrink-0 rounded"
+        />
+        <span className="px-1 text-[13px] leading-relaxed text-muted-foreground sm:px-0">
+          <span className="block font-semibold text-foreground">角度加工あり・なしの見え方の違い</span>
+          <span className="md:hidden">タップで拡大</span>
+          <span className="hidden md:inline">クリックで拡大</span>
+        </span>
+      </button>
+      {open && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 cursor-zoom-out"
+          onClick={() => setOpen(false)}
+        >
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="absolute top-3 right-3 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-foreground"
+            aria-label="閉じる"
+          >
+            <X className="h-5 w-5" />
+          </button>
+          <picture onClick={(e) => e.stopPropagation()}>
+            <source media="(max-width: 767px)" srcSet="/images/zakin-angle-compare-sp.jpg" />
+            <img
+              src="/images/zakin-angle-compare.jpg"
+              alt={alt}
+              className="max-w-[92vw] max-h-[88vh] object-contain rounded shadow-2xl"
+            />
+          </picture>
+        </div>
+      )}
+    </>
   )
 }
 
