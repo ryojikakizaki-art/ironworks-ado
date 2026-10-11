@@ -29,6 +29,22 @@ import { notifyLedgerFailure, type LedgerStage } from './order-ledger-alert';
 export const LEDGER_SHEET_ID = '1-8yr9fW-JDtS_FpCicoZ5-xDD2Y9Bwro4hhovPvRFJc';
 
 /**
+ * B 列（区分）のお客様種別。2026-10 に「法人」を廃止して「業者」へ統合した。
+ * 旧 STORES の「法人」と /trade の取引先「業者」が別ラベルになっていて、
+ * 違いが分からなくなったため（台帳の既存行も同日に置き換え済み）。
+ *   - 業者 … 会社・事業者のお客様（工務店・設計事務所・店舗など。価格体系は問わない）
+ *   - 個人 … それ以外
+ * サイトの銀行振込注文（B 列「銀行振込」）と STORES は従来どおり。
+ * 入金確認ボタン（/api/admin/order/[row]/confirm-payment）が「銀行振込」に依存している。
+ */
+const COMPANY_NAME_PATTERN =
+  /株式会社|有限会社|合同会社|合資会社|合名会社|社団法人|財団法人|（株）|\(株\)|㈱|（有）|\(有\)|㈲|工務店|建設|建築|設計|住建|ハウジング/;
+
+export function customerKubun(customerName: string): '業者' | '個人' {
+  return COMPANY_NAME_PATTERN.test(customerName) ? '業者' : '個人';
+}
+
+/**
  * Google Sheets API の一過性エラーに対する再試行。
  *
  * 2026-08-18、Sheets API が `The service is currently unavailable`（503）を返し、
@@ -85,12 +101,15 @@ async function withSheetsRetry<T>(label: string, op: () => Promise<T>): Promise<
  * @param orderKey K 列に入れる一意の注文番号（重複判定キー）
  * @param row      A〜L の 12 要素の文字列配列
  * @param shipping 送料（税抜）・送料消費税（任意）。指定時は P/Q 列に書き込む。
+ * @param status   O 列（対応状況）の初期値（任意）。納品済みの受注を後から記帳するときに
+ *                 指定すると、ウィジェット・/admin/orders の「対応中」に出ない。
  */
 export async function writeOrderRow(
   orderKey: string,
   row: string[],
   shipping?: { yen: number; taxYen: number },
   channel = '受注',
+  status?: string,
 ): Promise<'created' | 'duplicate'> {
   const sheetId = LEDGER_SHEET_ID;
   const keyJson = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
@@ -157,6 +176,23 @@ export async function writeOrderRow(
     // リトライを尽くしても書けなかった = 注文が台帳から消える。必ず工房へ通知する。
     await notifyLedgerFailure({ channel, orderKey, row, shipping, stage, error: err });
     throw err;
+  }
+
+  // O 列（対応状況）の初期値。注文自体は記帳済みなので、失敗しても受注は失わない
+  // （「対応中」に出るだけ）。失敗通知は送らずログだけ残す。
+  if (status && status.trim()) {
+    try {
+      await withSheetsRetry('O2 の書き込み', () =>
+        sheets.spreadsheets.values.update({
+          spreadsheetId: sheetId,
+          range: 'O2',
+          valueInputOption: 'RAW',
+          requestBody: { values: [[status.trim()]] },
+        }));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`[order-ledger] O2（対応状況）の書き込みに失敗: ${orderKey} — ${msg}`);
+    }
   }
   return 'created';
 }

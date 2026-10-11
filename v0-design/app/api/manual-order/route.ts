@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeOrderRow } from '@/lib/order-ledger';
+import { customerKubun, writeOrderRow } from '@/lib/order-ledger';
 
 // googleapis を使うため Node ランタイム固定。
 export const runtime = 'nodejs';
@@ -23,7 +23,7 @@ export const runtime = 'nodejs';
 
 type ManualOrderPayload = {
   order_date?: string;     // A 受注日（YYYY-MM-DD / YYYY/MM/DD / ISO のいずれか）
-  kubun?: string;          // B 区分（例: 現地施工 / 現金 / 銀行振込 / 個人 / 業者）
+  kubun?: string;          // B 区分（個人 / 業者。省略時は顧客名から判定。「法人」は「業者」に読み替える）
   customer_name?: string;  // C 顧客名
   prefecture?: string;     // D 都道府県
   address?: string;        // E 住所
@@ -35,6 +35,7 @@ type ManualOrderPayload = {
   order_ref?: string;      // K 注文番号（一意。見積書番号など。重複判定キー）
   note?: string;           // L メモ
   shipping_yen?: number;   // P 送料（税抜・任意）。見積書に送料が別建てで明記されている場合のみ指定。
+  status?: string;         // O 対応状況（任意）。納品・取付済みの受注を後から記帳するときに指定（例: 「済」）。
 };
 
 // 受注日を台帳の表記 YYYY/MM/DD に正規化する。
@@ -90,9 +91,13 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // 区分は 個人 / 業者 の 2 種（2026-10 に「法人」を「業者」へ統合）。
+  const kubunInput = String(payload.kubun || '').trim();
+  const kubun = kubunInput === '法人' ? '業者' : kubunInput || customerKubun(customerName);
+
   const row = [
     toLedgerDate(payload.order_date),          // A 受注日
-    String(payload.kubun || '個人').trim(),     // B 区分
+    kubun,                                     // B 区分
     customerName,                              // C 顧客名
     String(payload.prefecture || '').trim(),   // D 都道府県
     String(payload.address || '').trim(),      // E 住所
@@ -110,7 +115,7 @@ export async function POST(request: NextRequest) {
 
   let status: 'created' | 'duplicate';
   try {
-    status = await writeOrderRow(orderRef, row, shipping, '手動受注');
+    status = await writeOrderRow(orderRef, row, shipping, '手動受注', String(payload.status || ''));
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('[manual-order] Ledger error:', message);

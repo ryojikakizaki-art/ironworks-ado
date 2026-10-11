@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { writeOrderRow } from '@/lib/order-ledger';
+import { customerKubun, writeOrderRow } from '@/lib/order-ledger';
 // カート注文（複数商品まとめ買い）の metadata 復元。product_type='cart' の注文でのみ使う。
 import { decodeCartMetadata, cartSummaryLabel, type DecodedCartLine } from '@/lib/cart/metadata';
 import { deliveryRequestFromMetadata, deliveryRequestMemo } from '@/lib/delivery-request';
@@ -973,10 +973,11 @@ async function prependOrderToLedger(session: Stripe.Checkout.Session) {
         : [lengthsInfo.full, meta.zakin_count ? `座金${meta.zakin_count}個` : '', meta.washer_type ? `座金${meta.washer_type}タイプ` : '', meta.color || '', meta.rush_delivery === 'true' ? '特急' : '']
             .filter(Boolean).join(' / ');
 
+  const ledgerName = shipName || session.customer_details?.name || '—';
   const row = [
     orderDate,                                                        // 受注日
-    '個人',                                                            // 区分（Stripe 決済は個人）
-    shipName || session.customer_details?.name || '—',                // 顧客名（配送先宛名）
+    customerKubun(ledgerName),                                        // 区分（会社名なら業者・それ以外は個人）
+    ledgerName,                                                       // 顧客名（配送先宛名）
     addr?.state || meta.prefecture || '',                             // 都道府県（配送先）
     formatShippingAddress(addr),                                      // 住所（配送先のみ）
     session.customer_details?.email || '',                            // メール
