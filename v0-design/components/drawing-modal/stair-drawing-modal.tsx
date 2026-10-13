@@ -11,7 +11,7 @@ interface StairDrawingModalProps {
 }
 
 /**
- * Laurent（階段手摺）の設計図モーダル。既存の制作図モーダルと同じ dm-overlay 方式で、
+ * 階段手摺（Laurent／蔦 室内階段）の設計図モーダル。既存の制作図モーダルと同じ dm-overlay 方式で、
  * そのまま印刷/PDF 保存できる（globals.css の @media print が dm-overlay を残す）。
  */
 export function StairDrawingModal({ open, onClose, drawing }: StairDrawingModalProps) {
@@ -51,7 +51,7 @@ export function StairDrawingModal({ open, onClose, drawing }: StairDrawingModalP
         <button className="dm-close" onClick={onClose} aria-label="閉じる">
           ×
         </button>
-        <div className="dm-title">設計図プレビュー ── Laurent ローラン 階段手摺</div>
+        <div className="dm-title">設計図プレビュー ── {drawing.product.drawingTitle.productName}</div>
         {/* A4 横・余白 8.5mm で印刷すると図面シート(280×193mm)が実寸で出力され、表題欄の尺度が実際に合う。
             見積書PDF (.quote-pdf-root) を持つ商品ページでも図面 1 枚だけを印刷する（2026-09-28）。 */}
         <style>{`

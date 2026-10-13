@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PRODUCTS, calcPrice, RUSH_RATE } from '@/lib/products/order-pricing';
 // 階段手摺 Laurent の価格・寸法計算の正本（商品ページ・カード決済と共有）。
-import { LAURENT, parseStairOrderBody } from '@/lib/products/stair-pricing';
+import { getStairProduct, parseStairOrderBody } from '@/lib/products/stair-pricing';
 import { calcShipping, calcClemenceShipping, type ProductType } from '@/lib/shipping/sagawa';
 // Clémence（トイレ手すり）の価格・寸法の正本（商品ページ・カード決済と共有）。
 import {
@@ -120,6 +120,8 @@ export async function POST(request: NextRequest) {
 
   // ── 商品・価格のサーバ再計算（/api/checkout と同一ロジック）──
   const productKey = String(body.product || 'rene').toLowerCase();
+  // 階段手摺（Laurent / 蔦 室内階段）は段数ベース価格の専用分岐に流す
+  const stairProduct = getStairProduct(productKey);
 
   // 商品ラベル・仕様・合計は商品タイプごとの分岐で組み立てる（台帳・メールで共用）
   let productLabel: string;
@@ -157,14 +159,14 @@ export async function POST(request: NextRequest) {
       ...pricing.lines.map((l) => `${l.titleLabel}: ${l.specLabel}`),
       rushDelivery ? '特急配送（5営業日）' : '通常配送（10営業日）',
     ];
-  } else if (productKey === LAURENT.slug) {
-    // Laurent（階段手摺・段数ベース価格）: 正本 lib/products/stair-pricing.ts で再計算。
+  } else if (stairProduct) {
+    // 階段手摺（段数ベース価格）: 正本 lib/products/stair-pricing.ts で再計算。
     // 全長 3,500mm 超は parseStairOrderBody 側で inquiry エラーになる。
-    const parsed = parseStairOrderBody(body as Record<string, unknown>);
+    const parsed = parseStairOrderBody(body as Record<string, unknown>, stairProduct);
     if (!parsed.ok) return NextResponse.json({ ok: false, error: parsed.error }, { status: 400 });
     const stairOrder = parsed.order;
     // 送料は実寸によらず常に最大サイズで計算（2026-07-05 蠣﨑さん指示・柱/横桟込みで大型のため）
-    const stairShipping = calcShipping([LAURENT.shippingLengthMm], prefecture, 'yokogata');
+    const stairShipping = calcShipping([stairProduct.shippingLengthMm], prefecture, 'yokogata');
     if (stairShipping.inquiry) {
       return NextResponse.json({
         ok: false,
@@ -176,7 +178,7 @@ export async function POST(request: NextRequest) {
     shippingYen = stairShipping.shipping;
     shippingTaxYen = stairShippingTax;
     productLabel = stairOrder.productLabel;
-    specParts = [...stairOrder.specParts, `通常配送（${LAURENT.deliveryBusinessDays}営業日）`];
+    specParts = [...stairOrder.specParts, `通常配送（${stairProduct.deliveryBusinessDays}営業日）`];
   } else if (productKey === 'clemence') {
     // Clémence（トイレ手すり）: 本体（税込 88,000＋延長）＋特急+20%＋送料（160/170サイズ・税抜）＋送料税10%。
     // 価格ロジックはカード決済 /api/checkout/simple の Clémence 分岐と一致させる。

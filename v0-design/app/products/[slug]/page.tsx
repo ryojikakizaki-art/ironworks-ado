@@ -15,6 +15,7 @@ import { ZakinGuide } from "@/components/drawing-modal/zakin-guide"
 import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants"
 import { getProductFull, galleryUrl, type FeatureIconName } from "@/lib/products/display"
 import { getSimpleProduct } from "@/lib/products/simple"
+import { getStairProduct } from "@/lib/products/stair-pricing"
 import { StairProductPage } from "@/components/stair-product-page"
 import { getRelatedProducts, getThicknessSiblings } from "@/lib/products/catalog"
 import { getProductStructuredData } from "@/lib/products/structured-data"
@@ -102,9 +103,10 @@ export default function ProductDetailPage() {
   const routeParams = useParams<{ slug: string }>()
   const slug = routeParams?.slug ?? "rene"
 
-  // 階段手摺 Laurent（段数ベース見積計算機）は専用テンプレートで表示
-  if (slug === "laurent") {
-    return <StairProductPage />
+  // 階段手摺（Laurent / 蔦 室内階段）は段数ベース見積計算機の専用テンプレートで表示
+  const stairProduct = getStairProduct(slug)
+  if (stairProduct) {
+    return <StairProductPage product={stairProduct} />
   }
 
   // シンプル商品（手すり以外）はシンプルテンプレートで表示

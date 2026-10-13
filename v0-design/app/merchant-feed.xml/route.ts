@@ -98,7 +98,9 @@ function buildItem(item: FeedItem): string {
 // フィード除外 slug。
 // laurent: サムネが実物写真でなく生成画像のため、実写に差し替えるまで
 // Google ショッピングには出さない（誤認・ポリシーリスク回避）。
-const FEED_EXCLUDED_SLUGS = new Set(["laurent"])
+// tsuta-stair: 写真が屋外仕様（メッキあり）で、届く室内仕様（メッキなしの塗装仕上げ）と仕上げが違うため、
+// 室内仕様の写真に差し替えるまで出さない（2026-10-11 蠣﨑さん決定）。
+const FEED_EXCLUDED_SLUGS = new Set(["laurent", "tsuta-stair"])
 
 export async function GET() {
   const collected: FeedItem[] = []

@@ -69,6 +69,29 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     }
   }
 
+  // 蔦（室内階段版・専用テンプレート）。屋外版の /products/tsuta とは別ページ。
+  if (slug === "tsuta-stair") {
+    const title = "【工房直販】蔦 Tsuta 室内階段手摺｜無垢鉄 手打ち鎚目 艶消し黒塗装＋古美｜段数から即見積もり｜IRONWORKS ado"
+    const description =
+      "無垢鉄の丸鋼を全面手打ちで造形した、蔦モチーフのアートアイアン手摺。室内階段向けにメッキを省いた塗装仕上げ（錆止め＋艶消し黒塗装＋古美）。段数を入力するだけで価格がその場で分かります。2〜7段対応・全国配送。"
+    const image = galleryUrl("8c7c57432198f43a5581.jpg")
+    return {
+      title,
+      description,
+      alternates: { canonical },
+      openGraph: {
+        type: "website",
+        url: `${SITE_URL}${canonical}`,
+        siteName: "IRONWORKS ado",
+        title,
+        description,
+        locale: "ja_JP",
+        images: [{ url: image, width: 1200, height: 1200, alt: "蔦 Tsuta 室内階段手摺" }],
+      },
+      twitter: { card: "summary_large_image", title, description, images: [image] },
+    }
+  }
+
   // Drawing 系商品（手すり）
   const product = getProductFull(slug)
   if (product) {

@@ -161,7 +161,7 @@ export default function ContactPage() {
     const type = params.get("type")
     const qty = params.get("qty")
     const lengthsCsv = params.get("lengths")
-    // 階段手摺 Laurent の「要問合せ」（全長3.5m超）からの遷移: 入力内容を引き継ぐ
+    // 階段手摺（Laurent／蔦 室内階段）の「要問合せ」（全長3.5m超）からの遷移: 入力内容を引き継ぐ
     const stairSteps = params.get("steps")
     // Clémence の寸法・ブラケット位置指定からの遷移: 入力内容を引き継ぐ
     const clemenceW = params.get("w")
@@ -170,7 +170,7 @@ export default function ContactPage() {
     const prefillMessage = type === "invoice" && qty && lengthsCsv
       ? `【請求書振込でのご注文（7本以上）】\n\n本数: ${qty} 本\n各本の長さ: ${lengthsCsv.split(',').map((L, i) => `${i + 1}本目 ${L}mm`).join(' / ')}\n\n上記内容で請求書振込でのご注文を希望します。送料を含む合計金額のお見積もりと振込先のご案内をお願いいたします。\n\n配送先住所:\n（ご住所をご記入ください）\n\nその他ご要望:\n`
       : type === "stair" && stairSteps
-        ? `【階段手摺 Laurent お見積もり相談（全長3.5m超）】\n\n段数: ${stairSteps}段\n手摺全長の目安: 約${params.get("length") || "—"}mm\n横桟: ${params.get("crossbar") || "なし"}\n色: ${params.get("color") || "マットブラック"}\n\n全長が3.5mを超えるため、配送方法（営業所止め・トラック搬入の可否）を含めたお見積もりを希望します。\n\n配送先住所:\n（ご住所をご記入ください）\n\n※階段の写真を添付いただけると確認がスムーズです。\n\nその他ご要望:\n`
+        ? `【階段手摺 ${params.get("stair") || "Laurent"} お見積もり相談（全長3.5m超）】\n\n段数: ${stairSteps}段\n手摺全長の目安: 約${params.get("length") || "—"}mm\n${params.get("crossbar") ? `横桟: ${params.get("crossbar")}\n` : ""}仕上げ: ${params.get("color") || "マットブラック"}\n\n全長が3.5mを超えるため、配送方法（営業所止め・トラック搬入の可否）を含めたお見積もりを希望します。\n\n配送先住所:\n（ご住所をご記入ください）\n\n※階段の写真を添付いただけると確認がスムーズです。\n\nその他ご要望:\n`
         : type === "clemence" && clemenceW
           ? (() => {
               const ext = Number(params.get("ext") || "0")

@@ -87,6 +87,9 @@ export const CATALOG_PRODUCTS: CatalogProduct[] = [
   // img はローカルパス（拡張子なし・galleryUrl が "/" 始まりをそのまま返す仕組みを利用）。
   // 実物写真が撮れるまでの仮サムネ＝生成画像（2026-07-04 蠣﨑さん承認の個別例外）。
   { cat: "stair", label: "階段手摺", name: "Laurent ローラン", sub: "フラットバー 9×38 マットブラック", price: 75000, priceFrom: true, img: "/images/products/laurent/hero", href: "/products/laurent" },
+  // 蔦（室内階段版）: 段数ベース見積計算機つきの専用ページ（lib/products/stair-pricing.ts の TSUTA_STAIR）。
+  // 屋外アプローチ用の蔦（/products/tsuta）とは別商品。写真は室内イメージができるまで屋外の実物（2026-10-11 蠣﨑さん決定）。
+  { cat: "stair", label: "室内階段手摺", name: "室内階段手摺『蔦』", sub: "無垢鉄 手打ち鎚目 艶消し黒塗装", price: 140000, priceFrom: true, img: "8c7c57432198f43a5581", href: "/products/tsuta-stair" },
   { cat: "stair", label: "スケルトン階段", name: "スケルトン階段 -直線-", sub: "オーダーメイド", price: 0, img: "7a3358b5d7a86318eda1", href: "/products/stair-straight" },
   { cat: "stair", label: "スケルトン階段", name: "スケルトン階段 -廻り階段-", sub: "力桁1本型 オーダーメイド", price: 1400000, img: "853fb7dae26475eee4a0", href: "/products/stair-spiral" },
   { cat: "stair", label: "鉄骨外階段", name: "鉄骨外階段 -かね折れ-", sub: "外階段 オーダーメイド", price: 0, img: "6957d69de71788107932", href: "/products/stair-outdoor" },

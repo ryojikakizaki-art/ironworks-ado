@@ -22,7 +22,8 @@ type Variant = {
 }
 
 function resolveVariant(specs: FinishSpec[]): Variant {
-  const finish = specs.find((s) => s.label === "仕上げ")?.value ?? ""
+  // 「メッキなし」（室内用の塗装仕上げ等）はメッキ仕上げではないので、判定の前に取り除く
+  const finish = (specs.find((s) => s.label === "仕上げ")?.value ?? "").replace(/(溶融亜鉛)?メッキなし/g, "")
   // 蜜蝋・ミツロウ・黒皮仕上げの商品は「塗装ではない」ので別訴求にする。
   // これらの商品では塗装には一切触れず、蜜蝋仕上げそのものの魅力で訴求する。
   if (/蜜蝋|ミツロウ|黒皮/.test(finish)) {

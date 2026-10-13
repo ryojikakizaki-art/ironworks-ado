@@ -1,4 +1,4 @@
-// Laurent（階段手摺）の設計図 SVG ビルダー（JIS 製図風・cad-sheet.ts ベース）
+// 階段手摺（Laurent／蔦 室内階段）の設計図 SVG ビルダー（JIS 製図風・cad-sheet.ts ベース）
 //
 // お客様が入力した段数・寸法から、A4 横の図面シートを組み立てる。
 // 商品ページの「設計図（PDF）を見る」モーダルで使い、そのまま印刷/PDF 保存できる。
@@ -9,6 +9,8 @@
 //   右上   — 詳細 A: 柱脚座金 60×60 t6・φ5.5-φ9 段付き穴×4・タッピング M5×40 ×4（S=1:2）
 //   右中   — 詳細 B: 壁付け座金 80×25 t6・端から 8mm に段付き穴×2・タッピング M5×40 ×2（S=1:2）
 //   右下   — 表題欄（品名・図番・尺度・材質・仕上げ・付属ビス・投影法）
+//   ※ 蔦（railStyle "vine"）は全て曲線の手すりなので、写真4から起こした形（tsuta-shape.ts）で
+//     握り手・柱・輪・枝を描き、詳細 A・B と笠木全長の寸法は出さない
 //
 // 手すりの取り付けルール（2026-07-05 蠣﨑さん指示）:
 // - 1 本目の柱は 1 段目の踏み板中央に立つ（床からではない）
@@ -20,7 +22,8 @@
 // - 柱脚: 60×60 t6・φ5.5-φ9 段付き穴×4・タッピングビス M5×40 ×4
 // - 壁付け: 80×25 t6・端から 8mm の位置に段付き穴×2・タッピングビス M5×40 ×2
 
-import { LAURENT, type CrossbarMaterial, type StairColor } from "@/lib/products/stair-pricing"
+import { postStepsFor, type CrossbarMaterial, type StairColor, type StairProductConfig } from "@/lib/products/stair-pricing"
+import { buildTsutaShape, TSUTA_FOOT_OUT_MM } from "@/lib/drawing-modal/tsuta-shape"
 import {
   SHEET_VB_W,
   SHEET_VB_H,
@@ -51,6 +54,8 @@ import {
 } from "./cad-sheet"
 
 export interface StairDrawingOpts {
+  /** 商品設定（柱ピッチ・横桟仕様・手すりの描き分け） */
+  product: StairProductConfig
   steps: number
   risersMm: number[]
   treadMm: number
@@ -200,6 +205,7 @@ function detailB(x: number, y: number, s: number): string {
 
 export function buildStairDrawingSvg(svg: SVGSVGElement, opts: StairDrawingOpts): void {
   const {
+    product,
     steps, risersMm, treadMm, kekomiMm, lastTreadMm, railHeightMm,
     crossbarCount, crossbarMaterial, color, postCount,
     totalRiseMm, runMm, diagonalMm,
@@ -215,15 +221,28 @@ export function buildStairDrawingSvg(svg: SVGSVGElement, opts: StairDrawingOpts)
   let cx = 0
   let cy = 0
   for (let i = 0; i < steps; i++) {
-    cy += risersMm[i] ?? risersMm[risersMm.length - 1] ?? LAURENT.defaults.riserMm
+    cy += risersMm[i] ?? risersMm[risersMm.length - 1] ?? product.defaults.riserMm
     if (i > 0) cx += going
     noseX.push(cx)
     noseY.push(cy)
   }
   const wallX = noseX[steps - 1] + lastTreadMm
   const wallY = noseY[steps - 1] // = totalRise
-  const contentW = wallX // = A
-  const contentH = wallY + railHeightMm // 床〜壁側の手すり上端
+  // 段鼻＋手すり高さの勾配線（Laurent の笠木の正本・蔦は勾配区間の基準）
+  const railAt = (mmX: number) => {
+    const t = (mmX - noseX[0]) / (wallX - noseX[0])
+    return noseY[0] + (wallY - noseY[0]) * t + railHeightMm
+  }
+  const railEndX = wallX - WALL_PLATE.t // 壁付け座金の面で止まる
+  const isVine = product.railStyle === "vine"
+  const vinePostSteps = isVine ? postStepsFor(steps, product) : []
+  const vine = isVine
+    ? buildTsutaShape({ noseX, noseY, going, lastTreadMm, railEndX, railAt, postSteps: vinePostSteps })
+    : null
+  // 蔦は握り手の弧が 1 段目より手前（x<0）へ張り出すので、その分も図の範囲に入れる
+  const contentLeft = vine ? Math.min(0, vine.minX - 30) : 0
+  const contentW = wallX - contentLeft // = A（＋蔦の張り出し）
+  const contentH = Math.max(wallY + railHeightMm, vine ? vine.maxY + 20 : 0) // 床〜手すり上端
 
   // ── シートレイアウト（紙 mm） ──
   // 左: 側面図。右: 詳細 A / 詳細 B / 表題欄
@@ -237,7 +256,7 @@ export function buildStairDrawingSvg(svg: SVGSVGElement, opts: StairDrawingOpts)
   const S = pickScale(contentW, contentH, availW, availH)
   const drawnW = contentW / S
   const originX = mainLeft + (availW - drawnW) / 2
-  const X = (mmX: number) => originX + mmX / S
+  const X = (mmX: number) => originX + (mmX - contentLeft) / S
   const Y = (mmY: number) => floorMm - mmY / S
 
   const parts: string[] = []
@@ -245,7 +264,7 @@ export function buildStairDrawingSvg(svg: SVGSVGElement, opts: StairDrawingOpts)
   parts.push(viewTitle(10, 12, "側面図", `S=${scaleLabel(S)}`))
 
   // ── 床・壁（切断ハッチングつき） ──
-  const floorX1 = X(0) - 10
+  const floorX1 = X(contentLeft) - 10
   const floorX2 = X(wallX) + 4
   parts.push(line(floorX1, floorMm, floorX2, floorMm, MID_W))
   parts.push(hatch(floorX1, floorMm, floorX2, floorMm, 1, 4, 3))
@@ -272,14 +291,9 @@ export function buildStairDrawingSvg(svg: SVGSVGElement, opts: StairDrawingOpts)
   // 笠木は FB38 面が上向き＝側面図では 9mm 厚の帯。壁側は座金(t6)の面で垂直にカットして止め、
   // 柱側は 1 本目の柱へ折り曲げてスムーズに繋がる（柱から飛び出さない）。
   const firstPostX = noseX[0] + going / 2 // 1段目踏み板の中央
-  const railAt = (mmX: number) => {
-    const t = (mmX - noseX[0]) / (wallX - noseX[0])
-    return noseY[0] + (wallY - noseY[0]) * t + railHeightMm
-  }
   const slopeRad = Math.atan2(wallY - noseY[0], wallX - noseX[0]) // 手すり勾配
   const slopeDeg = (slopeRad * 180) / Math.PI
   const tV = FB.t / Math.cos(slopeRad) // 笠木 9mm 厚の鉛直換算
-  const railEndX = wallX - WALL_PLATE.t // 壁付け座金の面で止まる
   const railTopWallY = railAt(railEndX)
   // 柱も笠木と同じ FB の 9mm 面が側面に見える向き＝図では同じ太さ（2026-07-09 指摘反映）
   const halfPost = FB.t / 2
@@ -291,7 +305,7 @@ export function buildStairDrawingSvg(svg: SVGSVGElement, opts: StairDrawingOpts)
   const postXs: number[] = [firstPostX]
   const postYs: number[] = [noseY[0]]
   for (let p = 1; p < postCount; p++) {
-    const idx = Math.min(steps - 1, p * LAURENT.stepsPerPost)
+    const idx = Math.min(steps - 1, p * product.post.stepsPerPost)
     const px = idx < steps - 1 ? noseX[idx] + going / 2 : noseX[idx] + lastTreadMm / 2
     postXs.push(px)
     postYs.push(noseY[idx])
@@ -313,13 +327,29 @@ export function buildStairDrawingSvg(svg: SVGSVGElement, opts: StairDrawingOpts)
     P(firstPostX + halfPost, railAt(firstPostX + halfPost) - tV),
     P(firstPostX + halfPost, noseY[0] + BASE_PLATE.t),
   ]
-  parts.push(
-    `<polygon points="${bendPoly.join(" ")}" fill="${INK}" stroke="${INK}" stroke-width="${THIN_W}" stroke-linejoin="round" />`,
-  )
+  if (!vine) {
+    parts.push(
+      `<polygon points="${bendPoly.join(" ")}" fill="${INK}" stroke="${INK}" stroke-width="${THIN_W}" stroke-linejoin="round" />`,
+    )
+  }
 
-  // 2 本目以降の柱: 上端は笠木下面に沿って斜めに納まる
+  // 蔦: 写真4から起こした形（握り手・柱・輪・枝）。線の太さは図面上の見え方（握り手＞柱＞輪＞枝）
+  if (vine) {
+    const pathD = (pts: [number, number][]) =>
+      pts.map((q, i) => `${i === 0 ? "M" : "L"}${mm(X(q[0])).toFixed(1)},${mm(Y(q[1])).toFixed(1)}`).join(" ")
+    const stroke = (pts: [number, number][], wMm: number) =>
+      `<path d="${pathD(pts)}" fill="none" stroke="${INK}" stroke-width="${mm(wMm).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round" />`
+    vine.posts.forEach((p) => {
+      parts.push(stroke(p.branch, 0.55))
+      parts.push(stroke(p.post, 0.95))
+      parts.push(stroke(p.loop, 0.8))
+    })
+    parts.push(stroke(vine.main, 1.35))
+  }
+
+  // 2 本目以降の柱: 上端は笠木下面に沿って斜めに納まる（Laurent）
   postXs.forEach((px, i) => {
-    if (i === 0) return
+    if (i === 0 || vine) return
     const topPlate = postYs[i] + BASE_PLATE.t
     const poly = [
       P(px - halfPost, topPlate),
@@ -329,11 +359,14 @@ export function buildStairDrawingSvg(svg: SVGSVGElement, opts: StairDrawingOpts)
     ]
     parts.push(`<polygon points="${poly.join(" ")}" fill="${INK}" stroke="${INK}" stroke-width="${THIN_W}" />`)
   })
-  // 柱脚座金（60 幅 × t6 実寸）
-  postXs.forEach((px, i) => {
+  // 柱脚座金（60 幅 × t6 実寸）。蔦は握り手の床着地と途中の柱の足元に付ける
+  const plateAt: [number, number][] = vine
+    ? [vine.foot, ...vine.posts.map((p) => p.foot)]
+    : postXs.map((px, i) => [px, postYs[i]] as [number, number])
+  plateAt.forEach(([px, py]) => {
     const pw = BASE_PLATE.w / S
     const pt6 = Math.max(0.8, BASE_PLATE.t / S)
-    parts.push(rect(X(px) - pw / 2, Y(postYs[i]) - pt6, pw, pt6, THIN_W, INK))
+    parts.push(rect(X(px) - pw / 2, Y(py) - pt6, pw, pt6, THIN_W, INK))
   })
   // 壁付け座金（横 80 × 縦 25 × t6 → 側面図では縦 25・厚 6。笠木端の中心高さに付く）
   {
@@ -361,18 +394,21 @@ export function buildStairDrawingSvg(svg: SVGSVGElement, opts: StairDrawingOpts)
     const midY = railAt(midX) - f * railHeightMm
     parts.push(line(X(midX), Y(midY), X(midX) + 8, Y(midY) + 7, THIN_W))
     parts.push(
-      text(X(midX) + 8.8, Y(midY) + 8, `横桟 ${LAURENT.crossbar[crossbarMaterial].label} ×${crossbarCount}`, {
+      text(X(midX) + 8.8, Y(midY) + 8, `横桟 ${product.crossbar[crossbarMaterial].label} ×${crossbarCount}`, {
         size: 2.8,
       }),
     )
   }
 
   // ── 詳細参照（風船 A / B） ──
-  parts.push(detailBalloon(X(firstPostX), Y(noseY[0]), X(firstPostX) - 12, Y(noseY[0]) + 8, "A"))
-  parts.push(detailBalloon(X(wallX) - 1, Y(railAt(railEndX) - tV / 2), X(wallX) - 14, Y(railTopWallY) - 9, "B"))
+  // 詳細図 A・B への引き出し（詳細図を出さない蔦では付けない）
+  if (product.railStyle !== "vine") {
+    parts.push(detailBalloon(X(firstPostX), Y(noseY[0]), X(firstPostX) - 12, Y(noseY[0]) + 8, "A"))
+    parts.push(detailBalloon(X(wallX) - 1, Y(railAt(railEndX) - tV / 2), X(wallX) - 14, Y(railTopWallY) - 9, "B"))
+  }
 
-  // ── 勾配角度（折り曲げ点の水平線に対する角度） ──
-  {
+  // ── 勾配角度（折り曲げ点の水平線に対する角度）。蔦は握り手が曲線なので注記にだけ書く ──
+  if (!vine) {
     const pxq = X(firstPostX) + halfPost / S // 折り曲げ外側コーナー付近
     const pyq = Y(railAt(firstPostX + halfPost))
     const r = 16
@@ -396,15 +432,25 @@ export function buildStairDrawingSvg(svg: SVGSVGElement, opts: StairDrawingOpts)
   parts.push(extLine(X(0), floorMm + 1, X(0), aY + 1.5), extLine(X(wallX), floorMm + 1, X(wallX), aY + 1.5))
   parts.push(dimH(X(0), X(wallX), aY, `設置範囲 A＝${fmt(runMm)}`))
   // 総高さ（左）
-  const hX = X(0) - 9
-  parts.push(extLine(X(0) - 1, floorMm, hX - 1.5, floorMm))
+  const hX = X(contentLeft) - 9
+  parts.push(extLine(X(contentLeft) - 1, floorMm, hX - 1.5, floorMm))
   parts.push(line(hX - 1.5, Y(wallY), X(wallX), Y(wallY), THIN_W, "4 3"))
   parts.push(dimV(hX, Y(wallY), floorMm, `床〜最上段 ${fmt(totalRiseMm)}`))
-  // 手すり高さ（1本目の柱に沿って）
-  const rhX = X(firstPostX) - 5
-  parts.push(dimV(rhX, Y(railAt(firstPostX)), Y(noseY[0]), `手すり高さ ${railHeightMm}`, { size: 2.8 }))
-  // 全長（笠木の上に平行）
-  {
+  // 手すり高さ（Laurent＝1本目の柱に沿って／蔦＝最上段の段鼻から勾配線まで）
+  if (vine) {
+    // 途中の柱の輪と重ならないよう、壁寄り（最上段の踏み面の上）で測る
+    const ix = Math.max(noseX[steps - 1] + 20, wallX - 80)
+    const rhX = X(ix)
+    parts.push(dimV(rhX, Y(railAt(ix)), Y(noseY[steps - 1]), `手すり高さ ${railHeightMm}`, { size: 2.8 }))
+    // 握り手下端の床着地（1段目の段鼻から手前へ）
+    parts.push(extLine(X(vine.foot[0]), floorMm + 1, X(vine.foot[0]), aY + 1.5))
+    parts.push(dimH(X(vine.foot[0]), X(0), aY, `${TSUTA_FOOT_OUT_MM}`, { size: 2.8 }))
+  } else {
+    const rhX = X(firstPostX) - 5
+    parts.push(dimV(rhX, Y(railAt(firstPostX)), Y(noseY[0]), `手すり高さ ${railHeightMm}`, { size: 2.8 }))
+  }
+  // 全長（笠木の上に平行）。蔦は曲線なので出さない
+  if (!vine) {
     const offset = 8
     const ang = Math.atan2(Y(railTopWallY) - Y(railAt(firstPostX)), X(railEndX) - X(firstPostX))
     const ox = offset * Math.sin(ang)
@@ -431,16 +477,19 @@ export function buildStairDrawingSvg(svg: SVGSVGElement, opts: StairDrawingOpts)
   // ── 注記 ──
   const crossbarText =
     crossbarCount > 0
-      ? `横桟 ${crossbarCount}本（${LAURENT.crossbar[crossbarMaterial].label}・壁に固定せず最終段中央の柱で受ける）`
+      ? `横桟 ${crossbarCount}本（${product.crossbar[crossbarMaterial].label}・壁に固定せず最終段中央の柱で受ける）`
       : "横桟なし"
   const riserText = risersMm.every((r) => r === risersMm[0])
     ? `${risersMm[0]}mm（全段一律）`
     : `${risersMm.join("/")}mm（段別）`
   parts.push(
     noteBlock(10, 152, [
-      `段数 ${steps}段・柱 ${drawnPostCount}本（1本目＝1段目踏板中央・以降${LAURENT.stepsPerPost}段ごと${hasCrossbarPost ? "・横桟用に最終段中央へ1本" : ""}）・笠木上端は壁付け`,
+      vine
+        ? `段数 ${steps}段・途中の柱 ${vinePostSteps.length}本${vinePostSteps.length ? `（${vinePostSteps.join("・")}段目の踏み板）` : ""}・握り手の下端は1段目の段鼻から${TSUTA_FOOT_OUT_MM}mm手前の床に着地・上端は壁付け`
+        : `段数 ${steps}段・柱 ${drawnPostCount}本（1本目＝1段目踏板中央・以降${product.post.stepsPerPost}段ごと${hasCrossbarPost ? "・横桟用に最終段中央へ1本" : ""}）・笠木上端は壁付け`,
       `蹴上げ ${riserText}／踏み面 ${treadMm}mm／蹴込み ${kekomiMm}mm／最終段の踏み面 D＝${lastTreadMm}mm`,
-      `手すり高さは段鼻から笠木上端まで ${railHeightMm}mm。勾配 約${slopeDeg.toFixed(1)}°。${crossbarText}。`,
+      `手すり高さは段鼻から${vine ? "握り手" : "笠木"}上端まで ${railHeightMm}mm。勾配 約${slopeDeg.toFixed(1)}°。${crossbarText}。`,
+      ...(product.drawingNote ? [product.drawingNote] : []),
       `本図は入力寸法から自動生成した参考図です。製作時に現場状況へ合わせて微調整します。`,
       `A4 横・倍率100%（拡大縮小なし）で印刷すると尺度どおりに出力されます。`,
     ]),
@@ -448,19 +497,23 @@ export function buildStairDrawingSvg(svg: SVGSVGElement, opts: StairDrawingOpts)
 
   // ── 詳細図・表題欄（右列） ──
   const DETAIL_SCALE = 2
-  parts.push(detailA(190, 18, DETAIL_SCALE))
-  parts.push(detailB(190, 78, DETAIL_SCALE))
+  // 詳細図 A・B は Laurent のフラットバー断面と座金の実物仕様。蔦は手仕事の一点物で
+  // 断面・座金寸法が決まっていないため出さない（誤った断面を見せない）。
+  if (product.railStyle !== "vine") {
+    parts.push(detailA(190, 18, DETAIL_SCALE))
+    parts.push(detailB(190, 78, DETAIL_SCALE))
+  }
 
   const colorText = color === "white" ? "マットホワイト" : "マットブラック"
   const totalScrews = drawnPostCount * BASE_PLATE.screws + WALL_PLATE.screws
   parts.push(
     titleBlock(SHEET_W_MM - FRAME_MM - 2, SHEET_H_MM - FRAME_MM - 2, {
-      productName: "Laurent ローラン 階段手摺",
-      drawingNo: `IW-LAU-${todayText().replace(/-/g, "")}`,
-      scaleText: `${scaleLabel(S)}（詳細図 ${scaleLabel(DETAIL_SCALE)}）`,
-      material: "フラットバー 9×38（無垢鉄）",
-      finish: `2液型ウレタン塗装 ${colorText}`,
-      accessories: `${SCREW_LABEL} ×${totalScrews}本`,
+      productName: product.drawingTitle.productName,
+      drawingNo: `${product.drawingTitle.code}-${todayText().replace(/-/g, "")}`,
+      scaleText: product.railStyle === "vine" ? scaleLabel(S) : `${scaleLabel(S)}（詳細図 ${scaleLabel(DETAIL_SCALE)}）`,
+      material: product.drawingTitle.material,
+      finish: product.drawingTitle.finish ?? `2液型ウレタン塗装 ${colorText}`,
+      accessories: product.drawingTitle.accessories ?? `${SCREW_LABEL} ×${totalScrews}本`,
       dateText: todayText(),
     }),
   )

@@ -6,7 +6,7 @@ import { getOrCreateConsumptionTaxRate } from '@/lib/stripe/tax-rate';
 // 価格・座金計算の正本は lib/products/order-pricing.ts（カード決済・銀行振込で共有）。
 import { PRODUCTS, calcPrice, RUSH_RATE } from '@/lib/products/order-pricing';
 // 階段手摺 Laurent の価格・寸法計算の正本（商品ページ・銀行振込と共有）。
-import { LAURENT, parseStairOrderBody } from '@/lib/products/stair-pricing';
+import { getStairProduct, parseStairOrderBody, type StairProductConfig } from '@/lib/products/stair-pricing';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -24,10 +24,11 @@ export async function POST(request: NextRequest) {
 
     const productKey = (body?.product || 'rene').toLowerCase();
 
-    // Laurent（階段手摺）は段数ベースの価格モデルで、長さベースの共通フローに乗らない
-    // ため専用処理へ。価格・寸法の正本は lib/products/stair-pricing.ts。
-    if (productKey === LAURENT.slug) {
-      return createStairCheckoutSession(request, body);
+    // 階段手摺（Laurent / 蔦 室内階段）は段数ベースの価格モデルで、長さベースの
+    // 共通フローに乗らないため専用処理へ。価格・寸法の正本は lib/products/stair-pricing.ts。
+    const stairProduct = getStairProduct(productKey);
+    if (stairProduct) {
+      return createStairCheckoutSession(request, body, stairProduct);
     }
 
     const prod = PRODUCTS[productKey];
@@ -299,9 +300,10 @@ export async function POST(request: NextRequest) {
 async function createStairCheckoutSession(
   request: NextRequest,
   body: Record<string, unknown>,
+  stairProduct: StairProductConfig,
 ): Promise<NextResponse> {
   try {
-    const parsed = parseStairOrderBody(body);
+    const parsed = parseStairOrderBody(body, stairProduct);
     if (!parsed.ok) {
       return NextResponse.json({ error: parsed.error, inquiry: parsed.inquiry === true }, { status: 400 });
     }
@@ -312,7 +314,7 @@ async function createStairCheckoutSession(
       return NextResponse.json({ error: '配送先都道府県を選択してください' }, { status: 400 });
     }
     // 送料は実寸によらず常に最大サイズで計算（2026-07-05 蠣﨑さん指示・柱/横桟込みで大型のため）
-    const shippingResult = calcShipping([LAURENT.shippingLengthMm], prefecture, 'yokogata');
+    const shippingResult = calcShipping([stairProduct.shippingLengthMm], prefecture, 'yokogata');
     if (shippingResult.inquiry) {
       return NextResponse.json({
         error: shippingResult.inquiryReason || '配送条件により別途お見積もりが必要です',
@@ -323,18 +325,18 @@ async function createStairCheckoutSession(
     const shippingTaxYen = Math.round(shippingYen * 0.1);
     const totalYen = order.price.total + shippingYen + shippingTaxYen;
 
-    // Laurent は大物のため 15 営業日（getScheduleDates は 10 営業日固定なので自前で計算）。
+    // 階段手摺は大物のため商品ごとの営業日数（getScheduleDates は 10 営業日固定なので自前で計算）。
     // 内訳は既存と同じ構造: 翌営業日に制作開始 → 制作 → 完了翌営業日に発送。
     const now = new Date();
     const productionStart = addBusinessDays(now, 1);
-    const productionComplete = addBusinessDays(productionStart, LAURENT.deliveryBusinessDays - 2);
+    const productionComplete = addBusinessDays(productionStart, stairProduct.deliveryBusinessDays - 2);
     const schedule = {
       productionStart,
       productionComplete,
       shippingDate: addBusinessDays(productionComplete, 1),
       arrivalDate: addBusinessDays(addBusinessDays(productionComplete, 1), 1),
     };
-    const deliveryDesc = `2液型ウレタン塗装 / 通常配送 ${LAURENT.deliveryBusinessDays}営業日`;
+    const deliveryDesc = `${order.metadata.color} / 通常配送 ${stairProduct.deliveryBusinessDays}営業日`;
 
     const host = request.headers.get('host') || 'ironworks-ado.vercel.app';
     const baseUrl = `https://${host}`;
@@ -378,7 +380,7 @@ async function createStairCheckoutSession(
       mode: 'payment',
       shipping_address_collection: { allowed_countries: ['JP'] },
       phone_number_collection: { enabled: true },
-      return_url: `${baseUrl}/thanks?session_id={CHECKOUT_SESSION_ID}&product=${LAURENT.slug}&length=${order.geometry.diagonalMm}&rush=0`,
+      return_url: `${baseUrl}/thanks?session_id={CHECKOUT_SESSION_ID}&product=${stairProduct.slug}&length=${order.geometry.diagonalMm}&rush=0`,
       metadata: {
         ...order.metadata,
         is_multi_order: 'false',
@@ -416,7 +418,7 @@ async function createStairCheckoutSession(
             amount_tax_display: 'include_inclusive_tax',
           },
           metadata: {
-            product: LAURENT.slug,
+            product: stairProduct.slug,
             steps: String(order.steps),
             diagonal_mm: String(order.geometry.diagonalMm),
             rush_delivery: 'false',
@@ -428,7 +430,7 @@ async function createStairCheckoutSession(
     return NextResponse.json({ clientSecret: session.client_secret });
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
-    console.error('[checkout] Stripe error (laurent):', message);
+    console.error('[checkout] Stripe error (stair):', message);
     return NextResponse.json(
       { error: 'セッションの作成に失敗しました', detail: message },
       { status: 500 }
