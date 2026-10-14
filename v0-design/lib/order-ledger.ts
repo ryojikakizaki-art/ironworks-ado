@@ -13,6 +13,7 @@
  *
  * 列順 A〜L: 受注日 / 区分 / 顧客名 / 都道府県 / 住所 / メール / 電話 / 商品 / 仕様 / 金額 / 注文番号 / メモ
  * M/N 列は商品カテゴリ自動分類（数式・触らない）、O 列は対応状況。
+ * R 列（任意）: 制作図リンク（lib/seizu-links.ts）。銀行振込の入金確認メールで使う。
  * P/Q 列（任意）: 送料（税抜） / 送料消費税。納品書で商品代と送料を分けて表示するために
  * 2026-08 追加。送料が別建てでない受注（現地施工・現金など）は空欄のままでよい。
  */
@@ -103,6 +104,7 @@ async function withSheetsRetry<T>(label: string, op: () => Promise<T>): Promise<
  * @param shipping 送料（税抜）・送料消費税（任意）。指定時は P/Q 列に書き込む。
  * @param status   O 列（対応状況）の初期値（任意）。納品済みの受注を後から記帳するときに
  *                 指定すると、ウィジェット・/admin/orders の「対応中」に出ない。
+ * @param seizuCell R 列（制作図リンク・任意）。銀行振込の注文で入金確認時のメールに載せる。
  */
 export async function writeOrderRow(
   orderKey: string,
@@ -110,6 +112,7 @@ export async function writeOrderRow(
   shipping?: { yen: number; taxYen: number },
   channel = '受注',
   status?: string,
+  seizuCell?: string,
 ): Promise<'created' | 'duplicate'> {
   const sheetId = LEDGER_SHEET_ID;
   const keyJson = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
@@ -192,6 +195,22 @@ export async function writeOrderRow(
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       console.warn(`[order-ledger] O2（対応状況）の書き込みに失敗: ${orderKey} — ${msg}`);
+    }
+  }
+
+  // R 列（制作図リンク）。失敗しても注文は記帳済み。入金確認メールにリンクが載らないだけ。
+  if (seizuCell && seizuCell.trim()) {
+    try {
+      await withSheetsRetry('R2 の書き込み', () =>
+        sheets.spreadsheets.values.update({
+          spreadsheetId: sheetId,
+          range: 'R2',
+          valueInputOption: 'RAW',
+          requestBody: { values: [[seizuCell.trim()]] },
+        }));
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn(`[order-ledger] R2（制作図リンク）の書き込みに失敗: ${orderKey} — ${msg}`);
     }
   }
   return 'created';

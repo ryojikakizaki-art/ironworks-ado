@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { customerKubun, writeOrderRow } from '@/lib/order-ledger';
+import { buildSeizuLinks, encodeSeizuCell, type SeizuSpec } from '@/lib/seizu-links';
 
 // googleapis を使うため Node ランタイム固定。
 export const runtime = 'nodejs';
@@ -24,6 +25,8 @@ export const runtime = 'nodejs';
  * L 列が「入金待ち」で始まり、/admin/orders に「入金確認 → 制作開始」ボタンが出る。
  * 押すとサイトの銀行振込注文と同じく、カレンダー 4 件登録＋お客様へ制作開始メール。
  * 発送後は既存の「発送通知メール」ボタンで追跡番号入りメールが届く。
+ * 長さ指定の手すりは `drawings` を渡すと R 列に制作図リンクが入り、入金確認時に
+ * 工房宛てメールとお客様の制作開始メール（寸法図）に載る。
  */
 
 type ManualOrderPayload = {
@@ -42,6 +45,8 @@ type ManualOrderPayload = {
   shipping_yen?: number;   // P 送料（税抜・任意）。見積書に送料が別建てで明記されている場合のみ指定。
   status?: string;         // O 対応状況（任意）。納品・取付済みの受注を後から記帳するときに指定（例: 「済」）。
   awaiting_payment?: boolean; // true で L 列の先頭に「入金待ち」を付ける（銀行振込の入金前に記帳する場合）
+  // 制作図（任意）。例: [{ "product":"claire", "lengths":[2150,1200], "label":"Claire 横型 2150/1200mm" }]
+  drawings?: SeizuSpec[];
 };
 
 // 受注日を台帳の表記 YYYY/MM/DD に正規化する。
@@ -129,7 +134,10 @@ export async function POST(request: NextRequest) {
 
   let status: 'created' | 'duplicate';
   try {
-    status = await writeOrderRow(orderRef, row, shipping, '手動受注', String(payload.status || ''));
+    const seizuCell = Array.isArray(payload.drawings)
+      ? encodeSeizuCell(buildSeizuLinks(payload.drawings, orderRef))
+      : '';
+    status = await writeOrderRow(orderRef, row, shipping, '手動受注', String(payload.status || ''), seizuCell);
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('[manual-order] Ledger error:', message);

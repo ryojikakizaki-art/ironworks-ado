@@ -14,6 +14,7 @@ import {
   calcExtensionPrice,
 } from '@/lib/drawing-modal/clemence-svg';
 import { writeOrderRow } from '@/lib/order-ledger';
+import { buildSeizuLinks, encodeSeizuCell, type SeizuSpec } from '@/lib/seizu-links';
 import { BANK_ACCOUNT } from '@/lib/bank-account';
 // カート（複数商品まとめ買い）の価格・送料の正本（カートページ・カード決済と共有）。
 import { sanitizeCart, calcCartPricing } from '@/lib/cart/pricing';
@@ -128,6 +129,8 @@ export async function POST(request: NextRequest) {
   // 送料（税抜・税額）。納品書で商品代と送料を分けて表示するため、台帳の P/Q 列に記帳する。
   let shippingYen = 0;
   let shippingTaxYen = 0;
+  // 制作図（/seizu）にできる手すり。入金確認メールで使うため台帳 R 列に保存する。
+  const seizuSpecs: SeizuSpec[] = [];
 
   if (body.cart === true) {
     // カート（複数商品まとめ買い）: 価格・送料は lib/cart/pricing.ts で再計算（カード決済と共有）。
@@ -147,6 +150,17 @@ export async function POST(request: NextRequest) {
     totalYen = pricing.total;
     shippingYen = pricing.shipping;
     shippingTaxYen = pricing.shippingTax;
+    for (const l of pricing.lines) {
+      seizuSpecs.push({
+        product: l.item.product,
+        lengths: Array(l.item.quantity).fill(l.item.lengthMm),
+        washer: l.item.washerType,
+        positions: l.item.positions,
+        angleDeg: l.item.angleDeg,
+        angleDir: l.item.angleDir,
+        label: l.label,
+      });
+    }
     // 受注台帳は 1 注文 = 1 行。商品欄に全商品を並べる（2026-07-31 蠣﨑さん確定）。
     productLabel = pricing.lines
       .map((l) => `${l.label}${l.item.quantity > 1 ? ` × ${l.item.quantity}本` : ''}`)
@@ -284,6 +298,15 @@ export async function POST(request: NextRequest) {
     : `${L}mm`;
   const zakinTotal = perItem.reduce((s, it) => s + it.zakin, 0);
   productLabel = `${prod.name} 壁付け手すり ${lengthsLabel}${orientationLabel ? `（${orientationLabel}）` : ''}`;
+  seizuSpecs.push({
+    product: productKey,
+    lengths,
+    washer: supportsWasher ? washerType : undefined,
+    positions: zakinCustom ? customPositions : undefined,
+    angleDeg: drawAngleDeg,
+    angleDir: body.angleDir === 'right' ? 'right' : 'left',
+    label: productLabel,
+  });
   specParts = [
     `座金${zakinTotal}個${supportsWasher ? `（${washerType}タイプ）` : ''}`,
     rushDelivery ? '特急配送' : '通常配送',
@@ -318,12 +341,13 @@ export async function POST(request: NextRequest) {
 
   const shipping = shippingYen > 0 || shippingTaxYen > 0 ? { yen: shippingYen, taxYen: shippingTaxYen } : undefined;
   try {
-    const status = await writeOrderRow(orderRef, row, shipping, '銀行振込');
+    const seizuCell = (ref: string) => encodeSeizuCell(buildSeizuLinks(seizuSpecs, ref));
+    const status = await writeOrderRow(orderRef, row, shipping, '銀行振込', undefined, seizuCell(orderRef));
     if (status === 'duplicate') {
       // 注文番号衝突（ほぼ起きない）。番号を採り直して 1 回だけ再試行。
       const retryRef = makeOrderRef();
       row[10] = retryRef;
-      await writeOrderRow(retryRef, row, shipping, '銀行振込');
+      await writeOrderRow(retryRef, row, shipping, '銀行振込', undefined, seizuCell(retryRef));
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Unknown error';
