@@ -606,3 +606,21 @@ DRAWING_PRODUCTS.european = {
 export function getDrawingProduct(slug: string): DrawingProductConfig | null {
   return DRAWING_PRODUCTS[slug] ?? null
 }
+
+/**
+ * 白／黒を選べる商品（colorOptions）の図面を、注文の色に合わせた表記にする。
+ * 仕上げ（横型の表題欄）と titleBlock.color（縦型CAD）の両方を上書きする。
+ * color は "white" / "black" のほか、"マットホワイト" 等の表記も受け付ける。
+ */
+export function withDrawingColor(
+  product: DrawingProductConfig,
+  color: string | undefined,
+): DrawingProductConfig {
+  if (!product.colorOptions || !color) return product
+  const label = /white|ホワイト|白/i.test(color) ? "マットホワイト" : "マットブラック"
+  return {
+    ...product,
+    finish: label,
+    ...(product.titleBlock ? { titleBlock: { ...product.titleBlock, color: label } } : {}),
+  }
+}

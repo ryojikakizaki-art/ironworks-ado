@@ -158,6 +158,7 @@ export async function POST(request: NextRequest) {
         positions: l.item.positions,
         angleDeg: l.item.angleDeg,
         angleDir: l.item.angleDir,
+        color: l.item.color,
         label: l.label,
       });
     }
@@ -305,6 +306,7 @@ export async function POST(request: NextRequest) {
     positions: zakinCustom ? customPositions : undefined,
     angleDeg: drawAngleDeg,
     angleDir: body.angleDir === 'right' ? 'right' : 'left',
+    color: supportsColor ? color : undefined,
     label: productLabel,
   });
   specParts = [
