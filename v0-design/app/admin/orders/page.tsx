@@ -236,7 +236,7 @@ function AdminOrdersInner() {
             対応状況（O列）が空欄の注文を表示しています。発送したら追跡番号を入れて
             「発送通知メール」を押すと、お客様に追跡番号入りの発送メールが届き、台帳にも記録されます。
             <br />
-            銀行振込で「入金待ち」の注文は、入金を確認してから「入金確認 → 制作開始」を押してください
+            銀行振込で「入金待ち」の注文（サイトからの注文・見積で受けた注文）は、入金を確認してから「入金確認 → 制作開始」を押してください
             （制作スケジュールに登録し、お客様へ制作開始メールを送ります）。
           </p>
         </div>
@@ -314,7 +314,7 @@ function AdminOrdersInner() {
                   </td>
                   <td className="px-4 py-3 align-top">
                     <div className="flex w-44 flex-col gap-1.5">
-                      {o.channel.includes('銀行振込') && o.note.includes('入金待ち') ? (
+                      {o.note.includes('入金待ち') ? (
                         <>
                           <span className="inline-flex w-fit items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-[11px] font-medium text-amber-800">
                             入金待ち
