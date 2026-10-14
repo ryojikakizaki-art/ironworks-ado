@@ -243,7 +243,7 @@ export const DRAWING_PRODUCTS: Record<string, DrawingProductConfig> = {
     nameJa: "Claire 横型手すり",
     drawingCode: "IW-CLA",
     material: "STKM φ25.4",
-    finish: "マットブラック",
+    finish: "マットホワイト",
     category: "horizontal",
     shape: ROUND_25_4,
     basePrice: 42000,
