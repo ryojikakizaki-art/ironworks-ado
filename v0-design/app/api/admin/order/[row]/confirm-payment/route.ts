@@ -6,6 +6,8 @@ export const runtime = 'nodejs';
 
 /**
  * 銀行振込注文の「入金確認」処理（Phase 2）。/admin/orders の入金確認ボタンが呼ぶ。
+ * 対象は L 列が「入金待ち」の行。サイトの銀行振込注文（B=銀行振込）と、
+ * 見積→請求書で振込を受ける手動受注（/api/manual-order の awaiting_payment）の両方。
  *
  * 処理:
  *   ① 受注台帳の該当行を読む
@@ -78,10 +80,7 @@ export async function POST(
   const orderRef = r[10] ?? ''; // K 注文番号
   const note = r[11] ?? '';     // L メモ
 
-  // 銀行振込以外、または既に入金確認済みの行は誤操作防止のため弾く。
-  if (!channel.includes('銀行振込')) {
-    return NextResponse.json({ ok: false, error: 'この注文は銀行振込ではありません' }, { status: 400 });
-  }
+  // 入金待ちでない行（カード決済・確認済み）は誤操作防止のため弾く。
   if (!note.includes('入金待ち')) {
     return NextResponse.json({ ok: false, error: 'この注文は入金待ちではありません（確認済みの可能性）' }, { status: 400 });
   }
@@ -108,7 +107,7 @@ export async function POST(
         `仕様: ${spec}`,
         `お客様: ${customer}`,
         `注文番号: ${orderRef}`,
-        `区分: 銀行振込（入金確認 ${confirmedDate}）`,
+        `区分: ${channel}・銀行振込（入金確認 ${confirmedDate}）`,
       ].join('\n');
       const events = [
         { summary: `${rush}制作開始 — ${product}`, date: formatDateISO(schedule.productionStart) },

@@ -19,6 +19,11 @@ export const runtime = 'nodejs';
  * カレンダー登録はこのエンドポイントでは行わない。現地施工は記帳時点で
  * 完了済みのことが多いため。将来の制作予定が必要なら Claude が
  * カレンダー側で別途登録する。
+ *
+ * 見積→請求書→銀行振込の規格品注文（設置なし）は `awaiting_payment: true` で記帳する。
+ * L 列が「入金待ち」で始まり、/admin/orders に「入金確認 → 制作開始」ボタンが出る。
+ * 押すとサイトの銀行振込注文と同じく、カレンダー 4 件登録＋お客様へ制作開始メール。
+ * 発送後は既存の「発送通知メール」ボタンで追跡番号入りメールが届く。
  */
 
 type ManualOrderPayload = {
@@ -36,6 +41,7 @@ type ManualOrderPayload = {
   note?: string;           // L メモ
   shipping_yen?: number;   // P 送料（税抜・任意）。見積書に送料が別建てで明記されている場合のみ指定。
   status?: string;         // O 対応状況（任意）。納品・取付済みの受注を後から記帳するときに指定（例: 「済」）。
+  awaiting_payment?: boolean; // true で L 列の先頭に「入金待ち」を付ける（銀行振込の入金前に記帳する場合）
 };
 
 // 受注日を台帳の表記 YYYY/MM/DD に正規化する。
@@ -61,6 +67,14 @@ function toLedgerDate(input: string | undefined): string {
     month: '2-digit',
     day: '2-digit',
   });
+}
+
+// 入金前の記帳なら「入金待ち」を先頭に付ける。confirm-payment がこの文字列を
+// 「入金確認 YYYY/MM/DD」に置き換えるので、表記はサイトの銀行振込注文と揃える。
+function noteWithPaymentState(payload: ManualOrderPayload): string {
+  const note = String(payload.note || '').trim();
+  if (!payload.awaiting_payment || note.includes('入金待ち')) return note;
+  return note ? `入金待ち / ${note}` : '入金待ち';
 }
 
 export async function POST(request: NextRequest) {
@@ -107,7 +121,7 @@ export async function POST(request: NextRequest) {
     String(payload.spec || '').trim(),         // I 仕様
     String(Math.round(totalYen)),              // J 金額
     orderRef,                                  // K 注文番号
-    String(payload.note || '').trim(),         // L メモ
+    noteWithPaymentState(payload),             // L メモ
   ];
 
   const shippingYen = Number(payload.shipping_yen || 0);
