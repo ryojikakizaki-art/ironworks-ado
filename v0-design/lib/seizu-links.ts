@@ -21,6 +21,8 @@ export type SeizuSpec = {
   positions?: number[];
   angleDeg?: number;
   angleDir?: string;
+  /** 白／黒を選べる商品の色（"white" / "マットホワイト" など）。白のときだけリンクに付ける */
+  color?: string;
   label?: string;
 };
 
@@ -40,6 +42,7 @@ export function buildSeizuLink(spec: SeizuSpec, orderRef: string): SeizuLink | n
     params.set('angle', String(Math.round(spec.angleDeg)));
     params.set('dir', spec.angleDir === 'right' ? 'right' : 'left');
   }
+  if (spec.color && /white|ホワイト|白/i.test(spec.color)) params.set('color', 'white');
   if (orderRef) params.set('order', orderRef);
   const label = spec.label || `${product} ${lengths.join('/')}mm`;
   return { label, url: `${SITE_ORIGIN}/seizu?${params.toString()}` };

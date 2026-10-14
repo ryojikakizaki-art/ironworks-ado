@@ -29,6 +29,7 @@ export default async function SeizuPage({
       angle={get("angle")}
       dir={get("dir")}
       order={get("order")}
+      color={get("color")}
     />
   )
 }

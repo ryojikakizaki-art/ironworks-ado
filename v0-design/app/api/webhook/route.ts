@@ -581,6 +581,7 @@ export async function sendWorkshopEmail(session: Stripe.Checkout.Session, isSimp
         params.set('angle', String(l.angleDeg));
         params.set('dir', l.angleDir || 'left');
       }
+      if (l.color === 'white') params.set('color', 'white');
       params.set('order', session.id);
       drawingLinks.push({ label: l.label, url: `${SITE_ORIGIN}/seizu?${params.toString()}` });
     }
@@ -638,6 +639,8 @@ export async function sendWorkshopEmail(session: Stripe.Checkout.Session, isSimp
         params.set('angle', meta.angle_deg);
         params.set('dir', meta.angle_dir || 'left');
       }
+      // checkout は白／黒を選べる商品だけ metadata.color に「マットホワイト」等を入れる
+      if (/ホワイト|white/i.test(String(meta.color || ''))) params.set('color', 'white');
       params.set('order', session.id);
       drawingUrl = `${SITE_ORIGIN}/seizu?${params.toString()}`;
     }

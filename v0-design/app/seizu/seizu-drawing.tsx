@@ -5,7 +5,7 @@ import { buildRoundRailDrawingSvg } from "@/lib/drawing-modal/rene-svg"
 import { buildVerticalRailDrawingSvg } from "@/lib/drawing-modal/vertical-svg"
 import { buildVerticalCadDrawingSvg } from "@/lib/drawing-modal/vertical-cad-svg"
 import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants"
-import { getDrawingProduct, type WasherTypeId } from "@/lib/drawing-modal/products"
+import { getDrawingProduct, withDrawingColor, type WasherTypeId } from "@/lib/drawing-modal/products"
 
 // 受注ごとの制作図スタンドアロンページ。決済 webhook から送られる工房宛メールの
 // リンク先。URL クエリ（商品・長さ・座金位置・座金タイプ・角度）だけで、商品ページの
@@ -21,6 +21,8 @@ export interface SeizuDrawingProps {
   angle: string
   dir: string
   order: string
+  /** white / black。白／黒を選べる商品（Alexandre・Antoine）の表記に使う */
+  color?: string
 }
 
 function parseCsvNumbers(csv: string): number[] {
@@ -32,7 +34,11 @@ function parseCsvNumbers(csv: string): number[] {
 
 export function SeizuDrawing(props: SeizuDrawingProps) {
   const svgRef = useRef<SVGSVGElement>(null)
-  const product = getDrawingProduct(props.product)
+  const baseProduct = getDrawingProduct(props.product)
+  const product = useMemo(
+    () => (baseProduct ? withDrawingColor(baseProduct, props.color) : null),
+    [baseProduct, props.color],
+  )
 
   const lengthsArr = useMemo(() => parseCsvNumbers(props.lengths), [props.lengths])
   // positions クエリが無い注文（座金カスタム指定なし）は null を返し、
