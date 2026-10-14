@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LEDGER_SHEET_ID, updateOrderNote } from '@/lib/order-ledger';
 import { getScheduleDates, formatDateISO, formatDateJa } from '@/lib/business-days';
+import { decodeSeizuCell, type SeizuLink } from '@/lib/seizu-links';
 
 export const runtime = 'nodejs';
 
@@ -15,6 +16,8 @@ export const runtime = 'nodejs';
  *      （制作開始 / 制作完了予定 / 発送予定 / 到着予定）— カード決済 webhook と同じ粒度
  *   ③ L 列「入金待ち」→「入金確認 YYYY/MM/DD」に更新（他列・数式列には触れない）
  *   ④ お客様へ「制作開始のご案内」メールを送信（Resend・ベストエフォート）
+ *      台帳 R 列に制作図リンクがあれば「寸法図」ボタンを付ける
+ *   ⑤ 工房へ「入金確認・制作図」メール（制作図リンク・スケジュール）
  *
  * 認証は middleware.ts の Basic 認証で済むためここでは追加チェックしない。
  * 発送済み(O列)はこのボタンでは触らない（入金確認 = 制作着手であり発送ではないため）。
@@ -59,7 +62,7 @@ export async function POST(
     const sheets = google.sheets({ version: 'v4', auth });
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: LEDGER_SHEET_ID,
-      range: `A${row}:O${row}`,
+      range: `A${row}:R${row}`,
     });
     const got = res.data.values?.[0];
     if (!got) {
@@ -79,6 +82,7 @@ export async function POST(
   const spec = r[8] ?? '';      // I 仕様
   const orderRef = r[10] ?? ''; // K 注文番号
   const note = r[11] ?? '';     // L メモ
+  const seizuLinks: SeizuLink[] = decodeSeizuCell(r[17] ?? ''); // R 制作図リンク
 
   // 入金待ちでない行（カード決済・確認済み）は誤操作防止のため弾く。
   if (!note.includes('入金待ち')) {
@@ -148,13 +152,17 @@ export async function POST(
     );
   }
 
+  const apiKey = process.env.RESEND_API_KEY;
+  const fromAddress = process.env.CONTACT_FROM || 'IRONWORKS ado <onboarding@resend.dev>';
+  const seizuButtons = (text: string) => seizuLinks
+    .map((l) => `<div style="margin:8px 0;"><a href="${esc(l.url)}" style="display:inline-block;background:#b8860b;color:#fff;text-decoration:none;padding:10px 20px;border-radius:6px;font-size:13px;">${esc(text)} — ${esc(l.label)}</a></div>`)
+    .join('');
+
   // ── ④ お客様へ制作開始メール（ベストエフォート）──
   let emailSent = false;
   const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   if (validEmail) {
     try {
-      const apiKey = process.env.RESEND_API_KEY;
-      const fromAddress = process.env.CONTACT_FROM || 'IRONWORKS ado <onboarding@resend.dev>';
       if (!apiKey) throw new Error('RESEND_API_KEY not set');
 
       const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><style>
@@ -179,6 +187,8 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f3f4f6;color:#333
 <div class="row"><span class="label">発送予定</span><span class="value">${esc(formatDateJa(schedule.shippingDate))}</span></div>
 <div class="row"><span class="label">到着予定（目安）</span><span class="value">${esc(formatDateJa(schedule.arrivalDate))}</span></div>
 </div>
+${seizuLinks.length ? `<p style="margin-top:24px;"><strong>ご注文の寸法図</strong><br>手すりの長さと座金の位置をご確認いただけます。画面の「PDF保存 / 印刷」から保存もできます。お気づきの点があれば、お早めにこのメールへご返信ください。</p>
+${seizuButtons('寸法図を見る')}` : ''}
 <p>発送の際は、追跡番号を添えて改めてご連絡いたします。<br>※日程は目安です。制作状況により前後する場合がございます。</p>
 </div>
 <div class="footer"><p>© IRONWORKS ado / 鍛鉄工房ZEST — ado@tantetuzest.com</p></div>
@@ -200,9 +210,49 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f3f4f6;color:#333
     }
   }
 
-  console.log(`[confirm-payment] row ${row} ${orderRef} confirmed: events=${eventsCreated} email=${emailSent}`);
+  // ── ⑤ 工房へ入金確認・制作図メール（ベストエフォート）──
+  let workshopSent = false;
+  try {
+    if (!apiKey) throw new Error('RESEND_API_KEY not set');
+    const workshopTo = process.env.CONTACT_TO_EMAIL || 'ado@tantetuzest.com';
+    const rowsHtml = ([
+      ['注文番号', orderRef],
+      ['お客様', `${customer} 様`],
+      ['区分', channel],
+      ['商品', product],
+      ['仕様', spec],
+      ['入金確認', confirmedDate],
+      ['制作完了予定', formatDateJa(schedule.productionComplete)],
+      ['発送予定', formatDateJa(schedule.shippingDate)],
+      ['お客様へのメール', emailSent ? '制作開始メール送信済み' : '未送信（メールアドレスなし・送信失敗）'],
+    ] as Array<[string, string]>)
+      .map(([k, v]) => `<tr><td style="color:#888;font-size:12px;padding:6px 12px 6px 0;white-space:nowrap;vertical-align:top;">${esc(k)}</td><td style="font-size:14px;padding:6px 0;">${esc(v)}</td></tr>`)
+      .join('');
+    const html = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"></head>
+<body style="font-family:'Helvetica Neue',Arial,sans-serif;background:#f3f4f6;margin:0;padding:24px;">
+<div style="max-width:600px;margin:0 auto;background:#fff;border:1px solid #e5e7eb;padding:24px 28px;">
+<p style="font-size:13px;letter-spacing:0.2em;color:#b8860b;margin:0 0 12px;">入金確認 → 制作開始</p>
+<table style="border-collapse:collapse;">${rowsHtml}</table>
+${seizuLinks.length ? `<p style="margin:20px 0 4px;font-size:14px;"><strong>制作図</strong></p>${seizuButtons('制作図を開く')}` : '<p style="margin-top:20px;font-size:13px;color:#888;">この注文には制作図リンクがありません（台帳 R 列が空）。</p>'}
+</div></body></html>`;
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        from: fromAddress,
+        to: [workshopTo],
+        subject: `【入金確認${seizuLinks.length ? '・制作図' : ''}】${product} — ${customer}様`,
+        html,
+      }),
+    });
+    workshopSent = res.ok;
+  } catch (err) {
+    console.error('[confirm-payment] workshop email error:', err instanceof Error ? err.message : err);
+  }
+
+  console.log(`[confirm-payment] row ${row} ${orderRef} confirmed: events=${eventsCreated} email=${emailSent} workshop=${workshopSent} seizu=${seizuLinks.length}`);
   return NextResponse.json(
-    { ok: true, row, status: newNote, eventsCreated, emailSent },
+    { ok: true, row, status: newNote, eventsCreated, emailSent, workshopSent, seizuLinks: seizuLinks.length },
     { headers: { 'Cache-Control': 'no-store' } },
   );
 }
