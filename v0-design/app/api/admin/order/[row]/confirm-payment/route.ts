@@ -17,6 +17,8 @@ export const runtime = 'nodejs';
  *   ③ L 列「入金待ち」→「入金確認 YYYY/MM/DD」に更新（他列・数式列には触れない）
  *   ④ お客様へ「制作開始のご案内」メールを送信（Resend・ベストエフォート）
  *      台帳 R 列に制作図リンクがあれば「寸法図」ボタンを付ける
+ *      ただし K 列が「MF請求書」で始まる注文（見積→MF請求書→振込）は送らない。
+ *      Claude が MF で領収書を作り、日程入りメールの下書きに添付して蠣﨑さんが送るため（二重送信防止）
  *   ⑤ 工房へ「入金確認・制作図」メール（制作図リンク・スケジュール）
  *
  * 認証は middleware.ts の Basic 認証で済むためここでは追加チェックしない。
@@ -161,7 +163,8 @@ export async function POST(
   // ── ④ お客様へ制作開始メール（ベストエフォート）──
   let emailSent = false;
   const validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
-  if (validEmail) {
+  const isInvoiceOrder = orderRef.startsWith('MF請求書');
+  if (validEmail && !isInvoiceOrder) {
     try {
       if (!apiKey) throw new Error('RESEND_API_KEY not set');
 
@@ -224,7 +227,9 @@ ${seizuButtons('寸法図を見る')}` : ''}
       ['入金確認', confirmedDate],
       ['制作完了予定', formatDateJa(schedule.productionComplete)],
       ['発送予定', formatDateJa(schedule.shippingDate)],
-      ['お客様へのメール', emailSent ? '制作開始メール送信済み' : '未送信（メールアドレスなし・送信失敗）'],
+      ['お客様へのメール', isInvoiceOrder
+        ? '自動送信なし（請求書の取引：Claude が領収書つきの下書きを作成）'
+        : emailSent ? '制作開始メール送信済み' : '未送信（メールアドレスなし・送信失敗）'],
     ] as Array<[string, string]>)
       .map(([k, v]) => `<tr><td style="color:#888;font-size:12px;padding:6px 12px 6px 0;white-space:nowrap;vertical-align:top;">${esc(k)}</td><td style="font-size:14px;padding:6px 0;">${esc(v)}</td></tr>`)
       .join('');
@@ -252,7 +257,7 @@ ${seizuLinks.length ? `<p style="margin:20px 0 4px;font-size:14px;"><strong>制�
 
   console.log(`[confirm-payment] row ${row} ${orderRef} confirmed: events=${eventsCreated} email=${emailSent} workshop=${workshopSent} seizu=${seizuLinks.length}`);
   return NextResponse.json(
-    { ok: true, row, status: newNote, eventsCreated, emailSent, workshopSent, seizuLinks: seizuLinks.length },
+    { ok: true, row, status: newNote, eventsCreated, emailSent, invoiceOrder: isInvoiceOrder, workshopSent, seizuLinks: seizuLinks.length },
     { headers: { 'Cache-Control': 'no-store' } },
   );
 }
