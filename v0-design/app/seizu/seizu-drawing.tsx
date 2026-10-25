@@ -247,10 +247,12 @@ const SEIZU_CSS = `
   .seizu-chrome { display: none !important; }
   .seizu-root { max-width: none; margin: 0; padding: 0; }
   .seizu-sheet { border: none; }
-  /* 図面は横長なので A4 横に出し、用紙の印刷範囲（281×194mm）いっぱいに広げる。
-     SVG は xMidYMid meet なので縦横比を保ったまま中央に収まる。
-     高さは 2 ページ目に溢れないよう印刷範囲より少し小さくする。 */
-  .seizu-sheet svg { width: 100%; height: 186mm; }
-  @page { size: A4 landscape; margin: 8mm; }
+  /* 図面は横長なので用紙を横向きにし、印刷範囲いっぱいに広げる。
+     用紙サイズはプリンター側の設定に任せる（「A4 横」とサイズまで決め打ちすると、
+     Mac の Chrome から実機に印刷したとき右側が切れた）。幅は用紙に合わせ、高さは
+     A4・レター横の印刷範囲（190mm 前後）に収まる上限で止める。
+     SVG は xMidYMid meet なので縦横比を保ったまま中央に収まる。 */
+  .seizu-sheet svg { width: 100%; height: auto; max-height: 180mm; }
+  @page { size: landscape; margin: 10mm; }
 }
 `
