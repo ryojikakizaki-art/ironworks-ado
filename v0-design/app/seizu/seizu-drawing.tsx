@@ -247,6 +247,10 @@ const SEIZU_CSS = `
   .seizu-chrome { display: none !important; }
   .seizu-root { max-width: none; margin: 0; padding: 0; }
   .seizu-sheet { border: none; }
-  @page { margin: 8mm; }
+  /* 図面は横長なので A4 横に出し、用紙の印刷範囲（281×194mm）いっぱいに広げる。
+     SVG は xMidYMid meet なので縦横比を保ったまま中央に収まる。
+     高さは 2 ページ目に溢れないよう印刷範囲より少し小さくする。 */
+  .seizu-sheet svg { width: 100%; height: 186mm; }
+  @page { size: A4 landscape; margin: 8mm; }
 }
 `
