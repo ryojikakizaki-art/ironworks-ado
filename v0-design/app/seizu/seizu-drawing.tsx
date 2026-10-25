@@ -115,9 +115,10 @@ export function SeizuDrawing(props: SeizuDrawingProps) {
   }
 
   // CAD 精密図はビルダー側で viewBox を上書きするため初期値はプレースホルダ。
+  const isCad = product.category === "vertical" && !!product.washerSpec && !!product.titleBlock
   const viewBox =
     product.category === "vertical"
-      ? product.washerSpec && product.titleBlock
+      ? isCad
         ? "-1200 -835 2020 1790"
         : "0 0 500 130"
       : "0 0 840 400"
@@ -162,7 +163,8 @@ export function SeizuDrawing(props: SeizuDrawingProps) {
         </div>
       )}
 
-      <div className="seizu-sheet">
+      {/* 横長の図だけ印刷時に 90° 回して縦の用紙に載せる（CAD 精密図はほぼ正方形なので回さない） */}
+      <div className={isCad ? "seizu-sheet" : "seizu-sheet seizu-sheet--wide"}>
         <svg ref={svgRef} viewBox={viewBox} />
       </div>
 
@@ -247,12 +249,24 @@ const SEIZU_CSS = `
   .seizu-chrome { display: none !important; }
   .seizu-root { max-width: none; margin: 0; padding: 0; }
   .seizu-sheet { border: none; }
-  /* 図面は横長なので用紙を横向きにし、印刷範囲いっぱいに広げる。
-     用紙サイズはプリンター側の設定に任せる（「A4 横」とサイズまで決め打ちすると、
-     Mac の Chrome から実機に印刷したとき右側が切れた）。幅は用紙に合わせ、高さは
-     A4・レター横の印刷範囲（190mm 前後）に収まる上限で止める。
-     SVG は xMidYMid meet なので縦横比を保ったまま中央に収まる。 */
-  .seizu-sheet svg { width: 100%; height: auto; max-height: 180mm; }
-  @page { size: landscape; margin: 10mm; }
+  /* 横向き（@page size: A4 landscape / landscape）で出すと、Mac の Chrome から実機の
+     プリンターに印刷したとき右側が大きく切れた（#458・#459）。縦向きの印刷は切れないので、
+     用紙は縦のまま、横長の図（--wide）は 90° 回して用紙いっぱいに載せる（紙に出る結果は
+     横向き印刷と同じ）。回転前の箱を 255×180mm にして、A4・レター縦の印刷範囲
+     （約190×277mm／196×259mm）に収める。ほぼ正方形の CAD 精密図は回さず幅いっぱい。
+     SVG は xMidYMid meet なので縦横比を保ったまま箱の中央に収まる。 */
+  .seizu-sheet svg { max-height: 255mm; }
+  .seizu-sheet--wide { position: relative; height: 255mm; }
+  .seizu-sheet--wide svg {
+    max-height: none;
+    position: absolute;
+    top: 0;
+    left: calc(50% - 90mm);
+    width: 255mm;
+    height: 180mm;
+    transform-origin: top left;
+    transform: rotate(-90deg) translateX(-100%);
+  }
+  @page { margin: 10mm; }
 }
 `
