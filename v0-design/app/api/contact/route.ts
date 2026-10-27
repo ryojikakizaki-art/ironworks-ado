@@ -165,6 +165,8 @@ ${attachments.length > 0 ? `<div class="row"><span class="label">添付ファイ
 <p>${esc(name)} 様</p>
 <p>お問い合わせいただきありがとうございます。以下の内容でお問い合わせを承りました。</p>
 <p>通常 <strong>2〜3営業日以内</strong> にご返信いたします。</p>
+<p style="background:#f3f4f6;padding:12px 16px;font-size:13px;line-height:1.8;">お返事は <strong>ado@tantetuzest.com</strong>（IRONWORKS ado）からお送りします。<br>
+お使いのメールによっては迷惑メールフォルダに入ることがあります。3営業日を過ぎても届かない場合は、迷惑メールフォルダをご確認いただくか、ado@tantetuzest.com を受信許可に設定してください。</p>
 <hr class="divider">
 <div class="summary">
 <p><strong>種別：</strong>${esc(categoryLabel)}</p>
