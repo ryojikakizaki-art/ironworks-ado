@@ -20,6 +20,7 @@ import { BANK_ACCOUNT } from '@/lib/bank-account';
 import { sanitizeCart, calcCartPricing } from '@/lib/cart/pricing';
 // お届け希望日時・備考の検証と表記（カード決済・webhook と共有）。
 import { sanitizeDeliveryRequest, deliveryRequestMemo, formatDeliveryWish } from '@/lib/delivery-request';
+import { referralSourceLabel } from '@/lib/referral-source';
 
 const clampNum = (v: unknown, lo: number, hi: number) =>
   Math.min(Math.max(Math.round(Number(v)) || lo, lo), hi);
@@ -75,6 +76,7 @@ type Body = {
   preferredArrivalDate?: string;
   preferredTimeSlot?: string;
   customerNote?: string;
+  referralSource?: string;
 };
 
 function esc(s: unknown): string {
@@ -425,6 +427,7 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f3f4f6;color:#333
 <div class="row"><span class="label">メール</span><span class="value">${esc(email)}</span></div>
 ${deliveryWish ? `<div class="row"><span class="label">お届け希望日時</span><span class="value">${esc(deliveryWish)}</span></div>` : ''}
 ${deliveryRequest.customerNote ? `<div class="row"><span class="label">備考</span><span class="value">${esc(deliveryRequest.customerNote).replace(/\n/g, '<br>')}</span></div>` : ''}
+${deliveryRequest.referralSource ? `<div class="row"><span class="label">知ったきっかけ</span><span class="value">${esc(referralSourceLabel(deliveryRequest.referralSource))}</span></div>` : ''}
 <div class="row"><span class="label">状態</span><span class="value">入金待ち（受注台帳に記帳済み）</span></div>
 </div></body></html>`;
 

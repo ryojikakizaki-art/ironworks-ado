@@ -18,6 +18,7 @@ import {
   Trash2,
 } from "lucide-react"
 import { FileAttachField } from "@/components/file-attach-field"
+import { REFERRAL_SOURCES } from "@/lib/referral-source"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
@@ -186,6 +187,7 @@ export default function TradePage() {
   const [inquiryType, setInquiryType] = useState<string[]>([])
   const [deadline, setDeadline] = useState("")
   const [message, setMessage] = useState("")
+  const [referral, setReferral] = useState("")
   const [files, setFiles] = useState<File[]>([])
   const [agreed, setAgreed] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -307,6 +309,7 @@ export default function TradePage() {
       fd.append("category", "trade")
       fd.append("product", "trade")
       fd.append("message", composed)
+      fd.append("referral", referral)
       files.forEach((f) => fd.append("attachments", f))
 
       const res = await fetch("/api/contact", {
@@ -846,6 +849,26 @@ export default function TradePage() {
                 label="図面・現場写真の添付"
                 description="図面（PDF）・現場写真・スケッチをそのまま添付できます。手書きの走り書きでも構いません。"
               />
+
+              {/* ado を知ったきっかけ（広告の効果を確かめる用・任意） */}
+              <div>
+                <label htmlFor="trade-referral" className="block text-[12px] font-medium text-foreground mb-2">
+                  ado を知ったきっかけ<span className="ml-1.5 font-normal text-muted-foreground">（任意）</span>
+                </label>
+                <select
+                  id="trade-referral"
+                  value={referral}
+                  onChange={(e) => setReferral(e.target.value)}
+                  className="w-full px-4 py-3 border border-border rounded-md bg-background text-[14px] focus:outline-none focus:border-gold transition-colors"
+                >
+                  <option value="">選択してください</option>
+                  {REFERRAL_SOURCES.map((r) => (
+                    <option key={r.value} value={r.value}>
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               {/* 同意 */}
               <label className="flex items-start gap-3 text-[12px] text-muted-foreground leading-[1.85] cursor-pointer">

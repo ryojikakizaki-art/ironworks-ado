@@ -7,6 +7,7 @@
  */
 import { getEarliestArrival, isBusinessDay, formatDateISO, TRANSIT_DAYS } from '@/lib/business-days'
 import { PREF_TO_REGION } from '@/lib/shipping/sagawa'
+import { sanitizeReferralSource, referralSourceLabel } from '@/lib/referral-source'
 
 /** 佐川急便の時間帯区分（2026-10 蠣﨑さん確認・6区分） */
 export const DELIVERY_TIME_SLOTS = [
@@ -31,6 +32,8 @@ export interface DeliveryRequest {
   preferredTimeSlot: string
   /** お客様の備考（自由記入） */
   customerNote: string
+  /** ado を知ったきっかけ（lib/referral-source の value）。空 = 未回答 */
+  referralSource: string
 }
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'] as const
@@ -90,7 +93,7 @@ export function sanitizeCustomerNote(raw: unknown): string {
  *   ご希望に添えない場合は工房から連絡する運用（カート画面に明記）。
  */
 export function sanitizeDeliveryRequest(
-  body: { preferredArrivalDate?: unknown; preferredTimeSlot?: unknown; customerNote?: unknown } | null | undefined,
+  body: { preferredArrivalDate?: unknown; preferredTimeSlot?: unknown; customerNote?: unknown; referralSource?: unknown } | null | undefined,
   ctx: { rush: boolean; prefecture: string; now?: Date },
 ): DeliveryRequest {
   const slotRaw = String(body?.preferredTimeSlot ?? '')
@@ -105,7 +108,12 @@ export function sanitizeDeliveryRequest(
     if (date >= min && date <= max) preferredArrivalDate = formatDateISO(date)
   }
 
-  return { preferredArrivalDate, preferredTimeSlot, customerNote: sanitizeCustomerNote(body?.customerNote) }
+  return {
+    preferredArrivalDate,
+    preferredTimeSlot,
+    customerNote: sanitizeCustomerNote(body?.customerNote),
+    referralSource: sanitizeReferralSource(body?.referralSource),
+  }
 }
 
 /**
@@ -137,10 +145,14 @@ export function deliveryRequestMemo(req: {
   preferredArrivalDate?: string
   preferredTimeSlot?: string
   customerNote?: string
+  referralSource?: string
 }): string {
   const wish = formatDeliveryWish(req.preferredArrivalDate, req.preferredTimeSlot)
   const note = (req.customerNote || '').replace(/\n+/g, ' ／ ')
-  return [wish ? `お届け希望 ${wish}` : '', note ? `備考: ${note}` : ''].filter(Boolean).join(' / ')
+  const referral = referralSourceLabel(req.referralSource)
+  return [wish ? `お届け希望 ${wish}` : '', note ? `備考: ${note}` : '', referral ? `きっかけ: ${referral}` : '']
+    .filter(Boolean)
+    .join(' / ')
 }
 
 /** Stripe metadata → DeliveryRequest */
@@ -149,5 +161,6 @@ export function deliveryRequestFromMetadata(meta: Record<string, string | undefi
     preferredArrivalDate: meta.preferred_arrival_date || '',
     preferredTimeSlot: meta.preferred_time_slot || '',
     customerNote: meta.customer_note || '',
+    referralSource: meta.referral_source || '',
   }
 }
