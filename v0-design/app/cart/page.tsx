@@ -10,6 +10,7 @@ import { Footer } from "@/components/footer"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
 import { EmbeddedCheckoutModal, type OrderSummary } from "@/components/checkout/embedded-checkout-modal"
 import { BankOrderModal } from "@/components/checkout/bank-order-modal"
+import { REFERRAL_SOURCES } from "@/lib/referral-source"
 import { useCart } from "@/lib/cart/store"
 import { calcCartPricing } from "@/lib/cart/pricing"
 import { CART_MAX_QUANTITY, isClemenceSlug } from "@/lib/cart/types"
@@ -53,6 +54,7 @@ function CartContent() {
   const [preferredDate, setPreferredDate] = useState("")
   const [timeSlot, setTimeSlot] = useState("")
   const [customerNote, setCustomerNote] = useState("")
+  const [referralSource, setReferralSource] = useState("")
 
   // 特急は 3 本まで（商品ページと同一ルール）
   const expressAllowed = count <= 3
@@ -81,6 +83,7 @@ function CartContent() {
     preferredArrivalDate: effectiveDate,
     preferredTimeSlot: timeSlot,
     customerNote: trimmedNote,
+    referralSource,
   }
 
   const summary: OrderSummary = {
@@ -445,6 +448,26 @@ function CartContent() {
                     <p className="text-right text-[12px] text-muted-foreground mt-1">
                       {customerNote.length} / {CUSTOMER_NOTE_MAX}
                     </p>
+                  </div>
+
+                  <div>
+                    <label htmlFor="cart-referral" className="block text-[14px] font-medium text-foreground mb-1.5">
+                      ado を知ったきっかけ<span className="ml-1.5 text-[12px] font-normal text-muted-foreground">（任意）</span>
+                    </label>
+                    <div className="relative">
+                      <select
+                        id="cart-referral"
+                        value={referralSource}
+                        onChange={(e) => setReferralSource(e.target.value)}
+                        className="w-full h-12 pl-4 pr-10 appearance-none bg-white border-2 border-gold/30 rounded-md text-[16px] text-foreground focus:border-gold focus:outline-none transition-colors"
+                      >
+                        <option value="">選択してください</option>
+                        {REFERRAL_SOURCES.map((r) => (
+                          <option key={r.value} value={r.value}>{r.label}</option>
+                        ))}
+                      </select>
+                      <ChevronDown className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gold" />
+                    </div>
                   </div>
 
                   <p className="text-[13px] text-muted-foreground leading-relaxed">

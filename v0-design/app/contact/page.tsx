@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { REFERRAL_SOURCES } from "@/lib/referral-source"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Header } from "@/components/header"
@@ -142,6 +143,7 @@ export default function ContactPage() {
     category: "product",
     product: "",
     message: "",
+    referral: "",
   })
   const [files, setFiles] = useState<File[]>([])
   const [status, setStatus] = useState<"idle" | "sending" | "error">("idle")
@@ -275,6 +277,7 @@ export default function ContactPage() {
       fd.append("category", form.category)
       fd.append("product", form.product)
       fd.append("message", form.message)
+      fd.append("referral", form.referral)
       files.forEach((f) => fd.append("attachments", f))
 
       const res = await fetch("/api/contact", {
@@ -629,6 +632,30 @@ export default function ContactPage() {
                   optionalLabel="任意"
                   description="現場のお写真・図面（PDF）・手書きのスケッチをそのまま添付できます。スマートフォンからは撮影した写真をそのまま選べます。"
                 />
+
+                {/* ado を知ったきっかけ（広告の効果を確かめる用・任意） */}
+                <div>
+                  <label className="flex items-baseline justify-between mb-2">
+                    <span className="text-[12px] tracking-[0.15em] text-foreground">
+                      ado を知ったきっかけ
+                    </span>
+                    <span className="text-[10px] tracking-[0.2em] uppercase text-muted-foreground">
+                      Optional
+                    </span>
+                  </label>
+                  <select
+                    value={form.referral}
+                    onChange={(e) => setForm({ ...form, referral: e.target.value })}
+                    className="w-full px-0 py-3 bg-transparent border-0 border-b border-border text-foreground text-[15px] focus:outline-none focus:border-gold transition-colors"
+                  >
+                    <option value="">選択してください</option>
+                    {REFERRAL_SOURCES.map((r) => (
+                      <option key={r.value} value={r.value}>
+                        {r.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
 
                 {status === "error" && <p className="text-[13px] text-red-400">{errorMsg}</p>}
 

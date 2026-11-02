@@ -4,6 +4,7 @@ import { customerKubun, writeOrderRow } from '@/lib/order-ledger';
 // カート注文（複数商品まとめ買い）の metadata 復元。product_type='cart' の注文でのみ使う。
 import { decodeCartMetadata, cartSummaryLabel, type DecodedCartLine } from '@/lib/cart/metadata';
 import { deliveryRequestFromMetadata, deliveryRequestMemo } from '@/lib/delivery-request';
+import { referralSourceLabel } from '@/lib/referral-source';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -660,6 +661,8 @@ export async function sendWorkshopEmail(session: Stripe.Checkout.Session, isSimp
 
   // お客様の備考（カート画面で任意入力）。見落とさないよう独立セクションにする。
   const customerNote = meta.customer_note || '';
+  // ado を知ったきっかけ（カート画面で任意回答）。広告の効果を確かめる用
+  const referralLabel = referralSourceLabel(meta.referral_source);
 
   const fromAddress = process.env.CONTACT_FROM || 'IRONWORKS ado <noreply@tantetuzest.com>';
 
@@ -704,6 +707,9 @@ ${renderRows(orderRows)}
 ${customerNote ? `
 <div class="section-title">お客様の備考</div>
 <div class="summary"><div class="value">${esc(customerNote).replace(/\n/g, '<br>')}</div></div>
+` : ''}${referralLabel ? `
+<div class="section-title">ado を知ったきっかけ</div>
+<div class="summary"><div class="value">${esc(referralLabel)}</div></div>
 ` : ''}
 <div class="section-title">お客様情報</div>
 <div class="summary">${renderRows(customerRows)}</div>
