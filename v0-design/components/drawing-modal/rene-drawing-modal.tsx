@@ -33,6 +33,8 @@ interface DrawingModalProps {
   lengths?: number[]
   /** フラットバーのエンド表記（例: 「左:渦巻き 右:なし」）。横型の図のタイトル欄に載せる */
   endNote?: string
+  /** エンド付きの側の「先端〜一番端の座金」距離（mm）。多本注文など自動配置のときに使う */
+  endDist?: { left?: number; right?: number }
 }
 
 export function ReneDrawingModal({
@@ -48,6 +50,7 @@ export function ReneDrawingModal({
   color = "black",
   lengths,
   endNote,
+  endDist,
 }: DrawingModalProps) {
   const svgRef = useRef<SVGSVGElement>(null)
   const product = getDrawingProduct(productSlug)
@@ -123,8 +126,8 @@ export function ReneDrawingModal({
       setPrintPage({ orient, w, h: w / aspect, margin: MARGIN_MM })
     }
     const positions = isMulti
-      ? getZakinPositions(currentLength, calcZakin(currentLength, effectiveRule), effectiveRule)
-      : (positionsProp ?? getZakinPositions(currentLength, calcZakin(currentLength, effectiveRule), effectiveRule))
+      ? getZakinPositions(currentLength, calcZakin(currentLength, effectiveRule), effectiveRule, endDist)
+      : (positionsProp ?? getZakinPositions(currentLength, calcZakin(currentLength, effectiveRule), effectiveRule, endDist))
     if (product.category === "vertical") {
       // washerSpec + titleBlock がある商品 (Claude) はCAD精密図、それ以外は旧シンプル schematic
       if (product.washerSpec && product.titleBlock) {
@@ -159,7 +162,7 @@ export function ReneDrawingModal({
       })
     }
     measurePrintPage()
-  }, [open, currentLength, isMulti, product, positionsProp, angleDeg, angleDir, effectiveRule, washerType, color, endNote])
+  }, [open, currentLength, isMulti, product, positionsProp, angleDeg, angleDir, effectiveRule, washerType, color, endNote, endDist?.left, endDist?.right])
 
   if (!open) return null
 

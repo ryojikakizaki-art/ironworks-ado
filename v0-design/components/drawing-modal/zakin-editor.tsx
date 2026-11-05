@@ -23,6 +23,8 @@ interface ZakinEditorProps {
   maxCount?: number
   /** 商品ページの details 内に直接埋め込む。内側トグルを廃し常時展開＋初見向け補足を表示 */
   embedded?: boolean
+  /** フラットバーのエンド付きの側の「先端〜一番端の座金」距離（mm）。自動配置に使う */
+  endDist?: { left?: number; right?: number }
 }
 
 /**
@@ -42,6 +44,7 @@ export function ZakinEditor({
   disableAngle = false,
   maxCount = 20,
   embedded = false,
+  endDist,
 }: ZakinEditorProps) {
   const [open, setOpen] = useState(false)
   const showPanel = embedded || open
@@ -56,10 +59,11 @@ export function ZakinEditor({
     const count = state.customMode
       ? state.positions.length
       : calcZakin(lengthMm, zakinRule)
-    const positions = getZakinPositions(lengthMm, count, zakinRule)
+    const positions = getZakinPositions(lengthMm, count, zakinRule, endDist)
     onChange({ ...state, positions })
+    // エンドを選び直したときも再配置する（両端の座金位置が変わるため）
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lengthMm])
+  }, [lengthMm, endDist?.left, endDist?.right])
 
   const maxSpan = useMemo(() => {
     const sorted = [...state.positions].sort((a, b) => a - b)
@@ -86,7 +90,7 @@ export function ZakinEditor({
 
   const setCount = (count: number) => {
     const c = Math.max(2, Math.min(maxCount, count))
-    const positions = getZakinPositions(lengthMm, c, zakinRule)
+    const positions = getZakinPositions(lengthMm, c, zakinRule, endDist)
     onChange({ ...state, positions, customMode: true })
   }
 
@@ -105,7 +109,7 @@ export function ZakinEditor({
 
   const reset = () => {
     const count = calcZakin(lengthMm, zakinRule)
-    const positions = getZakinPositions(lengthMm, count, zakinRule)
+    const positions = getZakinPositions(lengthMm, count, zakinRule, endDist)
     onChange({ positions, angleDeg: 0, angleDir: "left", customMode: false })
   }
 

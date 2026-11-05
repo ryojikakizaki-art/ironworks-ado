@@ -27,12 +27,14 @@ export interface EndOption {
   img: string
   /** metadata・共有 URL 用の 1 文字コード */
   code: 'h' | 's' | 'l'
+  /** 手すりの先端から一番端の座金までの距離（mm・座金の自動配置に使う。2026-11-05 蠣﨑さん指定） */
+  zakinEndMm: number
 }
 
 export const END_OPTIONS: EndOption[] = [
-  { id: 'hook', label: 'フック', price: 4400, img: '/images/products/flatbar-ends/hook.jpg', code: 'h' },
-  { id: 'scroll', label: '渦巻き', price: 8800, img: '/images/products/flatbar-ends/scroll.jpg', code: 's' },
-  { id: 'loop', label: 'ループ', price: 11000, img: '/images/products/flatbar-ends/loop.jpg', code: 'l' },
+  { id: 'hook', label: 'フック', price: 4400, img: '/images/products/flatbar-ends/hook.jpg', code: 'h', zakinEndMm: 100 },
+  { id: 'scroll', label: '渦巻き', price: 8800, img: '/images/products/flatbar-ends/scroll.jpg', code: 's', zakinEndMm: 150 },
+  { id: 'loop', label: 'ループ', price: 11000, img: '/images/products/flatbar-ends/loop.jpg', code: 'l', zakinEndMm: 230 },
 ]
 
 /** エンドを選べる商品（PRODUCTS / 商品ページの slug） */
@@ -75,6 +77,20 @@ export function hasEnds(left: EndChoice | undefined, right: EndChoice | undefine
 export function endsSummary(left: EndChoice | undefined, right: EndChoice | undefined): string {
   if (!hasEnds(left, right)) return ''
   return `エンド 左:${endLabel(left)} 右:${endLabel(right)}`
+}
+
+/**
+ * 座金の自動配置に渡す左右の端からの距離（getZakinPositions の endDist）。
+ * エンドなしの側は undefined（＝商品の通常ルールのまま）。
+ */
+export function zakinEndDistances(
+  left: EndChoice | undefined,
+  right: EndChoice | undefined,
+): { left?: number; right?: number } | undefined {
+  const l = getEndOption(left)?.zakinEndMm
+  const r = getEndOption(right)?.zakinEndMm
+  if (l === undefined && r === undefined) return undefined
+  return { left: l, right: r }
 }
 
 export function encodeEndCode(choice: EndChoice | undefined): string | undefined {
