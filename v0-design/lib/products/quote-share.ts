@@ -5,6 +5,8 @@
 // 常に評価し直す仕様（既存動作・変更不可）のため、位置そのものではなく「本数」のみを
 // 保存・復元する。本数は getZakinPositions() で再展開すれば既存の自動配置と完全に一致する。
 
+import { decodeEndCode, encodeEndCode, type EndChoice } from "@/lib/products/end-options"
+
 const KEYS = {
   lengths: "l",
   zakinCount: "zc",
@@ -15,6 +17,8 @@ const KEYS = {
   washerType: "wt",
   orientation: "or",
   color: "c",
+  endLeft: "el",
+  endRight: "er",
 } as const
 
 export interface QuoteShareInput {
@@ -29,6 +33,9 @@ export interface QuoteShareInput {
   orientation?: "left" | "right"
   /** 白仕上げ選択商品（Alexandre等）のみ。黒は既定値のため省略。 */
   color?: "black" | "white"
+  /** フラットバーのエンド（Marcel・Émile のみ）。なしは省略。 */
+  endLeft?: EndChoice
+  endRight?: EndChoice
 }
 
 export function encodeQuoteState(input: QuoteShareInput): string {
@@ -46,6 +53,10 @@ export function encodeQuoteState(input: QuoteShareInput): string {
   if (input.washerType === "B") params.set(KEYS.washerType, "B")
   if (input.orientation === "right") params.set(KEYS.orientation, "r")
   if (input.color === "white") params.set(KEYS.color, "w")
+  const el = encodeEndCode(input.endLeft)
+  const er = encodeEndCode(input.endRight)
+  if (el) params.set(KEYS.endLeft, el)
+  if (er) params.set(KEYS.endRight, er)
   return params.toString()
 }
 
@@ -59,6 +70,8 @@ export interface DecodedQuoteState {
   washerType?: "A" | "B"
   orientation?: "left" | "right"
   color?: "black" | "white"
+  endLeft?: EndChoice
+  endRight?: EndChoice
 }
 
 /** 不正・改変された URL でも安全にフォールバックできるよう、値を軽く検証してから返す。 */
@@ -95,6 +108,12 @@ export function decodeQuoteState(searchParams: URLSearchParams): DecodedQuoteSta
   if (searchParams.get(KEYS.orientation) === "r") result.orientation = "right"
 
   if (searchParams.get(KEYS.color) === "w") result.color = "white"
+
+  // 対象外商品の URL に付いていても、商品ページ側で supportsEndOptions を見て無視する
+  const el = decodeEndCode(searchParams.get(KEYS.endLeft))
+  const er = decodeEndCode(searchParams.get(KEYS.endRight))
+  if (el !== "none") result.endLeft = el
+  if (er !== "none") result.endRight = er
 
   return result
 }

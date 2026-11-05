@@ -31,6 +31,8 @@ interface DrawingModalProps {
    * 渡されない or length=1 なら従来通り単本表示。
    */
   lengths?: number[]
+  /** フラットバーのエンド表記（例: 「左:渦巻き 右:なし」）。横型の図のタイトル欄に載せる */
+  endNote?: string
 }
 
 export function ReneDrawingModal({
@@ -45,6 +47,7 @@ export function ReneDrawingModal({
   washerType = "A",
   color = "black",
   lengths,
+  endNote,
 }: DrawingModalProps) {
   const svgRef = useRef<SVGSVGElement>(null)
   const product = getDrawingProduct(productSlug)
@@ -152,10 +155,11 @@ export function ReneDrawingModal({
         angleDeg: isMulti ? 0 : angleDeg,
         angleDir,
         product,
+        endNote,
       })
     }
     measurePrintPage()
-  }, [open, currentLength, isMulti, product, positionsProp, angleDeg, angleDir, effectiveRule, washerType, color])
+  }, [open, currentLength, isMulti, product, positionsProp, angleDeg, angleDir, effectiveRule, washerType, color, endNote])
 
   if (!open) return null
 

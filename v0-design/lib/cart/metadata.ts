@@ -14,6 +14,7 @@
 import { PRODUCTS } from '@/lib/products/order-pricing'
 import { CLEMENCE_DISPLAY, isClemenceSlug } from './types'
 import { clemenceLineLabel, clemenceSpecLabel, railSpecLabel, type CartPricing } from './pricing'
+import { decodeEndCode, encodeEndCode, type EndChoice } from '@/lib/products/end-options'
 
 /**
  * metadata に載せる 1 行分の短縮表現。
@@ -30,6 +31,9 @@ interface EncodedLine {
   a?: number
   ad?: 'left' | 'right'
   pos?: string
+  /** フラットバーのエンド（h=フック / s=渦巻き / l=ループ・なしは省略） */
+  el?: string
+  er?: string
   /** Clémence: 全幅 / 高さ / ②③ブラケット位置 / ③側延長（mm） */
   cw?: number
   ch?: number
@@ -71,6 +75,8 @@ export function encodeCartMetadata(pricing: CartPricing): Record<string, string>
       ...(item.orientation ? { o: item.orientation } : {}),
       ...(item.angleDeg ? { a: item.angleDeg, ad: item.angleDir } : {}),
       ...(item.positions?.length ? { pos: item.positions.join(',') } : {}),
+      ...(encodeEndCode(item.endLeft) ? { el: encodeEndCode(item.endLeft) } : {}),
+      ...(encodeEndCode(item.endRight) ? { er: encodeEndCode(item.endRight) } : {}),
       y: line.unitPrice,
     }
     meta[`cart_item_${i + 1}`] = JSON.stringify(encoded)
@@ -93,6 +99,9 @@ export interface DecodedCartLine {
   angleDeg?: number
   angleDir?: 'left' | 'right'
   positions?: number[]
+  /** フラットバーのエンド（なし = 'none'） */
+  endLeft: EndChoice
+  endRight: EndChoice
   unitPrice: number
   lineTotal: number
   /** 座金 A/B タイプの選択がある商品か（縦型 CAD 商品のみ） */
@@ -142,6 +151,8 @@ export function decodeCartMetadata(meta: Record<string, string>): DecodedCartLin
         quantity,
         zakinCount: 0,
         washerType: 'A',
+        endLeft: 'none',
+        endRight: 'none',
         unitPrice,
         lineTotal: unitPrice * quantity,
         hasWasherType: false,
@@ -154,6 +165,8 @@ export function decodeCartMetadata(meta: Record<string, string>): DecodedCartLin
     const prod = PRODUCTS[e.p]
     if (!prod) continue
     const orientationLabel = e.o ? `（${e.o === 'left' ? '左向き' : '右向き'}）` : ''
+    const endLeft = decodeEndCode(e.el)
+    const endRight = decodeEndCode(e.er)
     lines.push({
       product: e.p,
       productName: prod.name,
@@ -167,6 +180,8 @@ export function decodeCartMetadata(meta: Record<string, string>): DecodedCartLin
       ...(e.o ? { orientation: e.o } : {}),
       ...(e.a ? { angleDeg: Number(e.a), angleDir: e.ad === 'right' ? 'right' as const : 'left' as const } : {}),
       ...(e.pos ? { positions: e.pos.split(',').map(Number).filter(Number.isFinite) } : {}),
+      endLeft,
+      endRight,
       unitPrice,
       lineTotal: unitPrice * quantity,
       hasWasherType: !!prod.zakinRule,
@@ -178,6 +193,8 @@ export function decodeCartMetadata(meta: Record<string, string>): DecodedCartLin
         angleDeg: e.a ? Number(e.a) : undefined,
         angleDir: e.ad === 'right' ? 'right' : 'left',
         finish: e.c === 'white' ? 'マットホワイト' : prod.finish,
+        endLeft,
+        endRight,
       }),
     })
   }

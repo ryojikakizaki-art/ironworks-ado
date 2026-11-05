@@ -30,6 +30,8 @@ export default async function SeizuPage({
       dir={get("dir")}
       order={get("order")}
       color={get("color")}
+      endLeft={get("el")}
+      endRight={get("er")}
     />
   )
 }

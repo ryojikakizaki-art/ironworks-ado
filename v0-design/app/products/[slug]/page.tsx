@@ -34,6 +34,7 @@ import { TOTAL_VOICE_COUNT } from "@/lib/testimonials"
 import { ReviewVoiceIcon } from "@/components/ui/review-voice-icon"
 import { encodeQuoteState, decodeQuoteState, copyToClipboard } from "@/lib/products/quote-share"
 import { calcGastonJointCount, GASTON_JOINT_FEE_PER_UNIT, GASTON_JOINT_INQUIRY_ABOVE_MM, GASTON_CRATE_FEE_PER_UNIT } from "@/lib/products/order-pricing"
+import { END_OPTIONS, endLabel, endsTotal, hasEnds, supportsEndOptions, type EndChoice } from "@/lib/products/end-options"
 
 // productImages / specs は商品ごとに display.ts から取得
 
@@ -213,6 +214,19 @@ export default function ProductDetailPage() {
   const [orientation, setOrientation] = useState<"right" | "left">(
     hasOrientation && restoredQuote.orientation ? restoredQuote.orientation : "left"
   )
+  // フラットバーのエンド（Marcel・Émile のみ・2026-11-05 蠣﨑さん指定）。
+  // 左右それぞれ「なし／フック／渦巻き／ループ」。価格・名前の正本は lib/products/end-options.ts。
+  const supportsEnds = supportsEndOptions(slug)
+  const [endLeft, setEndLeft] = useState<EndChoice>(() =>
+    supportsEnds && restoredQuote.endLeft ? restoredQuote.endLeft : "none"
+  )
+  const [endRight, setEndRight] = useState<EndChoice>(() =>
+    supportsEnds && restoredQuote.endRight ? restoredQuote.endRight : "none"
+  )
+  const endCostPerItem = supportsEnds ? endsTotal(endLeft, endRight) : 0
+  const endNote = supportsEnds && hasEnds(endLeft, endRight)
+    ? `左:${endLabel(endLeft)} 右:${endLabel(endRight)}`
+    : undefined
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   // カート（複数商品まとめ買い）。決済（カード / 銀行振込の選択）は /cart で行う。
   const router = useRouter()
@@ -371,7 +385,9 @@ export default function ProductDetailPage() {
       // （送料が同じ長さ帯を要問合せとして扱うため実際の決済には進めない）。
       const jointCount = product.drawing.jointFeeEnabled ? calcGastonJointCount(L) : 0
       const jointFee = jointCount * GASTON_JOINT_FEE_PER_UNIT
-      const blackUnitPrice = BASE_PRICE + addon + addZakin + surcharge + angleCost + jointFee
+      // エンド（片側ごとの定額）は本数に関係なく 1 本ごとに加算（lib/products/order-pricing.ts の calcPrice と同じ）
+      const endCost = endCostPerItem
+      const blackUnitPrice = BASE_PRICE + addon + addZakin + surcharge + angleCost + jointFee + endCost
       // 白仕上げ (colorOptions を持つ商品のみ・2026-07-05 Alexandre 追加): 合計 +15%。
       // 0.1 が二進で正確に表せない浮動小数点の罠を避けるため百分率の整数で計算 (Laurent と同じ手法)。
       const unitPrice = supportsColor && color === "white"
@@ -386,6 +402,7 @@ export default function ProductDetailPage() {
         angleCost,
         jointCount,
         jointFee,
+        endCost,
         colorSurcharge,
         unitPrice: Math.round(unitPrice),
         zakinCount,
@@ -414,6 +431,7 @@ export default function ProductDetailPage() {
       angleCost: first?.angleCost ?? 0,
       jointCount: first?.jointCount ?? 0,
       jointFee: first?.jointFee ?? 0,
+      endCost: first?.endCost ?? 0,
       colorSurcharge: first?.colorSurcharge ?? 0,
       unitPrice: first?.unitPrice ?? 0,
       subtotal,
@@ -429,7 +447,7 @@ export default function ProductDetailPage() {
       total,
       zakinCount: first?.zakinCount ?? 0,
     }
-  }, [lengths, isMultiOrder, deliveryType, prefecture, zakin, productType, STD_LENGTH, PRICE_PER_MM, BASE_PRICE, INCLUDED_ZAKIN, zakinRule, PRICE_TABLE, supportsColor, color, product.drawing.jointFeeEnabled])
+  }, [lengths, isMultiOrder, deliveryType, prefecture, zakin, productType, STD_LENGTH, PRICE_PER_MM, BASE_PRICE, INCLUDED_ZAKIN, zakinRule, PRICE_TABLE, supportsColor, color, product.drawing.jointFeeEnabled, endCostPerItem])
 
   const prices = calculatePrice()
 
@@ -465,8 +483,8 @@ export default function ProductDetailPage() {
       ? `${product.nameEn} ${product.nameJaShort} 壁付け手すり ${lengths.length}本（複数長さ）${hasOrientation ? `（${orientation === "left" ? "左向き" : "右向き"}）` : ""}`
       : `${product.nameEn} ${product.nameJaShort} 壁付け手すり ${length}mm${hasOrientation ? `（${orientation === "left" ? "左向き" : "右向き"}）` : ""}`,
     productNote: isMultiOrder
-      ? `${lengths.length}本制作 / ${deliveryType === "express" ? "特急配送 5営業日" : "通常配送 10営業日"}`
-      : `座金 ${prices.zakinCount}個 / ${deliveryType === "express" ? "特急配送 5営業日" : "通常配送 10営業日"}`,
+      ? `${lengths.length}本制作${endNote ? ` / エンド ${endNote}` : ""} / ${deliveryType === "express" ? "特急配送 5営業日" : "通常配送 10営業日"}`
+      : `座金 ${prices.zakinCount}個${endNote ? ` / エンド ${endNote}` : ""} / ${deliveryType === "express" ? "特急配送 5営業日" : "通常配送 10営業日"}`,
     lines: isMultiOrder
       ? [
           ...prices.items.map((it, i) => ({
@@ -485,6 +503,7 @@ export default function ProductDetailPage() {
           ...(prices.surcharge > 0 ? [{ label: "長尺割増", note: `${length}mm`, amount: prices.surcharge }] : []),
           ...(prices.angleCost > 0 ? [{ label: "角度加工料金", note: `${prices.zakinCount}個 × ¥${ANGLE_PRICE.toLocaleString()}`, amount: prices.angleCost }] : []),
           ...(prices.jointFee > 0 ? [{ label: "ジョイント代", note: `${prices.jointCount}箇所 × ¥${GASTON_JOINT_FEE_PER_UNIT.toLocaleString()}`, amount: prices.jointFee }] : []),
+          ...(prices.endCost > 0 ? [{ label: "エンド", note: endNote, amount: prices.endCost }] : []),
           ...(prices.colorSurcharge > 0 ? [{ label: "白仕上げ（+15%）", amount: prices.colorSurcharge }] : []),
           ...(quantity > 1 ? [{ label: `数量 × ${quantity}`, amount: prices.subtotal, emphasize: true }] : []),
           ...(prices.expressAddon > 0 ? [{ label: "特急割増（+20%）", amount: prices.expressAddon }] : []),
@@ -507,6 +526,8 @@ export default function ProductDetailPage() {
     washerType: product.drawing.washerSpec ? washerType : undefined,
     orientation: hasOrientation ? orientation : undefined,
     color: supportsColor ? color : undefined,
+    endLeft: supportsEnds ? endLeft : undefined,
+    endRight: supportsEnds ? endRight : undefined,
   })
   const shareUrl = `https://ado.tantetuzest.com/products/${slug}${shareQuery ? `?${shareQuery}` : ""}`
   const lineShareUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}`
@@ -535,6 +556,8 @@ export default function ProductDetailPage() {
       washerType,
       ...(supportsColor ? { color } : {}),
       ...(hasOrientation ? { orientation } : {}),
+      ...(supportsEnds && endLeft !== "none" ? { endLeft } : {}),
+      ...(supportsEnds && endRight !== "none" ? { endRight } : {}),
       ...(isMultiOrder
         ? {}
         : {
@@ -1441,6 +1464,72 @@ export default function ProductDetailPage() {
                             </div>
                           </div>
                         )}
+                        {/* エンド（先端の形）— Marcel・Émile のみ（2026-11-05 蠣﨑さん指定）。
+                            左右それぞれ選べる・片側ごとの料金（税込）。長さはエンド込みの全長。
+                            写真は形の見本で、仕上げは本体と同じ。価格の正本は lib/products/end-options.ts。 */}
+                        {supportsEnds && (
+                          <div className="mt-3 border border-gold/20 bg-card p-4">
+                            <div className="mb-1 font-serif text-[15px] font-medium text-foreground">エンド（先端の形）</div>
+                            <p className="mb-3 text-[13px] leading-relaxed text-muted-foreground">
+                              左右の端それぞれに選べます（料金は片側1か所あたり・税込）。長さはエンドを含む全体の長さでご指定ください。写真は形の見本で、仕上げは本体と同じです。
+                            </p>
+                            <div className="mb-4 grid grid-cols-3 gap-2">
+                              {END_OPTIONS.map((o) => (
+                                <figure key={o.id} className="overflow-hidden rounded-md border border-border bg-[#f3f4f6]">
+                                  <span className="relative block aspect-square">
+                                    <Image
+                                      src={o.img}
+                                      alt={`フラットバー手すりのエンド ${o.label}`}
+                                      fill
+                                      className="object-cover"
+                                      sizes="(max-width: 640px) 33vw, 160px"
+                                    />
+                                  </span>
+                                  <figcaption className="bg-white px-1 py-1.5 text-center">
+                                    <span className="block font-serif text-[13px] font-medium text-foreground">{o.label}</span>
+                                    <span className="block font-mono text-[13px] text-muted-foreground">+¥{o.price.toLocaleString()}</span>
+                                  </figcaption>
+                                </figure>
+                              ))}
+                            </div>
+                            {([
+                              { key: "left", label: "左端", value: endLeft, set: setEndLeft },
+                              { key: "right", label: "右端", value: endRight, set: setEndRight },
+                            ] as const).map((side) => (
+                              <div key={side.key} className="mt-2.5">
+                                <div className="mb-1.5 text-[14px] font-medium text-foreground">{side.label}</div>
+                                <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                                  {[{ id: "none" as EndChoice, label: "なし", price: 0 }, ...END_OPTIONS].map((o) => (
+                                    <button
+                                      key={o.id}
+                                      type="button"
+                                      onClick={() => side.set(o.id)}
+                                      aria-pressed={side.value === o.id}
+                                      className={`rounded-md border-2 px-1 py-2 text-center transition-all ${
+                                        side.value === o.id
+                                          ? "border-gold bg-gold/5"
+                                          : "border-gold/20 hover:border-gold/50"
+                                      }`}
+                                    >
+                                      <span className="block font-serif text-[14px] font-medium">{o.label}</span>
+                                      <span className="mt-0.5 block whitespace-nowrap text-[13px] text-muted-foreground">
+                                        {o.price > 0 ? `+¥${o.price.toLocaleString()}` : "標準"}
+                                      </span>
+                                    </button>
+                                  ))}
+                                </div>
+                              </div>
+                            ))}
+                            {endCostPerItem > 0 && (
+                              <div className="mt-3 flex justify-between border-t border-border/60 pt-2.5 text-[14px]">
+                                <span className="text-muted-foreground">
+                                  エンド合計{isMultiOrder ? "（1本あたり）" : ""}
+                                </span>
+                                <span className="font-mono">+¥{endCostPerItem.toLocaleString()}</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
                         {/* 座金の位置調整（シミュレーター＋エディタ）は任意操作のため、
                             初見の情報量を抑える目的で details に格納し初期は畳む。
                             制作図プレビューは Step4（確認して購入）へ移動。
@@ -1725,6 +1814,12 @@ export default function ProductDetailPage() {
                               <span className="font-mono">+¥{prices.jointFee.toLocaleString()}</span>
                             </div>
                           )}
+                          {prices.endCost > 0 && (
+                            <div className="flex justify-between text-[15px]">
+                              <span className="text-muted-foreground">エンド（{endNote}）</span>
+                              <span className="font-mono">+¥{prices.endCost.toLocaleString()}</span>
+                            </div>
+                          )}
                           {prices.colorSurcharge > 0 && (
                             <div className="flex justify-between text-[15px]">
                               <span className="text-muted-foreground">白仕上げ（+15%）</span>
@@ -1743,6 +1838,11 @@ export default function ProductDetailPage() {
                               <span className="font-mono">¥{it.unitPrice.toLocaleString()}</span>
                             </div>
                           ))}
+                          {endCostPerItem > 0 && (
+                            <div className="text-[13px] text-muted-foreground">
+                              各本にエンド（{endNote}）+¥{endCostPerItem.toLocaleString()} を含みます
+                            </div>
+                          )}
                           <div className="flex justify-between text-[15px] pt-2 border-t border-border/60">
                             <span className="text-muted-foreground">本体小計</span>
                             <span className="font-mono">¥{prices.subtotal.toLocaleString()}</span>
@@ -2119,6 +2219,7 @@ export default function ProductDetailPage() {
         washerType={washerType}
         color={color}
         lengths={isMultiOrder ? lengths : undefined}
+        endNote={endNote}
       />
 
       {/* 見積書 PDF 化（タスク1第2段階・2026-07-02）。画面には表示せず印刷/PDF保存時のみ表示。

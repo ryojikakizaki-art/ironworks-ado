@@ -159,6 +159,8 @@ export async function POST(request: NextRequest) {
         angleDeg: l.item.angleDeg,
         angleDir: l.item.angleDir,
         color: l.item.color,
+        endLeft: l.item.endLeft,
+        endRight: l.item.endRight,
         label: l.label,
       });
     }

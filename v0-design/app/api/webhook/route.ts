@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import { customerKubun, writeOrderRow } from '@/lib/order-ledger';
 // カート注文（複数商品まとめ買い）の metadata 復元。product_type='cart' の注文でのみ使う。
 import { decodeCartMetadata, cartSummaryLabel, type DecodedCartLine } from '@/lib/cart/metadata';
+import { encodeEndCode } from '@/lib/products/end-options';
 import { deliveryRequestFromMetadata, deliveryRequestMemo } from '@/lib/delivery-request';
 
 let _stripe: Stripe | null = null;
@@ -582,6 +583,11 @@ export async function sendWorkshopEmail(session: Stripe.Checkout.Session, isSimp
         params.set('dir', l.angleDir || 'left');
       }
       if (l.color === 'white') params.set('color', 'white');
+      // フラットバーのエンド（制作図のタイトル欄に文字で載る）
+      const elCode = encodeEndCode(l.endLeft);
+      const erCode = encodeEndCode(l.endRight);
+      if (elCode) params.set('el', elCode);
+      if (erCode) params.set('er', erCode);
       params.set('order', session.id);
       drawingLinks.push({ label: l.label, url: `${SITE_ORIGIN}/seizu?${params.toString()}` });
     }
