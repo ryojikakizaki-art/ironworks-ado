@@ -14,6 +14,8 @@ export interface RoundRailDrawingParams {
   angleDeg: number
   angleDir: AngleDir
   product: DrawingProductConfig
+  /** フラットバーのエンド表記（例: 「左:渦巻き 右:なし」）。指定時のみタイトル欄に「エンド」行を足す */
+  endNote?: string
 }
 
 // 後方互換用エイリアス
@@ -460,7 +462,7 @@ export function buildRoundRailDrawingSvg(
   // タイトルブロック
   const tbW = 260
   const tbRowH = 18
-  const tbRows = 7
+  const tbRows = params.endNote ? 8 : 7
   const tbH = tbRowH * tbRows
   const tbX = W - 30 - tbW
   const tbY = H - 25 - tbH
@@ -493,6 +495,7 @@ export function buildRoundRailDrawingSvg(
     ["尺度", scaleLabel(printScale), false],
     ["設計", "蠣﨑 良治", false],
     ["座金", zakinInfo, false],
+    ...(params.endNote ? [["エンド", params.endNote, false] as [string, string, boolean]] : []),
   ]
 
   rows.forEach((row, i) => {

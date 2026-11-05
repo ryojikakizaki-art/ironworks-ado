@@ -98,6 +98,8 @@ function isSameConfig(a: Omit<CartItem, 'id'>, b: CartItem): boolean {
     (a.angleDeg ?? 0) === (b.angleDeg ?? 0) &&
     (a.angleDir ?? 'left') === (b.angleDir ?? 'left') &&
     (a.positions ?? []).join(',') === (b.positions ?? []).join(',') &&
+    (a.endLeft ?? 'none') === (b.endLeft ?? 'none') &&
+    (a.endRight ?? 'none') === (b.endRight ?? 'none') &&
     clemenceKey(a) === clemenceKey(b)
   )
 }

@@ -6,6 +6,7 @@ import { buildVerticalRailDrawingSvg } from "@/lib/drawing-modal/vertical-svg"
 import { buildVerticalCadDrawingSvg } from "@/lib/drawing-modal/vertical-cad-svg"
 import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants"
 import { getDrawingProduct, withDrawingColor, type WasherTypeId } from "@/lib/drawing-modal/products"
+import { decodeEndCode, endLabel, hasEnds } from "@/lib/products/end-options"
 
 // 受注ごとの制作図スタンドアロンページ。決済 webhook から送られる工房宛メールの
 // リンク先。URL クエリ（商品・長さ・座金位置・座金タイプ・角度）だけで、商品ページの
@@ -23,6 +24,9 @@ export interface SeizuDrawingProps {
   order: string
   /** white / black。白／黒を選べる商品（Alexandre・Antoine）の表記に使う */
   color?: string
+  /** フラットバーのエンド（h/s/l の 1 文字コード・なしは空） */
+  endLeft?: string
+  endRight?: string
 }
 
 function parseCsvNumbers(csv: string): number[] {
@@ -59,6 +63,10 @@ export function SeizuDrawing(props: SeizuDrawingProps) {
       : product?.washerSpec?.id ?? "A"
   const angleDeg = Math.max(0, Math.min(60, Math.round(Number(props.angle) || 0)))
   const angleDir: "left" | "right" = props.dir === "right" ? "right" : "left"
+
+  const endL = decodeEndCode(props.endLeft)
+  const endR = decodeEndCode(props.endRight)
+  const endNote = hasEnds(endL, endR) ? `左:${endLabel(endL)} 右:${endLabel(endR)}` : undefined
 
   const isMulti = lengthsArr.length > 1
   const [idx, setIdx] = useState(0)
@@ -98,9 +106,10 @@ export function SeizuDrawing(props: SeizuDrawingProps) {
         angleDeg: isMulti ? 0 : angleDeg,
         angleDir,
         product,
+        endNote,
       })
     }
-  }, [product, currentLength, isMulti, customPositions, washerType, angleDeg, angleDir])
+  }, [product, currentLength, isMulti, customPositions, washerType, angleDeg, angleDir, endNote])
 
   if (!product || !lengthsArr.length) {
     return (

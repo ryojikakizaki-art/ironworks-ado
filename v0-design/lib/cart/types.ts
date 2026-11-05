@@ -15,6 +15,7 @@
  */
 
 import { PRODUCTS } from '@/lib/products/order-pricing'
+import type { EndOptionId } from '@/lib/products/end-options'
 
 /** Clémence の商品キー（PRODUCTS には存在しない） */
 export const CLEMENCE_SLUG = 'clemence'
@@ -65,6 +66,9 @@ export interface CartItem {
   zakinCustom?: boolean
   angleDeg?: number
   angleDir?: 'left' | 'right'
+  /** フラットバーのエンド（Marcel・Émile のみ・lib/products/end-options.ts）。なしは省略 */
+  endLeft?: EndOptionId
+  endRight?: EndOptionId
   /** Clémence のみ。上記 lengthMm / washerType は使わない */
   clemence?: ClemenceCartSpec
 }

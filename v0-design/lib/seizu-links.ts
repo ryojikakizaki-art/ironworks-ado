@@ -6,6 +6,8 @@
  * /api/admin/order/[row]/confirm-payment が工房メールとお客様の制作開始メールに載せる。
  */
 
+import { encodeEndCode, type EndChoice } from '@/lib/products/end-options';
+
 export const SITE_ORIGIN = 'https://ado.tantetuzest.com';
 
 // 長さを指定できる手すり = /seizu で描ける商品（webhook の DRAWING_LINK_PRODUCTS と同じ）。
@@ -23,6 +25,9 @@ export type SeizuSpec = {
   angleDir?: string;
   /** 白／黒を選べる商品の色（"white" / "マットホワイト" など）。白のときだけリンクに付ける */
   color?: string;
+  /** フラットバーのエンド（Marcel・Émile のみ・lib/products/end-options.ts の id） */
+  endLeft?: EndChoice;
+  endRight?: EndChoice;
   label?: string;
 };
 
@@ -43,6 +48,10 @@ export function buildSeizuLink(spec: SeizuSpec, orderRef: string): SeizuLink | n
     params.set('dir', spec.angleDir === 'right' ? 'right' : 'left');
   }
   if (spec.color && /white|ホワイト|白/i.test(spec.color)) params.set('color', 'white');
+  const elCode = encodeEndCode(spec.endLeft);
+  const erCode = encodeEndCode(spec.endRight);
+  if (elCode) params.set('el', elCode);
+  if (erCode) params.set('er', erCode);
   if (orderRef) params.set('order', orderRef);
   const label = spec.label || `${product} ${lengths.join('/')}mm`;
   return { label, url: `${SITE_ORIGIN}/seizu?${params.toString()}` };

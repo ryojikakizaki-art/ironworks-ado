@@ -20,6 +20,7 @@ import {
   lookupPriceFromTable,
   type PricePoint,
 } from '@/lib/drawing-modal/products';
+import { endsTotal, type EndChoice } from '@/lib/products/end-options';
 
 // ── 商品マスター（stdLengthMm: 基本料金に含まれる長さ, maxMm: 最大長さ）──
 // 座金計算ルール (縦型は product 固有、横型は未指定=旧式)
@@ -144,7 +145,14 @@ export function calcZakin(L_mm: number, rule?: ZakinRule): number {
 export function calcPrice(
   L_mm: number,
   prod: Product,
-  opts?: { zakinCount?: number; angleDeg?: number; color?: 'black' | 'white' }
+  opts?: {
+    zakinCount?: number;
+    angleDeg?: number;
+    color?: 'black' | 'white';
+    /** フラットバーのエンド（Marcel・Émile のみ。対象外商品は呼び出し側で 'none' に正規化済み） */
+    endLeft?: EndChoice;
+    endRight?: EndChoice;
+  }
 ) {
   // 価格テーブル指定商品 (René/Claire/Marcel/Émile) はテーブル参照、それ以外は式計算。
   let addon: number;
@@ -175,11 +183,13 @@ export function calcPrice(
   // （calcShipping が同じ長さ帯を "3,501mm以上は要問合せ" として扱うため実際の決済には進めない）。
   const jointCount = prod.jointFeeEnabled ? calcGastonJointCount(L_mm) : 0;
   const jointFee = jointCount * GASTON_JOINT_FEE_PER_UNIT;
-  const blackTotal = prod.basePrice + addon + addZakin + surcharge + angleCost + jointFee;
+  // エンド（片側ごとの定額・lib/products/end-options.ts が正本）
+  const endCost = endsTotal(opts?.endLeft, opts?.endRight);
+  const blackTotal = prod.basePrice + addon + addZakin + surcharge + angleCost + jointFee + endCost;
   // 白仕上げ (colorOptions を持つ商品のみ・2026-07-05 Alexandre 追加): 合計 +15%。
   const total = prod.colorOptions && opts?.color === 'white'
     ? Math.floor((blackTotal * WHITE_RATE_PERCENT) / 100)
     : blackTotal;
   const colorSurcharge = total - blackTotal;
-  return { addon, surcharge, addZakin, angleCost, jointCount, jointFee, colorSurcharge, zakin, total };
+  return { addon, surcharge, addZakin, angleCost, jointCount, jointFee, endCost, colorSurcharge, zakin, total };
 }

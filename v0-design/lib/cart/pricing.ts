@@ -31,6 +31,7 @@ import {
   minLengthFor,
   type CartItem,
 } from './types'
+import { endsSummary, sanitizeEndChoice, type EndChoice } from '@/lib/products/end-options'
 
 export interface CartLine {
   item: CartItem
@@ -143,6 +144,9 @@ export function sanitizeCartItem(raw: unknown): CartItem | null {
   const zakinCustom = isSingle && r.zakinCustom === true && positions.length > 0
   const angleDeg = isSingle ? Math.max(0, Math.min(60, Math.round(Number(r.angleDeg)) || 0)) : 0
   const angleDir: 'left' | 'right' = String(r.angleDir || 'left') === 'right' ? 'right' : 'left'
+  // エンドは本数に関係なく全本に同じ形が付く（対象外商品・未知の値は 'none'）
+  const endLeft = sanitizeEndChoice(slug, r.endLeft)
+  const endRight = sanitizeEndChoice(slug, r.endRight)
 
   return {
     id: typeof r.id === 'string' && r.id ? r.id : `${slug}-${lengthMm}-${Date.now()}`,
@@ -154,6 +158,8 @@ export function sanitizeCartItem(raw: unknown): CartItem | null {
     ...(hasOrientation ? { orientation } : {}),
     ...(zakinCustom ? { positions, zakinCustom: true } : {}),
     ...(angleDeg > 0 ? { angleDeg, angleDir } : {}),
+    ...(endLeft !== 'none' ? { endLeft } : {}),
+    ...(endRight !== 'none' ? { endRight } : {}),
   }
 }
 
@@ -194,12 +200,15 @@ export function railSpecLabel(opts: {
   angleDeg?: number
   angleDir?: 'left' | 'right'
   finish: string
+  endLeft?: EndChoice
+  endRight?: EndChoice
 }): string {
   const washer = opts.hasWasherType ? `（${opts.washerType}タイプ）` : ''
   const angle = opts.angleDeg
     ? ` / 角度加工 ${opts.angleDir === 'right' ? '右' : '左'}${opts.angleDeg}°`
     : ''
-  return `座金${opts.zakinCount}個${washer}${angle} / ${opts.finish}`
+  const ends = endsSummary(opts.endLeft, opts.endRight)
+  return `座金${opts.zakinCount}個${washer}${angle}${ends ? ` / ${ends}` : ''} / ${opts.finish}`
 }
 
 /** Clémence の仕様要約（ブラケット位置・延長・仕上げ）。 */
@@ -271,6 +280,8 @@ export function calcCartPricing(
       zakinCount: item.zakinCustom && item.positions?.length ? item.positions.length : undefined,
       angleDeg: item.angleDeg,
       color: item.color,
+      endLeft: item.endLeft,
+      endRight: item.endRight,
     })
     const unitPrice = Math.round(p.total)
     const orientation = item.orientation ? `（${item.orientation === 'left' ? '左向き' : '右向き'}）` : ''
@@ -287,6 +298,8 @@ export function calcCartPricing(
         angleDeg: item.angleDeg,
         angleDir: item.angleDir,
         finish: item.color === 'white' ? 'マットホワイト' : prod.finish,
+        endLeft: item.endLeft,
+        endRight: item.endRight,
       }),
       unitPrice,
       lineTotal: unitPrice * item.quantity,
