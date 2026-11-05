@@ -6,7 +6,7 @@ import { buildVerticalRailDrawingSvg } from "@/lib/drawing-modal/vertical-svg"
 import { buildVerticalCadDrawingSvg } from "@/lib/drawing-modal/vertical-cad-svg"
 import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants"
 import { getDrawingProduct, withDrawingColor, type WasherTypeId } from "@/lib/drawing-modal/products"
-import { decodeEndCode, endLabel, hasEnds } from "@/lib/products/end-options"
+import { decodeEndCode, endLabel, hasEnds, zakinEndDistances } from "@/lib/products/end-options"
 
 // 受注ごとの制作図スタンドアロンページ。決済 webhook から送られる工房宛メールの
 // リンク先。URL クエリ（商品・長さ・座金位置・座金タイプ・角度）だけで、商品ページの
@@ -67,6 +67,8 @@ export function SeizuDrawing(props: SeizuDrawingProps) {
   const endL = decodeEndCode(props.endLeft)
   const endR = decodeEndCode(props.endRight)
   const endNote = hasEnds(endL, endR) ? `左:${endLabel(endL)} 右:${endLabel(endR)}` : undefined
+  const endDistL = zakinEndDistances(endL, endR)?.left
+  const endDistR = zakinEndDistances(endL, endR)?.right
 
   const isMulti = lengthsArr.length > 1
   const [idx, setIdx] = useState(0)
@@ -77,9 +79,11 @@ export function SeizuDrawing(props: SeizuDrawingProps) {
     if (!svgRef.current || !product || !currentLength) return
     const rule = product.zakinRule
     // 多本注文は本ごとに長さが違うため座金は自動配置。単品はお客様指定の位置を使う。
+    // エンド付きの側は「先端〜一番端の座金」を商品ページと同じ距離にする
+    const endDist = endDistL !== undefined || endDistR !== undefined ? { left: endDistL, right: endDistR } : undefined
     const positions = isMulti
-      ? getZakinPositions(currentLength, calcZakin(currentLength, rule), rule)
-      : customPositions ?? getZakinPositions(currentLength, calcZakin(currentLength, rule), rule)
+      ? getZakinPositions(currentLength, calcZakin(currentLength, rule), rule, endDist)
+      : customPositions ?? getZakinPositions(currentLength, calcZakin(currentLength, rule), rule, endDist)
 
     if (product.category === "vertical") {
       if (product.washerSpec && product.titleBlock) {
@@ -109,7 +113,7 @@ export function SeizuDrawing(props: SeizuDrawingProps) {
         endNote,
       })
     }
-  }, [product, currentLength, isMulti, customPositions, washerType, angleDeg, angleDir, endNote])
+  }, [product, currentLength, isMulti, customPositions, washerType, angleDeg, angleDir, endNote, endDistL, endDistR])
 
   if (!product || !lengthsArr.length) {
     return (

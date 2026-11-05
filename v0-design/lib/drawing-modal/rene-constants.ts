@@ -140,16 +140,34 @@ export function calcEndDist(L_mm: number, rule?: ZakinRule): number {
   return endMin(rule)
 }
 
-export function getZakinPositions(L_mm: number, zakinCount: number, rule?: ZakinRule): number[] {
+/**
+ * 座金の自動配置。
+ * endDist を渡すと、左右それぞれ「手すりの先端から一番端の座金まで」をその値以上にする
+ * （フラットバーのエンド付き・lib/products/end-options.ts の zakinEndMm）。
+ * 本数は変えず、内側の間隔を詰めるだけなので価格には影響しない。
+ */
+export function getZakinPositions(
+  L_mm: number,
+  zakinCount: number,
+  rule?: ZakinRule,
+  endDist?: { left?: number; right?: number },
+): number[] {
   const end = calcEndDist(L_mm, rule)
-  const positions: number[] = [Math.round(end)]
+  let left = Math.max(end, endDist?.left ?? 0)
+  let right = Math.max(end, endDist?.right ?? 0)
+  // 短い手すりで左右の余白が重なる場合は従来の配置に戻す（座金の並びが逆転しないように）
+  if (left + right >= L_mm - 50) {
+    left = end
+    right = end
+  }
+  const positions: number[] = [Math.round(left)]
   if (zakinCount > 2) {
-    const inner = L_mm - 2 * end
+    const inner = L_mm - left - right
     const gaps = zakinCount - 1
     for (let i = 1; i < zakinCount - 1; i++) {
-      positions.push(Math.round(end + (inner * i) / gaps))
+      positions.push(Math.round(left + (inner * i) / gaps))
     }
   }
-  positions.push(Math.round(L_mm - end))
+  positions.push(Math.round(L_mm - right))
   return positions
 }

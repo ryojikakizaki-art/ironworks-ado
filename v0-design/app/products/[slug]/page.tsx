@@ -34,7 +34,7 @@ import { TOTAL_VOICE_COUNT } from "@/lib/testimonials"
 import { ReviewVoiceIcon } from "@/components/ui/review-voice-icon"
 import { encodeQuoteState, decodeQuoteState, copyToClipboard } from "@/lib/products/quote-share"
 import { calcGastonJointCount, GASTON_JOINT_FEE_PER_UNIT, GASTON_JOINT_INQUIRY_ABOVE_MM, GASTON_CRATE_FEE_PER_UNIT } from "@/lib/products/order-pricing"
-import { END_OPTIONS, endLabel, endsTotal, hasEnds, supportsEndOptions, type EndChoice } from "@/lib/products/end-options"
+import { END_OPTIONS, endLabel, endsTotal, hasEnds, supportsEndOptions, zakinEndDistances, type EndChoice } from "@/lib/products/end-options"
 
 // productImages / specs は商品ごとに display.ts から取得
 
@@ -227,6 +227,13 @@ export default function ProductDetailPage() {
   const endNote = supportsEnds && hasEnds(endLeft, endRight)
     ? `左:${endLabel(endLeft)} 右:${endLabel(endRight)}`
     : undefined
+  // エンド付きの側は座金を内側へ寄せる（フック100・渦巻き150・ループ230mm。end-options.ts の zakinEndMm）
+  const endDistL = supportsEnds ? zakinEndDistances(endLeft, endRight)?.left : undefined
+  const endDistR = supportsEnds ? zakinEndDistances(endLeft, endRight)?.right : undefined
+  const zakinEndDist = useMemo(
+    () => (endDistL !== undefined || endDistR !== undefined ? { left: endDistL, right: endDistR } : undefined),
+    [endDistL, endDistR],
+  )
   const [checkoutError, setCheckoutError] = useState<string | null>(null)
   // カート（複数商品まとめ買い）。決済（カード / 銀行振込の選択）は /cart で行う。
   const router = useRouter()
@@ -274,7 +281,7 @@ export default function ProductDetailPage() {
     const restoredCount = isSingle ? restoredQuote.zakinCount : undefined
     const count = restoredCount && restoredCount > 0 ? restoredCount : autoCount
     return {
-      positions: getZakinPositions(L, count, zakinRule),
+      positions: getZakinPositions(L, count, zakinRule, zakinEndDist),
       angleDeg: isSingle ? (restoredQuote.angleDeg ?? 0) : 0,
       angleDir: isSingle ? (restoredQuote.angleDir ?? "left") : "left",
       customMode: !!restoredCount,
@@ -1610,6 +1617,7 @@ export default function ProductDetailPage() {
                                   maxCount={product.drawing.maxZakinCount ?? (product.drawing.category === "vertical" ? 3 : 20)}
                                   embedded
                                   className="mt-3"
+                                  endDist={zakinEndDist}
                                 />
                               </>
                             )}
@@ -2220,6 +2228,7 @@ export default function ProductDetailPage() {
         color={color}
         lengths={isMultiOrder ? lengths : undefined}
         endNote={endNote}
+        endDist={zakinEndDist}
       />
 
       {/* 見積書 PDF 化（タスク1第2段階・2026-07-02）。画面には表示せず印刷/PDF保存時のみ表示。
