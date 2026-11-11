@@ -1,7 +1,7 @@
 // schema.org Product JSON-LD 生成
 // 商品ページに埋め込み Google 検索のリッチカード化を狙う
 import { CATALOG_PRODUCTS } from "./catalog"
-import { CDN_BASE, getProductDisplay } from "./display"
+import { galleryUrl, getProductDisplay } from "./display"
 import { getSimpleProduct } from "./simple"
 // 手すり（オーダー品）の基準価格の単一正本。basePrice = 標準長以下の一律価格 = 価格フロア。
 // これを AggregateOffer.lowPrice（「◯◯円〜」）に使い、リッチリザルト対象を維持する。
@@ -20,9 +20,8 @@ function priceValidUntil(): string {
 }
 
 function imgUrl(img: string): string {
-  if (img.startsWith("/")) return `${SITE_URL}${img}`
-  // 画像ID（拡張子あり/なし両対応）
-  return `${CDN_BASE}/${img}/public`
+  // galleryUrl が返すのはサイト内パス（画像ID・"/" 始まりの両対応）。JSON-LD には絶対 URL が要る
+  return `${SITE_URL}${galleryUrl(img)}`
 }
 
 export function getProductStructuredData(slug: string): Record<string, unknown> | null {
