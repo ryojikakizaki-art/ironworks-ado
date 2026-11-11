@@ -142,7 +142,7 @@ export default function AntiqueCategoryPage() {
           {/* 既定の "public" variant は 768px で、全画面に引き伸ばすと粗くなる。
               元データは 1600px あるので w=1600 を明示して取得する。 */}
           <Image
-            src={galleryUrl("ca753a1c8defc7d08da0.jpg", "w=1600")}
+            src={galleryUrl("/images/stores/ca753a1c8defc7d08da0-w1600.jpg")}
             alt="アプローチ手すり『蔦』 レンガ階段への施工事例"
             fill
             sizes="100vw"

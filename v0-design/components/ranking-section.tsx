@@ -5,8 +5,7 @@ import { useRef, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ChevronLeft, ChevronRight } from "lucide-react"
-
-const CDN = "https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7"
+import { galleryUrl } from "@/lib/products/display"
 
 const rankings = [
   {
@@ -14,7 +13,7 @@ const rankings = [
     name: "René ルネ",
     variant: "横型 25φ｜マットブラック",
     price: "36,500",
-    image: `${CDN}/d0f5f0e83d40a4d29044.jpg/fit=cover,w=640,h=640`,
+    image: galleryUrl("d0f5f0e83d40a4d29044.jpg"),
     href: "/products/rene",
   },
   {
@@ -22,7 +21,7 @@ const rankings = [
     name: "Claude クロード",
     variant: "縦型 25φ｜マットブラック",
     price: "30,000",
-    image: `${CDN}/86278edb68c21957e339.jpg/fit=cover,w=640,h=640`,
+    image: galleryUrl("86278edb68c21957e339.jpg"),
     href: "/products/claude",
   },
   {
@@ -30,7 +29,7 @@ const rankings = [
     name: "Claire クレール",
     variant: "横型 25φ｜マットホワイト",
     price: "42,000",
-    image: `${CDN}/0a0c0c78f9f636cca733.jpg/fit=cover,w=640,h=640`,
+    image: galleryUrl("0a0c0c78f9f636cca733.jpg"),
     href: "/products/claire",
   },
   {
@@ -47,7 +46,7 @@ const rankings = [
     name: "Marcel マルセル",
     variant: "横型 フラットバー｜マットブラック",
     price: "36,000",
-    image: `${CDN}/939d0690971c550c1dd9.jpg/fit=cover,w=640,h=640`,
+    image: galleryUrl("939d0690971c550c1dd9.jpg"),
     href: "/products/marcel",
   },
   {
@@ -55,7 +54,7 @@ const rankings = [
     name: "Scroll スクロール 16φ",
     variant: "ロートアイアン 70cm｜無垢鉄",
     price: "18,000",
-    image: `${CDN}/2a64ecfb5e50e78cb374.jpg/fit=cover,w=640,h=640`,
+    image: galleryUrl("2a64ecfb5e50e78cb374.jpg"),
     href: "/products/scroll16",
   },
 ]

@@ -169,7 +169,7 @@ export function ProductMarquee() {
               <div className="group">
                 <div className="relative w-[120px] h-[120px] md:w-[140px] md:h-[140px] overflow-hidden rounded bg-secondary">
                   <Image
-                    src={galleryUrl(`${p.img}.jpg`, "fit=cover,w=300,h=300")}
+                    src={galleryUrl(`${p.img}.jpg`)}
                     alt={p.name}
                     fill
                     sizes="140px"

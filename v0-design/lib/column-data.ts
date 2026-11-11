@@ -48,7 +48,8 @@ export interface ColumnArticle {
   related: { label: string; href: string }[]
 }
 
-const CDN = "https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7"
+// 旧 STORES の商品写真は public/images/stores/ に移した（lib/products/display.ts の STORES_IMAGE_DIR と同じ場所）
+const STORES_IMG = "/images/stores"
 
 export const COLUMN_ARTICLES: ColumnArticle[] = [
   {
@@ -67,7 +68,7 @@ export const COLUMN_ARTICLES: ColumnArticle[] = [
     ],
     date: "2026-06-13",
     hero: {
-      src: `${CDN}/27028bc72ffa6bf103d8.jpg/public`,
+      src: `${STORES_IMG}/27028bc72ffa6bf103d8.jpg`,
       alt: "黒い玄関ドアの脇に床から天井まで通した縦型ロングアイアン手すり Antoine の施工例",
     },
     lead:
@@ -99,7 +100,7 @@ export const COLUMN_ARTICLES: ColumnArticle[] = [
         },
         images: [
           {
-            src: `${CDN}/fbdf60c247bea8b3c486.jpg/public`,
+            src: `${STORES_IMG}/fbdf60c247bea8b3c486.jpg`,
             alt: "スケルトン階段と床から天井までの縦型アイアン手すりのある玄関ホール",
           },
         ],
@@ -122,7 +123,7 @@ export const COLUMN_ARTICLES: ColumnArticle[] = [
         },
         images: [
           {
-            src: `${CDN}/86278edb68c21957e339.jpg/public`,
+            src: `${STORES_IMG}/86278edb68c21957e339.jpg`,
             alt: "縦型アイアン手すり Claude 25φ マットブラックの商品全体",
           },
           {
@@ -140,7 +141,7 @@ export const COLUMN_ARTICLES: ColumnArticle[] = [
         ],
         images: [
           {
-            src: `${CDN}/2c953ba91fe0b264c2fe.jpg/public`,
+            src: `${STORES_IMG}/2c953ba91fe0b264c2fe.jpg`,
             alt: "25φの縦型アイアン手すりを握った手元。指が回り切る太さ",
           },
         ],
@@ -264,7 +265,7 @@ export const COLUMN_ARTICLES: ColumnArticle[] = [
         },
         images: [
           {
-            src: `${CDN}/d0f5f0e83d40a4d29044.jpg/public`,
+            src: `${STORES_IMG}/d0f5f0e83d40a4d29044.jpg`,
             alt: "横型アイアン手すり René 25φ マットブラックと座金",
           },
         ],
@@ -306,11 +307,11 @@ export const COLUMN_ARTICLES: ColumnArticle[] = [
         ],
         images: [
           {
-            src: `${CDN}/441adb48d70157c88ced.jpg/public`,
+            src: `${STORES_IMG}/441adb48d70157c88ced.jpg`,
             alt: "25φの横型アイアン手すりを握った手元",
           },
           {
-            src: `${CDN}/8b014530a248acab27b4.jpg/public`,
+            src: `${STORES_IMG}/8b014530a248acab27b4.jpg`,
             alt: "アイアン手すりのブラケット座金。ビス2本で下地に固定する構造",
           },
         ],

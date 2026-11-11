@@ -70,8 +70,10 @@ const FB_TSUCHIME: FeatureBullet[] = [
   { icon: "Wrench", title: "取付簡単", desc: "付属の金具で簡単に取り付け可能" },
 ]
 
-// Cloudflare Images CDN
-export const CDN_BASE = "https://imagedelivery.net/QondspN4HIUvB_R16-ddAQ/60e3e0f9c3289c7ab78f13e7"
+// 商品写真の置き場。旧 STORES（Cloudflare Images / imagedelivery.net）に置いていた写真を
+// 2026-11 に public/images/stores/<画像ID>.jpg へ移した（STORES 退会で写真が消えるのを防ぐため）。
+// 外部 CDN は参照しない。新しい写真は public/images/ 配下に置き、"/" 始まりのパスで指定する。
+export const STORES_IMAGE_DIR = "/images/stores"
 
 // ローカル差し替え: Cloudflare Images の元画像に代えて public/ の加工済み画像を使う
 // 元画像 ID → ローカルパス のマップ
@@ -86,12 +88,14 @@ const LOCAL_IMAGE_OVERRIDES: Record<string, string> = {
   "569af3ee76a1999863e7.jpg": "/images/products/tsuchime/top.jpg",
 }
 
-export function galleryUrl(id: string, variant: string = "public"): string {
-  // ローカルパス（"/" で始まる）は CDN 解決をスキップして直接返す
+export function galleryUrl(id: string): string {
+  // ローカルパス（"/" で始まる）はそのまま返す
   if (id.startsWith("/")) return id
-  const local = LOCAL_IMAGE_OVERRIDES[id]
+  // 画像 ID は拡張子あり／なしの両方で渡ってくるため .jpg にそろえる
+  const file = id.includes(".") ? id : `${id}.jpg`
+  const local = LOCAL_IMAGE_OVERRIDES[file]
   if (local) return local
-  return `${CDN_BASE}/${id}/${variant}`
+  return `${STORES_IMAGE_DIR}/${file}`
 }
 
 const DISPLAY: Record<string, ProductDisplay> = {
