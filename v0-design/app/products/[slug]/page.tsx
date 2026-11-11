@@ -22,6 +22,7 @@ import { SimpleProductPage } from "@/components/simple-product-page"
 import { FinishCommitment } from "@/components/finish-commitment"
 import { KaigoNotice } from "@/components/kaigo-notice"
 import { ProductFaq } from "@/components/product-faq"
+import { ProductTrustStrip } from "@/components/product-trust-strip"
 import { calcShipping, getShippingRange, type ProductType } from "@/lib/shipping/sagawa"
 import { getEarliestArrival } from "@/lib/business-days"
 import type { WasherTypeId } from "@/lib/drawing-modal/products"
@@ -239,6 +240,10 @@ export default function ProductDetailPage() {
   const router = useRouter()
   const { add: addToCart, addIfAbsent: addToCartIfAbsent, count: cartCount, remaining: cartRemaining } = useCart()
   const [cartAdded, setCartAdded] = useState(false)
+  // 価格の目安ボックスのクイック追加: 配送先が未選択ならその場で都道府県を選ぶ欄を開く
+  const [quickPrefOpen, setQuickPrefOpen] = useState(false)
+  const [quickPrefNote, setQuickPrefNote] = useState<string | null>(null)
+  const [quickAdded, setQuickAdded] = useState(false)
   const prefectureRef = useRef<HTMLDivElement | null>(null)
   // モバイル スティッキー合計バー（2026-06-12 監査 B群⑪）:
   // 計算機を過ぎたら表示し、合計・購入エリアが見えている間は隠す
@@ -576,15 +581,15 @@ export default function ProductDetailPage() {
     }))
   }
 
-  // カートに追加（ページに留まり、他の商品も選べる）
-  const handleAddToCart = () => {
+  // カートに追加（ページに留まり、他の商品も選べる）。追加できたら true を返す
+  const handleAddToCart = (): boolean => {
     let allAdded = true
     for (const line of buildCartLines()) {
       if (!addToCart(line)) allAdded = false
     }
     if (!allAdded) {
       setCheckoutError(`カートは合計 ${CART_MAX_QUANTITY} 本までです。入りきらない分は追加できませんでした。`)
-      return
+      return false
     }
     setCheckoutError(null)
     setCartAdded(true)
@@ -594,16 +599,36 @@ export default function ProductDetailPage() {
       value: prices.subtotal,
       items: [{ item_id: slug, item_name: product.nameEn, quantity: lengths.length }],
     })
+    return true
   }
 
   // 価格の目安ボックス横のクイック追加ボタン。配送先が未選択のまま追加すると
-  // 送料未確定のままカートに入ってしまうため、未選択時は追加せず配送先選択欄へ誘導する。
+  // 送料未確定のままカートに入ってしまうため、未選択時はその場で都道府県を選ぶ欄を開く。
+  // （以前は下の配送先欄まで無言でスクロールするだけで、押した人には何が起きたか分からなかった。
+  //   GA4 90日: 計算機を触った 118 人のうちカート追加は 15 人。2026-11-11 改修）
   const handleQuickAddToCart = () => {
     if (!prefecture) {
-      prefectureRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+      setQuickPrefNote(null)
+      setQuickPrefOpen(true)
       return
     }
-    handleAddToCart()
+    if (handleAddToCart()) setQuickAdded(true)
+  }
+
+  // クイック欄で都道府県を選んだら、下の計算機の配送先にも反映してそのままカートに追加する。
+  // 沖縄など送料が要問合せの地域は、計算機と同じくカートに入れず理由を出す。
+  const handleQuickPrefecture = (pref: string) => {
+    if (!pref) return
+    setPrefecture(pref)
+    setCheckoutError(null)
+    setQuickPrefOpen(false)
+    const shipping = calcShipping(lengths, pref, productType)
+    if (shipping.inquiry) {
+      setQuickPrefNote(`${shipping.inquiryReason ?? "この配送先は送料が別途お見積もりとなります"}。下のご相談窓口からお問い合わせください。`)
+      return
+    }
+    setQuickPrefNote(null)
+    if (handleAddToCart()) setQuickAdded(true)
   }
 
   // 購入手続きへ: いまの仕様をカートに入れて /cart へ。
@@ -851,6 +876,40 @@ export default function ProductDetailPage() {
                     </PrimaryCTA>
                   )}
                 </div>
+                {quickPrefOpen && !prefecture && !prices.shippingInquiry && (
+                  <div className="mt-3 rounded-md border border-gold/40 bg-gold/5 p-3">
+                    <label htmlFor="quick-prefecture" className="mb-2 block text-[13px] md:text-[14px] font-medium text-foreground">
+                      配送先を選ぶと、カートに追加します
+                    </label>
+                    <select
+                      id="quick-prefecture"
+                      defaultValue=""
+                      onChange={(e) => handleQuickPrefecture(e.target.value)}
+                      className="h-11 w-full rounded-md border-2 border-gold/60 bg-white px-3 text-[15px] text-foreground focus:border-gold focus:outline-none"
+                    >
+                      <option value="" disabled>
+                        都道府県を選択
+                      </option>
+                      {prefectures.map((pref) => (
+                        <option key={pref} value={pref}>
+                          {pref}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                {quickPrefNote && (
+                  <p className="mt-2 text-[13px] md:text-[14px] text-red-600 leading-relaxed">{quickPrefNote}</p>
+                )}
+                {quickAdded && prefecture && (
+                  <Link
+                    href={`/cart?pref=${encodeURIComponent(prefecture)}`}
+                    className="mt-2 inline-flex items-center gap-1 text-[13px] md:text-[14px] font-medium text-gold hover:underline"
+                  >
+                    カートを見る（{prefecture}への送料込みの合計へ）
+                    <span aria-hidden>→</span>
+                  </Link>
+                )}
                 <p className="mt-2 text-[13px] md:text-[14px] text-muted-foreground leading-relaxed">
                   {isRangedFixed
                     ? `L${product.drawing.stdLengthMm}〜${product.drawing.maxMm}mmの範囲内は一律料金です。範囲外の長さは別途ご相談ください。`
@@ -876,6 +935,9 @@ export default function ProductDetailPage() {
                   分かります。
                 </p>
               </div>
+
+              {/* 価格を見た直後の安心材料（お客様の声の抜粋・不良時の対応）。components/product-trust-strip.tsx 参照 */}
+              <ProductTrustStrip />
 
               {/* 太さで選ぶ — Scroll シリーズ(16φ/19φ/22φ)のみ表示。検索等で1太さに直接来た
                   初見の人が太さ感覚をつかめるよう、価格の直後という早い位置で他の太さへ誘導する。
