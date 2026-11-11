@@ -1,6 +1,7 @@
 import { CATALOG_PRODUCTS } from "@/lib/products/catalog"
 import { galleryUrl, getProductDisplay } from "@/lib/products/display"
 import { SIMPLE_PRODUCTS, getSimpleProduct } from "@/lib/products/simple"
+import { listingShippingYen } from "@/lib/shipping/listing-shipping"
 
 export const dynamic = "force-static"
 export const revalidate = 86400
@@ -76,6 +77,9 @@ interface FeedItem {
 
 function buildItem(item: FeedItem): string {
   const adGroup = AD_CORE_SLUGS.has(item.slug) ? "core" : "other"
+  // 基本構成で買ったときの送料（税込・全国で最も高い地域の額）。lib/shipping/listing-shipping.ts 参照。
+  // 送料が見積もりで決まる商品（null）は送料欄を出さない。
+  const shippingYen = listingShippingYen(item.slug)
   return [
     "    <item>",
     `      <g:id>${escapeXml(item.slug)}</g:id>`,
@@ -90,7 +94,9 @@ function buildItem(item: FeedItem): string {
     `      <g:identifier_exists>false</g:identifier_exists>`,
     `      <g:product_type>${escapeXml(item.productType)}</g:product_type>`,
     `      <g:custom_label_0>${adGroup}</g:custom_label_0>`,
-    `      <g:shipping><g:country>JP</g:country><g:service>佐川急便</g:service><g:price>0 JPY</g:price></g:shipping>`,
+    ...(shippingYen === null
+      ? []
+      : [`      <g:shipping><g:country>JP</g:country><g:service>佐川急便</g:service><g:price>${shippingYen} JPY</g:price></g:shipping>`]),
     "    </item>",
   ].join("\n")
 }
@@ -98,7 +104,17 @@ function buildItem(item: FeedItem): string {
 // フィード除外 slug。
 // laurent: サムネが実物写真でなく生成画像のため、実写に差し替えるまで
 // Google ショッピングには出さない（誤認・ポリシーリスク回避）。
-const FEED_EXCLUDED_SLUGS = new Set(["laurent"])
+// 大型の見積り商品 5 点: 送料が見積もりで決まり（家財便・設置込み等）フィードに送料を書けないため、
+// ショッピング広告には出さない（2026-11-11 蠣﨑さん判断。広告経由の成果は 90 日 0 件）。
+// Élisabeth・Élan L も送料は見積もりだが、手すりなので送料欄なしで残す。
+const FEED_EXCLUDED_SLUGS = new Set([
+  "laurent",
+  "tsuta",
+  "barn-door",
+  "arabesque",
+  "stair-spiral",
+  "dog-gate",
+])
 
 export async function GET() {
   const collected: FeedItem[] = []
@@ -123,6 +139,7 @@ export async function GET() {
 
   for (const p of Object.values(SIMPLE_PRODUCTS)) {
     if (seen.has(p.slug)) continue
+    if (FEED_EXCLUDED_SLUGS.has(p.slug)) continue
     if (p.basePrice <= 0) continue
     if (!p.images || p.images.length === 0) continue
     collected.push({

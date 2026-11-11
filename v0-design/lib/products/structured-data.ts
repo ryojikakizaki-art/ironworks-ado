@@ -3,6 +3,7 @@
 import { CATALOG_PRODUCTS } from "./catalog"
 import { galleryUrl, getProductDisplay } from "./display"
 import { getSimpleProduct } from "./simple"
+import { listingShippingYen } from "@/lib/shipping/listing-shipping"
 // 手すり（オーダー品）の基準価格の単一正本。basePrice = 標準長以下の一律価格 = 価格フロア。
 // これを AggregateOffer.lowPrice（「◯◯円〜」）に使い、リッチリザルト対象を維持する。
 // （価格ロジックの複製は PR #347 の事故元なので必ずこの 1 箇所を参照する）
@@ -83,6 +84,19 @@ export function getProductStructuredData(slug: string): Record<string, unknown> 
     },
   }
 
+  // 送料（税込・全国で最も高い地域の額）。以前は全商品「送料 0 円・発送 0〜1 日」と書いていたが
+  // 実態と違うため、送料が決まっている商品だけ書く。見積もりで決まる商品は省く（任意項目）。
+  // 発送までの日数は商品ごとに異なる（手すり 10 営業日・家具 6〜8 週間）ため書かない。
+  const shippingYen = listingShippingYen(slug)
+  const shippingDetails =
+    shippingYen === null
+      ? undefined
+      : {
+          "@type": "OfferShippingDetails",
+          shippingRate: { "@type": "MonetaryAmount", value: String(shippingYen), currency: "JPY" },
+          shippingDestination: { "@type": "DefinedRegion", addressCountry: "JP" },
+        }
+
   // 価格が確定している商品は exact price の Offer を付与する。
   if (price > 0) {
     product.offers = {
@@ -97,33 +111,7 @@ export function getProductStructuredData(slug: string): Record<string, unknown> 
         "@type": "Organization",
         name: BRAND,
       },
-      shippingDetails: {
-        "@type": "OfferShippingDetails",
-        shippingRate: {
-          "@type": "MonetaryAmount",
-          value: "0",
-          currency: "JPY",
-        },
-        shippingDestination: {
-          "@type": "DefinedRegion",
-          addressCountry: "JP",
-        },
-        deliveryTime: {
-          "@type": "ShippingDeliveryTime",
-          handlingTime: {
-            "@type": "QuantitativeValue",
-            minValue: 0,
-            maxValue: 1,
-            unitCode: "DAY",
-          },
-          transitTime: {
-            "@type": "QuantitativeValue",
-            minValue: 7,
-            maxValue: 14,
-            unitCode: "DAY",
-          },
-        },
-      },
+      ...(shippingDetails ? { shippingDetails } : {}),
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
         applicableCountry: "JP",
