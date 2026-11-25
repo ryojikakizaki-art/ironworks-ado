@@ -407,7 +407,7 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f3f4f6;color:#333
 <div class="card bank">${accountRowsHtml}</div>
 <div class="note">・振込手数料はお客様のご負担となります。<br>・ご入金の確認が取れ次第、メールにてご連絡し、制作・発送の手配を開始いたします。<br>・本メールにお心当たりがない場合はお手数ですがご連絡ください。</div>
 </div>
-<div class="footer"><p>© IRONWORKS ado / 鍛鉄工房ZEST — ado@tantetuzest.com</p></div>
+<div class="footer"><p>© IRONWORKS ado / 鍛鉄工房ZEST — ado@tantetuzest.com</p><p>TEL 070-3817-0659</p></div>
 </div></body></html>`;
 
     const notifyHtml = `<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8"><style>
