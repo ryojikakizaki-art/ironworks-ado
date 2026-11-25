@@ -194,7 +194,7 @@ ${seizuLinks.length ? `<p style="margin-top:24px;"><strong>ご注文の寸法図
 ${seizuButtons('寸法図を見る')}` : ''}
 <p>発送の際は、追跡番号を添えて改めてご連絡いたします。<br>※日程は目安です。制作状況により前後する場合がございます。</p>
 </div>
-<div class="footer"><p>© IRONWORKS ado / 鍛鉄工房ZEST — ado@tantetuzest.com</p></div>
+<div class="footer"><p>© IRONWORKS ado / 鍛鉄工房ZEST — ado@tantetuzest.com</p><p>TEL 070-3817-0659</p></div>
 </div></body></html>`;
 
       const res = await fetch('https://api.resend.com/emails', {
