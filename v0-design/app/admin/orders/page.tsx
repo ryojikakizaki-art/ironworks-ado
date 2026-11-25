@@ -21,6 +21,7 @@ type AdminOrderRow = {
   orderRef: string;
   note: string;
   status: string;
+  hasEmail?: boolean;
 };
 
 const yen = (n: number): string => `¥${n.toLocaleString('ja-JP')}`;
@@ -92,6 +93,8 @@ function AdminOrdersInner() {
   // 銀行振込の「入金確認」操作状態（row → 状態）。
   const [confirming, setConfirming] = useState<Record<number, 'idle' | 'sending' | 'error'>>({});
   const [confirmErr, setConfirmErr] = useState<Record<number, string>>({});
+  // 入金確認を押した後の「お客様へメールを送ったか」の結果（row → 文字列）。
+  const [confirmResult, setConfirmResult] = useState<Record<number, string>>({});
 
   useEffect(() => {
     if (demo) {
@@ -163,7 +166,7 @@ function AdminOrdersInner() {
         cache: 'no-store',
       });
       const data = (await res.json()) as
-        | { ok: true; row: number; status: string; eventsCreated: number; emailSent: boolean }
+        | { ok: true; row: number; status: string; eventsCreated: number; emailSent: boolean; invoiceOrder?: boolean }
         | { ok: false; error: string };
       if (!res.ok || !('ok' in data) || !data.ok) {
         setConfirming((s) => ({ ...s, [row]: 'error' }));
@@ -172,6 +175,14 @@ function AdminOrdersInner() {
       }
       // 成功 → note を更新（入金待ち→入金確認）。行は残し、発送フローに切り替わる。
       setConfirming((s) => ({ ...s, [row]: 'idle' }));
+      setConfirmResult((s) => ({
+        ...s,
+        [row]: data.emailSent
+          ? '入金確認済み。お客様へ制作開始メールを送りました。'
+          : data.invoiceOrder
+            ? '入金確認済み。お客様へのメールは送っていません。領収書をつけた入金確認の連絡を別に送ってください。'
+            : '入金確認済み。お客様へのメールは送れませんでした（メールアドレスなし、または送信失敗）。LINE などで連絡してください。',
+      }));
       setOrders((prev) =>
         prev ? prev.map((o) => (o.row === row ? { ...o, note: data.status } : o)) : prev,
       );
@@ -237,7 +248,8 @@ function AdminOrdersInner() {
             「発送通知メール」を押すと、お客様に追跡番号入りの発送メールが届き、台帳にも記録されます。
             <br />
             銀行振込で「入金待ち」の注文（サイトからの注文・見積で受けた注文）は、入金を確認してから「入金確認 → 制作開始」を押してください
-            （制作スケジュールに登録し、お客様へ制作開始メールを送ります）。
+            （制作スケジュールに登録します。お客様への制作開始メールが自動で届くのはサイトからの銀行振込注文だけです。
+            見積で受けた注文（MF請求書）とメールアドレスのない注文には届かないので、領収書をつけた入金確認の連絡を別に送ってください）。
           </p>
         </div>
       </header>
@@ -328,7 +340,11 @@ function AdminOrdersInner() {
                             {confirming[o.row] === 'sending' ? '確認中…' : '入金確認 → 制作開始'}
                           </button>
                           <p className="text-[11px] leading-snug text-gray-500">
-                            押すと制作スケジュール（カレンダー）に登録し、お客様へ制作開始メールを送ります。
+                            {o.orderRef.startsWith('MF請求書')
+                              ? '押すと制作スケジュール（カレンダー）に登録します。お客様へのメールは自動では送りません（領収書をつけた入金確認の連絡を別に送ってください）。'
+                              : o.hasEmail === false
+                                ? '押すと制作スケジュール（カレンダー）に登録します。メールアドレスがないため、お客様へのメールは送りません（LINE などで連絡してください）。'
+                                : '押すと制作スケジュール（カレンダー）に登録し、お客様へ制作開始メールを送ります。'}
                           </p>
                           {confirming[o.row] === 'error' && confirmErr[o.row] && (
                             <div className="text-[11px] leading-snug text-red-600">{confirmErr[o.row]}</div>
@@ -336,6 +352,9 @@ function AdminOrdersInner() {
                         </>
                       ) : (
                         <>
+                      {confirmResult[o.row] && (
+                        <div className="text-[11px] leading-snug text-amber-800">{confirmResult[o.row]}</div>
+                      )}
                       <input
                         type="text"
                         inputMode="numeric"
