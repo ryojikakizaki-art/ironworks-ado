@@ -26,6 +26,7 @@ export type AdminOrderRow = {
   orderRef: string;       // K 注文番号
   note: string;           // L メモ（銀行振込の「入金待ち」判定に使う）
   status: string;         // O 対応状況（空 = 未対応）
+  hasEmail: boolean;      // F メールが有効か（入金確認でお客様へメールを送れるかの表示に使う）
 };
 
 function parseYen(v: unknown): number {
@@ -70,6 +71,7 @@ export async function GET() {
         orderRef: String(r[10] ?? ''),
         note: String(r[11] ?? ''),
         status: String(r[14] ?? ''),
+        hasEmail: /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(r[5] ?? '')),
       }))
       // 未対応のみ
       .filter((o) => !isDone(o.status))
