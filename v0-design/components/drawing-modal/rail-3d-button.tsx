@@ -74,6 +74,7 @@ export function Rail3DButton({ productName, ...viewer }: Rail3DButtonProps) {
               <button
                 type="button"
                 onClick={() => setOpen(false)}
+                autoFocus
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full hover:bg-[#f3f4f6]"
                 aria-label="閉じる"
               >

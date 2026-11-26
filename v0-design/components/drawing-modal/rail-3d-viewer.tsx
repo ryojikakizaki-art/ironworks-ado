@@ -95,7 +95,7 @@ export default function Rail3DViewer({ lengthMm, pipeDiameter, positions, angleD
     }
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.shadowMap.enabled = true
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap
+    renderer.shadowMap.type = THREE.PCFShadowMap // r18x で PCFSoft は廃止（警告が出る）
     renderer.domElement.style.display = "block"
     renderer.domElement.style.touchAction = "none"
     host.appendChild(renderer.domElement)
@@ -264,6 +264,8 @@ export default function Rail3DViewer({ lengthMm, pipeDiameter, positions, angleD
       envTex.dispose()
       pmrem.dispose()
       renderer.dispose()
+      // 開け閉めを繰り返してもブラウザの WebGL 上限（16前後）に達しないよう、すぐ手放す
+      renderer.forceContextLoss()
       renderer.domElement.remove()
     }
   }, [lengthMm, pipeDiameter, positions, angleDeg, angleDir])
