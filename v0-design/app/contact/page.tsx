@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { REFERRAL_SOURCES } from "@/lib/referral-source"
+import { getAdClickSummary } from "@/lib/ad-click"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
 import { Header } from "@/components/header"
@@ -278,6 +279,7 @@ export default function ContactPage() {
       fd.append("product", form.product)
       fd.append("message", form.message)
       fd.append("referral", form.referral)
+      fd.append("ad_click", getAdClickSummary())
       files.forEach((f) => fd.append("attachments", f))
 
       const res = await fetch("/api/contact", {

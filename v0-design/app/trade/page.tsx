@@ -19,6 +19,7 @@ import {
 } from "lucide-react"
 import { FileAttachField } from "@/components/file-attach-field"
 import { REFERRAL_SOURCES } from "@/lib/referral-source"
+import { getAdClickSummary } from "@/lib/ad-click"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { PrimaryCTA } from "@/components/ui/primary-cta"
@@ -310,6 +311,7 @@ export default function TradePage() {
       fd.append("product", "trade")
       fd.append("message", composed)
       fd.append("referral", referral)
+      fd.append("ad_click", getAdClickSummary())
       files.forEach((f) => fd.append("attachments", f))
 
       const res = await fetch("/api/contact", {

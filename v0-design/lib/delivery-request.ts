@@ -8,6 +8,7 @@
 import { getEarliestArrival, isBusinessDay, formatDateISO, TRANSIT_DAYS } from '@/lib/business-days'
 import { PREF_TO_REGION } from '@/lib/shipping/sagawa'
 import { sanitizeReferralSource, referralSourceLabel } from '@/lib/referral-source'
+import { sanitizeAdClick, adClickLabel } from '@/lib/ad-click'
 
 /** 佐川急便の時間帯区分（2026-10 蠣﨑さん確認・6区分） */
 export const DELIVERY_TIME_SLOTS = [
@@ -34,6 +35,8 @@ export interface DeliveryRequest {
   customerNote: string
   /** ado を知ったきっかけ（lib/referral-source の value）。空 = 未回答 */
   referralSource: string
+  /** 広告クリックの自動判定（lib/ad-click の値）。空 = 広告経由ではない */
+  adClick: string
 }
 
 const WEEKDAYS = ['日', '月', '火', '水', '木', '金', '土'] as const
@@ -93,7 +96,7 @@ export function sanitizeCustomerNote(raw: unknown): string {
  *   ご希望に添えない場合は工房から連絡する運用（カート画面に明記）。
  */
 export function sanitizeDeliveryRequest(
-  body: { preferredArrivalDate?: unknown; preferredTimeSlot?: unknown; customerNote?: unknown; referralSource?: unknown } | null | undefined,
+  body: { preferredArrivalDate?: unknown; preferredTimeSlot?: unknown; customerNote?: unknown; referralSource?: unknown; adClick?: unknown } | null | undefined,
   ctx: { rush: boolean; prefecture: string; now?: Date },
 ): DeliveryRequest {
   const slotRaw = String(body?.preferredTimeSlot ?? '')
@@ -113,6 +116,7 @@ export function sanitizeDeliveryRequest(
     preferredTimeSlot,
     customerNote: sanitizeCustomerNote(body?.customerNote),
     referralSource: sanitizeReferralSource(body?.referralSource),
+    adClick: sanitizeAdClick(body?.adClick),
   }
 }
 
@@ -146,11 +150,18 @@ export function deliveryRequestMemo(req: {
   preferredTimeSlot?: string
   customerNote?: string
   referralSource?: string
+  adClick?: string
 }): string {
   const wish = formatDeliveryWish(req.preferredArrivalDate, req.preferredTimeSlot)
   const note = (req.customerNote || '').replace(/\n+/g, ' ／ ')
   const referral = referralSourceLabel(req.referralSource)
-  return [wish ? `お届け希望 ${wish}` : '', note ? `備考: ${note}` : '', referral ? `きっかけ: ${referral}` : '']
+  const ad = adClickLabel(req.adClick)
+  return [
+    wish ? `お届け希望 ${wish}` : '',
+    note ? `備考: ${note}` : '',
+    referral ? `きっかけ: ${referral}` : '',
+    ad ? `広告経由: ${ad}` : '',
+  ]
     .filter(Boolean)
     .join(' / ')
 }
@@ -162,5 +173,6 @@ export function deliveryRequestFromMetadata(meta: Record<string, string | undefi
     preferredTimeSlot: meta.preferred_time_slot || '',
     customerNote: meta.customer_note || '',
     referralSource: meta.referral_source || '',
+    adClick: meta.ad_click || '',
   }
 }

@@ -6,6 +6,7 @@ import { decodeCartMetadata, cartSummaryLabel, type DecodedCartLine } from '@/li
 import { encodeEndCode } from '@/lib/products/end-options';
 import { deliveryRequestFromMetadata, deliveryRequestMemo } from '@/lib/delivery-request';
 import { referralSourceLabel } from '@/lib/referral-source';
+import { adClickLabel } from '@/lib/ad-click';
 
 let _stripe: Stripe | null = null;
 function getStripe(): Stripe {
@@ -669,6 +670,8 @@ export async function sendWorkshopEmail(session: Stripe.Checkout.Session, isSimp
   const customerNote = meta.customer_note || '';
   // ado を知ったきっかけ（カート画面で任意回答）。広告の効果を確かめる用
   const referralLabel = referralSourceLabel(meta.referral_source);
+  // 広告クリックの自動判定（お客様の申告ではない）
+  const adLabel = adClickLabel(meta.ad_click);
 
   const fromAddress = process.env.CONTACT_FROM || 'IRONWORKS ado <noreply@tantetuzest.com>';
 
@@ -716,6 +719,9 @@ ${customerNote ? `
 ` : ''}${referralLabel ? `
 <div class="section-title">ado を知ったきっかけ</div>
 <div class="summary"><div class="value">${esc(referralLabel)}</div></div>
+` : ''}${adLabel ? `
+<div class="section-title">広告経由（自動判定）</div>
+<div class="summary"><div class="value">${esc(adLabel)}</div></div>
 ` : ''}
 <div class="section-title">お客様情報</div>
 <div class="summary">${renderRows(customerRows)}</div>

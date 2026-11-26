@@ -1,6 +1,6 @@
 "use client"
 
-import { Suspense, useMemo, useState } from "react"
+import { Suspense, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { ChevronDown, Check, Trash2, ShoppingBag, Truck } from "lucide-react"
@@ -11,6 +11,7 @@ import { PrimaryCTA } from "@/components/ui/primary-cta"
 import { EmbeddedCheckoutModal, type OrderSummary } from "@/components/checkout/embedded-checkout-modal"
 import { BankOrderModal } from "@/components/checkout/bank-order-modal"
 import { REFERRAL_SOURCES } from "@/lib/referral-source"
+import { getAdClickSummary } from "@/lib/ad-click"
 import { useCart } from "@/lib/cart/store"
 import { calcCartPricing } from "@/lib/cart/pricing"
 import { CART_MAX_QUANTITY, isClemenceSlug } from "@/lib/cart/types"
@@ -55,6 +56,9 @@ function CartContent() {
   const [timeSlot, setTimeSlot] = useState("")
   const [customerNote, setCustomerNote] = useState("")
   const [referralSource, setReferralSource] = useState("")
+  // 広告クリックの自動判定（ブラウザ保存値なのでマウント後に読む）
+  const [adClick, setAdClick] = useState("")
+  useEffect(() => setAdClick(getAdClickSummary()), [])
 
   // 特急は 3 本まで（商品ページと同一ルール）
   const expressAllowed = count <= 3
@@ -84,6 +88,7 @@ function CartContent() {
     preferredTimeSlot: timeSlot,
     customerNote: trimmedNote,
     referralSource,
+    adClick,
   }
 
   const summary: OrderSummary = {

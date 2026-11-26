@@ -3,6 +3,7 @@ import { Noto_Serif_JP, Inter, Zen_Maru_Gothic, Zen_Kaku_Gothic_New } from 'next
 import { Analytics } from '@vercel/analytics/next'
 import { IntroSplash } from '@/components/intro-splash'
 import { LeadClickTracker } from '@/components/lead-click-tracker'
+import { AdClickCapture } from '@/components/ad-click-capture'
 import './globals.css'
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_ID
@@ -242,6 +243,7 @@ ${ADS_ID ? `gtag('config', '${ADS_ID}');` : ''}`
         <IntroSplash />
         {/* リード経路（LINE/電話）クリックの計測。視覚に影響しない計測専用 */}
         <LeadClickTracker />
+        <AdClickCapture />
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>

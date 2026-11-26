@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { CATALOG_PRODUCTS } from '@/lib/products/catalog';
 import { referralSourceLabel } from '@/lib/referral-source';
+import { adClickLabel } from '@/lib/ad-click';
 
 function esc(str: string | undefined | null): string {
   return String(str || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -65,7 +66,7 @@ interface ResendAttachment {
 
 export async function POST(request: NextRequest) {
   try {
-    let name = '', name_kana = '', email = '', category = '', product = '', message = '', referral = '';
+    let name = '', name_kana = '', email = '', category = '', product = '', message = '', referral = '', adClick = '';
     const attachments: ResendAttachment[] = [];
 
     const ct = request.headers.get('content-type') || '';
@@ -78,6 +79,7 @@ export async function POST(request: NextRequest) {
       product = String(fd.get('product') || '');
       message = String(fd.get('message') || '');
       referral = String(fd.get('referral') || '');
+      adClick = String(fd.get('ad_click') || '');
 
       const fileEntries = fd.getAll('attachments').filter((v): v is File => v instanceof File);
       if (fileEntries.length > MAX_FILES) {
@@ -118,6 +120,7 @@ export async function POST(request: NextRequest) {
     const categoryLabel = categoryLabels[category] || category;
     const productLabel  = productLabels[product]   || '—';
     const referralLabel = referralSourceLabel(referral);
+    const adLabel = adClickLabel(adClick);
     const fromAddress   = process.env.CONTACT_FROM     || 'IRONWORKS ado <onboarding@resend.dev>';
     const toAddress     = process.env.CONTACT_TO_EMAIL || 'ado@tantetuzest.com';
 
@@ -144,6 +147,7 @@ export async function POST(request: NextRequest) {
 <div class="row"><span class="label">対象製品</span><span class="value">${esc(productLabel)}</span></div>
 <div class="row"><span class="label">内容</span><span class="value"><div class="msg">${esc(message)}</div></span></div>
 ${referralLabel ? `<div class="row"><span class="label">ado を知ったきっかけ</span><span class="value">${esc(referralLabel)}</span></div>` : ''}
+${adLabel ? `<div class="row"><span class="label">広告経由（自動判定）</span><span class="value">${esc(adLabel)}</span></div>` : ''}
 ${attachments.length > 0 ? `<div class="row"><span class="label">添付ファイル</span><span class="value">${attachments.length} 件 — ${attachments.map(a => esc(a.filename)).join(', ')}</span></div>` : ''}
 </div>
 <div class="footer">送信日時: ${new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' })} JST</div>

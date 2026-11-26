@@ -21,6 +21,7 @@ import { sanitizeCart, calcCartPricing } from '@/lib/cart/pricing';
 // お届け希望日時・備考の検証と表記（カード決済・webhook と共有）。
 import { sanitizeDeliveryRequest, deliveryRequestMemo, formatDeliveryWish } from '@/lib/delivery-request';
 import { referralSourceLabel } from '@/lib/referral-source';
+import { adClickLabel } from '@/lib/ad-click';
 
 const clampNum = (v: unknown, lo: number, hi: number) =>
   Math.min(Math.max(Math.round(Number(v)) || lo, lo), hi);
@@ -77,6 +78,7 @@ type Body = {
   preferredTimeSlot?: string;
   customerNote?: string;
   referralSource?: string;
+  adClick?: string;
 };
 
 function esc(s: unknown): string {
@@ -430,6 +432,7 @@ body{font-family:'Helvetica Neue',Arial,sans-serif;background:#f3f4f6;color:#333
 ${deliveryWish ? `<div class="row"><span class="label">お届け希望日時</span><span class="value">${esc(deliveryWish)}</span></div>` : ''}
 ${deliveryRequest.customerNote ? `<div class="row"><span class="label">備考</span><span class="value">${esc(deliveryRequest.customerNote).replace(/\n/g, '<br>')}</span></div>` : ''}
 ${deliveryRequest.referralSource ? `<div class="row"><span class="label">知ったきっかけ</span><span class="value">${esc(referralSourceLabel(deliveryRequest.referralSource))}</span></div>` : ''}
+${deliveryRequest.adClick ? `<div class="row"><span class="label">広告経由（自動判定）</span><span class="value">${esc(adClickLabel(deliveryRequest.adClick))}</span></div>` : ''}
 <div class="row"><span class="label">状態</span><span class="value">入金待ち（受注台帳に記帳済み）</span></div>
 </div></body></html>`;
 
