@@ -143,6 +143,7 @@ export async function POST(request: NextRequest) {
         preferred_time_slot:    deliveryRequest.preferredTimeSlot,
         customer_note:          deliveryRequest.customerNote,
         referral_source:        deliveryRequest.referralSource,
+        ad_click:               deliveryRequest.adClick,
         production_start:       formatDateISO(schedule.productionStart),
         production_complete:    formatDateISO(schedule.productionComplete),
         shipping_date:          formatDateISO(shippingDate),
