@@ -135,9 +135,7 @@ export interface DrawingProductConfig {
   // 座金ガイドの説明写真。未指定なら共通の黒い手すりの写真。
   // 白仕上げの商品で写真の色を商品に合わせたいときだけ指定する（2026-08-28 Catherine から）。
   zakinGuidePhoto?: string
-  // true の商品は長さ入力の下に「立体で見る（3D）」ボタンを出す（2026-11-26 試作・René のみ）。
-  // 座金（丸 φ45）＋支柱は SolidCraft で作った public/models/rene-bracket.glb、パイプはブラウザで長さに合わせて作る。
-  viewer3d?: boolean
+  // 「この長さを立体で見る（3D）」を出す商品と形は lib/drawing-modal/rail-3d-models.ts にまとめてある。
 }
 
 // 長さ L_mm に対する本体価格をテーブルから線形補間で取得。
@@ -240,7 +238,6 @@ export const DRAWING_PRODUCTS: Record<string, DrawingProductConfig> = {
     maxMm: 5000,
     includedZakin: 3,
     priceTable: RENE_PRICE_TABLE,
-    viewer3d: true,
   },
   claire: {
     slug: "claire",

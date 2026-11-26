@@ -18,9 +18,10 @@ const Rail3DViewer = dynamic(() => import("./rail-3d-viewer"), {
 
 interface Rail3DButtonProps extends Rail3DViewerProps {
   productName: string
+  note?: string // 3D に入っていない仕様があるときの断り書き（例: Marcel のエンド）
 }
 
-export function Rail3DButton({ productName, ...viewer }: Rail3DButtonProps) {
+export function Rail3DButton({ productName, note, ...viewer }: Rail3DButtonProps) {
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
@@ -85,6 +86,7 @@ export function Rail3DButton({ productName, ...viewer }: Rail3DButtonProps) {
               <Rail3DViewer {...viewer} />
             </div>
             <p className="border-t border-border bg-white px-4 py-3 text-[13px] leading-relaxed text-muted-foreground [padding-bottom:max(0.75rem,env(safe-area-inset-bottom))]">
+              {note && <span className="mb-1 block text-foreground">{note}</span>}
               指でなぞると回転、2本指で拡大・移動できます。CGによるイメージです。色や質感は商品写真をご覧ください。
             </p>
           </div>

@@ -13,6 +13,7 @@ import { InlineRailSimulator } from "@/components/drawing-modal/inline-rail-simu
 import { ZakinEditor, type ZakinState } from "@/components/drawing-modal/zakin-editor"
 import { ZakinGuide } from "@/components/drawing-modal/zakin-guide"
 import { Rail3DButton } from "@/components/drawing-modal/rail-3d-button"
+import { getRail3DSpec } from "@/lib/drawing-modal/rail-3d-models"
 import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants"
 import { getProductFull, galleryUrl, type FeatureIconName } from "@/lib/products/display"
 import { getSimpleProduct } from "@/lib/products/simple"
@@ -273,6 +274,11 @@ export default function ProductDetailPage() {
     purchaseAreaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
   // 座金ルール (商品固有。未指定は旧式=横型ルール)
   const zakinRule = product.drawing.zakinRule
+  // 3D 表示の形（対象外の商品は null）。窓を開いている間に作り直さないよう useMemo で固定する
+  const rail3dSpec = useMemo(
+    () => getRail3DSpec(product.drawing, { washerType, color: supportsColor ? color : undefined }),
+    [product.drawing, washerType, supportsColor, color]
+  )
   const minLength = zakinRule?.minLengthMm ?? 500
   const maxLength = zakinRule?.maxLengthMm ?? product.drawing.maxMm
 
@@ -1397,15 +1403,16 @@ export default function ProductDetailPage() {
                             </div>
                           </div>
                         )}
-                        {/* 3D 表示（試作・viewer3d の商品のみ・単本モード）。押したときだけ three.js を読み込む */}
-                        {!isMultiOrder && product.drawing.viewer3d && product.drawing.shape?.type === "round" && (
+                        {/* 3D 表示（rail-3d-models.ts に載っている商品のみ・単本モード）。押したときだけ three.js を読み込む */}
+                        {!isMultiOrder && rail3dSpec && (
                           <Rail3DButton
                             productName={product.drawing.nameJa.split(" ")[0]}
+                            spec={rail3dSpec}
                             lengthMm={length}
-                            pipeDiameter={product.drawing.shape.diameter}
                             positions={zakin.positions}
-                            angleDeg={zakin.angleDeg}
+                            angleDeg={product.drawing.category === "horizontal" ? zakin.angleDeg : 0}
                             angleDir={zakin.angleDir}
+                            note={endNote ? "フック・渦巻き・ループのエンドは3Dに入っていません（まっすぐな端で表示しています）。" : undefined}
                           />
                         )}
                         {/* 多本モード: 本数分の数値入力 (qty>1) */}
