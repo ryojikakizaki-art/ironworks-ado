@@ -12,6 +12,7 @@ import { ReneDrawingModal } from "@/components/drawing-modal/rene-drawing-modal"
 import { InlineRailSimulator } from "@/components/drawing-modal/inline-rail-simulator"
 import { ZakinEditor, type ZakinState } from "@/components/drawing-modal/zakin-editor"
 import { ZakinGuide } from "@/components/drawing-modal/zakin-guide"
+import { Rail3DButton } from "@/components/drawing-modal/rail-3d-button"
 import { calcZakin, getZakinPositions } from "@/lib/drawing-modal/rene-constants"
 import { getProductFull, galleryUrl, type FeatureIconName } from "@/lib/products/display"
 import { getSimpleProduct } from "@/lib/products/simple"
@@ -1395,6 +1396,17 @@ export default function ProductDetailPage() {
                               </span>
                             </div>
                           </div>
+                        )}
+                        {/* 3D 表示（試作・viewer3d の商品のみ・単本モード）。押したときだけ three.js を読み込む */}
+                        {!isMultiOrder && product.drawing.viewer3d && product.drawing.shape?.type === "round" && (
+                          <Rail3DButton
+                            productName={product.drawing.nameJa.split(" ")[0]}
+                            lengthMm={length}
+                            pipeDiameter={product.drawing.shape.diameter}
+                            positions={zakin.positions}
+                            angleDeg={zakin.angleDeg}
+                            angleDir={zakin.angleDir}
+                          />
                         )}
                         {/* 多本モード: 本数分の数値入力 (qty>1) */}
                         {isMultiOrder && (
