@@ -1,7 +1,7 @@
 import { CATALOG_PRODUCTS } from "@/lib/products/catalog"
 import { galleryUrl, getProductDisplay } from "@/lib/products/display"
 import { SIMPLE_PRODUCTS, getSimpleProduct } from "@/lib/products/simple"
-import { listingShippingYen } from "@/lib/shipping/listing-shipping"
+import { listingHandlingDays, listingShippingYen } from "@/lib/shipping/listing-shipping"
 
 export const dynamic = "force-static"
 export const revalidate = 86400
@@ -80,6 +80,8 @@ function buildItem(item: FeedItem): string {
   // 基本構成で買ったときの送料（税込・全国で最も高い地域の額）。lib/shipping/listing-shipping.ts 参照。
   // 送料が見積もりで決まる商品（null）は送料欄を出さない。
   const shippingYen = listingShippingYen(item.slug)
+  // 発送までの日数（営業日）。Merchant Center の共通設定より納期が長い商品だけ書く。
+  const handling = listingHandlingDays(item.slug)
   return [
     "    <item>",
     `      <g:id>${escapeXml(item.slug)}</g:id>`,
@@ -97,6 +99,12 @@ function buildItem(item: FeedItem): string {
     ...(shippingYen === null
       ? []
       : [`      <g:shipping><g:country>JP</g:country><g:service>佐川急便</g:service><g:price>${shippingYen} JPY</g:price></g:shipping>`]),
+    ...(handling === null
+      ? []
+      : [
+          `      <g:min_handling_time>${handling.min}</g:min_handling_time>`,
+          `      <g:max_handling_time>${handling.max}</g:max_handling_time>`,
+        ]),
     "    </item>",
   ].join("\n")
 }
@@ -106,7 +114,8 @@ function buildItem(item: FeedItem): string {
 // Google ショッピングには出さない（誤認・ポリシーリスク回避）。
 // 大型の見積り商品 5 点: 送料が見積もりで決まり（家財便・設置込み等）フィードに送料を書けないため、
 // ショッピング広告には出さない（2026-11-11 蠣﨑さん判断。広告経由の成果は 90 日 0 件）。
-// Élisabeth・Élan L も送料は見積もりだが、手すりなので送料欄なしで残す。
+// Élisabeth・Élan L も送料は見積もりだが手すりなので残し、基本構成の送料を書く（2026-11-27 蠣﨑さん確認・
+// lib/shipping/listing-shipping.ts の QUOTE_RAIL_SHIPPING）。
 const FEED_EXCLUDED_SLUGS = new Set([
   "laurent",
   "tsuta",
